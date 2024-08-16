@@ -148,3 +148,18 @@ intersphinx_mapping = {
     'pandas': ('https://pandas.pydata.org/docs', None),
     'treetime': ('https://treetime.readthedocs.io/en/stable/', None),
 }
+
+# -- Linkchecking ------------------------------------------------------------
+
+## NOTE: for both sets of regular expressions that follow, the
+## underlying linkchecker code uses `re.match()` to apply them to URLs
+## — so there's already an implicit "only at the beginning of a
+## string" matching happening, and something like a plain `r'google'`
+## regular expression will _NOT_ match all google.com URLs.
+linkcheck_ignore = []
+linkcheck_anchors_ignore_for_url = [
+     # Github uses anchor-looking links for highlighting lines but
+     # handles the actual resolution with Javascript, so skip anchor
+     # checks for Github URLs:
+     r'^https://github\.com',
+]
