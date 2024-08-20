@@ -8,9 +8,10 @@ These can be especially useful in the context of an entire pipeline or workflow 
 .. envvar:: AUGUR_DEBUG
 
     Boolean.
-    Set to a truthy value (e.g. 1) to print more information about (handled) errors.
+    If set to a non-empty value, more detailed debugging information is shown by Augur during execution and handling of errors.
 
-    For example, when this is not set or falsey, stack traces and parent exceptions in an exception chain are omitted from handled errors.
+    For example, when this is enabled, stack traces and parent exceptions in an exception chain are no longer omitted from handled (i.e. expected) errors.
+    Some commands will also emit more verbose operation logging during their execution.
 
 .. envvar:: AUGUR_MINIFY_JSON
 
