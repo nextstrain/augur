@@ -104,7 +104,7 @@ def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") e
     file
         file path or handle to write to
     indent : int or None, optional
-        JSON indentation level. Default is `None` if the environment variable `AUGUR_MINIFY_JSON`
+        JSON indentation level. Default is `None` if the environment variable :envvar:`AUGUR_MINIFY_JSON`
         is truthy, else 1
     include_version : bool, optional
         Include the augur version. Default: `True`.
