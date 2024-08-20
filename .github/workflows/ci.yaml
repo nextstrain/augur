@@ -322,7 +322,7 @@ jobs:
           fail_ci_if_error: false
 
   build-docs:
-    uses: nextstrain/.github/.github/workflows/docs-ci.yaml@master
+    uses: nextstrain/.github/.github/workflows/docs-ci.yaml@check-external-links-29
     with:
       docs-directory: docs/
       pip-install-target: .[dev]
