@@ -5,6 +5,13 @@ Environment variables
 Augur's behaviour can be globally modified by the values of some specific environment variables.
 These can be especially useful in the context of an entire pipeline or workflow which uses Augur, as the environment variables can be set once for all Augur commands at the start of the pipeline.
 
+.. envvar:: AUGUR_DEBUG
+
+    Boolean.
+    Set to a truthy value (e.g. 1) to print more information about (handled) errors.
+
+    For example, when this is not set or falsey, stack traces and parent exceptions in an exception chain are omitted from handled errors.
+
 .. envvar:: AUGUR_MINIFY_JSON
 
     Boolean.
