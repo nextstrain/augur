@@ -2,7 +2,7 @@ import datetime
 
 from augur.dates import ambiguous_date
 from augur.dates.ambiguous_date import AmbiguousDate
-from augur.dates.errors import InvalidDate
+from augur.dates.errors import InvalidDateMessage
 
 from freezegun import freeze_time
 import pytest
@@ -19,7 +19,7 @@ class TestAmbiguousDate:
         ],
     )
     def test_range(self, date_str, expected_range):
-        assert AmbiguousDate(date_str).range() == expected_range
+        assert AmbiguousDate(date_str, fmt="%Y-%m-%d").range() == expected_range
 
     @pytest.mark.parametrize(
         "date_str, fmt",
@@ -46,12 +46,12 @@ class TestAmbiguousDate:
     )
     def test_uncertain_date_components(self, date_str, expected_components):
         assert (
-            AmbiguousDate(date_str).uncertain_date_components == expected_components
+            AmbiguousDate(date_str, fmt="%Y-%m-%d").uncertain_date_components == expected_components
         )
 
     def test_uncertain_date_components_error(self):
-        with pytest.raises(InvalidDate, match="Date does not match format"):
-            AmbiguousDate("5-5-5-5-5").uncertain_date_components
+        with pytest.raises(InvalidDateMessage, match="Date does not match format"):
+            AmbiguousDate("5-5-5-5-5", fmt="%Y-%m-%d").uncertain_date_components
 
     @pytest.mark.parametrize(
         "date_str, min_or_max, expected",
@@ -79,8 +79,8 @@ class TestAmbiguousDate:
         ],
     )
     def test_assert_only_less_significant_uncertainty(self, date_str, expected_error):
-        with pytest.raises(InvalidDate, match=expected_error):
-            AmbiguousDate(date_str)
+        with pytest.raises(InvalidDateMessage, match=expected_error):
+            AmbiguousDate(date_str, fmt="%Y-%m-%d").assert_only_less_significant_uncertainty()
 
     @freeze_time("2020-05-05")
     @pytest.mark.parametrize(
@@ -102,7 +102,7 @@ class TestAmbiguousDate:
     )
     def test_min_max_year(self, date_str, min_max_year, expected_range):
         assert (
-            AmbiguousDate(date_str).range(min_max_year=min_max_year) == expected_range
+            AmbiguousDate(date_str, fmt="%Y-%m-%d").range(min_max_year=min_max_year) == expected_range
         )
 
     @freeze_time("2020-05-05")
@@ -115,4 +115,4 @@ class TestAmbiguousDate:
     )
     def test_min_max_year_date_error(self, date_str, min_max_year):
         with pytest.raises(InvalidDate, match="Not possible for date to fall within bounds"):
-            AmbiguousDate(date_str).range(min_max_year=min_max_year)
+            AmbiguousDate(date_str, fmt="%Y-%m-%d").range(min_max_year=min_max_year)
