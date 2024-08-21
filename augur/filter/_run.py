@@ -23,7 +23,7 @@ from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
 from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
 from .include_exclude_rules import apply_filters, construct_filters
-from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling
+from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling, get_weighted_group_sizes
 
 
 def run(args):
@@ -264,32 +264,43 @@ def run(args):
     # group. Then, we need to make a second pass through the metadata to find
     # the requested number of records.
     if args.subsample_max_sequences and records_per_group is not None:
-        # Calculate sequences per group. If there are more groups than maximum
-        # sequences requested, sequences per group will be a floating point
-        # value and subsampling will be probabilistic.
-        try:
-            sequences_per_group, probabilistic_used = calculate_sequences_per_group(
-                args.subsample_max_sequences,
-                records_per_group.values(),
-                args.probabilistic_sampling,
-            )
-        except TooManyGroupsError as error:
-            raise AugurError(error)
-
         if queues_by_group is None:
             # We know all of the possible groups now from the first pass through
             # the metadata, so we can create queues for all groups at once.
-            if (probabilistic_used):
-                print_err(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
-                group_sizes = get_probabilistic_group_sizes(
-                    records_per_group.keys(),
-                    sequences_per_group,
-                    random_seed=args.subsample_seed,
+            if args.group_by_weights:
+                print_err(f"Sampling with weights defined by {args.group_by_weights}.")
+                group_sizes = get_weighted_group_sizes(
+                    records_per_group,
+                    group_by,
+                    args.group_by_weights,
+                    args.subsample_max_sequences,
+                    args.output_group_by_sizes,
+                    args.subsample_seed,
                 )
             else:
-                print_err(f"Sampling at {sequences_per_group} per group.")
-                assert type(sequences_per_group) is int
-                group_sizes = {group: sequences_per_group for group in records_per_group.keys()}
+                # Calculate sequences per group. If there are more groups than maximum
+                # sequences requested, sequences per group will be a floating point
+                # value and subsampling will be probabilistic.
+                try:
+                    sequences_per_group, probabilistic_used = calculate_sequences_per_group(
+                        args.subsample_max_sequences,
+                        records_per_group.values(),
+                        args.probabilistic_sampling,
+                    )
+                except TooManyGroupsError as error:
+                    raise AugurError(error)
+
+                if (probabilistic_used):
+                    print_err(f"Sampling probabilistically at {sequences_per_group:0.4f} sequences per group, meaning it is possible to have more than the requested maximum of {args.subsample_max_sequences} sequences after filtering.")
+                    group_sizes = get_probabilistic_group_sizes(
+                        records_per_group.keys(),
+                        sequences_per_group,
+                        random_seed=args.subsample_seed,
+                    )
+                else:
+                    print_err(f"Sampling at {sequences_per_group} per group.")
+                    assert type(sequences_per_group) is int
+                    group_sizes = {group: sequences_per_group for group in records_per_group.keys()}
             queues_by_group = create_queues_by_group(group_sizes)
 
         # Make a second pass through the metadata, only considering records that

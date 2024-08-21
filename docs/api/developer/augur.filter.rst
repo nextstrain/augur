@@ -17,3 +17,4 @@ Submodules
    augur.filter.io
    augur.filter.subsample
    augur.filter.validate_arguments
+   augur.filter.weights_file
