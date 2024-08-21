@@ -41,5 +41,5 @@ This should fail with a helpful error message.
   >  --auspice-config "$TESTDIR/../data/auspice_config1.json" \
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
-  ERROR: None of the possible id columns (('strain', 'name')) were found in the metadata's columns ('invalid_id', 'div', 'mutation_length')
+  ERROR: None of the possible id columns ('strain', 'name') were found in the metadata's columns ('invalid_id', 'div', 'mutation_length')
   [1]

@@ -69,7 +69,7 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id
     >>> read_metadata("tests/functional/filter/data/metadata.tsv", id_columns=("Virus name",))
     Traceback (most recent call last):
       ...
-    Exception: None of the possible id columns (('Virus name',)) were found in the metadata's columns ('strain', 'virus', 'accession', 'date', 'region', 'country', 'division', 'city', 'db', 'segment', 'authors', 'url', 'title', 'journal', 'paper_url')
+    Exception: None of the possible id columns ('Virus name') were found in the metadata's columns ('strain', 'virus', 'accession', 'date', 'region', 'country', 'division', 'city', 'db', 'segment', 'authors', 'url', 'title', 'journal', 'paper_url')
 
     We also allow iterating through metadata in fixed chunk sizes.
 
@@ -110,7 +110,7 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id
 
     # If we couldn't find a valid index column in the metadata, alert the user.
     if not id_columns_present:
-        raise Exception(f"None of the possible id columns ({id_columns!r}) were found in the metadata's columns {tuple(chunk.columns)!r}")
+        raise Exception(f"None of the possible id columns ({', '.join(map(repr, id_columns))}) were found in the metadata's columns ({', '.join(map(repr, chunk.columns))})")
     else:
         index_col = id_columns_present[0]
 
@@ -599,19 +599,19 @@ class Metadata:
                 raise AugurError(f"{self.path}: Expected a header row but it is empty.")
 
         # Infer the ID column.
-        self.id_column = self._find_first(id_columns)
+        self.id_column = self._find_id_column(id_columns)
 
     def open(self, **kwargs):
         """Open the file with auto-compression/decompression."""
         return open_file(self.path, newline='', **kwargs)
 
-    def _find_first(self, columns: Sequence[str]):
+    def _find_id_column(self, columns: Sequence[str]):
         """Return the first column in `columns` that is present in the metadata.
         """
         for column in columns:
             if column in self.columns:
                 return column
-        raise AugurError(f"{self.path}: None of ({columns!r}) are in the columns {tuple(self.columns)!r}.")
+        raise AugurError(f"{self.path}: None of the possible id columns ({', '.join(map(repr, columns))}) were found in the metadata's columns ({', '.join(map(repr, self.columns))}).")
 
     def rows(self, strict: bool = True):
         """Yield rows in a dictionary format. Empty lines are ignored.
