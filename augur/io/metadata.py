@@ -599,19 +599,19 @@ class Metadata:
                 raise AugurError(f"{self.path}: Expected a header row but it is empty.")
 
         # Infer the ID column.
-        self.id_column = self._find_first(id_columns)
+        self.id_column = self._find_id_column(id_columns)
 
     def open(self, **kwargs):
         """Open the file with auto-compression/decompression."""
         return open_file(self.path, newline='', **kwargs)
 
-    def _find_first(self, columns: Sequence[str]):
+    def _find_id_column(self, columns: Sequence[str]):
         """Return the first column in `columns` that is present in the metadata.
         """
         for column in columns:
             if column in self.columns:
                 return column
-        raise AugurError(f"{self.path}: None of ({columns!r}) are in the columns {tuple(self.columns)!r}.")
+        raise AugurError(f"{self.path}: None of the possible id columns ({columns!r}) were found in the metadata's columns {tuple(self.columns)!r}.")
 
     def rows(self, strict: bool = True):
         """Yield rows in a dictionary format. Empty lines are ignored.

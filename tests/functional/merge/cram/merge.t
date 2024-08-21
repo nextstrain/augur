@@ -203,7 +203,7 @@ No id column found.
   >   --metadata X=x-id-column.tsv Y=y.tsv \
   >   --metadata-id-columns strain \
   >   --output-metadata /dev/null
-  ERROR: x-id-column.tsv: None of (['strain']) are in the columns ('id', 'a', 'b', 'c').
+  ERROR: x-id-column.tsv: None of the possible id columns (['strain']) were found in the metadata's columns ('id', 'a', 'b', 'c').
   [2]
 
 SQLITE3 env var can be used to override `sqlite3` location (and failure is
