@@ -13,7 +13,8 @@ Columns are combined by name, either extending the combined table with a new
 column or overwriting values in an existing column.  For columns appearing in
 more than one table, non-empty values on the right hand side overwrite values
 on the left hand side.  The first table's id column name is used as the output
-id column name.
+id column name.  Non-id columns in other input tables that would conflict with
+this output id column name are not allowed and if present will cause an error.
 
 One generated column per input table is appended to the end of the output
 table to identify the source of each row's data.  Column names are generated
@@ -151,6 +152,23 @@ def run(args):
     output_id_column = metadata[0].id_column
     output_columns = { output_id_column: [] }
 
+    if conflicting_columns := [f"{c!r} in metadata table {m.name!r} (id column: {m.id_column!r})"
+                                    for m in metadata
+                                    for c in m.columns
+                                     if c == output_id_column
+                                    and c != m.id_column]:
+        raise AugurError(dedent(f"""\
+            Non-id column names in metadata inputs may not conflict with the
+            output id column name ({output_id_column!r}, the first input's id column).
+
+            The following input {_n("column", "columns", len(conflicting_columns))} would conflict:
+
+              {indented_list(conflicting_columns, '            ' + '  ')}
+
+            Please rename or drop the conflicting {_n("column", "columns", len(conflicting_columns))} before merging.
+            Renaming may be done with `augur curate rename`.
+            """))
+
     try:
         # Read all metadata files into a SQLite db
         for m in metadata:
@@ -185,7 +203,10 @@ def run(args):
             # the order of both.
             for column in m.columns:
                 # Match different id column names in different metadata files
-                # since they're logically equivalent.
+                # since they're logically equivalent.  Any non-id columns that
+                # match the output_id_column (i.e. first table's id column) and
+                # would thus overwrite it with this logic are already a fatal
+                # error above.
                 output_column = output_id_column if column == m.id_column else column
 
                 output_columns.setdefault(output_column, [])
