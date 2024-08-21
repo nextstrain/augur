@@ -17,7 +17,7 @@ from augur.index import (
 from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
 from augur.io.sequences import read_sequences, write_sequences
-from augur.io.print import print_err
+from augur.io.print import print_err, _n
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
@@ -427,7 +427,7 @@ def run(args):
     total_strains_passed = len(valid_strains)
     total_strains_filtered = len(metadata_strains) + num_excluded_by_lack_of_metadata - total_strains_passed
 
-    print_err(f"{total_strains_filtered} {'strain was' if total_strains_filtered == 1 else 'strains were'} dropped during filtering")
+    print_err(f"{total_strains_filtered} {_n('strain was', 'strains were', total_strains_filtered)} dropped during filtering")
 
     if num_excluded_by_lack_of_metadata:
         print_err(f"\t{num_excluded_by_lack_of_metadata} had no metadata")
@@ -457,13 +457,13 @@ def run(args):
             parameters = {}
 
         parameters["count"] = count
-        parameters["were"] = "was" if count == 1 else "were"
-        parameters["they"] = "it"  if count == 1 else "they"
+        parameters["were"] = _n("was", "were", count)
+        parameters["they"] = _n("it", "they", count)
         print_err("\t" + report_template_by_filter_name[filter_name].format(**parameters))
 
     if (group_by and args.sequences_per_group) or args.subsample_max_sequences:
         seed_txt = ", using seed {}".format(args.subsample_seed) if args.subsample_seed else ""
-        print_err(f"\t{num_excluded_subsamp} {'was' if num_excluded_subsamp == 1 else 'were'} dropped because of subsampling criteria{seed_txt}")
+        print_err(f"\t{num_excluded_subsamp} {_n('was', 'were', num_excluded_subsamp)} dropped because of subsampling criteria{seed_txt}")
 
     if total_strains_passed == 0:
         empty_results_message = "All samples have been dropped! Check filter rules and metadata file format."
@@ -476,4 +476,4 @@ def run(args):
         else:
             raise ValueError(f"Encountered unhandled --empty-output-reporting method {args.empty_output_reporting!r}")
 
-    print_err(f"{total_strains_passed} {'strain' if total_strains_passed == 1 else 'strains'} passed all filters")
+    print_err(f"{total_strains_passed} {_n('strain', 'strains', total_strains_passed)} passed all filters")

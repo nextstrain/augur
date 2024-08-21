@@ -10,7 +10,7 @@ from typing import Collection, Dict, Iterable, List, Optional, Set, Tuple, Union
 from augur.dates import get_year_month, get_year_week
 from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
-from augur.io.print import print_err
+from augur.io.print import print_err, _n
 from . import constants
 from .weights_file import WEIGHTS_COLUMN, COLUMN_VALUE_FOR_DEFAULT_WEIGHT, get_default_weight, get_weighted_columns, read_weights_file
 
@@ -352,8 +352,8 @@ def get_weighted_group_sizes(
     # Warn on any under-sampled groups
     for _, row in weights.iterrows():
         if row[INPUT_SIZE_COLUMN] < row[TARGET_SIZE_COLUMN]:
-            sequences = 'sequence' if row[TARGET_SIZE_COLUMN] == 1 else 'sequences'
-            are = 'is' if row[INPUT_SIZE_COLUMN] == 1 else 'are'
+            sequences = _n('sequence', 'sequences', row[TARGET_SIZE_COLUMN])
+            are = _n('is', 'are', row[INPUT_SIZE_COLUMN])
             group = list(f'{col}={value!r}' for col, value in row[group_by].items())
             print_err(f"WARNING: Targeted {row[TARGET_SIZE_COLUMN]} {sequences} for group {group} but only {row[INPUT_SIZE_COLUMN]} {are} available.")
 
@@ -411,7 +411,7 @@ def _drop_unused_groups(
     extra_groups = set(weights.index) - valid_index
     if extra_groups:
         count = len(extra_groups)
-        unit = "group" if count == 1 else "groups"
+        unit = _n("group", "groups", count)
         print_err(f"NOTE: Skipping {count} {unit} due to lack of entries in metadata.")
         weights = weights[weights.index.isin(valid_index)]
 
@@ -427,8 +427,8 @@ def _adjust_weights_for_unweighted_columns(
     ) -> pd.DataFrame:
     """Adjust weights for unweighted columns to reflect equal weighting within each weighted group.
     """
-    columns = 'column' if len(unweighted_columns) == 1 else 'columns'
-    those = 'that' if len(unweighted_columns) == 1 else 'those'
+    columns = _n('column', 'columns', len(unweighted_columns))
+    those = _n('that', 'those', len(unweighted_columns))
     print_err(f"NOTE: Weights were not provided for the {columns} {', '.join(repr(col) for col in unweighted_columns)}. Using equal weights across values in {those} {columns}.")        
 
     weights_grouped = weights.groupby(weighted_columns)
