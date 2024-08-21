@@ -197,6 +197,15 @@ Duplicates.
   ERROR: sqlite3 invocation failed
   [2]
 
+No id column found.
+
+  $ ${AUGUR} merge \
+  >   --metadata X=x-id-column.tsv Y=y.tsv \
+  >   --metadata-id-columns strain \
+  >   --output-metadata /dev/null
+  ERROR: x-id-column.tsv: None of (['strain']) are in the columns ('id', 'a', 'b', 'c').
+  [2]
+
 SQLITE3 env var can be used to override `sqlite3` location (and failure is
 handled).
 
