@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 25.3.0 (22 August 2024)
+
 ### Features
 
 * A new command, `augur merge`, now allows for generalized merging of two or more metadata tables. [#1563][] (@tsibley)
