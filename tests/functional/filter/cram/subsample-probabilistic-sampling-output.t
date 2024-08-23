@@ -12,7 +12,7 @@ Check output of probabilistic sampling.
   >  --subsample-seed 314159 \
   >  --output-metadata filtered_metadata.tsv
   WARNING: Asked to provide at most 3 sequences, but there are 8 groups.
-  Sampling probabilistically at 0.3633 sequences per group, meaning it is possible to have more than the requested maximum of 3 sequences after filtering.
+  Sampling probabilistically at 0.3750 sequences per group, meaning it is possible to have more than the requested maximum of 3 sequences after filtering.
   10 strains were dropped during filtering
   	1 was dropped during grouping due to ambiguous year information
   	1 was dropped during grouping due to ambiguous month information
