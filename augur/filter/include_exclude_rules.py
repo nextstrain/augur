@@ -244,7 +244,7 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
         return set(metadata_copy.query(query).index.values)
     except Exception as e:
         if isinstance(e, PandasUndefinedVariableError):
-            raise AugurError(f"Query contains a column that does not exist in metadata.") from e
+            raise AugurError(f"Query contains a column that does not exist in metadata: {e}") from e
         raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
 
 
