@@ -124,7 +124,7 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id
                 # Ignore missing columns. Don't error since augur filter's
                 # --exclude-where allows invalid columns to be specified (they
                 # are just ignored).
-                print_err(f"WARNING: Column '{requested_column}' does not exist in the metadata file. Ignoring it.")
+                print_err(f"WARNING: Column '{requested_column}' does not exist in the metadata file. This may cause subsequent errors.")
                 columns.remove(requested_column)
                 # NOTE: list()+remove() is not very efficient, but (1) it's easy
                 # to understand and (2) this is unlikely to be used with large
