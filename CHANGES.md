@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* filter: Improved warning and error messages in the case of missing columns. [#1604] (@victorlin)
+
+[#1604]: https://github.com/nextstrain/augur/pull/1604
 
 ## 25.3.0 (22 August 2024)
 
