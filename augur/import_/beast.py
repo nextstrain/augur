@@ -116,15 +116,15 @@ def parse_beast_tree(data, tipMap, verbose=False):
                 print('%d adding multitype node %s'%(i,multitypeNode.group(1)))
             i+=len(multitypeNode.group(1))
 
-        commentBlock=re.match(r'(\:)*\[(&[A-Za-z\_\-{}\,0-9\.\%=\"\'\+!#]+)\]',data[i:])## look for MCC comments
+        commentBlock=re.match(r'(\:)*\[(&[A-Za-z\_\-{}\,0-9\.\%=\"\'\+ !#]+)\]',data[i:])## look for MCC comments
         if commentBlock is not None:
             if verbose==True:
                 print('%d comment: %s'%(i,commentBlock.group(2)))
             comment=commentBlock.group(2)
             numerics=re.findall(r'[,&][A-Za-z\_\.0-9]+=[0-9\-Ee\.]+',comment) ## find all entries that have values as floats
-            strings=re.findall(r'[,&][A-Za-z\_\.0-9]+=["|\']*[A-Za-z\_0-9\.\+]+["|\']*',comment) ## strings
+            strings=re.findall(r'[,&][A-Za-z\_\.0-9]+=["|\']*[A-Za-z\_0-9\.\+ ]+["|\']*',comment) ## strings
             treelist=re.findall(r'[,&][A-Za-z\_\.0-9]+={[A-Za-z\_,{}0-9\.]+}',comment) ## complete history logged robust counting (MCMC trees)
-            sets=re.findall(r'[,&][A-Za-z\_\.0-9\%]+={[A-Za-z\.\-0-9eE,\"\_]+}',comment) ## sets and ranges
+            sets=re.findall(r'[,&][A-Za-z\_\.0-9\%]+={[A-Za-z\.\-0-9 ,\"\_]+}',comment) ## sets and ranges
             figtree=re.findall(r'\![A-Za-z]+=[A-Za-z0-9#]+',comment) ## figtree comments, in case MCC was manipulated in FigTree
 
             for vals in strings: ## string states go here
