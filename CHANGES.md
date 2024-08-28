@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+### Major changes
+
+* filter: Duplicate header names in the FASTA file (`--sequences`) will now result in an error. [#1613] (@victorlin)
+
 ### Features
 
 * merge: Generated source columns (e.g. `__source_metadata_{NAME}`) may now have their name template changed with `--source-columns=TEMPLATE` or may be omitted entirely with `--no-source-columns`. [#1625][] (@tsibley)
@@ -32,6 +36,7 @@
 [#1604]: https://github.com/nextstrain/augur/pull/1604
 [#1608]: https://github.com/nextstrain/augur/pull/1608
 [#1610]: https://github.com/nextstrain/augur/pull/1610
+[#1613]: https://github.com/nextstrain/augur/pull/1613
 
 ## 25.3.0 (22 August 2024)
 
