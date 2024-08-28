@@ -1,4 +1,5 @@
 from collections import defaultdict
+from contextlib import nullcontext
 import csv
 import itertools
 import json
@@ -381,23 +382,19 @@ def run(args):
             dropped_samps = list(sequence_strains - valid_strains)
             write_vcf(args.sequences, args.output, dropped_samps)
     elif args.sequences:
-        sequences = read_sequences(args.sequences)
-
         # If the user requested sequence output, stream to disk all sequences
         # that passed all filters to avoid reading sequences into memory first.
         # Even if we aren't emitting sequences, we track the observed strain
         # names in the sequence file as part of the single pass to allow
         # comparison with the provided sequence index.
-        if args.output:
-            observed_sequence_strains = set()
-            with open_file(args.output, "wt") as output_handle:
-                for sequence in sequences:
-                    observed_sequence_strains.add(sequence.id)
+        observed_sequence_strains = set()
+        with open_file(args.output, "wt") if args.output else nullcontext() as output_handle:
+            for sequence in read_sequences(args.sequences):
+                observed_sequence_strains.add(sequence.id)
 
+                if args.output:
                     if sequence.id in valid_strains:
                         write_sequences(sequence, output_handle, 'fasta')
-        else:
-            observed_sequence_strains = {sequence.id for sequence in sequences}
 
         if sequence_strains != observed_sequence_strains:
             # Warn the user if the expected strains from the sequence index are
