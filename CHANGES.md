@@ -6,9 +6,11 @@
 
 * filter: Improved warning and error messages in the case of missing columns. [#1604] (@victorlin)
 * merge: Any user-customized `~/.sqliterc` file is now ignored so it doesn't break `augur merge`'s internal use of SQLite. [#1608][] (@tsibley)
+* import: Spaces in BEAST MCC tree annotations (for example, from a discrete state reconstruction) no longer break `augur import beast`'s parsing. [#1610][] (@watronfire)
 
 [#1604]: https://github.com/nextstrain/augur/pull/1604
 [#1608]: https://github.com/nextstrain/augur/pull/1608
+[#1610]: https://github.com/nextstrain/augur/pull/1610
 
 ## 25.3.0 (22 August 2024)
 
