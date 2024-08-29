@@ -71,7 +71,7 @@ setuptools.setup(
     extras_require = {
         'dev': [
             "cram >=0.7",
-            "deepdiff >=4.3.2",
+            "deepdiff >=4.3.2, <8.0.0",
             "flake8",
             "freezegun >=0.3.15",
             "mypy",

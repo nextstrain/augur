@@ -8,8 +8,8 @@ Using a pandas query with a nonexistent column results in a specific error.
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --query "invalid == 'value'" \
   >  --output-strains filtered_strains.txt > /dev/null
-  WARNING: Column 'invalid' does not exist in the metadata file. Ignoring it.
-  ERROR: Query contains a column that does not exist in metadata.
+  WARNING: Column 'invalid' does not exist in the metadata file. This may cause subsequent errors.
+  ERROR: Query contains a column that does not exist in metadata: name 'invalid' is not defined
   [2]
 
 

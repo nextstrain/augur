@@ -258,7 +258,7 @@ def sqlite3(*args, **kwargs):
             Nextstrain runtime.
             """))
 
-    argv = [sqlite3, "-batch", *args]
+    argv = [sqlite3, "-init", os.devnull, "-batch", *args]
 
     print_debug(f"running {argv!r}")
     proc = subprocess.run(argv, encoding="utf-8", text=True, **kwargs)
