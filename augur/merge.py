@@ -57,6 +57,9 @@ from augur.utils import first_line
 T = TypeVar('T')
 
 
+print_info = print_err
+
+
 class NamedMetadata(Metadata):
     name: str
     """User-provided descriptive name for this metadata file."""
@@ -92,7 +95,10 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
-    print_info = print_err if not args.quiet else lambda *_: None
+    global print_info
+
+    if args.quiet:
+        print_info = lambda *_: None
 
     # Parse --metadata arguments
     if not len(args.metadata) >= 2:
