@@ -45,7 +45,7 @@ from shlex import quote as shquote
 from shutil import which
 from tempfile import mkstemp
 from textwrap import dedent
-from typing import Iterable, Tuple, TypeVar
+from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple, TypeVar
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
@@ -55,6 +55,9 @@ from augur.utils import first_line
 
 
 T = TypeVar('T')
+
+# Tuple is (table name, column name)
+Columns = Dict[str, List[Tuple[str, str]]]
 
 
 print_info = print_err
@@ -143,14 +146,28 @@ def run(args):
     if args.quiet:
         print_info = lambda *_: None
 
+    db = Database()
+
+    metadata = get_metadata(args.metadata, args.metadata_id_columns, args.metadata_delimiters)
+    output_source_column = get_output_source_column(args.source_columns, metadata)
+    output_columns = get_output_columns(metadata, args.source_columns)
+    load_metadata(db, metadata)
+    merge_metadata(db, metadata, output_columns, args.output_metadata, output_source_column)
+
+
+def get_metadata(
+        input_metadata: Sequence[str],
+        input_metadata_id_columns: Sequence[str],
+        input_metadata_delimiters: Sequence[str],
+    ) -> List[NamedMetadata]:
     # Validate --metadata arguments
-    metadata = parse_named_inputs(args.metadata)
+    metadata = parse_named_inputs(input_metadata)
 
     # Parse --metadata-id-columns and --metadata-delimiters
     metadata_names = set(name for name, _ in metadata)
 
-    metadata_id_columns = pairs(args.metadata_id_columns)
-    metadata_delimiters = pairs(args.metadata_delimiters)
+    metadata_id_columns = pairs(input_metadata_id_columns)
+    metadata_delimiters = pairs(input_metadata_delimiters)
 
     if unknown_names := [repr(name) for name, _ in metadata_id_columns if name and name not in metadata_names]:
         raise AugurError(dedent(f"""\
@@ -171,35 +188,60 @@ def run(args):
             """))
 
 
-    # Validate --source-columns template and convert to template function
-    output_source_column = None
-
-    if args.source_columns is not None:
-        if "{NAME}" not in args.source_columns:
-            raise AugurError(dedent(f"""\
-                The --source-columns template must contain the literal
-                placeholder {{NAME}} but the given value ({args.source_columns!r}) does not.
-
-                You may need to quote the whole template value to prevent your
-                shell from interpreting the placeholder before Augur sees it.
-                """))
-
-        output_source_column = lambda name: args.source_columns.replace('{NAME}', name)
-
-
     # Infer delimiters and id columns
-    metadata = [
+    return [
         NamedMetadata(name, path, [delim  for name_, delim  in metadata_delimiters if not name_ or name_ == name] or DEFAULT_DELIMITERS,
                                   [column for name_, column in metadata_id_columns if not name_ or name_ == name] or DEFAULT_ID_COLUMNS)
             for name, path in metadata]
 
 
-    db = Database()
+def get_output_source_column(source_columns: str, metadata: List[NamedMetadata]):
+    # Validate --source-columns template and convert to template function
+    output_source_column = None
 
+    if source_columns is not None:
+        if "{NAME}" not in source_columns:
+            raise AugurError(dedent(f"""\
+                The --source-columns template must contain the literal
+                placeholder {{NAME}} but the given value ({source_columns!r}) does not.
+
+                You may need to quote the whole template value to prevent your
+                shell from interpreting the placeholder before Augur sees it.
+                """))
+
+        output_source_column = lambda name: source_columns.replace('{NAME}', name)
+
+    output_source_columns = set(
+        output_source_column(m.name)
+            for m in metadata
+             if output_source_column)
+
+    if conflicting_columns := [f"{c!r} in metadata table {m.name!r}"
+                                    for m in metadata
+                                    for c in m.columns
+                                     if c in output_source_columns]:
+        raise AugurError(dedent(f"""\
+            Generated source column names may not conflict with any column
+            names in metadata inputs.
+
+            The given source column template ({source_columns!r}) with the
+            given metadata table names would conflict with the following input
+            {_n("column", "columns", len(conflicting_columns))}:
+
+              {indented_list(conflicting_columns, '            ' + '  ')}
+
+            Please adjust the source column template with --source-columns
+            and/or adjust the metadata table names to avoid conflicts.
+            """))
+    
+    return output_source_column
+
+
+def get_output_columns(metadata: List[NamedMetadata], source_columns: str):
     # Track columns as we see them, in order.  The first metadata's id column
     # is always the first output column of the merge, so insert it now.
     output_id_column = metadata[0].id_column
-    output_columns = { output_id_column: [] }
+    output_columns: Columns = { output_id_column: [] }
 
     if conflicting_columns := [f"{c!r} in metadata table {m.name!r} (id column: {m.id_column!r})"
                                     for m in metadata
@@ -218,29 +260,27 @@ def run(args):
             Renaming may be done with `augur curate rename`.
             """))
 
-    output_source_columns = set(
-        output_source_column(m.name)
-            for m in metadata
-             if output_source_column)
+    for m in metadata:
+        # Track which columns appear in which metadata inputs, preserving
+        # the order of both.
+        for column in m.columns:
+            # Match different id column names in different metadata files
+            # since they're logically equivalent.  Any non-id columns that
+            # match the output_id_column (i.e. first table's id column) and
+            # would thus overwrite it with this logic are already a fatal
+            # error above.
+            output_column = output_id_column if column == m.id_column else column
 
-    if conflicting_columns := [f"{c!r} in metadata table {m.name!r}"
-                                    for m in metadata
-                                    for c in m.columns
-                                     if c in output_source_columns]:
-        raise AugurError(dedent(f"""\
-            Generated source column names may not conflict with any column
-            names in metadata inputs.
+            output_columns.setdefault(output_column, [])
+            output_columns[output_column] += [(m.table_name, column)]
+    
+    return output_columns
 
-            The given source column template ({args.source_columns!r}) with the
-            given metadata table names would conflict with the following input
-            {_n("column", "columns", len(conflicting_columns))}:
 
-              {indented_list(conflicting_columns, '            ' + '  ')}
-
-            Please adjust the source column template with --source-columns
-            and/or adjust the metadata table names to avoid conflicts.
-            """))
-
+def load_metadata(
+        db: Database,
+        metadata: List[NamedMetadata],
+    ):
 
     # Read all metadata files into a SQLite db
     for m in metadata:
@@ -271,20 +311,16 @@ def run(args):
         assert m.columns == (table_columns := sqlite3_table_columns(db.path, m.table_name)), \
             f"{m.columns!r} == {table_columns!r}"
 
-        # Track which columns appear in which metadata inputs, preserving
-        # the order of both.
-        for column in m.columns:
-            # Match different id column names in different metadata files
-            # since they're logically equivalent.  Any non-id columns that
-            # match the output_id_column (i.e. first table's id column) and
-            # would thus overwrite it with this logic are already a fatal
-            # error above.
-            output_column = output_id_column if column == m.id_column else column
-
-            output_columns.setdefault(output_column, [])
-            output_columns[output_column] += [(m.table_name, column)]
+    return metadata
 
 
+def merge_metadata(
+        db: Database,
+        metadata: List[NamedMetadata],
+        output_columns: Columns,
+        output_metadata: str,
+        output_source_column: Optional[Callable[[str], str]],
+    ):
     # Construct query to produce merged metadata.
     select_list = [
         # Output metadata columns coalesced across input metadata columns
@@ -318,13 +354,13 @@ def run(args):
     # Write merged metadata as export from SQLite db.
     #
     # Assume TSV like nearly all other extant --output-metadata options.
-    print_info(f"Merging metadata and writing to {args.output_metadata!r}…")
+    print_info(f"Merging metadata and writing to {output_metadata!r}…")
     print_debug(query)
     db.run(
         f'.mode csv',
         f'.separator "\\t" "\\n"',
         f'.headers on',
-        f'.once {sqlite_quote_dot(f"|{augur} write-file {shquote(args.output_metadata)}")}',
+        f'.once {sqlite_quote_dot(f"|{augur} write-file {shquote(output_metadata)}")}',
         query)
 
     db.cleanup()
