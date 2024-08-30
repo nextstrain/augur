@@ -143,6 +143,29 @@ Metadata field values with metachars (field or record delimiters) are handled pr
   x"	1	1
   two	X2a	X2b	X2c				1	1
 
+Output column renamed when it conflicts with id column.
+
+  $ cat >id-and-strain.csv <<~~
+  > id,strain
+  > one,1
+  > two,2
+  > three,3
+  > ~~
+  $ ${AUGUR} merge \
+  >   --metadata strain-only=x.tsv id-and-strain=id-and-strain.csv \
+  >   --metadata-id-columns id strain \
+  >   --output-metadata - | csv2tsv --csv-delim $'\t' | tsv-pretty
+  ERROR: Non-id column names in metadata inputs may not conflict with the
+  output id column name ('strain', the first input's id column).
+  
+  The following input column would conflict:
+  
+    'strain' in metadata table 'id-and-strain' (id column: 'id')
+  
+  Please rename or drop the conflicting column before merging.
+  Renaming may be done with `augur curate rename`.
+  
+
 
 ERROR HANDLING
 
