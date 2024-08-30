@@ -97,13 +97,15 @@ class Database:
         os.unlink(self.path)
 
 
-class NamedMetadata(Metadata):
+class NamedFile:
     name: str
-    """User-provided descriptive name for this metadata file."""
+    """User-provided descriptive name for this file."""
 
     table_name: str
-    """Generated SQLite table name for this metadata file, based on *name*."""
+    """Generated SQLite table name for this file, based on *name*."""
 
+
+class NamedMetadata(Metadata, NamedFile):
     def __init__(self, name: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = name
