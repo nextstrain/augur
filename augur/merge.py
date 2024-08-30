@@ -141,32 +141,8 @@ def run(args):
     if args.quiet:
         print_info = lambda *_: None
 
-    # Parse --metadata arguments
-    if not len(args.metadata) >= 2:
-        raise AugurError(f"At least two metadata inputs are required for merging.")
-
-    if unnamed := [repr(x) for x in args.metadata if "=" not in x or x.startswith("=")]:
-        raise AugurError(dedent(f"""\
-            All metadata inputs must be assigned a name, e.g. with NAME=FILE.
-
-            The following {_n("input was", "inputs were", len(unnamed))} missing a name:
-
-              {indented_list(unnamed, '            ' + '  ')}
-            """))
-
-    metadata = pairs(args.metadata)
-
-    if duplicate_names := [repr(name) for name, count
-                                       in count_unique(name for name, _ in metadata)
-                                       if count > 1]:
-        raise AugurError(dedent(f"""\
-            Metadata input names must be unique.
-
-            The following {_n("name was", "names were", len(duplicate_names))} used more than once:
-
-              {indented_list(duplicate_names, '            ' + '  ')}
-            """))
-
+    # Validate --metadata arguments
+    metadata = parse_named_inputs(args.metadata)
 
     # Parse --metadata-id-columns and --metadata-delimiters
     metadata_names = set(name for name, _ in metadata)
@@ -501,3 +477,34 @@ def shquote_humanized(x):
     # …and instead quote a final empty string down here if we're still empty
     # after joining all our parts together.
     return quoted if quoted else shquote('')
+
+
+def parse_named_inputs(inputs):
+    # FIXME: add specific input type (metadata/sequences) to outputs
+    # Parse --metadata arguments
+    if not len(inputs) >= 2:
+        raise AugurError(f"At least two inputs are required for merging.")
+
+    if unnamed := [repr(x) for x in inputs if "=" not in x or x.startswith("=")]:
+        raise AugurError(dedent(f"""\
+            All inputs must be assigned a name, e.g. with NAME=FILE.
+
+            The following {_n("input was", "inputs were", len(unnamed))} missing a name:
+
+              {indented_list(unnamed, '            ' + '  ')}
+            """))
+
+    named_inputs = pairs(inputs)
+
+    if duplicate_names := [repr(name) for name, count
+                                       in count_unique(name for name, _ in named_inputs)
+                                       if count > 1]:
+        raise AugurError(dedent(f"""\
+            Metadata input names must be unique.
+
+            The following {_n("name was", "names were", len(duplicate_names))} used more than once:
+
+              {indented_list(duplicate_names, '            ' + '  ')}
+            """))
+
+    return named_inputs
