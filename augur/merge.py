@@ -119,18 +119,32 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("merge", help=first_line(__doc__))
 
     input_group = parser.add_argument_group("inputs", "options related to input")
-    input_group.add_argument("--metadata", nargs="+", action="extend", required=True, metavar="NAME=FILE", help="Required. Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    input_group.add_argument("--metadata", nargs="+", action="extend", metavar="NAME=FILE", help="Required. Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
 
     input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]COLUMN", help=f"Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables by default. Table-specific column names may be given using the same names assigned in --metadata. Only one ID column will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_ID_COLUMNS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
     input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]CHARACTER", help=f"Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables by default. Table-specific delimiters may be given using the same names assigned in --metadata. Only one delimiter will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_DELIMITERS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     output_group = parser.add_argument_group("outputs", "options related to output")
-    output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--output-metadata', metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--source-columns', metavar="TEMPLATE", help=f"Template with which to generate names for the columns (described above) identifying the source of each row's data. Must contain a literal placeholder, {{NAME}}, which stands in for the metadata table names assigned in --metadata. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--no-source-columns', dest="source_columns", action="store_const", const=None, help=f"Suppress generated columns (described above) identifying the source of each row's data. This is the default behaviour, but it may be made explicit or used to override a previous --source-columns." + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     return parser
+
+
+def validate_arguments(args):
+    # These will make more sense when sequence support is added.
+    if not args.metadata:
+        raise AugurError("At least one input must be specified.")
+    if not args.output_metadata:
+        raise AugurError("At least one output must be specified.")
+
+    if args.metadata and not len(args.metadata) >= 2:
+        raise AugurError(f"At least two metadata inputs are required for merging.")
+
+    if args.output_metadata and not args.metadata:
+        raise AugurError("--output-metadata requires --metadata.")
 
 
 def run(args):
@@ -139,9 +153,8 @@ def run(args):
     if args.quiet:
         print_info = lambda *_: None
 
-    # Parse --metadata arguments
-    if not len(args.metadata) >= 2:
-        raise AugurError(f"At least two metadata inputs are required for merging.")
+    # Catch user errors early to avoid unnecessary computation.
+    validate_arguments(args)
 
     if unnamed := [repr(x) for x in args.metadata if "=" not in x or x.startswith("=")]:
         raise AugurError(dedent(f"""\
