@@ -60,6 +60,34 @@ T = TypeVar('T')
 print_info = print_err
 
 
+class Database:
+    path: str
+    """Database file path"""
+
+    def __init__(self):
+        # Work with a temporary, on-disk SQLite database under a name we control so
+        # we can access it from multiple (serial) processes.
+        fd, self.path = mkstemp(prefix="augur-merge-", suffix=".sqlite")
+        os.close(fd)
+
+    def run(self, *args, **kwargs):
+        error = False
+
+        try:
+            sqlite3(self.path, *args, **kwargs)
+
+        except SQLiteError as err:
+            error = True
+            raise AugurError(str(err)) from err
+
+        finally:
+            if error:
+                print_info(f"WARNING: Skipped deletion of {self.path} due to error, but you may want to clean it up yourself (e.g. if it's large).")
+
+    def cleanup(self):
+        os.unlink(self.path)
+
+
 class NamedMetadata(Metadata):
     name: str
     """User-provided descriptive name for this metadata file."""
@@ -184,13 +212,7 @@ def run(args):
         augur = f"augur"
 
 
-    # Work with a temporary, on-disk SQLite database under a name we control so
-    # we can access it from multiple (serial) processes.
-    db_fd, db_path = mkstemp(prefix="augur-merge-", suffix=".sqlite")
-    os.close(db_fd)
-
-    # Clean up database file by default
-    delete_db = True
+    db = Database()
 
     # Track columns as we see them, in order.  The first metadata's id column
     # is always the first output column of the merge, so insert it now.
@@ -238,101 +260,92 @@ def run(args):
             """))
 
 
-    try:
-        # Read all metadata files into a SQLite db
-        for m in metadata:
-            # All other metadata reading in Augur (i.e. via the csv module)
-            # uses Python's "universal newlines"¹ definition and accepts \n,
-            # \r\n, and \r as newlines interchangably (even mixed within the
-            # same file!).  We accomplish the same behaviour here with SQLite's
-            # less flexible newline handling by relying on the universal
-            # newline translation of `augur read-file`.
-            #   -trs, 24 July 2024
-            #
-            # ¹ <https://docs.python.org/3/glossary.html#term-universal-newlines>
-            newline = os.linesep
-
-            print_info(f"Reading {m.name!r} metadata from {m.path!r}…")
-            sqlite3(db_path,
-                f'.mode csv',
-                f'.separator {sqlite_quote_dot(m.delimiter)} {sqlite_quote_dot(newline)}',
-                f'.import {sqlite_quote_dot(f"|{augur} read-file {shquote(m.path)}")} {sqlite_quote_dot(m.table_name)}',
-
-                f'create unique index {sqlite_quote_id(f"{m.table_name}_id")} on {sqlite_quote_id(m.table_name)}({sqlite_quote_id(m.id_column)});',
-
-                # <https://sqlite.org/pragma.html#pragma_optimize>
-                f'pragma optimize;')
-
-            # We're going to use Metadata.columns to generate the select
-            # statement, so ensure it matches what SQLite's .import created.
-            assert m.columns == (table_columns := sqlite3_table_columns(db_path, m.table_name)), \
-                f"{m.columns!r} == {table_columns!r}"
-
-            # Track which columns appear in which metadata inputs, preserving
-            # the order of both.
-            for column in m.columns:
-                # Match different id column names in different metadata files
-                # since they're logically equivalent.  Any non-id columns that
-                # match the output_id_column (i.e. first table's id column) and
-                # would thus overwrite it with this logic are already a fatal
-                # error above.
-                output_column = output_id_column if column == m.id_column else column
-
-                output_columns.setdefault(output_column, [])
-                output_columns[output_column] += [(m.table_name, column)]
-
-
-        # Construct query to produce merged metadata.
-        select_list = [
-            # Output metadata columns coalesced across input metadata columns
-            *(f"""coalesce({', '.join(f"nullif({x}, '')" for x in starmap(sqlite_quote_id, reversed(input_columns)))}, null) as {sqlite_quote_id(output_column)}"""
-                for output_column, input_columns in output_columns.items()),
-
-            # Source columns.  Select expressions generated here instead of
-            # earlier to stay adjacent to the join conditions below, upon which
-            # these rely.
-            *(f"""{sqlite_quote_id(m.table_name, m.id_column)} is not null as {sqlite_quote_id(output_source_column(m.name))}"""
-                for m in metadata if output_source_column)]
-
-        from_list = [
-            sqlite_quote_id(metadata[0].table_name),
-            *(f"full outer join {sqlite_quote_id(m.table_name)} on {sqlite_quote_id(m.table_name, m.id_column)} in ({', '.join(sqlite_quote_id(m.table_name, m.id_column) for m in reversed(preceding))})"
-                for m, preceding in [(m, metadata[:i]) for i, m in enumerate(metadata[1:], 1)])]
-
-        # Take some small pains to make the query readable since it makes
-        # debugging and development easier.  Note that backslashes aren't
-        # allowed inside f-string expressions, hence the *newline* variable.
-        newline = '\n'
-        query = dedent(f"""\
-            select
-                {(',' + newline + '                ').join(select_list)}
-            from
-                {(newline + '                ').join(from_list)}
-            ;
-            """)
-
-
-        # Write merged metadata as export from SQLite db.
+    # Read all metadata files into a SQLite db
+    for m in metadata:
+        # All other metadata reading in Augur (i.e. via the csv module)
+        # uses Python's "universal newlines"¹ definition and accepts \n,
+        # \r\n, and \r as newlines interchangably (even mixed within the
+        # same file!).  We accomplish the same behaviour here with SQLite's
+        # less flexible newline handling by relying on the universal
+        # newline translation of `augur read-file`.
+        #   -trs, 24 July 2024
         #
-        # Assume TSV like nearly all other extant --output-metadata options.
-        print_info(f"Merging metadata and writing to {args.output_metadata!r}…")
-        print_debug(query)
-        sqlite3(db_path,
+        # ¹ <https://docs.python.org/3/glossary.html#term-universal-newlines>
+        newline = os.linesep
+
+        print_info(f"Reading {m.name!r} metadata from {m.path!r}…")
+        db.run(
             f'.mode csv',
-            f'.separator "\\t" "\\n"',
-            f'.headers on',
-            f'.once {sqlite_quote_dot(f"|{augur} write-file {shquote(args.output_metadata)}")}',
-            query)
+            f'.separator {sqlite_quote_dot(m.delimiter)} {sqlite_quote_dot(newline)}',
+            f'.import {sqlite_quote_dot(f"|{augur} read-file {shquote(m.path)}")} {sqlite_quote_dot(m.table_name)}',
 
-    except SQLiteError as err:
-        delete_db = False
-        raise AugurError(str(err)) from err
+            f'create unique index {sqlite_quote_id(f"{m.table_name}_id")} on {sqlite_quote_id(m.table_name)}({sqlite_quote_id(m.id_column)});',
 
-    finally:
-        if delete_db:
-            os.unlink(db_path)
-        else:
-            print_info(f"WARNING: Skipped deletion of {db_path} due to error, but you may want to clean it up yourself (e.g. if it's large).")
+            # <https://sqlite.org/pragma.html#pragma_optimize>
+            f'pragma optimize;')
+
+        # We're going to use Metadata.columns to generate the select
+        # statement, so ensure it matches what SQLite's .import created.
+        assert m.columns == (table_columns := sqlite3_table_columns(db.path, m.table_name)), \
+            f"{m.columns!r} == {table_columns!r}"
+
+        # Track which columns appear in which metadata inputs, preserving
+        # the order of both.
+        for column in m.columns:
+            # Match different id column names in different metadata files
+            # since they're logically equivalent.  Any non-id columns that
+            # match the output_id_column (i.e. first table's id column) and
+            # would thus overwrite it with this logic are already a fatal
+            # error above.
+            output_column = output_id_column if column == m.id_column else column
+
+            output_columns.setdefault(output_column, [])
+            output_columns[output_column] += [(m.table_name, column)]
+
+
+    # Construct query to produce merged metadata.
+    select_list = [
+        # Output metadata columns coalesced across input metadata columns
+        *(f"""coalesce({', '.join(f"nullif({x}, '')" for x in starmap(sqlite_quote_id, reversed(input_columns)))}, null) as {sqlite_quote_id(output_column)}"""
+            for output_column, input_columns in output_columns.items()),
+
+        # Source columns.  Select expressions generated here instead of
+        # earlier to stay adjacent to the join conditions below, upon which
+        # these rely.
+        *(f"""{sqlite_quote_id(m.table_name, m.id_column)} is not null as {sqlite_quote_id(output_source_column(m.name))}"""
+            for m in metadata if output_source_column)]
+
+    from_list = [
+        sqlite_quote_id(metadata[0].table_name),
+        *(f"full outer join {sqlite_quote_id(m.table_name)} on {sqlite_quote_id(m.table_name, m.id_column)} in ({', '.join(sqlite_quote_id(m.table_name, m.id_column) for m in reversed(preceding))})"
+            for m, preceding in [(m, metadata[:i]) for i, m in enumerate(metadata[1:], 1)])]
+
+    # Take some small pains to make the query readable since it makes
+    # debugging and development easier.  Note that backslashes aren't
+    # allowed inside f-string expressions, hence the *newline* variable.
+    newline = '\n'
+    query = dedent(f"""\
+        select
+            {(',' + newline + '                ').join(select_list)}
+        from
+            {(newline + '                ').join(from_list)}
+        ;
+        """)
+
+
+    # Write merged metadata as export from SQLite db.
+    #
+    # Assume TSV like nearly all other extant --output-metadata options.
+    print_info(f"Merging metadata and writing to {args.output_metadata!r}…")
+    print_debug(query)
+    db.run(
+        f'.mode csv',
+        f'.separator "\\t" "\\n"',
+        f'.headers on',
+        f'.once {sqlite_quote_dot(f"|{augur} write-file {shquote(args.output_metadata)}")}',
+        query)
+
+    db.cleanup()
 
 
 def sqlite3(*args, **kwargs):
