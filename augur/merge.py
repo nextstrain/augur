@@ -58,6 +58,9 @@ from augur.utils import first_line
 T = TypeVar('T')
 
 
+print_info = print_err
+
+
 # Use ngettext() without a message catalog for its singular/plural handling so
 # we can make proper error messages.  gettext() (no "n") is conventionally
 # aliased as "_", so alias ngettext() as "_n".
@@ -99,7 +102,10 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
-    print_info = print_err if not args.quiet else lambda *_: None
+    global print_info
+
+    if args.quiet:
+        print_info = lambda *_: None
 
     # Parse --metadata arguments
     if not len(args.metadata) >= 2:
