@@ -15,7 +15,7 @@ Explicitly use probabilistic subsampling to handle the case when there are more 
   >  --probabilistic-sampling \
   >  --output-strains filtered_strains_probabilistic.txt > /dev/null
   WARNING: Asked to provide at most 5 sequences, but there are 8 groups.
-  Sampling probabilistically at 0.6055 sequences per group, meaning it is possible to have more than the requested maximum of 5 sequences after filtering.
+  Sampling probabilistically at 0.6250 sequences per group, meaning it is possible to have more than the requested maximum of 5 sequences after filtering.
   10 strains were dropped during filtering
   	1 had no metadata
   	1 had no sequence data
@@ -36,7 +36,7 @@ Using the default probabilistic subsampling, should work the same as the previou
   >  --subsample-seed 314159 \
   >  --output-strains filtered_strains_default.txt > /dev/null
   WARNING: Asked to provide at most 5 sequences, but there are 8 groups.
-  Sampling probabilistically at 0.6055 sequences per group, meaning it is possible to have more than the requested maximum of 5 sequences after filtering.
+  Sampling probabilistically at 0.6250 sequences per group, meaning it is possible to have more than the requested maximum of 5 sequences after filtering.
   10 strains were dropped during filtering
   	1 had no metadata
   	1 had no sequence data

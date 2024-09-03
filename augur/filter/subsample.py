@@ -548,10 +548,7 @@ def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabili
     except TooManyGroupsError as error:
         if allow_probabilistic:
             print_err(f"WARNING: {error}")
-            sequences_per_group = _calculate_fractional_sequences_per_group(
-                target_max_value,
-                group_sizes,
-            )
+            sequences_per_group = target_max_value / len(group_sizes)
             probabilistic_used = True
         else:
             raise error
@@ -634,52 +631,3 @@ def _calculate_sequences_per_group(
         return int(hi)
     else:
         return int(lo)
-
-
-def _calculate_fractional_sequences_per_group(
-        target_max_value: int,
-        group_sizes: Collection[int]
-) -> float:
-    """Returns the fractional sequences per group for the given list of group
-    sequences such that the total doesn't exceed the requested number of
-    samples.
-
-    Parameters
-    ----------
-    target_max_value : int
-        the total number of sequences allowed across all groups
-    group_sizes : Collection[int]
-        the number of sequences in each group
-
-    Returns
-    -------
-    float
-        fractional maximum number of sequences allowed per group to meet the
-        required maximum total sequences allowed
-
-    Examples
-    --------
-    >>> np.around(_calculate_fractional_sequences_per_group(4, [4, 2]), 4)
-    1.9375
-    >>> np.around(_calculate_fractional_sequences_per_group(2, [4, 2]), 4)
-    0.9688
-
-    Unlike the integer-based version of this function, the fractional version
-    can accept a maximum number of sequences that exceeds the number of groups.
-    In this case, the function returns a fraction that can be used downstream,
-    for example with Poisson sampling.
-
-    >>> np.around(_calculate_fractional_sequences_per_group(1, [4, 2]), 4)
-    0.4844
-    """
-    lo = 1e-5
-    hi = float(target_max_value)
-
-    while (hi / lo) > 1.1:
-        mid = (lo + hi) / 2
-        if _calculate_total_sequences(mid, group_sizes) <= target_max_value:
-            lo = mid
-        else:
-            hi = mid
-
-    return (lo + hi) / 2

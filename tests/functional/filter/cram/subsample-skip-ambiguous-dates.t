@@ -13,7 +13,7 @@ Strains with ambiguous years or months should be dropped and logged.
   >  --output-strains filtered_strains.txt \
   >  --output-log filtered_log.tsv > /dev/null
   WARNING: Asked to provide at most 5 sequences, but there are 6 groups.
-  Sampling probabilistically at 0.8203 sequences per group, meaning it is possible to have more than the requested maximum of 5 sequences after filtering.
+  Sampling probabilistically at 0.8333 sequences per group, meaning it is possible to have more than the requested maximum of 5 sequences after filtering.
   8 strains were dropped during filtering
   	1 was dropped during grouping due to ambiguous year information
   	1 was dropped during grouping due to ambiguous month information
