@@ -11,11 +11,13 @@
 * filter: Improved warning and error messages in the case of missing columns. [#1604] (@victorlin)
 * merge: Any user-customized `~/.sqliterc` file is now ignored so it doesn't break `augur merge`'s internal use of SQLite. [#1608][] (@tsibley)
 * merge: Non-id columns in metadata inputs that would conflict with the output id column are now forbidden and will cause an error if present.  Previously they would overwrite values in the output id column, causing incorrect output. [#1593][] (@tsibley)
+* import: Spaces in BEAST MCC tree annotations (for example, from a discrete state reconstruction) no longer break `augur import beast`'s parsing. [#1610][] (@watronfire)
 
 [#1593]: https://github.com/nextstrain/augur/pull/1593
 [#1594]: https://github.com/nextstrain/augur/pull/1594
 [#1604]: https://github.com/nextstrain/augur/pull/1604
 [#1608]: https://github.com/nextstrain/augur/pull/1608
+[#1610]: https://github.com/nextstrain/augur/pull/1610
 
 ## 25.3.0 (22 August 2024)
 
