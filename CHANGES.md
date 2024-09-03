@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 25.4.0 (3 September 2024)
+
 ### Features
 
 * merge: Table-specific id columns and delimiters may now be specified, e.g. `--metadata-id-columns X=id Y=strain` and `--metadata-delimiters X=, Y=';'`, to allow more precise behaviour and avoid ordering issues. [#1594][] (@tsibley)
