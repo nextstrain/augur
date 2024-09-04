@@ -19,11 +19,11 @@ def validate_arguments(args):
         Parsed arguments from argparse
     """
     # Don't allow sequence output when no sequence input is provided.
-    if args.output and not args.sequences:
+    if args.output_sequences and not args.sequences:
         raise AugurError("You need to provide sequences to output sequences.")
 
     # Confirm that at least one output was requested.
-    if not any((args.output, args.output_metadata, args.output_strains)):
+    if not any((args.output_sequences, args.output_metadata, args.output_strains)):
         raise AugurError("You need to select at least one output.")
 
     # Don't allow filtering on sequence-based information, if no sequences or

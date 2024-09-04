@@ -160,8 +160,8 @@ def column_type_pair(input: str):
 
 def cleanup_outputs(args):
     """Remove output files. Useful when terminating midway through a loop of metadata chunks."""
-    if args.output:
-        _try_remove(args.output)
+    if args.output_sequences:
+        _try_remove(args.output_sequences)
     if args.output_metadata:
         _try_remove(args.output_metadata)
     if args.output_strains:
