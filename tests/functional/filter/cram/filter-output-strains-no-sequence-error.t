@@ -9,6 +9,6 @@ This should fail.
   >  --sequence-index "$TESTDIR/../data/sequence_index.tsv" \
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --min-length 10000 \
-  >  --output filtered.fasta > /dev/null
+  >  --output-sequences filtered.fasta > /dev/null
   ERROR: You need to provide sequences to output sequences.
   [2]
