@@ -102,7 +102,7 @@ def register_arguments(parser):
     subsample_group.add_argument('--subsample-seed', type=int, help="random number generator seed to allow reproducible subsampling (with same input data).")
 
     output_group = parser.add_argument_group("outputs", "options related to outputs, at least one of the possible representations of filtered data (--output, --output-metadata, --output-strains) is required")
-    output_group.add_argument('--output', '--output-sequences', '-o', help="filtered sequences in FASTA format")
+    output_group.add_argument('--output', '--output-sequences', '-o', help="filtered sequences in FASTA format", dest="output_sequences")
     output_group.add_argument('--output-metadata', help="metadata for strains that passed filters")
     output_group.add_argument('--output-strains', help="list of strains that passed filters (no header)")
     output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")

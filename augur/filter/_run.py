@@ -377,10 +377,10 @@ def run(args):
     # to update the set of strains to keep based on which strains are actually
     # available.
     if is_vcf:
-        if args.output:
+        if args.output_sequences:
             # Get the samples to be deleted, not to keep, for VCF
             dropped_samps = list(sequence_strains - valid_strains)
-            write_vcf(args.sequences, args.output, dropped_samps)
+            write_vcf(args.sequences, args.output_sequences, dropped_samps)
     elif args.sequences:
         # If the user requested sequence output, stream to disk all sequences
         # that passed all filters to avoid reading sequences into memory first.
@@ -389,14 +389,14 @@ def run(args):
         # single pass to allow comparison with the provided sequence index.
         observed_sequence_strains = set()
         duplicates = set()
-        with open_file(args.output, "wt") if args.output else nullcontext() as output_handle:
+        with open_file(args.output_sequences, "wt") if args.output_sequences else nullcontext() as output_handle:
             for sequence in read_sequences(args.sequences):
                 if sequence.id in observed_sequence_strains:
                     duplicates.add(sequence.id)
 
                 observed_sequence_strains.add(sequence.id)
 
-                if args.output:
+                if args.output_sequences:
                     if sequence.id in valid_strains:
                         write_sequences(sequence, output_handle, 'fasta')
 
