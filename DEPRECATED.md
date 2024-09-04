@@ -4,6 +4,13 @@ These features are deprecated, which means they are no longer maintained and
 will go away in a future major version of Augur. They are currently still
 available for backwards compatibility, but should not be used in new code.
 
+## `augur filter` options `--output` and `-o`
+
+*Deprecated in version __NEXT__. Planned for removal February 2025 or after.*
+
+`--output` and `-o` are aliases to `--output-sequences`. They will be removed to
+avoid confusion with other output options.
+
 ## `xopen` major version 1
 
 *Deprecated in version __NEXT__ (July 2024). Planned for removal at the earliest with major version 26 not before November 2024*
