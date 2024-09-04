@@ -376,10 +376,10 @@ def run(args):
     # to update the set of strains to keep based on which strains are actually
     # available.
     if is_vcf:
-        if args.output:
+        if args.output_sequences:
             # Get the samples to be deleted, not to keep, for VCF
             dropped_samps = list(sequence_strains - valid_strains)
-            write_vcf(args.sequences, args.output, dropped_samps)
+            write_vcf(args.sequences, args.output_sequences, dropped_samps)
     elif args.sequences:
         sequences = read_sequences(args.sequences)
 
@@ -388,9 +388,9 @@ def run(args):
         # Even if we aren't emitting sequences, we track the observed strain
         # names in the sequence file as part of the single pass to allow
         # comparison with the provided sequence index.
-        if args.output:
+        if args.output_sequences:
             observed_sequence_strains = set()
-            with open_file(args.output, "wt") as output_handle:
+            with open_file(args.output_sequences, "wt") as output_handle:
                 for sequence in sequences:
                     observed_sequence_strains.add(sequence.id)
 
