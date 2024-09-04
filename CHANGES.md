@@ -5,9 +5,11 @@
 ### Bug Fixes
 
 * filter: Previously, when `--subsample-max-sequences` was slightly lower than the number of groups, it was possible to fail with an uncaught `AssertionError`. Internal calculations have been adjusted to prevent this from happening. [#1588][] [#1598][] (@victorlin)
+* filter: Options `--output` and `-o` have been deprecated and will now show a warning message. See [DEPRECATED.md](./DEPRECATED.md) for details. [#1622][] (@victorlin)
 
 [#1588]: https://github.com/nextstrain/augur/issues/1588
 [#1598]: https://github.com/nextstrain/augur/issues/1598
+[#1622]: https://github.com/nextstrain/augur/pull/1622
 
 ## 25.4.0 (3 September 2024)
 
