@@ -13,6 +13,6 @@ This should fail, as probabilistic sampling is explicitly disabled.
   >  --subsample-max-sequences 5 \
   >  --subsample-seed 314159 \
   >  --no-probabilistic-sampling \
-  >  --output filtered.fasta
+  >  --output-sequences filtered.fasta
   ERROR: Asked to provide at most 5 sequences, but there are 8 groups.
   [2]
