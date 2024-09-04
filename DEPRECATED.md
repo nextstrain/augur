@@ -6,11 +6,11 @@ available for backwards compatibility, but should not be used in new code.
 
 ## `xopen` major version 1
 
-*Deprecated in version __NEXT__ (July 2024). Planned for removal at the earliest with major version 26 not before November 2024*
+*Deprecated in version 25.1.0 (July 2024). Planned for removal November 2024 or after.*
 
 ## `augur parse` preference of `name` over `strain` as the sequence ID field
 
-*Deprecated in February 2024. Planned to be reordered June 2024 or after.*
+*Deprecated in version 24.2.0 (February 2024). Planned to be reordered June 2024 or after.*
 
 Currently, `augur parse` checks for a 'name' field and then a 'strain' field to use as a sequence ID. This order will be changed in favor of searching for a 'strain' and then a 'name' field to be more consistent with the rest of Augur.
 
@@ -18,7 +18,7 @@ Users who have both 'name' and 'strain' fields in their data, and want to favor 
 
 ## `augur.utils.read_strains`
 
-*Deprecated in December 2023. Planned for removal March 2024 or after.*
+*Deprecated in version 24.0.0 (January 2024). Planned for removal March 2024 or after.*
 
 This is part of a [larger effort](https://github.com/nextstrain/augur/issues/1011)
 to formalize Augur's Python API.
