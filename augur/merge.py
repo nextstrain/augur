@@ -74,6 +74,9 @@ else:
     augur = f"augur"
 
 
+SEQUENCE_ID_COLUMN = 'id'
+
+
 class Database:
     fd: int
     """Database file descriptor"""
@@ -115,14 +118,14 @@ class NamedFile:
     path: str
 
 
-class NamedSequences(NamedFile):
+class NamedSequenceFile(NamedFile):
     def __init__(self, name: str, path: str):
         self.name = name
         self.path = path
         self.table_name = f"sequences_{self.name}"
 
     def __repr__(self):
-        return f"<NamedSequences {self.name}={self.path}>"
+        return f"<NamedSequenceFile {self.name}={self.path}>"
 
 class NamedMetadata(Metadata, NamedFile):
     def __init__(self, name: str, *args, **kwargs):
@@ -196,9 +199,14 @@ def run(args):
         sequences = get_sequences(args.sequences)
         load_sequences(db, sequences)
 
-    # FIXME: check that entries in input match
-    # WARNING: Sequence 'XXX' in a.tsv is missing from a.fasta. It will not be present in any output.
-    # WARNING: Sequence 'YYY' in b.fasta is missing from b.csv. It will not be present in any output.
+    metadata_by_name = {m.name: m for m in metadata}
+    sequences_by_name = {s.name: s for s in sequences}
+
+    for name in metadata_by_name.keys() & sequences_by_name.keys():
+        # FIXME: check that entries in input match
+        # WARNING: Sequence 'XXX' in a.tsv is missing from a.fasta. It will not be present in any output.
+        # WARNING: Sequence 'YYY' in b.fasta is missing from b.csv. It will not be present in any output.
+        ...
 
     if args.output_metadata:
         merge_metadata(db, metadata, output_columns, args.output_metadata, output_source_column)
@@ -421,19 +429,25 @@ def merge_metadata(
 def get_sequences(input_sequences):
     # Validate arguments
     sequences = parse_named_inputs(input_sequences)
+
+    # FIXME: support unnamed inputs
+    # table name can be based on filename + random characters
     
-    return [NamedSequences(name, path) for name, path in sequences]
+    return [NamedSequenceFile(name, path) for name, path in sequences]
 
 
-def load_sequences(db: Database, sequences: List[NamedSequences]):
-    for sequence_input in sequences:
-        ids = [seq.id for seq in read_sequences(sequence_input.path)]
+def load_sequences(db: Database, sequences: List[NamedSequenceFile]):
+    for s in sequences:
+        ids = [seq.id for seq in read_sequences(s.path)]
 
-        # FIXME: error on duplicates within a single sequence file
+        if duplicates := [item for item, count in count_unique(ids) if count > 1]:
+            raise AugurError(f"The following entries are duplicated in {s.path!r}:\n" + "\n".join(duplicates))
 
-        db.run(f"CREATE TABLE {sequence_input.table_name} (id TEXT)")
-        values = ", ".join([f"('{seq_id}')" for seq_id in ids])
-        db.run(f"INSERT INTO {sequence_input.table_name} (id) VALUES {values}")
+        db.run(f"create table {sqlite_quote_id(s.table_name)} ({sqlite_quote_id(SEQUENCE_ID_COLUMN)} text);")
+        values = ", ".join([f"('{id}')" for id in ids])
+        db.run(f"insert into {sqlite_quote_id(s.table_name)} ({sqlite_quote_id(SEQUENCE_ID_COLUMN)}) values {values};")
+
+        db.run(f'create unique index {sqlite_quote_id(f"{s.table_name}_id")} on {sqlite_quote_id(s.table_name)}({sqlite_quote_id(SEQUENCE_ID_COLUMN)});')
 
 
 # FIXME: return a list of arguments and don't use shell
@@ -452,7 +466,7 @@ def cat(filepath: str):
 
 def merge_sequences(
         db: Database,
-        sequences: List[NamedSequences],
+        sequences: List[NamedSequenceFile],
         output_sequences: str,
     ):
     # Confirm that seqkit is installed.
