@@ -1,10 +1,11 @@
 """
 Filter and subsample a sequence set.
 """
-from augur.argparse_ import ExtendOverwriteDefault
+from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT
 from augur.filter.io import ACCEPTED_TYPES, column_type_pair
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN
+from augur.io.print import print_err
 from augur.types import EmptyOutputReportingMethod
 from . import constants
 
@@ -101,8 +102,8 @@ def register_arguments(parser):
     Since priorities represent relative values between strains, these values can be arbitrary.""")
     subsample_group.add_argument('--subsample-seed', type=int, help="random number generator seed to allow reproducible subsampling (with same input data).")
 
-    output_group = parser.add_argument_group("outputs", "options related to outputs, at least one of the possible representations of filtered data (--output, --output-metadata, --output-strains) is required")
-    output_group.add_argument('--output', '--output-sequences', '-o', help="filtered sequences in FASTA format", dest="output_sequences")
+    output_group = parser.add_argument_group("outputs", "options related to outputs, at least one of the possible representations of filtered data (--output-sequences, --output-metadata, --output-strains) is required")
+    output_group.add_argument('--output-sequences', help="filtered sequences in FASTA format")
     output_group.add_argument('--output-metadata', help="metadata for strains that passed filters")
     output_group.add_argument('--output-strains', help="list of strains that passed filters (no header)")
     output_group.add_argument('--output-log', help="tab-delimited file with one row for each filtered strain and the reason it was filtered. Keyword arguments used for a given filter are reported in JSON format in a `kwargs` column.")
@@ -113,6 +114,10 @@ def register_arguments(parser):
         choices=list(EmptyOutputReportingMethod),
         default=EmptyOutputReportingMethod.ERROR,
         help="How should empty outputs be reported when no strains pass filtering and/or subsampling.")
+
+    deprecated_group = parser.add_argument_group("deprecated", "options to be removed in a future major version")
+    deprecated_group.add_argument('--output', metavar="FILE", help="alias to --output-sequences" + SKIP_AUTO_DEFAULT_IN_HELP)
+    deprecated_group.add_argument('-o', metavar="FILE", help="alias to --output-sequences" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     parser.set_defaults(probabilistic_sampling=True)
 
@@ -127,6 +132,13 @@ def run(args):
     '''
     filter and subsample a set of sequences into an analysis set
     '''
+    if args.o:
+        print_err("WARNING: -o is deprecated. Use --output-sequences instead.")
+        args.output_sequences = args.o
+    if args.output:
+        print_err("WARNING: --output is deprecated. Use --output-sequences instead.")
+        args.output_sequences = args.output
+
     from .validate_arguments import validate_arguments
     # Validate arguments before attempting any I/O.
     validate_arguments(args)
