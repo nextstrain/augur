@@ -1,6 +1,7 @@
 SETUP
 
   $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ set -o pipefail
 
 
 BASIC USAGE
@@ -204,6 +205,8 @@ Output column renamed when it conflicts with id column.
   
   Please rename or drop the conflicting column before merging.
   Renaming may be done with `augur curate rename`.
+
+  [2]
   
 
 
