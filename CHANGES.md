@@ -2,12 +2,17 @@
 
 ## __NEXT__
 
+### Features
+
+* merge: Generated source columns (e.g. `__source_metadata_{NAME}`) may now have their name template changed with `--source-columns=TEMPLATE` or may be omitted entirely with `--no-source-columns`. [#1625][] (@tsibley)
+
 ### Bug Fixes
 
 * filter: Previously, when `--subsample-max-sequences` was slightly lower than the number of groups, it was possible to fail with an uncaught `AssertionError`. Internal calculations have been adjusted to prevent this from happening. [#1588][] [#1598][] (@victorlin)
 
 [#1588]: https://github.com/nextstrain/augur/issues/1588
 [#1598]: https://github.com/nextstrain/augur/issues/1598
+[#1625]: https://github.com/nextstrain/augur/issues/1625
 
 ## 25.4.0 (3 September 2024)
 

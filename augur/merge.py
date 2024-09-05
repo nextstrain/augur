@@ -20,7 +20,9 @@ One generated column per input table is appended to the end of the output
 table to identify the source of each row's data.  Column names are generated
 as "__source_metadata_{NAME}" where "{NAME}" is the table name given to
 --metadata.  Values in each column are 1 or 0 for present or absent in that
-input table.
+input table.  You may change the generated column names by providing your own
+template with --source-columns or omit these columns entirely with
+--no-source-columns.
 
 Metadata tables of arbitrary size can be handled, limited only by available
 disk space.  Tables are not required to be entirely loadable into memory.  The
@@ -89,6 +91,8 @@ def register_parser(parent_subparsers):
 
     output_group = parser.add_argument_group("outputs", "options related to output")
     output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--source-columns', default="__source_metadata_{NAME}", metavar="TEMPLATE", help=f"Template with which to generate names for the columns (described above) identifying the source of each row's data. Must contain a literal placeholder, {{NAME}}, which stands in for the metadata table names assigned in --metadata.")
+    output_group.add_argument('--no-source-columns', dest="source_columns", action="store_const", const=None, help=f"Suppress generated columns (described above) identifying the source of each row's data." + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     return parser
@@ -149,6 +153,22 @@ def run(args):
             """))
 
 
+    # Validate --source-columns template and convert to template function
+    output_source_column = None
+
+    if args.source_columns is not None:
+        if "{NAME}" not in args.source_columns:
+            raise AugurError(dedent(f"""\
+                The --source-columns template must contain the literal
+                placeholder {{NAME}} but the given value ({args.source_columns!r}) does not.
+
+                You may need to quote the whole template value to prevent your
+                shell from interpreting the placeholder before Augur sees it.
+                """))
+
+        output_source_column = lambda name: args.source_columns.replace('{NAME}', name)
+
+
     # Infer delimiters and id columns
     metadata = [
         NamedMetadata(name, path, [delim  for name_, delim  in metadata_delimiters if not name_ or name_ == name] or DEFAULT_DELIMITERS,
@@ -194,6 +214,30 @@ def run(args):
             Please rename or drop the conflicting {_n("column", "columns", len(conflicting_columns))} before merging.
             Renaming may be done with `augur curate rename`.
             """))
+
+    output_source_columns = set(
+        output_source_column(m.name)
+            for m in metadata
+             if output_source_column)
+
+    if conflicting_columns := [f"{c!r} in metadata table {m.name!r}"
+                                    for m in metadata
+                                    for c in m.columns
+                                     if c in output_source_columns]:
+        raise AugurError(dedent(f"""\
+            Generated source column names may not conflict with any column
+            names in metadata inputs.
+
+            The given source column template ({args.source_columns!r}) with the
+            given metadata table names would conflict with the following input
+            {_n("column", "columns", len(conflicting_columns))}:
+
+              {indented_list(conflicting_columns, '            ' + '  ')}
+
+            Please adjust the source column template with --source-columns
+            and/or adjust the metadata table names to avoid conflicts.
+            """))
+
 
     try:
         # Read all metadata files into a SQLite db
@@ -245,9 +289,11 @@ def run(args):
             *(f"""coalesce({', '.join(f"nullif({x}, '')" for x in starmap(sqlite_quote_id, reversed(input_columns)))}, null) as {sqlite_quote_id(output_column)}"""
                 for output_column, input_columns in output_columns.items()),
 
-            # Source columns
-            *(f"""{sqlite_quote_id(m.table_name, m.id_column)} is not null as {sqlite_quote_id(f'__source_metadata_{m.name}')}"""
-                for m in metadata)]
+            # Source columns.  Select expressions generated here instead of
+            # earlier to stay adjacent to the join conditions below, upon which
+            # these rely.
+            *(f"""{sqlite_quote_id(m.table_name, m.id_column)} is not null as {sqlite_quote_id(output_source_column(m.name))}"""
+                for m in metadata if output_source_column)]
 
         from_list = [
             sqlite_quote_id(metadata[0].table_name),

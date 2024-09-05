@@ -184,6 +184,28 @@ Metadata field values with metachars (field or record delimiters) are handled pr
   x"	1	1
   two	X2a	X2b	X2c				1	1
 
+Source columns template.
+
+  $ ${AUGUR} merge \
+  >   --metadata X=x.tsv Y=y.tsv \
+  >   --source-columns 'origin_{NAME}' \
+  >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
+  strain  a    b    c    f    e    d    origin_X  origin_Y
+  one     X1a  X1b  X1c                        1         0
+  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d         1         1
+  three                  Y3f  Y3e  Y3d         0         1
+
+No source columns.
+
+  $ ${AUGUR} merge \
+  >   --metadata X=x.tsv Y=y.tsv \
+  >   --no-source-columns \
+  >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
+  strain  a    b    c    f    e    d
+  one     X1a  X1b  X1c            
+  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d
+  three                  Y3f  Y3e  Y3d
+
 
 ERROR HANDLING
 
@@ -322,6 +344,52 @@ Non-id column names conflicting with output id column name.
   
   Please rename or drop the conflicting column before merging.
   Renaming may be done with `augur curate rename`.
+  
+  [2]
+
+Invalid source columns template.
+
+  $ ${AUGUR} merge \
+  >   --metadata X=x.tsv Y=y.tsv \
+  >   --source-columns 'nope' \
+  >   --output-metadata /dev/null --quiet
+  ERROR: The --source-columns template must contain the literal
+  placeholder {NAME} but the given value ('nope') does not.
+  
+  You may need to quote the whole template value to prevent your
+  shell from interpreting the placeholder before Augur sees it.
+  
+  [2]
+
+  $ ${AUGUR} merge \
+  >   --metadata X=x.tsv Y=y.tsv \
+  >   --source-columns '' \
+  >   --output-metadata /dev/null --quiet
+  ERROR: The --source-columns template must contain the literal
+  placeholder {NAME} but the given value ('') does not.
+  
+  You may need to quote the whole template value to prevent your
+  shell from interpreting the placeholder before Augur sees it.
+  
+  [2]
+
+  $ ${AUGUR} merge \
+  >   --metadata a=x.tsv b=y.tsv \
+  >   --source-columns '{NAME}' \
+  >   --output-metadata /dev/null --quiet
+  ERROR: Generated source column names may not conflict with any column
+  names in metadata inputs.
+  
+  The given source column template ('{NAME}') with the
+  given metadata table names would conflict with the following input
+  columns:
+  
+    'a' in metadata table 'a'
+    'b' in metadata table 'a'
+    'b' in metadata table 'b'
+  
+  Please adjust the source column template with --source-columns
+  and/or adjust the metadata table names to avoid conflicts.
   
   [2]
 
