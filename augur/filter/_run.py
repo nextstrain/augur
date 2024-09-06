@@ -1,4 +1,5 @@
 from argparse import Namespace
+import shutil
 from tempfile import NamedTemporaryFile
 from augur.errors import AugurError
 
@@ -26,22 +27,29 @@ def run(args: Namespace):
 
         print_debug(f"Temporary database file: {constants.RUNTIME_DB_FILE!r}")
 
-        initialize_input_source_table()
+        if args.metadata_index:
+            shutil.copyfile(args.metadata_index, file.name)
+        else:
+            initialize_input_source_table()
 
-        try:
-            metadata = Metadata(args.metadata, id_columns=args.metadata_id_columns, delimiters=args.metadata_delimiters)
-        except InvalidDelimiter:
-            raise AugurError(
-                f"Could not determine the delimiter of {args.metadata!r}. "
-                f"Valid delimiters are: {args.metadata_delimiters!r}. "
-                "This can be changed with --metadata-delimiters."
-            )
-        columns = get_useful_metadata_columns(args, metadata.id_column, metadata.columns)
-        import_metadata(metadata, columns)
+            try:
+                metadata = Metadata(args.metadata, id_columns=args.metadata_id_columns, delimiters=args.metadata_delimiters)
+            except InvalidDelimiter:
+                raise AugurError(
+                    f"Could not determine the delimiter of {args.metadata!r}. "
+                    f"Valid delimiters are: {args.metadata_delimiters!r}. "
+                    "This can be changed with --metadata-delimiters."
+                )
+            columns = get_useful_metadata_columns(args, metadata.id_column, metadata.columns)
+            import_metadata(metadata, columns)
 
-        import_sequence_index(args)
+            import_sequence_index(args)
 
-        parse_dates()
+            parse_dates()
+
+            if args.output_metadata_index:
+                print(f"Saving database file to {args.output_metadata_index!r}")
+                shutil.copyfile(file.name, args.output_metadata_index)
 
         exclude_by, include_by = construct_filters(args)
         apply_filters(exclude_by, include_by)
