@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* parse: When both `strain` and `name` fields are present, the `strain` field will now be used as the sequence ID field. [#1629][] (@victorlin)
+
 ### Features
 
 * merge: Generated source columns (e.g. `__source_metadata_{NAME}`) may now have their name template changed with `--source-columns=TEMPLATE` or may be omitted entirely with `--no-source-columns`. [#1625][] (@tsibley)
@@ -13,6 +17,7 @@
 [#1588]: https://github.com/nextstrain/augur/issues/1588
 [#1598]: https://github.com/nextstrain/augur/issues/1598
 [#1625]: https://github.com/nextstrain/augur/issues/1625
+[#1629]: https://github.com/nextstrain/augur/pull/1629
 
 ## 25.4.0 (3 September 2024)
 
