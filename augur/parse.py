@@ -88,7 +88,7 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     return res
 
 
-def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettify_fields=None, fix_dates_format=None):
+def parse_sequence(sequence, fields, strain_key, separator, prettify_fields, fix_dates_format):
     """Parse a single sequence record into a sequence record and associated metadata.
 
     Parameters
