@@ -35,7 +35,6 @@ Submodules
    augur.distance
    augur.errors
    augur.export
-   augur.export_v1
    augur.export_v2
    augur.frequencies
    augur.frequency_estimators
