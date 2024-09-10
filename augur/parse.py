@@ -11,7 +11,7 @@ from .io.sequences import read_sequences, write_sequences
 from .dates import get_numerical_date_from_value
 from .errors import AugurError
 
-PARSE_DEFAULT_ID_COLUMNS = ("name", "strain")
+PARSE_DEFAULT_ID_COLUMNS = ("strain", "name")
 
 forbidden_characters = str.maketrans(
     {' ': None,
@@ -187,8 +187,6 @@ def run(args):
         for possible_id in PARSE_DEFAULT_ID_COLUMNS:
             if possible_id in args.fields:
                 strain_key = possible_id
-                if possible_id == "name" and "strain" in args.fields:
-                    print("DEPRECATED: The default search order for the ID field will be changing from ('name', 'strain') to ('strain', 'name').\nUsers who prefer to keep using 'name' instead of 'strain' should use the parameter: --output-id-field 'name'", file=sys.stderr)
                 break
         if not strain_key:
             strain_key = args.fields[0]
