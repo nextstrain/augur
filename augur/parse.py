@@ -1,8 +1,10 @@
 """
 Parse delimited fields from FASTA sequence names into a TSV and FASTA file.
 """
+import Bio.SeqRecord
 import pandas as pd
 import sys
+from typing import Dict, Sequence, Tuple
 
 from .io.file import open_file
 from .io.sequences import read_sequences, write_sequences
@@ -88,27 +90,34 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     return res
 
 
-def parse_sequence(sequence, fields, strain_key, separator, prettify_fields, fix_dates_format):
+def parse_sequence(
+        sequence: Bio.SeqRecord.SeqRecord,
+        fields: Sequence[str],
+        strain_key: str,
+        separator: str,
+        prettify_fields: Sequence[str],
+        fix_dates_format: str,
+    ) -> Tuple[Bio.SeqRecord.SeqRecord, Dict[str, str]]:
     """Parse a single sequence record into a sequence record and associated metadata.
 
     Parameters
     ----------
-    sequence : Bio.SeqRecord.SeqRecord
+    sequence
         a BioPython sequence record to parse with metadata stored in its description field.
 
-    fields : list or tuple
+    fields
         a list of names for fields expected in the given record's description.
 
-    strain_key : str
+    strain_key
         name of the field to use as the given sequence's unique id
 
-    separator : str
+    separator
         delimiter to split record description by.
 
-    prettify_fields : list or tuple
+    prettify_fields
         a list of field names for which the values in those fields should be prettified.
 
-    fix_dates_format : str
+    fix_dates_format
         parse "date" field into the requested canonical format ("dayfirst" or "monthfirst").
 
     Returns
