@@ -3,7 +3,6 @@
     "$id": "https://nextstrain.org/schemas/auspice/config/v2",
     "type": "object",
     "title": "Auspice config file to be supplied to `augur export v2`",
-    "$comment": "This schema includes deprecated-but-handled-by-augur-export-v1 properties, but their schema definitions are somewhat incomplete",
     "additionalProperties": false,
     "required": [],
     "properties" : {
@@ -80,11 +79,6 @@
                 }
             }
         },
-        "color_options": {
-            "description": "DEPRECATED v1 syntax for defining colorings",
-            "deprecated": true,
-            "type": "object"
-        },
         "geo_resolutions": {
             "description": "Traits to be interpreted as 'geo resolution' options -- i.e. associated with lat/longs & made points on the map",
             "$comment": "Note that array entries can be different structures & you can mix & match",
@@ -116,11 +110,6 @@
                 ]
             }
         },
-        "geo": {
-            "description": "DEPRECATED v1 syntax for defining geo_resolutions",
-            "deprecated": true,
-            "type": "array"
-        },
         "maintainers": {
             "description": "Who maintains this dataset?",
             "$comment": "order similar to a publication",
@@ -135,11 +124,6 @@
                 },
                 "required": ["name"]
             }
-        },
-        "maintainer": {
-            "description": "DEPRECATED v1 syntax for defining maintainers (but you could only define one!)",
-            "deprecated": true,
-            "type": "array"
         },
         "build_url": {
           "description": "URL with instructions to reproduce build, usually expected to be a GitHub repo URL",
@@ -213,17 +197,6 @@
                 }
             }
         },
-        "defaults": {
-            "description": "DEPRECATED v1 syntax for defining auspice view defaults",
-            "deprecated": true,
-            "type": "object"
-        },
-        "updated": {
-            "description": "DEPRECATED v1 (or older) syntax for defining when the build was updated",
-            "$comment": "unused in augur v6",
-            "deprecated": true,
-            "type": "string"
-        },
         "panels": {
             "description": "The panels available for display",
             "$comment": "The frequencies & measurements panel will only be available if defined here (and if their sidecar files are available)",
@@ -233,11 +206,6 @@
                 "type": "string",
                 "enum": ["tree", "map", "frequencies", "entropy", "measurements"]
             }
-        },
-        "vaccine_choices": {
-            "type": "object",
-            "description": "UNUSED v1 syntax for defining vaccine choices",
-            "$comment": "This is unused in `augur export v2` which gets vaccine info vis a node-data JSON file. It remains in the schema so that v1 config files can be used by `augur export v2`"
         },
         "data_provenance": {
             "description": "Specify provenance of data included in this analysis",
