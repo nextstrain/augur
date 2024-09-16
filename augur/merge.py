@@ -92,24 +92,35 @@ def register_parser(parent_subparsers):
     input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]COLUMN", help=f"Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables by default. Table-specific column names may be given using the same names assigned in --metadata. Only one ID column will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_ID_COLUMNS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
     input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]CHARACTER", help=f"Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables by default. Table-specific delimiters may be given using the same names assigned in --metadata. Only one delimiter will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_DELIMITERS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
 
+    input_group.add_argument("--sequences", nargs="+", action="extend", metavar="FILE", help="Sequence files. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+
     output_group = parser.add_argument_group("outputs", "options related to output")
     output_group.add_argument('--output-metadata', metavar="FILE", help="Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--source-columns', default="__source_metadata_{NAME}", metavar="TEMPLATE", help=f"Template with which to generate names for the columns (described above) identifying the source of each row's data. Must contain a literal placeholder, {{NAME}}, which stands in for the metadata table names assigned in --metadata.")
     output_group.add_argument('--no-source-columns', dest="source_columns", action="store_const", const=None, help=f"Suppress generated columns (described above) identifying the source of each row's data." + SKIP_AUTO_DEFAULT_IN_HELP)
+
+    output_group.add_argument('--output-sequences', metavar="FILE", help="Merged sequences as FASTA. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+
     output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     return parser
 
 
 def validate_arguments(args):
-    # These will make more sense when sequence support is added.
-    if not args.metadata:
-        raise AugurError("--metadata must be specified.")
-    if not args.output_metadata:
-        raise AugurError("--output-metadata must be specified.")
+    if not any((args.metadata, args.sequences)):
+        raise AugurError("Either --metadata or --sequences must be specified.")
+    if not any((args.output_metadata, args.output_sequences)):
+        raise AugurError("Either --output-metadata or --sequences must be specified.")
+
+    if args.metadata and args.sequences:
+        raise AugurError("--metadata and --sequences cannot be used together.")
+        # Maybe allow both with a caveat? Example:
+        # > NOTE: Both metadata and sequences provided in the same call. There is no cross-checking and the order of files for each input is used independently.
 
     if args.output_metadata and not args.metadata:
         raise AugurError("--output-metadata requires --metadata.")
+    if args.output_sequences and not args.sequences:
+        raise AugurError("--output-sequences requires --sequences.")
 
 
 def run(args):
@@ -118,6 +129,9 @@ def run(args):
 
     if args.metadata:
         merge_metadata(args)
+
+    if args.sequences:
+        merge_sequences(args)
 
 
 def merge_metadata(args):
@@ -361,6 +375,47 @@ def merge_metadata(args):
             print_info(f"WARNING: Skipped deletion of {db_path} due to error, but you may want to clean it up yourself (e.g. if it's large).")
 
 
+# FIXME: return a list of arguments and don't use shell
+def cat(filepath: str):
+    cat = "cat"
+
+    if filepath.endswith(".gz"):
+        cat = "gzcat"
+    if filepath.endswith(".xz"):
+        cat = "xzcat"
+    if filepath.endswith(".zst"):
+        cat = "zstdcat"
+
+    return f"{cat} {filepath}"
+
+
+def merge_sequences(args):
+    # Confirm that seqkit is installed.
+    if which("seqkit") is None:
+        raise AugurError("'seqkit' is not installed! This is required to merge sequences.")
+
+    # FIXME: apply --quiet to seqkit
+
+    # Reversed because seqkit rmdup keeps the first entry but this command
+    # should keep the last entry.
+    # FIXME: don't use shell. just using it to get a sense of feasibility.
+    # FIXME: is seqkit overkill here? compare to ncov's drop_duplicate_sequences which is plain Python.
+    # https://github.com/nextstrain/ncov/blob/0769ac0429df8456ce70be2f74dc885d7b7fab12/scripts/sanitize_sequences.py#L127
+    cat_processes = (f"<({cat(filepath)})" for filepath in reversed(args.sequences))
+    shell_cmd = f"cat {' '.join(cat_processes)} | seqkit rmdup"
+    print_debug(F"running shell command {shell_cmd!r}")
+    process = subprocess.Popen(shell_cmd, shell=True, executable="/bin/bash", stdout=subprocess.PIPE)
+
+    # FIXME: handle `-` better
+    output = process.communicate()[0]
+    if args.output_sequences == "-":
+        sys.stdout.write(output.decode())
+    else:
+        with open(args.output_sequences, "w") as f:
+            f.write(output.decode())
+
+
+# FIXME: do this for seqkit too
 def sqlite3(*args, **kwargs):
     """
     Internal helper for invoking ``sqlite3``, the SQLite CLI program.
