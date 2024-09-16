@@ -396,6 +396,8 @@ def merge_sequences(args):
 
     # FIXME: apply --quiet to seqkit
 
+    # FIXME: check for duplicates in each file
+
     # Reversed because seqkit rmdup keeps the first entry but this command
     # should keep the last entry.
     # FIXME: don't use shell. just using it to get a sense of feasibility.
