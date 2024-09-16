@@ -16,12 +16,12 @@ on the left hand side.  The first table's id column name is used as the output
 id column name.  Non-id columns in other input tables that would conflict with
 this output id column name are not allowed and if present will cause an error.
 
-One generated column per input table is appended to the end of the output
-table to identify the source of each row's data.  Column names are generated
-as "__source_metadata_{NAME}" where "{NAME}" is the table name given to
---metadata.  Values in each column are 1 or 0 for present or absent in that
-input table.  You may change the generated column names by providing your own
-template with --source-columns or omit these columns entirely with
+One generated column per input table may be optionally appended to the end of
+the output table to identify the source of each row's data.  Column names are
+generated with the template given to --source-columns where "{NAME}" in the
+template is replaced by the table name given to --metadata.  Values in each
+column are 1 or 0 for present or absent in that input table.  By default no
+source columns are generated.  You may make this behaviour explicit with
 --no-source-columns.
 
 Metadata tables of arbitrary size can be handled, limited only by available
@@ -91,8 +91,8 @@ def register_parser(parent_subparsers):
 
     output_group = parser.add_argument_group("outputs", "options related to output")
     output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
-    output_group.add_argument('--source-columns', default="__source_metadata_{NAME}", metavar="TEMPLATE", help=f"Template with which to generate names for the columns (described above) identifying the source of each row's data. Must contain a literal placeholder, {{NAME}}, which stands in for the metadata table names assigned in --metadata.")
-    output_group.add_argument('--no-source-columns', dest="source_columns", action="store_const", const=None, help=f"Suppress generated columns (described above) identifying the source of each row's data." + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--source-columns', metavar="TEMPLATE", help=f"Template with which to generate names for the columns (described above) identifying the source of each row's data. Must contain a literal placeholder, {{NAME}}, which stands in for the metadata table names assigned in --metadata. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--no-source-columns', dest="source_columns", action="store_const", const=None, help=f"Suppress generated columns (described above) identifying the source of each row's data. This is the default behaviour, but it may be made explicit or used to override a previous --source-columns." + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     return parser
