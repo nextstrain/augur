@@ -5,6 +5,7 @@
 ### Major Changes
 
 * filter: Duplicate header names in the FASTA file (`--sequences`) will now result in an error. [#1613] (@victorlin)
+* parse: When both `strain` and `name` fields are present, the `strain` field will now be used as the sequence ID field. [#1629][] (@victorlin)
 * merge: Generated source columns (e.g. `__source_metadata_{NAME}`) are now omitted by default.  They may be explicitly included with `--source-columns=TEMPLATE` or explicitly omitted with `--no-source-columns`.  This may be a breaking change for any existing uses of `augur merge` relying on the generated columns, though as `augur merge` is relatively new we believe usage to be scant if extant at all. [#1625][] [#1632][] (@tsibley)
 
 ### Bug Fixes
@@ -15,6 +16,7 @@
 [#1598]: https://github.com/nextstrain/augur/issues/1598
 [#1613]: https://github.com/nextstrain/augur/pull/1613
 [#1625]: https://github.com/nextstrain/augur/issues/1625
+[#1629]: https://github.com/nextstrain/augur/pull/1629
 [#1632]: https://github.com/nextstrain/augur/issues/1632
 
 ## 25.4.0 (3 September 2024)

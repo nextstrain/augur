@@ -71,7 +71,9 @@ class TestParse:
             sequence_record,
             fields=fields,
             strain_key="strain",
-            prettify_fields=["region"]
+            separator="|",
+            prettify_fields=["region"],
+            fix_dates_format=None,
         )
 
         assert sequence.id == metadata["strain"]

@@ -10,9 +10,7 @@ available for backwards compatibility, but should not be used in new code.
 
 ## `augur parse` preference of `name` over `strain` as the sequence ID field
 
-*Deprecated in version 24.2.0 (February 2024). Planned to be reordered June 2024 or after.*
-
-Currently, `augur parse` checks for a 'name' field and then a 'strain' field to use as a sequence ID. This order will be changed in favor of searching for a 'strain' and then a 'name' field to be more consistent with the rest of Augur.
+*Deprecated in version 24.2.0 (February 2024). Reordered in version 26.0.0 (September 2024).*
 
 Users who have both 'name' and 'strain' fields in their data, and want to favor using the 'name' field should add the following `augur parse` parameter `--output-id-field 'name'`.
 
