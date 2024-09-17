@@ -227,7 +227,7 @@ If there are changes to the Python version or dependency list:
 4. Wait for an auto-bump PR in [bioconda-recipes][].
 5. Add a comment in the auto-bump PR `Please close this in favor of #<your PR number>`.
 
-[bioconda-recipes]: https://github.com/bioconda/bioconda-recipes/pull/34509
+[bioconda-recipes]: https://github.com/bioconda/bioconda-recipes/pulls?q=is%3Apr+is%3Aopen+label%3Aautobump+augur
 
 ##### 5. Build/Release Nextstrain/conda-base
 
