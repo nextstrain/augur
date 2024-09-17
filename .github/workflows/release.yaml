@@ -10,46 +10,6 @@ on:
         type: string
 jobs:
   run:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # Fetch all branches and tags.
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Set Nextstrain bot as git user
-        run: |
-          git config --global user.email "hello@nextstrain.org"
-          git config --global user.name "Nextstrain bot"
-      - run: python3 -m pip install --upgrade build twine
-      - run: devel/release ${{ github.event.inputs.version}}
-      - run: devel/test
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-      - run: git push origin master tag ${{ github.event.inputs.version}}
-      - name: Publish to PyPI
-        run: twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-          TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
-      - name: Create GitHub Release
-        run: ./devel/create-github-release "${{github.event.inputs.version}}" dist/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  rebuild-docker-image:
-    needs: [run]
-    runs-on: ubuntu-latest
-    steps:
-    # Delay for 10 minutes to allow the PyPI package to be available.
-    # See https://github.com/nextstrain/docker-base/issues/128
-    - name: Sleep for 10 minutes
-      run: sleep 600
-      shell: bash
-    - run: gh workflow run ci.yml --repo nextstrain/docker-base
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_WORKFLOW_DISPATCH }}
+    uses: ./.github/workflows/ci.yaml
+    with:
+      version: ${{ inputs.version }}
