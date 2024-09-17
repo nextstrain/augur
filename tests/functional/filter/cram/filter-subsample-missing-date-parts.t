@@ -42,8 +42,8 @@ month information in their date fields.
   >  --output-log log.txt \
   >  --output-strains filtered_strains.txt > /dev/null
   2 strains were dropped during filtering
-  	1 was dropped during grouping due to ambiguous year information
   	1 was dropped during grouping due to ambiguous month information
+  	1 was dropped during grouping due to ambiguous year information
   	0 were dropped because of subsampling criteria
   1 strain passed all filters
   $ cat log.txt

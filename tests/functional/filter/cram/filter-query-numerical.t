@@ -72,12 +72,40 @@ comparing strings, it's likely that SEQ3 will be dropped or errors arise.
 
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
-  >  --query "metric1 > 4 & metric1 < metric2" \
+  >  --query-pandas "metric1 > 4 & metric1 < metric2" \
   >  --output-strains filtered_strains.txt
   1 strain was dropped during filtering
-  	1 was filtered out by the query: "metric1 > 4 & metric1 < metric2"
+  	1 was filtered out by the Pandas query: "metric1 > 4 & metric1 < metric2"
   2 strains passed all filters
 
   $ sort filtered_strains.txt
+  SEQ2
+  SEQ3
+
+Do the same with a SQLite query.
+Currently this does not work as expected because the type affinities are
+hardcoded to TEXT, and type conversion to NUMERIC only happens when one of the
+operands are NUMERIC.
+
+  $ ${AUGUR} filter \
+  >  --metadata metadata.tsv \
+  >  --query-sqlite "metric1 > 4 AND metric1 < metric2" \
+  >  --output-strains filtered_strains.txt
+  2 strains were dropped during filtering
+  	2 were filtered out by the SQLite query: "metric1 > 4 AND metric1 < metric2"
+  1 strain passed all filters
+  $ cat filtered_strains.txt
+  SEQ2
+
+However, a numerical comparison between a column and a numeric literal works as expected.
+
+  $ ${AUGUR} filter \
+  >  --metadata metadata.tsv \
+  >  --query-sqlite "metric1 > 4" \
+  >  --output-strains filtered_strains.txt
+  1 strain was dropped during filtering
+  	1 was filtered out by the SQLite query: "metric1 > 4"
+  2 strains passed all filters
+  $ cat filtered_strains.txt
   SEQ2
   SEQ3
