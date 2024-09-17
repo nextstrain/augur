@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 26.0.0 (17 September 2024)
+
 ### Major Changes
 
 * filter: Duplicate header names in the FASTA file (`--sequences`) will now result in an error. [#1613] (@victorlin)
