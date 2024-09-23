@@ -1,6 +1,6 @@
 Setup
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
 
 Build a tree with excluded sites using a compressed input file.
 

@@ -1,8 +1,7 @@
 Setup
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
   $ export DATA="$TESTDIR/../data"
-  $ export SCRIPTS="$TESTDIR/../../../../scripts"
 
 Translate amino acids for genes using a GFF3 file where the gene names are stored in a qualifier named "gene".
 

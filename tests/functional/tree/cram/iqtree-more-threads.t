@@ -1,6 +1,6 @@
 Setup
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
 
 Try building a tree with IQ-TREE with more threads (4) than there are input sequences (3).
 

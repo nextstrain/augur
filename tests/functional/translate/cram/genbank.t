@@ -1,6 +1,6 @@
 Setup
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
   $ export ANC_DATA="$TESTDIR/../../ancestral/data/simple-genome"
   $ export DATA="$TESTDIR/../data/simple-genome"
 

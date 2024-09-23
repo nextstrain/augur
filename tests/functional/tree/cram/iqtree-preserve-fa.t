@@ -1,6 +1,6 @@
 Setup
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
 
 Build a tree with an input file that doesn't end in .fasta, and ensure it's not overwritten.
 

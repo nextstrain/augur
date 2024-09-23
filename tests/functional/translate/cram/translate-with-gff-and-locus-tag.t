@@ -1,8 +1,7 @@
 Setup
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
   $ export DATA="$TESTDIR/../data"
-  $ export SCRIPTS="$TESTDIR/../../../../scripts"
 
 This is an identical test setup as `translate-with-gff-and-gene.t` but using locus_tag instead of gene in the GFF
 

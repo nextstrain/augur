@@ -1,6 +1,6 @@
 SETUP
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
   $ set -o pipefail
 
 
