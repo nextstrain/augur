@@ -1,7 +1,6 @@
 SETUP
 
   $ source "$TESTDIR"/_setup.sh
-  $ set -o pipefail
 
 
 BASIC USAGE
