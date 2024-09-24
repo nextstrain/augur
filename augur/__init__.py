@@ -54,7 +54,7 @@ def make_parser():
     parser = argparse.ArgumentParser(
         prog            = "augur",
         description     = "Augur: A bioinformatics toolkit for phylogenetic analysis.",
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter,
+        formatter_class = argparse.RawDescriptionHelpFormatter,
     )
 
     add_default_command(parser)
