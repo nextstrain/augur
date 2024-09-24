@@ -2,7 +2,7 @@
 Custom helpers for the argparse standard library.
 """
 import argparse
-from argparse import Action, ArgumentDefaultsHelpFormatter
+from argparse import Action
 
 
 # Include this in an argument help string to suppress the automatic appending
@@ -58,9 +58,8 @@ def register_commands(parser: argparse.ArgumentParser, commands, command_attribu
         if command_attribute:
             subparser.set_defaults(**{command_attribute: command})
 
-        # Use the same formatting class for every command for consistency.
-        # Set here to avoid repeating it in every command's register_parser().
-        subparser.formatter_class = ArgumentDefaultsHelpFormatter
+        # Ensure all subparsers format like the top-level parser
+        subparser.formatter_class = parser.formatter_class
 
         if not subparser.description and command.__doc__:
             subparser.description = command.__doc__
