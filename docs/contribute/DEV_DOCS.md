@@ -73,6 +73,7 @@ Over time, we have changed the way we design and organize Augur's Cram tests. Yo
 
 1. Keep cram files modular. This makes it easier to see which command is failing.
 2. Create files in the initial working directory (e.g. `./file.txt` or simply `file.txt`), as it is a temporary working directory unique to the test. Note that the name of the `$TMP` directory is misleading - although it is temporary, it is shared across all tests so you'll have to explicitly remove files at the end of each test to avoid affecting other tests. The initial directory of each test is a unique directory within `$TMP`.
+3. Each directory containing cram tests should have a setup script named `_setup.sh`. Keep all shared setup commands in this file.
 
 ##### Comparing outputs of augur commands
 
