@@ -1,6 +1,6 @@
 Setup
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
 
 Build a tree, replacing existing default arguments with custom arguments.
 Since the following custom arguments are incompatible with the default IQ-TREE arguments, this command will only work with the `--override-default-args` flag.

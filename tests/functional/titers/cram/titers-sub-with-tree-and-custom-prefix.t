@@ -1,7 +1,6 @@
 Setup
 
-  $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="${AUGUR:-../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
 
 Test titer substitution model with alignment and tree inputs and a custom prefix for the node data attributes in the output.
 

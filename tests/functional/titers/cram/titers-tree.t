@@ -1,7 +1,6 @@
 Setup
 
-  $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="${AUGUR:-../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
 
 Test titer tree model.
 

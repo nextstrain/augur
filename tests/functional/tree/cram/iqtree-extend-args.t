@@ -1,6 +1,6 @@
 Setup
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
 
 Build a tree, augmenting existing default arguments with custom arguments.
 

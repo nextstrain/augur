@@ -1,8 +1,7 @@
 Setup
 
-  $ export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+  $ source "$TESTDIR"/_setup.sh
   $ export DATA="$TESTDIR/../data"
-  $ export SCRIPTS="$TESTDIR/../../../../scripts"
 
 Translate amino acids for genes using a GenBank file.
 
