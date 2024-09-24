@@ -52,8 +52,10 @@ COMMANDS = [importlib.import_module('augur.' + c) for c in command_strings]
 
 def make_parser():
     parser = argparse.ArgumentParser(
-        prog        = "augur",
-        description = "Augur: A bioinformatics toolkit for phylogenetic analysis.")
+        prog            = "augur",
+        description     = "Augur: A bioinformatics toolkit for phylogenetic analysis.",
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter,
+    )
 
     add_default_command(parser)
     add_version_alias(parser)
