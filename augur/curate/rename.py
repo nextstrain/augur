@@ -6,10 +6,11 @@ from typing import Iterable, Literal, Union, List, Tuple
 import argparse
 from augur.io.print import print_err
 from augur.errors import AugurError
+from .argparse_shared_parser import shared_parser
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("rename",
-    parents = [parent_subparsers.shared_parser],
+    parents = [shared_parser],
     help = __doc__)
 
     required = parser.add_argument_group(title="REQUIRED")
