@@ -18,7 +18,16 @@ This should fail.
   $ ${AUGUR} index \
   >   --sequences index/missing_sequences.fasta \
   >   --output "$TMP/sequence_index.tsv"
-  ERROR: Could not open sequences file 'index/missing_sequences.fasta'.
-  [1]
+  ERROR: No such file or directory: 'index/missing_sequences.fasta'
+  [2]
+
+Try writing output to a directory that does not exist.
+This should fail.
+
+  $ ${AUGUR} index \
+  >   --sequences index/sequences.fasta \
+  >   --output "results/sequence_index.tsv"
+  ERROR: No such file or directory: 'results/sequence_index.tsv'
+  [2]
 
   $ popd > /dev/null
