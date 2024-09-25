@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* index: Previously specifying a directory that does not exist in the path to `--output` would result in an incorrect error stating that the input file does not exist. It now shows the correct path responsible for the error. [#1644][] (@victorlin)
+
+[#1644]: https://github.com/nextstrain/augur/issues/1644
 
 ## 26.0.0 (17 September 2024)
 
