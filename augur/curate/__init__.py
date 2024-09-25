@@ -6,7 +6,6 @@ from collections import deque
 from textwrap import dedent
 from typing import Iterable, Set
 
-from augur.argparse_ import add_command_subparsers
 from augur.errors import AugurError
 from augur.io.json import dump_ndjson, load_ndjson
 from augur.io.metadata import InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
@@ -32,15 +31,7 @@ SUBCOMMANDS = [
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("curate", help=__doc__)
 
-    # Add print_help so we can run it when no subcommands are called
-    parser.set_defaults(print_help = parser.print_help)
-
-    # Add subparsers for subcommands
-    subparsers = parser.add_subparsers(dest="subcommand", required=False)
-    # Using a subcommand attribute so subcommands are not directly
-    # run by top level Augur. Process I/O in `curate`` so individual
-    # subcommands do not have to worry about it.
-    add_command_subparsers(subparsers, SUBCOMMANDS, SUBCOMMAND_ATTRIBUTE)
+    parser.subcommands = SUBCOMMANDS
 
     return parser
 

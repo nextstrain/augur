@@ -14,7 +14,7 @@ from treetime import TreeTimeError, TreeTimeUnknownError
 from .debug import DEBUGGING
 from .errors import AugurError
 from .io.print import print_err
-from .argparse_ import add_command_subparsers, add_default_command
+from .argparse_ import register_commands, add_default_command
 
 DEFAULT_AUGUR_RECURSION_LIMIT = 10000
 sys.setrecursionlimit(int(os.environ.get("AUGUR_RECURSION_LIMIT") or DEFAULT_AUGUR_RECURSION_LIMIT))
@@ -58,8 +58,7 @@ def make_parser():
     add_default_command(parser)
     add_version_alias(parser)
 
-    subparsers = parser.add_subparsers()
-    add_command_subparsers(subparsers, COMMANDS)
+    register_commands(parser, COMMANDS)
 
     return parser
 
