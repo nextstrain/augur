@@ -9,6 +9,7 @@ import re
 from typing import Generator, List
 from augur.io.print import print_err
 from augur.utils import first_line
+from ._shared import shared_parser
 
 
 def transform_name(
@@ -42,7 +43,7 @@ def register_parser(
 ) -> argparse._SubParsersAction:
     parser = parent_subparsers.add_parser(
         "transform-strain-name",
-        parents=[parent_subparsers.shared_parser],  # type: ignore
+        parents=[shared_parser],  # type: ignore
         help=first_line(__doc__),
     )
 

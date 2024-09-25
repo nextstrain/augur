@@ -7,10 +7,11 @@ from typing import Optional, Set, Union
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
+from ._shared import shared_parser
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("titlecase",
-    parents = [parent_subparsers.shared_parser],
+    parents = [shared_parser],
     help = __doc__)
     
     required = parser.add_argument_group(title="REQUIRED")
