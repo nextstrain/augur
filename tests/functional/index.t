@@ -1,7 +1,6 @@
 Integration tests for augur index.
 
-  $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ source "$TESTDIR"/_setup.sh
 
 Index Zika sequences.
 

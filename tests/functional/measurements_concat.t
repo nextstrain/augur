@@ -1,7 +1,6 @@
 Integration tests for augur measurements export.
 
-  $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="../../bin/augur"
+  $ source "$TESTDIR"/_setup.sh
 
 Measurements concat for two measurements JSONs, each with a single collection.
 
