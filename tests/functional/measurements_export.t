@@ -1,6 +1,7 @@
 Integration tests for augur measurements export.
 
   $ source "$TESTDIR"/_setup.sh
+  $ pushd "$TESTDIR" > /dev/null
 
 Minimal measurements export with existing strain and value columns.
 

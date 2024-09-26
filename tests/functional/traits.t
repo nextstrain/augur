@@ -1,6 +1,7 @@
 Integration tests for augur traits.
 
   $ source "$TESTDIR"/_setup.sh
+  $ pushd "$TESTDIR" > /dev/null
 
 Infer the ancestral region for a given tree and metadata.
 

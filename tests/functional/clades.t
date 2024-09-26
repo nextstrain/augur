@@ -1,6 +1,7 @@
 Integration tests for augur clades.
 
   $ source "$TESTDIR"/_setup.sh
+  $ pushd "$TESTDIR" > /dev/null
 
 Test augur clades with simple Zika input files and hierarchical clades.
 

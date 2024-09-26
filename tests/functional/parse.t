@@ -1,6 +1,7 @@
 Integration tests for augur parse.
 
   $ source "$TESTDIR"/_setup.sh
+  $ pushd "$TESTDIR" > /dev/null
 
 Try to parse Zika sequences without specifying fields.
 This should fail.
