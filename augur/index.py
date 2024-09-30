@@ -2,7 +2,6 @@
 """
 
 from itertools import combinations
-import sys
 import csv
 
 from .io.file import open_file
@@ -209,15 +208,11 @@ def run(args):
     ("?" and "-"), and other invalid characters in a set of sequences and write
     the composition as a data frame to the given sequence index path.
     '''
-    try:
-        if is_vcf(args.sequences):
-            num_of_seqs = index_vcf(args.sequences, args.output)
-            tot_length = None
-        else:
-            num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
-    except FileNotFoundError:
-        print(f"ERROR: Could not open sequences file '{args.sequences}'.", file=sys.stderr)
-        return 1
+    if is_vcf(args.sequences):
+        num_of_seqs = index_vcf(args.sequences, args.output)
+        tot_length = None
+    else:
+        num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
 
     if args.verbose:
         if tot_length:
