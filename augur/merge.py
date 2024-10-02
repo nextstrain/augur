@@ -45,25 +45,107 @@ from shlex import quote as shquote
 from shutil import which
 from tempfile import mkstemp
 from textwrap import dedent
-from typing import Iterable, Tuple, TypeVar
+from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple, TypeVar
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, Metadata
 from augur.io.print import print_err, print_debug, _n
+from augur.io.sequences import read_sequences
 from augur.utils import first_line
 
 
 T = TypeVar('T')
 
+# Tuple is (table name, column name)
+Columns = Dict[str, List[Tuple[str, str]]]
 
-class NamedMetadata(Metadata):
+
+print_info = print_err
+
+
+# Locate how to re-invoke ourselves (_this_ specific Augur).
+augur = ""
+if sys.executable:
+    augur = f"{shquote(sys.executable)} -m augur"
+else:
+    # A bit unusual we don't know our own Python executable, but assume we
+    # can access ourselves as the ``augur`` command.
+    augur = f"augur"
+
+
+SEQUENCE_ID_COLUMN = 'id'
+
+
+class Database:
+    fd: int
+    """Database file descriptor"""
+
+    path: str
+    """Database file path"""
+
+    def __init__(self):
+        # Work with a temporary, on-disk SQLite database under a name we control so
+        # we can access it from multiple (serial) processes.
+        self.fd, self.path = mkstemp(prefix="augur-merge-", suffix=".sqlite")
+        os.close(self.fd)
+
+    def run(self, *args, **kwargs):
+        error = False
+
+        try:
+            sqlite3(self.path, *args, **kwargs)
+
+        except SQLiteError as err:
+            error = True
+            raise AugurError(str(err)) from err
+
+        finally:
+            if error:
+                print_info(f"WARNING: Skipped deletion of {self.path} due to error, but you may want to clean it up yourself (e.g. if it's large).")
+
+    def cleanup(self):
+        os.unlink(self.path)
+
+
+class UnnamedFile:
+    table_name: str
+    """Generated SQLite table name for this file, based on *path*."""
+
+    path: str
+
+
+class NamedFile:
     name: str
-    """User-provided descriptive name for this metadata file."""
+    """User-provided descriptive name for this file."""
 
     table_name: str
-    """Generated SQLite table name for this metadata file, based on *name*."""
+    """Generated SQLite table name for this file, based on *name*."""
 
+    path: str
+
+
+class NamedSequenceFile(NamedFile):
+    def __init__(self, name: str, path: str):
+        self.name = name
+        self.path = path
+        self.table_name = f"sequences_{self.name}"
+
+    def __repr__(self):
+        return f"<NamedSequenceFile {self.name}={self.path}>"
+
+
+class UnnamedSequenceFile(UnnamedFile):
+    def __init__(self, name: str, path: str):
+        self.name = name
+        self.path = path
+        self.table_name = f"sequences_{re.sub(r'[^a-zA-Z0-9]', '_', os.path.basename(self.path))}"
+
+    def __repr__(self):
+        return f"<NamedSequenceFile {self.name}={self.path}>"
+
+
+class NamedMetadata(Metadata, NamedFile):
     def __init__(self, name: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = name
@@ -77,55 +159,110 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("merge", help=first_line(__doc__))
 
     input_group = parser.add_argument_group("inputs", "options related to input")
-    input_group.add_argument("--metadata", nargs="+", action="extend", required=True, metavar="NAME=FILE", help="Required. Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    input_group.add_argument("--metadata", nargs="+", action="extend", metavar="NAME=FILE", help="Required. Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    input_group.add_argument("--sequences", nargs="+", action="extend", metavar="NAME=FILE", help="Sequence files. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
 
     input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]COLUMN", help=f"Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables by default. Table-specific column names may be given using the same names assigned in --metadata. Only one ID column will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_ID_COLUMNS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
     input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]CHARACTER", help=f"Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables by default. Table-specific delimiters may be given using the same names assigned in --metadata. Only one delimiter will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_DELIMITERS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     output_group = parser.add_argument_group("outputs", "options related to output")
-    output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--output-metadata', metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--source-columns', metavar="TEMPLATE", help=f"Template with which to generate names for the columns (described above) identifying the source of each row's data. Must contain a literal placeholder, {{NAME}}, which stands in for the metadata table names assigned in --metadata. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--no-source-columns', dest="source_columns", action="store_const", const=None, help=f"Suppress generated columns (described above) identifying the source of each row's data. This is the default behaviour, but it may be made explicit or used to override a previous --source-columns." + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--output-sequences', metavar="FILE", help="Required. Merged sequences as FASTA. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     return parser
 
 
+def validate_arguments(args):
+    # These will make more sense when sequence support is added.
+    if not any((args.metadata, args.sequences)):
+        raise AugurError("At least one input must be specified.")
+    if not any((args.output_metadata, args.output_sequences)):
+        raise AugurError("At least one output must be specified.")
+
+    if args.output_metadata and not args.metadata:
+        raise AugurError("--output-metadata requires --metadata.")
+    if args.output_sequences and not args.sequences:
+        raise AugurError("--output-sequences requires --sequences.")
+
+
 def run(args):
-    print_info = print_err if not args.quiet else lambda *_: None
+    global print_info
+    
+    if args.quiet:
+        print_info = lambda *_: None
 
-    # Parse --metadata arguments
-    if not len(args.metadata) >= 2:
-        raise AugurError(f"At least two metadata inputs are required for merging.")
+    # Catch user errors early to avoid unnecessary computation.
+    validate_arguments(args)
 
-    if unnamed := [repr(x) for x in args.metadata if "=" not in x or x.startswith("=")]:
-        raise AugurError(dedent(f"""\
-            All metadata inputs must be assigned a name, e.g. with NAME=FILE.
+    db = Database()
 
-            The following {_n("input was", "inputs were", len(unnamed))} missing a name:
+    metadata = None
+    sequences = None
+    named_sequences = None
+    unnamed_sequences = None
+    if args.metadata:
+        metadata = get_metadata(args.metadata, args.metadata_id_columns, args.metadata_delimiters)
 
-              {indented_list(unnamed, '            ' + '  ')}
-            """))
+    if args.sequences:
+        sequences = get_sequences(args.sequences)
+        named_sequences = [s for s in sequences if isinstance(s, NamedSequenceFile)]
+        unnamed_sequences = [s for s in sequences if isinstance(s, UnnamedSequenceFile)]
 
-    metadata = pairs(args.metadata)
+    if unnamed_sequences:
+        # FIXME: Print warning for each unnamed sequence file
+        # WARNING: Sequence file 'c.fasta' is unnamed. Skipping validation with metadata.
+        ...
 
-    if duplicate_names := [repr(name) for name, count
-                                       in count_unique(name for name, _ in metadata)
-                                       if count > 1]:
-        raise AugurError(dedent(f"""\
-            Metadata input names must be unique.
+    if metadata and named_sequences:
+        # FIXME: check order of named inputs
+        # ERROR: Order of inputs differs between named metadata (a,b) and sequences (b,a).
 
-            The following {_n("name was", "names were", len(duplicate_names))} used more than once:
+        # FIXME: check that named inputs match
+        # ERROR: Sequence file 'c=c.fasta' does not have a corresponding metadata file.
+        ...
 
-              {indented_list(duplicate_names, '            ' + '  ')}
-            """))
+    if metadata:
+        load_metadata(db, metadata)
 
+    if sequences:
+        load_sequences(db, sequences)
+
+
+    if metadata and named_sequences:
+        metadata_by_name = {m.name: m for m in metadata}
+        sequences_by_name = {s.name: s for s in named_sequences}
+
+        for name in metadata_by_name.keys() & sequences_by_name.keys():
+            # FIXME: check database for matching entries
+            # WARNING: Sequence 'XXX' in a.tsv is missing from a.fasta. It will not be present in any output.
+            # WARNING: Sequence 'YYY' in b.fasta is missing from b.csv. It will not be present in any output.
+            ...
+
+    if args.output_metadata:
+        output_source_column = get_output_source_column(args.source_columns, metadata)
+        output_columns = get_output_columns(metadata, args.source_columns)
+        merge_metadata(db, metadata, output_columns, args.output_metadata, output_source_column)
+
+    if args.output_sequences:
+        merge_sequences(db, sequences, args.output_sequences)
+
+
+def get_metadata(
+        input_metadata: Sequence[str],
+        input_metadata_id_columns: Sequence[str],
+        input_metadata_delimiters: Sequence[str],
+    ) -> List[NamedMetadata]:
+    # Validate --metadata arguments
+    metadata = parse_named_inputs(input_metadata)
 
     # Parse --metadata-id-columns and --metadata-delimiters
     metadata_names = set(name for name, _ in metadata)
 
-    metadata_id_columns = pairs(args.metadata_id_columns)
-    metadata_delimiters = pairs(args.metadata_delimiters)
+    metadata_id_columns = pairs(input_metadata_id_columns)
+    metadata_delimiters = pairs(input_metadata_delimiters)
 
     if unknown_names := [repr(name) for name, _ in metadata_id_columns if name and name not in metadata_names]:
         raise AugurError(dedent(f"""\
@@ -146,50 +283,60 @@ def run(args):
             """))
 
 
-    # Validate --source-columns template and convert to template function
-    output_source_column = None
-
-    if args.source_columns is not None:
-        if "{NAME}" not in args.source_columns:
-            raise AugurError(dedent(f"""\
-                The --source-columns template must contain the literal
-                placeholder {{NAME}} but the given value ({args.source_columns!r}) does not.
-
-                You may need to quote the whole template value to prevent your
-                shell from interpreting the placeholder before Augur sees it.
-                """))
-
-        output_source_column = lambda name: args.source_columns.replace('{NAME}', name)
-
-
     # Infer delimiters and id columns
-    metadata = [
+    return [
         NamedMetadata(name, path, [delim  for name_, delim  in metadata_delimiters if not name_ or name_ == name] or DEFAULT_DELIMITERS,
                                   [column for name_, column in metadata_id_columns if not name_ or name_ == name] or DEFAULT_ID_COLUMNS)
             for name, path in metadata]
 
 
-    # Locate how to re-invoke ourselves (_this_ specific Augur).
-    if sys.executable:
-        augur = f"{shquote(sys.executable)} -m augur"
-    else:
-        # A bit unusual we don't know our own Python executable, but assume we
-        # can access ourselves as the ``augur`` command.
-        augur = f"augur"
+def get_output_source_column(source_columns: str, metadata: List[NamedMetadata]):
+    # Validate --source-columns template and convert to template function
+    output_source_column = None
+
+    if source_columns is not None:
+        if "{NAME}" not in source_columns:
+            raise AugurError(dedent(f"""\
+                The --source-columns template must contain the literal
+                placeholder {{NAME}} but the given value ({source_columns!r}) does not.
+
+                You may need to quote the whole template value to prevent your
+                shell from interpreting the placeholder before Augur sees it.
+                """))
+
+        output_source_column = lambda name: source_columns.replace('{NAME}', name)
+
+    output_source_columns = set(
+        output_source_column(m.name)
+            for m in metadata
+             if output_source_column)
+
+    if conflicting_columns := [f"{c!r} in metadata table {m.name!r}"
+                                    for m in metadata
+                                    for c in m.columns
+                                     if c in output_source_columns]:
+        raise AugurError(dedent(f"""\
+            Generated source column names may not conflict with any column
+            names in metadata inputs.
+
+            The given source column template ({source_columns!r}) with the
+            given metadata table names would conflict with the following input
+            {_n("column", "columns", len(conflicting_columns))}:
+
+              {indented_list(conflicting_columns, '            ' + '  ')}
+
+            Please adjust the source column template with --source-columns
+            and/or adjust the metadata table names to avoid conflicts.
+            """))
+    
+    return output_source_column
 
 
-    # Work with a temporary, on-disk SQLite database under a name we control so
-    # we can access it from multiple (serial) processes.
-    db_fd, db_path = mkstemp(prefix="augur-merge-", suffix=".sqlite")
-    os.close(db_fd)
-
-    # Clean up database file by default
-    delete_db = True
-
+def get_output_columns(metadata: List[NamedMetadata], source_columns: str):
     # Track columns as we see them, in order.  The first metadata's id column
     # is always the first output column of the merge, so insert it now.
     output_id_column = metadata[0].id_column
-    output_columns = { output_id_column: [] }
+    output_columns: Columns = { output_id_column: [] }
 
     if conflicting_columns := [f"{c!r} in metadata table {m.name!r} (id column: {m.id_column!r})"
                                     for m in metadata
@@ -208,127 +355,183 @@ def run(args):
             Renaming may be done with `augur curate rename`.
             """))
 
-    output_source_columns = set(
-        output_source_column(m.name)
-            for m in metadata
-             if output_source_column)
+    for m in metadata:
+        # Track which columns appear in which metadata inputs, preserving
+        # the order of both.
+        for column in m.columns:
+            # Match different id column names in different metadata files
+            # since they're logically equivalent.  Any non-id columns that
+            # match the output_id_column (i.e. first table's id column) and
+            # would thus overwrite it with this logic are already a fatal
+            # error above.
+            output_column = output_id_column if column == m.id_column else column
 
-    if conflicting_columns := [f"{c!r} in metadata table {m.name!r}"
-                                    for m in metadata
-                                    for c in m.columns
-                                     if c in output_source_columns]:
-        raise AugurError(dedent(f"""\
-            Generated source column names may not conflict with any column
-            names in metadata inputs.
-
-            The given source column template ({args.source_columns!r}) with the
-            given metadata table names would conflict with the following input
-            {_n("column", "columns", len(conflicting_columns))}:
-
-              {indented_list(conflicting_columns, '            ' + '  ')}
-
-            Please adjust the source column template with --source-columns
-            and/or adjust the metadata table names to avoid conflicts.
-            """))
+            output_columns.setdefault(output_column, [])
+            output_columns[output_column] += [(m.table_name, column)]
+    
+    return output_columns
 
 
-    try:
-        # Read all metadata files into a SQLite db
-        for m in metadata:
-            # All other metadata reading in Augur (i.e. via the csv module)
-            # uses Python's "universal newlines"¹ definition and accepts \n,
-            # \r\n, and \r as newlines interchangably (even mixed within the
-            # same file!).  We accomplish the same behaviour here with SQLite's
-            # less flexible newline handling by relying on the universal
-            # newline translation of `augur read-file`.
-            #   -trs, 24 July 2024
-            #
-            # ¹ <https://docs.python.org/3/glossary.html#term-universal-newlines>
-            newline = os.linesep
+def load_metadata(
+        db: Database,
+        metadata: List[NamedMetadata],
+    ):
 
-            print_info(f"Reading {m.name!r} metadata from {m.path!r}…")
-            sqlite3(db_path,
-                f'.mode csv',
-                f'.separator {sqlite_quote_dot(m.delimiter)} {sqlite_quote_dot(newline)}',
-                f'.import {sqlite_quote_dot(f"|{augur} read-file {shquote(m.path)}")} {sqlite_quote_dot(m.table_name)}',
-
-                f'create unique index {sqlite_quote_id(f"{m.table_name}_id")} on {sqlite_quote_id(m.table_name)}({sqlite_quote_id(m.id_column)});',
-
-                # <https://sqlite.org/pragma.html#pragma_optimize>
-                f'pragma optimize;')
-
-            # We're going to use Metadata.columns to generate the select
-            # statement, so ensure it matches what SQLite's .import created.
-            assert m.columns == (table_columns := sqlite3_table_columns(db_path, m.table_name)), \
-                f"{m.columns!r} == {table_columns!r}"
-
-            # Track which columns appear in which metadata inputs, preserving
-            # the order of both.
-            for column in m.columns:
-                # Match different id column names in different metadata files
-                # since they're logically equivalent.  Any non-id columns that
-                # match the output_id_column (i.e. first table's id column) and
-                # would thus overwrite it with this logic are already a fatal
-                # error above.
-                output_column = output_id_column if column == m.id_column else column
-
-                output_columns.setdefault(output_column, [])
-                output_columns[output_column] += [(m.table_name, column)]
-
-
-        # Construct query to produce merged metadata.
-        select_list = [
-            # Output metadata columns coalesced across input metadata columns
-            *(f"""coalesce({', '.join(f"nullif({x}, '')" for x in starmap(sqlite_quote_id, reversed(input_columns)))}, null) as {sqlite_quote_id(output_column)}"""
-                for output_column, input_columns in output_columns.items()),
-
-            # Source columns.  Select expressions generated here instead of
-            # earlier to stay adjacent to the join conditions below, upon which
-            # these rely.
-            *(f"""{sqlite_quote_id(m.table_name, m.id_column)} is not null as {sqlite_quote_id(output_source_column(m.name))}"""
-                for m in metadata if output_source_column)]
-
-        from_list = [
-            sqlite_quote_id(metadata[0].table_name),
-            *(f"full outer join {sqlite_quote_id(m.table_name)} on {sqlite_quote_id(m.table_name, m.id_column)} in ({', '.join(sqlite_quote_id(m.table_name, m.id_column) for m in reversed(preceding))})"
-                for m, preceding in [(m, metadata[:i]) for i, m in enumerate(metadata[1:], 1)])]
-
-        # Take some small pains to make the query readable since it makes
-        # debugging and development easier.  Note that backslashes aren't
-        # allowed inside f-string expressions, hence the *newline* variable.
-        newline = '\n'
-        query = dedent(f"""\
-            select
-                {(',' + newline + '                ').join(select_list)}
-            from
-                {(newline + '                ').join(from_list)}
-            ;
-            """)
-
-
-        # Write merged metadata as export from SQLite db.
+    # Read all metadata files into a SQLite db
+    for m in metadata:
+        # All other metadata reading in Augur (i.e. via the csv module)
+        # uses Python's "universal newlines"¹ definition and accepts \n,
+        # \r\n, and \r as newlines interchangably (even mixed within the
+        # same file!).  We accomplish the same behaviour here with SQLite's
+        # less flexible newline handling by relying on the universal
+        # newline translation of `augur read-file`.
+        #   -trs, 24 July 2024
         #
-        # Assume TSV like nearly all other extant --output-metadata options.
-        print_info(f"Merging metadata and writing to {args.output_metadata!r}…")
-        print_debug(query)
-        sqlite3(db_path,
+        # ¹ <https://docs.python.org/3/glossary.html#term-universal-newlines>
+        newline = os.linesep
+
+        print_info(f"Reading {m.name!r} metadata from {m.path!r}…")
+        db.run(
             f'.mode csv',
-            f'.separator "\\t" "\\n"',
-            f'.headers on',
-            f'.once {sqlite_quote_dot(f"|{augur} write-file {shquote(args.output_metadata)}")}',
-            query)
+            f'.separator {sqlite_quote_dot(m.delimiter)} {sqlite_quote_dot(newline)}',
+            f'.import {sqlite_quote_dot(f"|{augur} read-file {shquote(m.path)}")} {sqlite_quote_dot(m.table_name)}',
 
-    except SQLiteError as err:
-        delete_db = False
-        raise AugurError(str(err)) from err
+            f'create unique index {sqlite_quote_id(f"{m.table_name}_id")} on {sqlite_quote_id(m.table_name)}({sqlite_quote_id(m.id_column)});',
 
-    finally:
-        if delete_db:
-            os.unlink(db_path)
-        else:
-            print_info(f"WARNING: Skipped deletion of {db_path} due to error, but you may want to clean it up yourself (e.g. if it's large).")
+            # <https://sqlite.org/pragma.html#pragma_optimize>
+            f'pragma optimize;')
+
+        # We're going to use Metadata.columns to generate the select
+        # statement, so ensure it matches what SQLite's .import created.
+        assert m.columns == (table_columns := sqlite3_table_columns(db.path, m.table_name)), \
+            f"{m.columns!r} == {table_columns!r}"
+
+    return metadata
 
 
+def merge_metadata(
+        db: Database,
+        metadata: List[NamedMetadata],
+        output_columns: Columns,
+        output_metadata: str,
+        output_source_column: Optional[Callable[[str], str]],
+    ):
+    # Construct query to produce merged metadata.
+    select_list = [
+        # Output metadata columns coalesced across input metadata columns
+        *(f"""coalesce({', '.join(f"nullif({x}, '')" for x in starmap(sqlite_quote_id, reversed(input_columns)))}, null) as {sqlite_quote_id(output_column)}"""
+            for output_column, input_columns in output_columns.items()),
+
+        # Source columns.  Select expressions generated here instead of
+        # earlier to stay adjacent to the join conditions below, upon which
+        # these rely.
+        *(f"""{sqlite_quote_id(m.table_name, m.id_column)} is not null as {sqlite_quote_id(output_source_column(m.name))}"""
+            for m in metadata if output_source_column)]
+
+    from_list = [
+        sqlite_quote_id(metadata[0].table_name),
+        *(f"full outer join {sqlite_quote_id(m.table_name)} on {sqlite_quote_id(m.table_name, m.id_column)} in ({', '.join(sqlite_quote_id(m.table_name, m.id_column) for m in reversed(preceding))})"
+            for m, preceding in [(m, metadata[:i]) for i, m in enumerate(metadata[1:], 1)])]
+
+    # Take some small pains to make the query readable since it makes
+    # debugging and development easier.  Note that backslashes aren't
+    # allowed inside f-string expressions, hence the *newline* variable.
+    newline = '\n'
+    query = dedent(f"""\
+        select
+            {(',' + newline + '                ').join(select_list)}
+        from
+            {(newline + '                ').join(from_list)}
+        ;
+        """)
+
+
+    # Write merged metadata as export from SQLite db.
+    #
+    # Assume TSV like nearly all other extant --output-metadata options.
+    print_info(f"Merging metadata and writing to {output_metadata!r}…")
+    print_debug(query)
+    db.run(
+        f'.mode csv',
+        f'.separator "\\t" "\\n"',
+        f'.headers on',
+        f'.once {sqlite_quote_dot(f"|{augur} write-file {shquote(output_metadata)}")}',
+        query)
+
+    db.cleanup()
+
+
+def get_sequences(input_sequences: List[str]):
+    # FIXME: support unnamed sequence files by returning UnnamedSequenceFile | NamedSequenceFile
+
+    # Validate arguments
+    sequences = parse_named_inputs(input_sequences)
+
+    return [NamedSequenceFile(name, path) for name, path in sequences]
+
+
+def load_sequences(db: Database, sequences: List[NamedSequenceFile]):
+    for s in sequences:
+        ids = [seq.id for seq in read_sequences(s.path)]
+
+        if duplicates := [item for item, count in count_unique(ids) if count > 1]:
+            raise AugurError(f"The following entries are duplicated in {s.path!r}:\n" + "\n".join(duplicates))
+
+        db.run(f"create table {sqlite_quote_id(s.table_name)} ({sqlite_quote_id(SEQUENCE_ID_COLUMN)} text);")
+        values = ", ".join([f"('{id}')" for id in ids])
+        db.run(f"insert into {sqlite_quote_id(s.table_name)} ({sqlite_quote_id(SEQUENCE_ID_COLUMN)}) values {values};")
+
+        db.run(f'create unique index {sqlite_quote_id(f"{s.table_name}_id")} on {sqlite_quote_id(s.table_name)}({sqlite_quote_id(SEQUENCE_ID_COLUMN)});')
+
+
+# FIXME: return a list of arguments and don't use shell
+def cat(filepath: str):
+    cat = "cat"
+
+    if filepath.endswith(".gz"):
+        cat = "gzcat"
+    if filepath.endswith(".xz"):
+        cat = "xzcat"
+    if filepath.endswith(".zst"):
+        cat = "zstdcat"
+
+    return f"{cat} {filepath}"
+
+
+def merge_sequences(
+        db: Database,
+        sequences: List[NamedSequenceFile],
+        output_sequences: str,
+    ):
+    # Confirm that seqkit is installed.
+    if which("seqkit") is None:
+        raise AugurError("'seqkit' is not installed! This is required to merge sequences.")
+
+    # Reversed because seqkit rmdup keeps the first entry but this command
+    # should keep the last entry.
+    # FIXME: don't use shell. just using it to get a sense of feasibility.
+    # FIXME: is seqkit overkill here? compare to ncov's drop_duplicate_sequences which is plain Python.
+    # https://github.com/nextstrain/ncov/blob/0769ac0429df8456ce70be2f74dc885d7b7fab12/scripts/sanitize_sequences.py#L127
+    cat_processes = (f"<({cat(filepath)})" for filepath in reversed([sequence_input.path for sequence_input in sequences]))
+    shell_cmd = f"cat {' '.join(cat_processes)} | seqkit rmdup"
+    print_debug(F"running shell command {shell_cmd!r}")
+    process = subprocess.Popen(shell_cmd, shell=True, executable="/bin/bash", stdout=subprocess.PIPE)
+
+    # FIXME: output only the sequences that are also present in metadata
+    # 1. before calling this function, create an index table mapping ID -> output (boolean)
+    # 2. create a file with list of IDs to output
+    # 3. use `seqkit grep` to filter the output of rmdup
+
+    # FIXME: handle `-` better
+    output = process.communicate()[0]
+    if output_sequences == "-":
+        sys.stdout.write(output.decode())
+    else:
+        with open(output_sequences, "w") as f:
+            f.write(output.decode())
+
+
+# FIXME: do this for seqkit too
 def sqlite3(*args, **kwargs):
     """
     Internal helper for invoking ``sqlite3``, the SQLite CLI program.
@@ -478,3 +681,34 @@ def shquote_humanized(x):
     # …and instead quote a final empty string down here if we're still empty
     # after joining all our parts together.
     return quoted if quoted else shquote('')
+
+
+def parse_named_inputs(inputs):
+    # FIXME: add specific input type (metadata/sequences) to outputs
+    # Parse --metadata arguments
+    if not len(inputs) >= 2:
+        raise AugurError(f"At least two inputs are required for merging.")
+
+    if unnamed := [repr(x) for x in inputs if "=" not in x or x.startswith("=")]:
+        raise AugurError(dedent(f"""\
+            All inputs must be assigned a name, e.g. with NAME=FILE.
+
+            The following {_n("input was", "inputs were", len(unnamed))} missing a name:
+
+              {indented_list(unnamed, '            ' + '  ')}
+            """))
+
+    named_inputs = pairs(inputs)
+
+    if duplicate_names := [repr(name) for name, count
+                                       in count_unique(name for name, _ in named_inputs)
+                                       if count > 1]:
+        raise AugurError(dedent(f"""\
+            Metadata input names must be unique.
+
+            The following {_n("name was", "names were", len(duplicate_names))} used more than once:
+
+              {indented_list(duplicate_names, '            ' + '  ')}
+            """))
+
+    return named_inputs
