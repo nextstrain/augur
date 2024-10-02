@@ -108,6 +108,13 @@ class Database:
         os.unlink(self.path)
 
 
+class UnnamedFile:
+    table_name: str
+    """Generated SQLite table name for this file, based on *path*."""
+
+    path: str
+
+
 class NamedFile:
     name: str
     """User-provided descriptive name for this file."""
@@ -126,6 +133,17 @@ class NamedSequenceFile(NamedFile):
 
     def __repr__(self):
         return f"<NamedSequenceFile {self.name}={self.path}>"
+
+
+class UnnamedSequenceFile(UnnamedFile):
+    def __init__(self, name: str, path: str):
+        self.name = name
+        self.path = path
+        self.table_name = f"sequences_{re.sub(r'[^a-zA-Z0-9]', '_', os.path.basename(self.path))}"
+
+    def __repr__(self):
+        return f"<NamedSequenceFile {self.name}={self.path}>"
+
 
 class NamedMetadata(Metadata, NamedFile):
     def __init__(self, name: str, *args, **kwargs):
@@ -181,34 +199,51 @@ def run(args):
 
     db = Database()
 
-    if args.metadata and args.sequences:
-        # FIXME: check order of inputs
-        # ERROR: Order of inputs differs between metadata (a,b) and sequences (b,a).
-
-        # FIXME: check that inputs match
-        # ERROR: Sequence file (c.fasta) does not have a corresponding metadata file.
-        ...
-
+    metadata = None
+    sequences = None
+    named_sequences = None
+    unnamed_sequences = None
     if args.metadata:
         metadata = get_metadata(args.metadata, args.metadata_id_columns, args.metadata_delimiters)
-        output_source_column = get_output_source_column(args.source_columns, metadata)
-        output_columns = get_output_columns(metadata, args.source_columns)
-        load_metadata(db, metadata)
 
     if args.sequences:
         sequences = get_sequences(args.sequences)
-        load_sequences(db, sequences)
+        named_sequences = [s for s in sequences if isinstance(s, NamedSequenceFile)]
+        unnamed_sequences = [s for s in sequences if isinstance(s, UnnamedSequenceFile)]
 
-    metadata_by_name = {m.name: m for m in metadata}
-    sequences_by_name = {s.name: s for s in sequences}
-
-    for name in metadata_by_name.keys() & sequences_by_name.keys():
-        # FIXME: check that entries in input match
-        # WARNING: Sequence 'XXX' in a.tsv is missing from a.fasta. It will not be present in any output.
-        # WARNING: Sequence 'YYY' in b.fasta is missing from b.csv. It will not be present in any output.
+    if unnamed_sequences:
+        # FIXME: Print warning for each unnamed sequence file
+        # WARNING: Sequence file 'c.fasta' is unnamed. Skipping validation with metadata.
         ...
 
+    if metadata and named_sequences:
+        # FIXME: check order of named inputs
+        # ERROR: Order of inputs differs between named metadata (a,b) and sequences (b,a).
+
+        # FIXME: check that named inputs match
+        # ERROR: Sequence file 'c=c.fasta' does not have a corresponding metadata file.
+        ...
+
+    if metadata:
+        load_metadata(db, metadata)
+
+    if sequences:
+        load_sequences(db, sequences)
+
+
+    if metadata and named_sequences:
+        metadata_by_name = {m.name: m for m in metadata}
+        sequences_by_name = {s.name: s for s in named_sequences}
+
+        for name in metadata_by_name.keys() & sequences_by_name.keys():
+            # FIXME: check database for matching entries
+            # WARNING: Sequence 'XXX' in a.tsv is missing from a.fasta. It will not be present in any output.
+            # WARNING: Sequence 'YYY' in b.fasta is missing from b.csv. It will not be present in any output.
+            ...
+
     if args.output_metadata:
+        output_source_column = get_output_source_column(args.source_columns, metadata)
+        output_columns = get_output_columns(metadata, args.source_columns)
         merge_metadata(db, metadata, output_columns, args.output_metadata, output_source_column)
 
     if args.output_sequences:
@@ -426,13 +461,12 @@ def merge_metadata(
     db.cleanup()
 
 
-def get_sequences(input_sequences):
+def get_sequences(input_sequences: List[str]):
+    # FIXME: support unnamed sequence files by returning UnnamedSequenceFile | NamedSequenceFile
+
     # Validate arguments
     sequences = parse_named_inputs(input_sequences)
 
-    # FIXME: support unnamed inputs
-    # table name can be based on filename + random characters
-    
     return [NamedSequenceFile(name, path) for name, path in sequences]
 
 
