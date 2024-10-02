@@ -39,6 +39,7 @@ Repeat with sequence and strain outputs. We should get the same results.
   \s*0 .* (re)
   $ grep "^>" filtered.fasta | wc -l
   \s*0 (re)
+  [1]
 
 Repeat without any sequence-based filters.
 Since we expect metadata to be filtered by presence of strains in input sequences, this should produce no results because the intersection of metadata and sequences is empty.

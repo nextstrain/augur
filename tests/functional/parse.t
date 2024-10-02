@@ -107,6 +107,7 @@ This should use the first field as the id field and the metadata should not have
   - strain\tvirus\taccession\tdate\tregion\tcountry\tdivision\tcity\tdb\tsegment\tauthors\turl\ttitle\tjournal\tpaper_url (esc)
   ---
   + col1\tvirus\tcol3\tdate\tregion\tcountry\tdivision\tcity\tdb\tsegment\tauthors\turl\ttitle\tjournal\tpaper_url (esc)
+  [1]
   $ rm -f "$TMP/sequences.fasta" "$TMP/metadata.tsv"
 
 Parse compressed Zika sequences into sequences and metadata.

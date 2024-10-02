@@ -25,7 +25,6 @@ error when it encounters the record with mismatched fields.
 Passing the records through multiple augur curate commands should raise the
 same error when it encounters the record with mismatched fields.
 
-  $ set -o pipefail
   $ cat records.ndjson \
   >   | ${AUGUR} curate passthru \
   >   | ${AUGUR} curate passthru \
