@@ -67,7 +67,7 @@ jobs:
     # available on PyPI allows us to test against dependencies installed by pip,
     # which may have slightly different versions compared to Conda counterparts.
     - name: Install dependencies from Conda
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v2
       with:
         create-args: mafft raxml fasttree iqtree vcftools sqlite tsv-utils biopython=${{ matrix.biopython-version }} python=${{ matrix.python-version }}
         condarc: |
@@ -127,7 +127,7 @@ jobs:
 
       # Set up a Conda environment that replicates Nextstrain's Conda runtime.
       - name: Install nextstrain-base from Conda
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           create-args: nextstrain-base
           condarc: |
@@ -263,7 +263,7 @@ jobs:
 
       # Set up a Conda environment that replicates Nextstrain's Conda runtime.
       - name: Install nextstrain-base from Conda
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           create-args: nextstrain-base
           condarc: |
