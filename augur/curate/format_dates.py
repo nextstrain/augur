@@ -10,6 +10,7 @@ from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
+from .argparse_shared_parser import shared_parser
 
 
 # Default date formats that this command should parse
@@ -24,7 +25,7 @@ DEFAULT_EXPECTED_DATE_FORMATS = [
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("format-dates",
-        parents=[parent_subparsers.shared_parser],
+        parents=[shared_parser],
         help=__doc__)
 
     required = parser.add_argument_group(title="REQUIRED")
