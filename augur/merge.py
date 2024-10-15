@@ -182,7 +182,7 @@ def get_metadata(
         input_metadata_delimiters: Sequence[str],
     ) -> List[NamedMetadata]:
     # Validate --metadata arguments
-    metadata = parse_named_inputs(input_metadata)
+    metadata = parse_inputs(input_metadata, require_names=True)
 
     # Parse --metadata-id-columns and --metadata-delimiters
     metadata_names = set(name for name, _ in metadata)
@@ -486,7 +486,7 @@ def count_unique(xs: Iterable[T]) -> Iterable[Tuple[T, int]]:
 
 
 def indented_list(xs, prefix):
-    return f"\n{prefix}".join(xs)
+    return f"\n{prefix}".join(repr(x) for x in xs)
 
 
 def shquote_humanized(x):
@@ -538,21 +538,47 @@ def shquote_humanized(x):
     return quoted if quoted else shquote('')
 
 
-def parse_named_inputs(inputs: Sequence[str]):
-    if unnamed := [repr(x) for x in inputs if "=" not in x or x.startswith("=")]:
+def parse_inputs(inputs: Sequence[str], require_names: bool = False):
+    """
+    Parse inputs into tuples of (name, file).
+    name is an empty string for unnamed inputs.
+    """
+    # These are only used for error checking.
+    # The original order of inputs should still be used at the end.
+    invalid_named_inputs: List[str] = []
+    named_inputs: List[str] = []
+    unnamed_inputs: List[str] = []
+    for x in inputs:
+        if x.startswith("="):
+            invalid_named_inputs.append(x)
+        elif "=" in x:
+            named_inputs.append(x)
+        else:
+            unnamed_inputs.append(x)
+
+    if require_names and (bad_inputs := [*invalid_named_inputs, *unnamed_inputs]):
         raise AugurError(dedent(f"""\
             All inputs must be assigned a name, e.g. with NAME=FILE.
 
-            The following {_n("input was", "inputs were", len(unnamed))} missing a name:
+            The following {_n("input was", "inputs were", len(bad_inputs))} missing a name:
 
-              {indented_list(unnamed, '            ' + '  ')}
+              {indented_list(bad_inputs, '            ' + '  ')}
             """))
 
-    named_inputs = pairs(inputs)
+    if invalid_named_inputs:
+        raise AugurError(dedent(f"""\
+            Input filenames cannot start with '='.
+
+            The following {_n("input starts", "inputs start", len(bad_inputs))} with '=':
+
+              {indented_list(invalid_named_inputs, '            ' + '  ')}
+            """))
+
+    input_pairs = pairs(inputs)
 
     if duplicate_names := [repr(name) for name, count
-                                       in count_unique(name for name, _ in named_inputs)
-                                       if count > 1]:
+                                       in count_unique(name for name, _ in input_pairs)
+                                       if name != "" and count > 1]:
         raise AugurError(dedent(f"""\
             Metadata input names must be unique.
 
@@ -561,4 +587,4 @@ def parse_named_inputs(inputs: Sequence[str]):
               {indented_list(duplicate_names, '            ' + '  ')}
             """))
 
-    return named_inputs
+    return input_pairs
