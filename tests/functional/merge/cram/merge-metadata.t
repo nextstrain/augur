@@ -246,8 +246,8 @@ Metadata names are required.
   
   The following inputs were missing a name:
   
-    'x.tsv'
     '=y.tsv'
+    'x.tsv'
   
   [2]
 

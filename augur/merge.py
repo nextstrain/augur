@@ -182,7 +182,7 @@ def get_metadata(
     ) -> List[NamedMetadata]:
     # Validate --metadata arguments
     try:
-        metadata = parse_named_inputs(input_metadata)
+        metadata = parse_inputs(input_metadata, require_names=True)
     except UnnamedInputError as e:
         raise AugurError(dedent(f"""\
             All metadata inputs must be assigned a name, e.g. with NAME=FILE.
@@ -552,23 +552,51 @@ def shquote_humanized(x):
     return quoted if quoted else shquote('')
 
 
-def parse_named_inputs(inputs: Sequence[str]):
-    if unnamed := [x for x in inputs if "=" not in x or x.startswith("=")]:
-        raise UnnamedInputError(unnamed)
+def parse_inputs(inputs: Sequence[str], require_names: bool = False):
+    """
+    Parse inputs into tuples of (name, file).
+    name is an empty string for unnamed inputs.
 
-    named_inputs = pairs(inputs)
+    If names are required, this function can raise UnnamedInputError or DuplicateInputNameError.
+    If names are optional, this function can raise InvalidNamedInputError or DuplicateInputNameError.
+    """
+    # These are only used for error checking.
+    # The original order of inputs should still be used at the end.
+    invalid_named_inputs: List[str] = []
+    named_inputs: List[str] = []
+    unnamed_inputs: List[str] = []
+    for x in inputs:
+        if x.startswith("="):
+            invalid_named_inputs.append(x)
+        elif "=" in x:
+            named_inputs.append(x)
+        else:
+            unnamed_inputs.append(x)
+
+    if require_names:
+        if bad_inputs := [*invalid_named_inputs, *unnamed_inputs]:
+            raise UnnamedInputError(bad_inputs)
+    elif invalid_named_inputs:
+        raise InvalidNamedInputError(invalid_named_inputs)
+
+    input_pairs = pairs(inputs)
 
     if duplicate_names := [name for name, count
-                                 in count_unique(name for name, _ in named_inputs)
-                                 if count > 1]:
+                                 in count_unique(name for name, _ in input_pairs)
+                                 if name != "" and count > 1]:
         raise DuplicateInputNameError(duplicate_names)
 
-    return named_inputs
+    return input_pairs
 
 
 class UnnamedInputError(Exception):
     def __init__(self, unnamed: Sequence[str]):
         self.unnamed = unnamed
+
+
+class InvalidNamedInputError(Exception):
+    def __init__(self, invalid: Sequence[str]):
+        self.invalid = invalid
 
 
 class DuplicateInputNameError(Exception):
