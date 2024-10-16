@@ -1,6 +1,9 @@
 """
-Format date fields to ISO 8601 dates (YYYY-MM-DD), where incomplete dates
-are masked with 'XX' (e.g. 2023 -> 2023-XX-XX).
+Format date fields to ISO 8601 dates (YYYY-MM-DD).
+
+If the provided ``--expected-date-formats`` represent incomplete dates then
+the incomplete dates are masked with 'XX'. For example, providing
+``%Y`` will allow year only dates to be formatted as ``2023-XX-XX``.
 """
 import re
 from datetime import datetime
