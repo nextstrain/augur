@@ -184,6 +184,10 @@ def format_date(date_string, expected_formats):
 def run(args, records):
     failures = []
     failure_reporting = args.failure_reporting
+    failure_suggestion = (
+        f"\nCurrent expected date formats are {args.expected_date_formats!r}. " +
+        "This can be updated with --expected-date-formats."
+    )
     for index, record in enumerate(records):
         record = record.copy()
         record_id = index
@@ -206,7 +210,7 @@ def run(args, records):
 
                 failure_message = f"Unable to format date string {date_string!r} in field {field!r} of record {record_id!r}."
                 if failure_reporting is DataErrorMethod.ERROR_FIRST:
-                    raise AugurError(failure_message)
+                    raise AugurError(failure_message + failure_suggestion)
 
                 if failure_reporting is DataErrorMethod.WARN:
                     print_err(f"WARNING: {failure_message}")
@@ -224,10 +228,10 @@ def run(args, records):
             '\n'.join(map(repr, failures))
         )
         if failure_reporting is DataErrorMethod.ERROR_ALL:
-            raise AugurError(failure_message)
+            raise AugurError(failure_message + failure_suggestion)
 
         elif failure_reporting is DataErrorMethod.WARN:
-            print_err(f"WARNING: {failure_message}")
+            print_err(f"WARNING: {failure_message}" + failure_suggestion)
 
         else:
             raise ValueError(f"Encountered unhandled failure reporting method: {failure_reporting!r}")
