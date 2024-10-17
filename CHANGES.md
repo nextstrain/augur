@@ -10,8 +10,10 @@
 ### Bug Fixes
 
 * index: Previously specifying a directory that does not exist in the path to `--output` would result in an incorrect error stating that the input file does not exist. It now shows the correct path responsible for the error. [#1644][] (@victorlin)
+* curate format-dates: Update help docs and improve failure messages to show use of `--expected-date-formats`. [#1653][] (@joverlee521)
 
 [#1644]: https://github.com/nextstrain/augur/issues/1644
+[#1653]: https://github.com/nextstrain/augur/pull/1653
 [#1656]: https://github.com/nextstrain/augur/pull/1656
 
 ## 26.0.0 (17 September 2024)
