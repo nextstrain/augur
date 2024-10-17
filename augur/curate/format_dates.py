@@ -33,14 +33,14 @@ def register_parser(parent_subparsers):
     required = parser.add_argument_group(title="REQUIRED")
     required.add_argument("--date-fields", nargs="+", action="extend",
         help="List of date field names in the record that need to be standardized.")
-    required.add_argument("--expected-date-formats", nargs="+", action="extend",
+
+    optional = parser.add_argument_group(title="OPTIONAL")
+    optional.add_argument("--expected-date-formats", nargs="+", action="extend",
         default=DEFAULT_EXPECTED_DATE_FORMATS,
         help="Expected date formats that are currently in the provided date fields, " +
              "defined by standard format codes as listed at " +
              "https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes. " +
              "If a date string matches multiple formats, it will be parsed as the first matched format in the provided order.")
-
-    optional = parser.add_argument_group(title="OPTIONAL")
     optional.add_argument("--failure-reporting",
         type=DataErrorMethod.argtype,
         choices=list(DataErrorMethod),
