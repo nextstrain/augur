@@ -1,7 +1,9 @@
 """
 Custom helpers for the argparse standard library.
 """
-from argparse import Action, ArgumentDefaultsHelpFormatter
+from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup
+from typing import Union
+from .types import ValidationMode
 
 
 # Include this in an argument help string to suppress the automatic appending
@@ -93,3 +95,34 @@ class ExtendOverwriteDefault(Action):
             current = []
 
         setattr(namespace, self.dest, [*current, *value])
+
+
+def add_validation_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
+    """
+    Add arguments to configure validation mode of node data JSON files.
+    """
+    parser.add_argument(
+        '--validation-mode',
+        dest="validation_mode",
+        type=ValidationMode,
+        choices=[mode for mode in ValidationMode],
+        default=ValidationMode.ERROR,
+        help="""
+            Control if optional validation checks are performed and what
+            happens if they fail.
+
+            'error' and 'warn' modes perform validation and emit messages about
+            failed validation checks.  'error' mode causes a non-zero exit
+            status if any validation checks failed, while 'warn' does not.
+
+            'skip' mode performs no validation.
+
+            Note that some validation checks are non-optional and as such are
+            not affected by this setting.
+        """)
+    parser.add_argument(
+        '--skip-validation',
+        dest="validation_mode",
+        action="store_const",
+        const=ValidationMode.SKIP,
+        help="Skip validation of input/output files, equivalent to --validation-mode=skip. Use at your own risk!")
