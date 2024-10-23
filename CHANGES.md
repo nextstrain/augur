@@ -2,11 +2,17 @@
 
 ## __NEXT__
 
+### Features
+
+* ancestral, translate: Add `--skip-validation` as an alias to `--validation-mode=skip`. [#1656][] (@victorlin)
+* clades: Allow customizing the validation of input node data JSON files with `--validation-mode` and `--skip-validation`. [#1656][] (@victorlin)
+
 ### Bug Fixes
 
 * index: Previously specifying a directory that does not exist in the path to `--output` would result in an incorrect error stating that the input file does not exist. It now shows the correct path responsible for the error. [#1644][] (@victorlin)
 
 [#1644]: https://github.com/nextstrain/augur/issues/1644
+[#1656]: https://github.com/nextstrain/augur/pull/1656
 
 ## 26.0.0 (17 September 2024)
 
