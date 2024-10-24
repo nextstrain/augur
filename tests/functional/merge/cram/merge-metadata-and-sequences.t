@@ -157,3 +157,12 @@ If sequence names are provided,
   Reading sequences from 'x.fasta'\xe2\x80\xa6 (esc)
   Merging sequences and writing to 'merged.fasta'\xe2\x80\xa6 (esc)
   [SeqKit] [INFO]\x1b[0m 1 duplicated records removed (esc)
+
+(5) Unnamed files can still be present anywhere in the list.
+
+  $ ${AUGUR} merge \
+  >   --metadata X=x.tsv Y=y.tsv \
+  >   --sequences X=x.fasta z.fasta Y=y.fasta \
+  >   --output-metadata merged.tsv \
+  >   --output-sequences merged.fasta \
+  >   --quiet

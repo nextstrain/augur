@@ -234,7 +234,7 @@ def run(args: argparse.Namespace):
 
         named_sequences = [s for s in sequences if isinstance(s, NamedSequenceFile)]
 
-        if unnamed_sequences := [s for s in sequences if isinstance(s, UnnamedSequenceFile)]:
+        if metadata and (unnamed_sequences := [s for s in sequences if isinstance(s, UnnamedSequenceFile)]):
             for x in unnamed_sequences:
                 print_info(f"WARNING: Sequence file {x.path!r} is unnamed. Skipping validation with metadata.")
 

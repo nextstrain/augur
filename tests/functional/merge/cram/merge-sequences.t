@@ -21,7 +21,7 @@ Sequence inputs are merged with duplicate ID handling.
   > ~~
 
   $ ${AUGUR} merge \
-  >   --sequences x=x.fasta y=y.fasta \
+  >   --sequences x.fasta y.fasta \
   >   --output-sequences - > merged.fasta
   Reading sequence IDs from 'x.fasta'…
   Reading sequence IDs from 'y.fasta'…
@@ -48,7 +48,7 @@ Duplicates are not allowed within individual sequence inputs.
   > ~~
 
   $ ${AUGUR} merge \
-  >   --sequences x=x.fasta y=y.fasta \
+  >   --sequences x.fasta y.fasta \
   >   --output-sequences - > merged.fasta \
   >   --quiet
   ERROR: IDs must be unique within a sequence input file.
