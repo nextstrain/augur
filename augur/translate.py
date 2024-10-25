@@ -22,9 +22,8 @@ from .utils import parse_genes_argument, read_node_data, load_features, \
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
 from textwrap import dedent
-from .types import ValidationMode
+from .argparse_ import add_validation_arguments
 from .util_support.node_data_file import NodeDataObject
-from .export_v2 import validation_mode_help_message
 
 class MissingNodeError(Exception):
     pass
@@ -373,7 +372,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
                                    "If a VCF-input, a .vcf or .vcf.gz will be output here (depending on file ending). If fasta-input, specify the file name "
                                    "like so: 'my_alignment_%%GENE.fasta', where '%%GENE' will be replaced by the name of the gene")
-    parser.add_argument('--validation-mode', type=ValidationMode, choices=[mode for mode in ValidationMode], default=ValidationMode.ERROR, help=validation_mode_help_message)
+    add_validation_arguments(parser)
 
     vcf_only = parser.add_argument_group(
         title="VCF specific",

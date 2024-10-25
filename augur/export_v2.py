@@ -13,7 +13,7 @@ import re
 from Bio import Phylo
 from typing import Dict, Union, TypedDict, Any, Tuple
 
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, add_validation_arguments
 from .errors import AugurError
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
@@ -926,20 +926,6 @@ def node_data_prop_is_normal_trait(name):
 
     return True
 
-validation_mode_help_message = """
-    Control if optional validation checks are performed and what
-    happens if they fail.
-
-    'error' and 'warn' modes perform validation and emit messages about
-    failed validation checks.  'error' mode causes a non-zero exit
-    status if any validation checks failed, while 'warn' does not.
-
-    'skip' mode performs no validation.
-
-    Note that some validation checks are non-optional and as such are
-    not affected by this setting.
-"""
-
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("v2", help=__doc__)
@@ -1007,19 +993,7 @@ def register_parser(parent_subparsers):
     optional_settings = parser.add_argument_group(
         title="OTHER OPTIONAL SETTINGS"
     )
-    optional_settings.add_argument(
-        '--validation-mode',
-        dest="validation_mode",
-        type=ValidationMode,
-        choices=[mode for mode in ValidationMode],
-        default=ValidationMode.ERROR,
-        help=validation_mode_help_message)
-    optional_settings.add_argument(
-        '--skip-validation',
-        dest="validation_mode",
-        action="store_const",
-        const=ValidationMode.SKIP,
-        help="Skip validation of input/output files, equivalent to --validation-mode=skip. Use at your own risk!")
+    add_validation_arguments(optional_settings)
 
     return parser
 

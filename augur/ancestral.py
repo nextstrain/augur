@@ -34,9 +34,8 @@ from .io.file import open_file
 from .io.vcf import is_vcf as is_filename_vcf
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
-from .types import ValidationMode
+from .argparse_ import add_validation_arguments
 from .util_support.node_data_file import NodeDataObject
-from .export_v2 import validation_mode_help_message
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
                                  marginal=False, fill_overhangs=True, infer_tips=False,
@@ -335,8 +334,7 @@ def register_parser(parent_subparsers):
     general_group = parser.add_argument_group(
         "general",
     )
-    general_group.add_argument('--validation-mode', type=ValidationMode, choices=[mode for mode in ValidationMode], default=ValidationMode.ERROR,
-                               help=validation_mode_help_message)
+    add_validation_arguments(general_group)
 
     return parser
 
