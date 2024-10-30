@@ -5,7 +5,6 @@ The top-level augur command which dispatches to subcommands.
 import argparse
 import os
 import sys
-import importlib
 import traceback
 from textwrap import dedent
 from types import SimpleNamespace
@@ -48,10 +47,20 @@ command_strings = [
     "write_file",
 ]
 
-COMMANDS = [importlib.import_module('augur.' + c) for c in command_strings]
+class LazyArgumentParser(argparse.ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lazy_init = None
+
+    def parse_known_args(self, args=None, namespace=None):
+        if self.lazy_init is not None:
+            self.lazy_init()
+            self.lazy_init = None
+        return super().parse_known_args(args, namespace)
+
 
 def make_parser():
-    parser = argparse.ArgumentParser(
+    parser = LazyArgumentParser(
         prog        = "augur",
         description = "Augur: A bioinformatics toolkit for phylogenetic analysis.")
 
@@ -59,7 +68,7 @@ def make_parser():
     add_version_alias(parser)
 
     subparsers = parser.add_subparsers()
-    add_command_subparsers(subparsers, COMMANDS)
+    add_command_subparsers(subparsers, command_strings)
 
     return parser
 

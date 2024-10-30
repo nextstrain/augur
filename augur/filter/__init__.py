@@ -117,8 +117,7 @@ def register_arguments(parser):
     parser.set_defaults(probabilistic_sampling=True)
 
 
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("filter", help=__doc__)
+def register_parser(parser):
     register_arguments(parser)
     return parser
 

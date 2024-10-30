@@ -2,8 +2,10 @@
 Custom helpers for the argparse standard library.
 """
 from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup
+import importlib
 from typing import Union
 from .types import ValidationMode
+from augur.utils import first_line
 
 
 # Include this in an argument help string to suppress the automatic appending
@@ -32,7 +34,7 @@ def add_default_command(parser):
     parser.set_defaults(__command__ = default_command)
 
 
-def add_command_subparsers(subparsers, commands, command_attribute='__command__'):
+def add_command_subparsers(subparsers, command_strings, command_attribute='__command__'):
     """
     Add subparsers for each command module.
 
@@ -51,24 +53,34 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         Optional attribute name for the commands. The default is `__command__`,
         which allows top level augur to run commands directly via `args.__command__.run()`.
     """
-    for command in commands:
-        # Allow each command to register its own subparser
-        subparser = command.register_parser(subparsers)
+    for command_string in command_strings:
+        # FIXME: add help=first_line(command.__doc__). not trivial because command is not yet imported
+        subparser = subparsers.add_parser(command_string)
 
-        # Add default attribute for command module
-        if command_attribute:
-            subparser.set_defaults(**{command_attribute: command})
+        def make_lazy_init(command_string):
+            def lazy_init():
+                command = importlib.import_module('augur.' + command_string)
+                # Allow each command to register its own subparser
+                command.register_parser(subparser)
 
-        # Use the same formatting class for every command for consistency.
-        # Set here to avoid repeating it in every command's register_parser().
-        subparser.formatter_class = ArgumentDefaultsHelpFormatter
+                # Add default attribute for command module
+                if command_attribute:
+                    subparser.set_defaults(**{command_attribute: command})
 
-        if not subparser.description and command.__doc__:
-            subparser.description = command.__doc__
+                # Use the same formatting class for every command for consistency.
+                # Set here to avoid repeating it in every command's register_parser().
+                subparser.formatter_class = ArgumentDefaultsHelpFormatter
 
-        # If a command doesn't have its own run() function, then print its help when called.
-        if not getattr(command, "run", None):
-            add_default_command(subparser)
+                if not subparser.description and command.__doc__:
+                    subparser.description = command.__doc__
+
+                # If a command doesn't have its own run() function, then print its help when called.
+                if not getattr(command, "run", None):
+                    add_default_command(subparser)
+
+            return lazy_init
+
+        subparser.lazy_init = make_lazy_init(command_string)
 
 
 class HideAsFalseAction(Action):
