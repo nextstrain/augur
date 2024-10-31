@@ -10,7 +10,7 @@ import argparse
 from typing import Generator, List
 from augur.io.print import print_err
 from augur.utils import first_line
-from ._shared import shared_parser
+from ._shared import shared_parser, validate
 
 
 def parse_location(
@@ -65,6 +65,7 @@ def register_parser(
     return parser
 
 
+@validate
 def run(
     args: argparse.Namespace,
     records: List[dict],

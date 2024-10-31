@@ -2,7 +2,7 @@
 Pass through records without doing any data transformations.
 Useful for testing, troubleshooting, or just converting file formats.
 """
-from ._shared import shared_parser
+from ._shared import shared_parser, validate
 
 
 def register_parser(parent_subparsers):
@@ -11,6 +11,7 @@ def register_parser(parent_subparsers):
         help=__doc__)
 
 
+@validate
 def run(args, records):
     yield from records
 

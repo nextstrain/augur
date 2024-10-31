@@ -5,7 +5,7 @@ from collections import defaultdict
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.utils import first_line
-from ._shared import shared_parser
+from ._shared import shared_parser, validate
 
 
 class CyclicGeolocationRulesError(AugurError):
@@ -211,6 +211,7 @@ def register_parser(parent_subparsers):
     return parser
 
 
+@validate
 def run(args, records):
     location_fields = [args.region_field, args.country_field, args.division_field, args.location_field]
 

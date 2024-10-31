@@ -10,7 +10,7 @@ from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
-from ._shared import shared_parser
+from ._shared import shared_parser, validate
 
 
 # Default date formats that this command should parse
@@ -179,6 +179,7 @@ def format_date(date_string, expected_formats):
     return None
 
 
+@validate
 def run(args, records):
     failures = []
     failure_reporting = args.failure_reporting

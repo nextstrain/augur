@@ -7,7 +7,7 @@ from typing import Optional, Set, Union
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
-from ._shared import shared_parser
+from ._shared import shared_parser, validate
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("titlecase",
@@ -74,6 +74,7 @@ def titlecase(text: Union[str, None], articles: Set[str] = set(), abbreviations:
     return ''.join(changecase(i, w) for i, w in words)
 
 
+@validate
 def run(args, records):
     failures = []
     failure_reporting = args.failure_reporting

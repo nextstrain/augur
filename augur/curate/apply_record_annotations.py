@@ -7,7 +7,7 @@ from collections import defaultdict
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.utils import first_line
-from ._shared import shared_parser
+from ._shared import shared_parser, validate
 
 
 def register_parser(parent_subparsers):
@@ -28,6 +28,7 @@ def register_parser(parent_subparsers):
     return parser
 
 
+@validate
 def run(args, records):
     annotations = defaultdict(dict)
     with open(args.annotations, 'r', newline='') as annotations_fh:
