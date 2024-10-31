@@ -8,8 +8,12 @@ from augur.io.print import print_err
 from augur.errors import AugurError
 from ._shared import shared_parser, validate
 
+
+COMMAND_NAME = "rename"
+
+
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("rename",
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
     parents = [shared_parser],
     help = __doc__)
 
@@ -87,7 +91,7 @@ def transform_columns(existing_fields: List[str], field_map: List[Tuple[str,str]
     return m
 
 
-@validate
+@validate(COMMAND_NAME)
 def run(args: argparse.Namespace, records: Iterable[dict]) -> Iterable[dict]:
     col_map: Union[Literal[False], List[Tuple[str,str]]] = False
     for record in records:

@@ -13,6 +13,9 @@ from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEA
 from ._shared import shared_parser, validate
 
 
+COMMAND_NAME = "format-dates"
+
+
 # Default date formats that this command should parse
 # without additional input from the user.
 DEFAULT_EXPECTED_DATE_FORMATS = [
@@ -24,7 +27,7 @@ DEFAULT_EXPECTED_DATE_FORMATS = [
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("format-dates",
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
         parents=[shared_parser],
         help=__doc__)
 
@@ -179,7 +182,7 @@ def format_date(date_string, expected_formats):
     return None
 
 
-@validate
+@validate(COMMAND_NAME)
 def run(args, records):
     failures = []
     failure_reporting = args.failure_reporting

@@ -9,8 +9,12 @@ from augur.io.print import print_err
 from augur.types import DataErrorMethod
 from ._shared import shared_parser, validate
 
+
+COMMAND_NAME = "titlecase"
+
+
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("titlecase",
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
     parents = [shared_parser],
     help = __doc__)
     
@@ -74,7 +78,7 @@ def titlecase(text: Union[str, None], articles: Set[str] = set(), abbreviations:
     return ''.join(changecase(i, w) for i, w in words)
 
 
-@validate
+@validate(COMMAND_NAME)
 def run(args, records):
     failures = []
     failure_reporting = args.failure_reporting

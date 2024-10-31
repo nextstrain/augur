@@ -12,6 +12,9 @@ from augur.utils import first_line
 from ._shared import shared_parser, validate
 
 
+COMMAND_NAME = "transform-strain-name"
+
+
 def transform_name(
     record: dict,
     index: int,
@@ -42,7 +45,7 @@ def register_parser(
     parent_subparsers: argparse._SubParsersAction,
 ) -> argparse._SubParsersAction:
     parser = parent_subparsers.add_parser(
-        "transform-strain-name",
+        COMMAND_NAME,
         parents=[shared_parser],  # type: ignore
         help=first_line(__doc__),
     )
@@ -65,7 +68,7 @@ def register_parser(
     return parser
 
 
-@validate
+@validate(COMMAND_NAME)
 def run(args: argparse.Namespace, records: List[dict]) -> Generator[dict, None, None]:
     strain_name_pattern = re.compile(args.strain_regex)
 

@@ -124,90 +124,92 @@ def validate_records(records: Iterable[dict], subcmd_name: str, is_input: bool) 
         yield record
 
 
-def validate(command_run: Callable[[argparse.Namespace, Iterable[dict]], Iterable[dict]]):
-    def run(args: argparse.Namespace) -> None:
-        # Check provided args are valid and required combination of args are provided
-        if not args.fasta and (args.seq_id_column or args.seq_field):
-            raise AugurError("The --seq-id-column and --seq-field options should only be used when providing a FASTA file.")
+def validate(command_name: str):
 
-        if args.fasta and (not args.seq_id_column or not args.seq_field):
-            raise AugurError("The --seq-id-column and --seq-field options are required for a FASTA file input.")
+    def decorator_with_context(command_run: Callable[[argparse.Namespace, Iterable[dict]], Iterable[dict]]):
 
-        if not args.output_fasta and (args.output_id_field or args.output_seq_field):
-            raise AugurError("The --output-id-field and --output-seq-field options should only be used when requesting a FASTA output.")
+        def run(args: argparse.Namespace) -> None:
+            # Check provided args are valid and required combination of args are provided
+            if not args.fasta and (args.seq_id_column or args.seq_field):
+                raise AugurError("The --seq-id-column and --seq-field options should only be used when providing a FASTA file.")
 
-        if args.output_fasta and (not args.output_id_field or not args.output_seq_field):
-            raise AugurError("The --output-id-field and --output-seq-field options are required for a FASTA output.")
+            if args.fasta and (not args.seq_id_column or not args.seq_field):
+                raise AugurError("The --seq-id-column and --seq-field options are required for a FASTA file input.")
 
-        # Read inputs
-        # Special case single hyphen as stdin
-        if args.metadata == '-':
-            args.metadata = sys.stdin.buffer
+            if not args.output_fasta and (args.output_id_field or args.output_seq_field):
+                raise AugurError("The --output-id-field and --output-seq-field options should only be used when requesting a FASTA output.")
 
-        if args.metadata and args.fasta:
-            try:
-                records = read_metadata_with_sequences(
-                    args.metadata,
-                    args.metadata_delimiters,
-                    args.fasta,
-                    args.seq_id_column,
-                    args.seq_field,
-                    args.unmatched_reporting,
-                    args.duplicate_reporting)
-            except InvalidDelimiter:
-                raise AugurError(
-                    f"Could not determine the delimiter of {args.metadata!r}. "
-                    f"Valid delimiters are: {args.metadata_delimiters!r}. "
-                    "This can be changed with --metadata-delimiters."
-                )
-        elif args.metadata:
-            try:
-                records = read_table_to_dict(args.metadata, args.metadata_delimiters, args.duplicate_reporting, args.id_column)
-            except InvalidDelimiter:
-                raise AugurError(
-                    f"Could not determine the delimiter of {args.metadata!r}. "
-                    f"Valid delimiters are: {args.metadata_delimiters!r}. "
-                    "This can be changed with --metadata-delimiters."
-                )
-        elif not sys.stdin.isatty():
-            records = load_ndjson(sys.stdin)
-        else:
-            raise AugurError(dedent("""\
-                No valid inputs were provided.
-                NDJSON records can be streamed from stdin or
-                input files can be provided via the command line options `--metadata` and `--fasta`.
-                See the command's help message for more details."""))
+            if args.output_fasta and (not args.output_id_field or not args.output_seq_field):
+                raise AugurError("The --output-id-field and --output-seq-field options are required for a FASTA output.")
 
-        # Get the name of the subcmd being run
-        subcmd_name = args.subcommand
+            # Read inputs
+            # Special case single hyphen as stdin
+            if args.metadata == '-':
+                args.metadata = sys.stdin.buffer
 
-        # Validate records have the same input fields
-        validated_input_records = validate_records(records, subcmd_name, True)
+            if args.metadata and args.fasta:
+                try:
+                    records = read_metadata_with_sequences(
+                        args.metadata,
+                        args.metadata_delimiters,
+                        args.fasta,
+                        args.seq_id_column,
+                        args.seq_field,
+                        args.unmatched_reporting,
+                        args.duplicate_reporting)
+                except InvalidDelimiter:
+                    raise AugurError(
+                        f"Could not determine the delimiter of {args.metadata!r}. "
+                        f"Valid delimiters are: {args.metadata_delimiters!r}. "
+                        "This can be changed with --metadata-delimiters."
+                    )
+            elif args.metadata:
+                try:
+                    records = read_table_to_dict(args.metadata, args.metadata_delimiters, args.duplicate_reporting, args.id_column)
+                except InvalidDelimiter:
+                    raise AugurError(
+                        f"Could not determine the delimiter of {args.metadata!r}. "
+                        f"Valid delimiters are: {args.metadata_delimiters!r}. "
+                        "This can be changed with --metadata-delimiters."
+                    )
+            elif not sys.stdin.isatty():
+                records = load_ndjson(sys.stdin)
+            else:
+                raise AugurError(dedent("""\
+                    No valid inputs were provided.
+                    NDJSON records can be streamed from stdin or
+                    input files can be provided via the command line options `--metadata` and `--fasta`.
+                    See the command's help message for more details."""))
 
-        # Run subcommand to get modified records
-        modified_records = command_run(args, validated_input_records)
+            # Validate records have the same input fields
+            validated_input_records = validate_records(records, command_name, True)
 
-        # Validate modified records have the same output fields
-        validated_output_records = validate_records(modified_records, subcmd_name, False)
+            # Run subcommand to get modified records
+            modified_records = command_run(args, validated_input_records)
 
-        # Output modified records
-        # First output FASTA, since the write fasta function yields the records again
-        # and removes the sequences from the records
-        if args.output_fasta:
-            validated_output_records = write_records_to_fasta(
-                validated_output_records,
-                args.output_fasta,
-                args.output_id_field,
-                args.output_seq_field)
+            # Validate modified records have the same output fields
+            validated_output_records = validate_records(modified_records, command_name, False)
 
-        if args.output_metadata:
-            write_records_to_tsv(validated_output_records, args.output_metadata)
+            # Output modified records
+            # First output FASTA, since the write fasta function yields the records again
+            # and removes the sequences from the records
+            if args.output_fasta:
+                validated_output_records = write_records_to_fasta(
+                    validated_output_records,
+                    args.output_fasta,
+                    args.output_id_field,
+                    args.output_seq_field)
 
-        if not (args.output_fasta or args.output_metadata):
-            dump_ndjson(validated_output_records)
-        else:
-            # Exhaust generator to ensure we run through all records
-            # when only a FASTA output is requested but not a metadata output
-            deque(validated_output_records, maxlen=0)
+            if args.output_metadata:
+                write_records_to_tsv(validated_output_records, args.output_metadata)
 
-    return run
+            if not (args.output_fasta or args.output_metadata):
+                dump_ndjson(validated_output_records)
+            else:
+                # Exhaust generator to ensure we run through all records
+                # when only a FASTA output is requested but not a metadata output
+                deque(validated_output_records, maxlen=0)
+
+        return run
+
+    return decorator_with_context

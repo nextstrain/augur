@@ -10,8 +10,11 @@ from augur.utils import first_line
 from ._shared import shared_parser, validate
 
 
+COMMAND_NAME = "apply-record-annotations"
+
+
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("apply-record-annotations",
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
         parents=[shared_parser],
         help=first_line(__doc__))
 
@@ -28,7 +31,7 @@ def register_parser(parent_subparsers):
     return parser
 
 
-@validate
+@validate(COMMAND_NAME)
 def run(args, records):
     annotations = defaultdict(dict)
     with open(args.annotations, 'r', newline='') as annotations_fh:

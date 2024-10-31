@@ -10,8 +10,11 @@ from augur.utils import first_line
 from ._shared import shared_parser, validate
 
 
+COMMAND_NAME = "normalize-strings"
+
+
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("normalize-strings",
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
         parents=[shared_parser],
         help=first_line(__doc__))
 
@@ -45,7 +48,7 @@ def normalize_strings(record, form='NFC'):
     }
 
 
-@validate
+@validate(COMMAND_NAME)
 def run(args, records):
     for record in records:
         yield normalize_strings(record, args.form)
