@@ -33,7 +33,7 @@ def add_default_command(parser):
     parser.set_defaults(__command__ = default_command)
 
 
-def register_commands(parser: argparse.ArgumentParser, commands, command_attribute='__command__'):
+def register_commands(parser: argparse.ArgumentParser, commands):
     """
     Add subparsers for each command module.
 
@@ -55,10 +55,6 @@ def register_commands(parser: argparse.ArgumentParser, commands, command_attribu
     for command in commands:
         # Allow each command to register its own subparser
         subparser = command.register_parser(subparsers)
-
-        # Add default attribute for command module
-        if command_attribute:
-            subparser.set_defaults(**{command_attribute: command})
 
         # Ensure all subparsers format like the top-level parser
         subparser.formatter_class = parser.formatter_class
