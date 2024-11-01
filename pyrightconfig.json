@@ -6,7 +6,10 @@
   "include": ["augur/"],
 
 
-  // These are rules that are enabled by default and currently have violations.
+  "typeCheckingMode": "basic",
+
+  // These rules are enabled by the above checking mode and currently have
+  // violations.
 
   // TODO: go through these exceptions and determine if they should be kept or
   // removed and violations addressed.
