@@ -84,7 +84,7 @@ jobs:
     - run: conda info
     - run: conda list
     - run: pytest --cov=augur
-    - run: cram tests/
+    - run: ./parallel_cram.sh tests/
       env:
         AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
     # Only upload coverage for one job
