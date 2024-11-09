@@ -23,7 +23,7 @@ Translate amino acids for genes using a GFF3 file where the gene names are store
   amino acid mutations written to .* (re)
 
   $ python3 "${SCRIPTS}/diff_jsons.py" \
-  >  --exclude-regex-paths "['seqid']" -- \
+  >  --exclude-regex-paths "\['seqid'\]" -- \
   >  "${DATA}/zika/aa_muts_gff.json" \
   >  aa_muts.json
   {}
