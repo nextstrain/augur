@@ -9,7 +9,7 @@ Infer ancestral nucleotide and amino acid sequences using Nextclade GFF annotati
   >  --alignment $TESTDIR/../data/ebola/masked.fasta \
   >  --annotation $TESTDIR/../data/ebola/genome_annotation.gff3 \
   >  --genes GP L NP sGP ssGP VP24 VP30 VP35 VP40 \
-  >  --nextclade-compatible \
+  >  --use-nextclade-gff-parsing \
   >  --translations $TESTDIR/../data/ebola/translations/%GENE.fasta \
   >  --infer-ambiguous \
   >  --inference joint \
