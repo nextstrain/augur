@@ -287,7 +287,10 @@ def _load_gff_record(reference, limit_info=None) -> Bio.SeqRecord.SeqRecord:
         warnings.simplefilter("default", BiopythonDeprecationWarning)
 
     if len(gff_entries) == 0:
-        raise AugurError(f"Reference {reference!r} contains no valid data rows.")
+        msg = f"Reference {reference!r} contains no valid data rows"
+        if valid_types:
+            msg += f"Valid GFF types (3rd column) are {', '.join(valid_types)}."
+        raise AugurError(msg)
     if len(gff_entries) > 1:
         raise AugurError(f"Reference {reference!r} contains multiple seqids (first column). Augur can only handle GFF files with a single seqid.")
     return gff_entries[0]
@@ -399,7 +402,7 @@ def _read_gff(reference, feature_names):
     """
     valid_types = ['gene', 'source', 'region']
 
-    rec = _load_gff_record(reference, limit_info={'gff_type': valid_types})
+    rec = _load_gff_record(reference, valid_types=valid_types)
 
     features = {'nuc': _read_nuc_annotation_from_gff(rec, reference)}
 
