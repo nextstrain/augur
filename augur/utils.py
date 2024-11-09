@@ -265,13 +265,15 @@ def _read_nuc_annotation_from_gff(record, reference):
         raise AugurError(f"Reference {reference!r} didn't define any information we can use to create the 'nuc' annotation. You can use a line with a 'record' or 'source' GFF type or a ##sequence-region pragma.")
 
 
-def _load_gff_record(reference, limit_info=None) -> Bio.SeqRecord.SeqRecord:
+def _load_gff_record(reference, valid_types=None) -> Bio.SeqRecord.SeqRecord:
     """
     Open a GFF file and return single record.
     If there are multiple records, raise AugurError.
     Optionally, limit the GFF types to parse.
     """
     from BCBio import GFF
+
+    limit_info = {'gff_type': valid_types} if valid_types else None
 
     with open_file(reference) as in_handle:
         # Note that `GFF.parse` doesn't always yield GFF records in the order
