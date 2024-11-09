@@ -5,10 +5,11 @@ import Bio.SeqRecord
 import numpy as np
 import os, json, sys
 import pandas as pd
-from Bio.SeqFeature import CompoundLocation
+from Bio.SeqFeature import SimpleLocation, CompoundLocation, SeqFeature, FeatureLocation
 from collections import defaultdict, OrderedDict
 from io import RawIOBase
 from textwrap import dedent
+from typing import Dict
 from .__version__ import __version__
 
 from augur.data import as_file
@@ -168,7 +169,7 @@ class AugurJSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-def load_features(reference, feature_names=None, nextclade_compatible=False):
+def load_features(reference, feature_names=None, use_nextclade_gff_parsing=False):
     """
     Parse a GFF/GenBank reference file. See the docstrings for _read_gff and
     _read_genbank for details.
@@ -179,7 +180,7 @@ def load_features(reference, feature_names=None, nextclade_compatible=False):
         File path to GFF or GenBank (.gb) reference
     feature_names : None or set or list (optional)
         Restrict the genes we read to those in the set/list
-    nextclade_compatible : bool (optional)
+    use_nextclade_gff_parsing : bool (optional)
         If True, parse GFF file the way Nextclade does
 
     Returns
@@ -198,13 +199,13 @@ def load_features(reference, feature_names=None, nextclade_compatible=False):
         raise AugurError(f"reference sequence file {reference!r} not found")
 
     if '.gff' in reference.lower():
-        if nextclade_compatible:
-            return _read_gff_nextclade_compatible(reference, feature_names)
+        if use_nextclade_gff_parsing:
+            return _read_gff_like_nextclade(reference, feature_names)
         return _read_gff(reference, feature_names)
     else:
         return _read_genbank(reference, feature_names)
 
-def _read_nuc_annotation_from_gff(record, reference):
+def _read_nuc_annotation_from_gff(record: Bio.SeqRecord.SeqRecord, reference) -> SeqFeature:
     """
     Looks for the ##sequence-region pragma as well as 'region' & 'source' GFF
     types. Note that 'source' isn't really a GFF feature type, but is used
@@ -234,7 +235,6 @@ def _read_nuc_annotation_from_gff(record, reference):
     if len(sequence_regions)>1:
         raise AugurError(f"Reference {reference!r} contains multiple ##sequence-region pragma lines. Augur can only handle GFF files with a single one.")
     elif sequence_regions:
-        from Bio.SeqFeature import SeqFeature, FeatureLocation
         (name, start, stop) = sequence_regions[0]
         nuc['pragma'] = SeqFeature(
             FeatureLocation(start, stop, strand=1),
@@ -289,15 +289,15 @@ def _load_gff_record(reference, valid_types=None) -> Bio.SeqRecord.SeqRecord:
         warnings.simplefilter("default", BiopythonDeprecationWarning)
 
     if len(gff_entries) == 0:
-        msg = f"Reference {reference!r} contains no valid data rows"
+        msg = f"Reference {reference!r} contains no valid data rows."
         if valid_types:
-            msg += f"Valid GFF types (3rd column) are {', '.join(valid_types)}."
+            msg += f" Valid GFF types (3rd column) are {', '.join(valid_types)}."
         raise AugurError(msg)
     if len(gff_entries) > 1:
         raise AugurError(f"Reference {reference!r} contains multiple seqids (first column). Augur can only handle GFF files with a single seqid.")
     return gff_entries[0]
 
-def _lookup_feature_name_nextclade_compatible(feature):
+def _lookup_feature_name_like_nextclade(feature: SeqFeature) -> str:
     # Matching Nextclade conventions (NAME_ATTRS_CDS)
     # https://github.com/nextstrain/nextclade/blob/59e757fd9c9f8d8edd16cf2063d77a859d4d3b96/packages/nextclade/src/io/gff3.rs#L35-L54
     QUALIFIER_PRIORITY = [ "Name", "name", "Alias", "alias", "standard_name", "old-name", "Gene", "gene", "gene_name",
@@ -308,7 +308,7 @@ def _lookup_feature_name_nextclade_compatible(feature):
             return feature.qualifiers[qualifier][0]
     raise AugurError(f"No valid feature name found for feature for feature {feature.id}")
 
-def _read_gff_nextclade_compatible(reference, feature_names):
+def _read_gff_like_nextclade(reference, feature_names) -> Dict[str, SeqFeature]:
     """
     Read a GFF file the way Nextclade does. That means:
     - We only look at CDS features.
@@ -359,7 +359,7 @@ def _read_gff_nextclade_compatible(reference, feature_names):
         _flatten(feature)
     
     for feature in cds_features.values():
-        feature_name = _lookup_feature_name_nextclade_compatible(feature)
+        feature_name = _lookup_feature_name_like_nextclade(feature)
         if feature_name == 'nuc':
             raise AugurError(f"Reference {reference!r} contains a gene with the name 'nuc'. This is not allowed.")
         if feature_name in feature_names or feature_names is None:
@@ -373,7 +373,7 @@ def _read_gff_nextclade_compatible(reference, feature_names):
     return features
 
 
-def _read_gff(reference, feature_names):
+def _read_gff(reference, feature_names) -> Dict[str, SeqFeature]:
     """
     Read a GFF file. We only read GFF IDs 'gene' or 'source' (the latter may not technically
     be a valid GFF field, but is used widely within the Nextstrain ecosystem).
@@ -948,8 +948,6 @@ def genome_features_to_auspice_annotation(features, ref_seq_name=None, assert_nu
         See schema-annotations.json for the schema this conforms to
 
     """
-    from Bio.SeqFeature import SimpleLocation, CompoundLocation
-
     if assert_nuc and 'nuc' not in features:
         raise AugurError("Genome features must include a feature for 'nuc'")
 
