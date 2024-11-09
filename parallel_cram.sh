@@ -142,7 +142,7 @@ echo "$ALL_FILES" | xargs -P "$PARALLEL_JOBS" -I {} sh -c '
     status=$?
     
     while ! mkdir "$lock_dir/lock" 2>/dev/null; do
-        sleep 0.01
+        sleep 0.05
     done
     
     # Record test status
