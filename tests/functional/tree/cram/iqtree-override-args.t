@@ -8,6 +8,6 @@ Since the following custom arguments are incompatible with the default IQ-TREE a
   $ ${AUGUR} tree \
   >  --method iqtree \
   >  --alignment "$TESTDIR/../data/full_aligned.fasta" \
-  >  --tree-builder-args="-czb -bb 1000 -bnni" \
+  >  --tree-builder-args="--polytomy -bb 1000 -bnni" \
   >  --override-default-args \
   >  --output tree_raw.nwk > /dev/null
