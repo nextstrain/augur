@@ -21,9 +21,9 @@ as a feature ('nuc' in this case)
   amino acid mutations written to .+ (re)
 
   $ python3 "$SCRIPTS/diff_jsons.py" \
-  >   "$DATA/aa_muts.json" \
-  >   "aa_muts.genes-args.json" \
-  >   --exclude-regex-paths "seqid" "gene1"
+  >  "$DATA/aa_muts.json" \
+  >  "aa_muts.genes-args.json" \
+  >  --exclude-regex-paths "seqid" "gene1"
   {}
 Using a text file rather than command line arguments
 
@@ -43,6 +43,6 @@ Using a text file rather than command line arguments
   amino acid mutations written to .+ (re)
 
   $ python3 "$SCRIPTS/diff_jsons.py" \
-  >   "aa_muts.genes-args.json" \
-  >   "aa_muts.genes-txt.json" \
+  >  "aa_muts.genes-args.json" \
+  >  "aa_muts.genes-txt.json"
   {}
