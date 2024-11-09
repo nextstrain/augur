@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # Test for most fatal errors in regex path usage
     # Exclude regexes should never match `'`, otherwise the diff is always going to pass
-    for regex in args.exclude_regex_paths:
+    for regex in args.exclude_regex_paths or []:
         result = re.compile(regex).search("'")
         if result is not None:
             print(
