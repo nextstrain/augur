@@ -23,6 +23,7 @@
 
 ### Bug Fixes
 
+* tests: Add `./parallel-cram.sh` wrapper that allows running cram tests in parallel. This allows nearly 2x speedup in CI and 5x or more speedup on developer machines with many cores. Total CI runner minutes are reduced by around a third. [#1667][] (@corneliusroemer)
 * index: Previously specifying a directory that does not exist in the path to `--output` would result in an incorrect error stating that the input file does not exist. It now shows the correct path responsible for the error. [#1644][] (@victorlin)
 * curate format-dates: Update help docs and improve failure messages to show use of `--expected-date-formats`. [#1653][] (@joverlee521)
 * parse: fix test failure with pandas 2.2. [#1471] (@emollier)
