@@ -205,7 +205,7 @@ def load_features(reference, feature_names=None, use_nextclade_gff_parsing=False
     else:
         return _read_genbank(reference, feature_names)
 
-def _read_nuc_annotation_from_gff(record: Bio.SeqRecord.SeqRecord, reference) -> SeqFeature:
+def _read_nuc_annotation_from_gff(record, reference):
     """
     Looks for the ##sequence-region pragma as well as 'region' & 'source' GFF
     types. Note that 'source' isn't really a GFF feature type, but is used
@@ -297,7 +297,7 @@ def _load_gff_record(reference, valid_types=None) -> Bio.SeqRecord.SeqRecord:
         raise AugurError(f"Reference {reference!r} contains multiple seqids (first column). Augur can only handle GFF files with a single seqid.")
     return gff_entries[0]
 
-def _lookup_feature_name_like_nextclade(feature: SeqFeature) -> str:
+def _lookup_feature_name_like_nextclade(feature) -> str:
     # Matching Nextclade conventions (NAME_ATTRS_CDS)
     # https://github.com/nextstrain/nextclade/blob/59e757fd9c9f8d8edd16cf2063d77a859d4d3b96/packages/nextclade/src/io/gff3.rs#L35-L54
     QUALIFIER_PRIORITY = [ "Name", "name", "Alias", "alias", "standard_name", "old-name", "Gene", "gene", "gene_name",
@@ -337,7 +337,7 @@ def _read_gff_like_nextclade(reference, feature_names) -> Dict[str, SeqFeature]:
     rec = _load_gff_record(reference)
     features = {'nuc': _read_nuc_annotation_from_gff(rec, reference)}
 
-    cds_features = {}
+    cds_features: Dict[str, SeqFeature] = {}
 
     def _flatten(feature):
         if feature.type == "CDS":
@@ -373,7 +373,7 @@ def _read_gff_like_nextclade(reference, feature_names) -> Dict[str, SeqFeature]:
     return features
 
 
-def _read_gff(reference, feature_names) -> Dict[str, SeqFeature]:
+def _read_gff(reference, feature_names):
     """
     Read a GFF file. We only read GFF IDs 'gene' or 'source' (the latter may not technically
     be a valid GFF field, but is used widely within the Nextstrain ecosystem).
