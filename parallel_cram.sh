@@ -166,12 +166,19 @@ echo
 # Display captured temporary directories if --keep-tmpdir was used
 if [ $KEEP_TMPDIR -eq 1 ]; then
     sort -u "$TMPDIR_FILE" | while read -r line; do
-        echo "# $line"
+        echo "$line"
     done
 fi
 
-# Check if any tests failed
-if grep -q "1" "$RESULTS_FILE"; then
+# Check if any tests failed, i.e. non-zero exit status
+# Count the number of failed tests
+# Count the number of passed tests
+failed_tests=$(grep -c -v "^0$" "$RESULTS_FILE")
+passed_tests=$(grep -c "^0$" "$RESULTS_FILE")
+
+# Print summary of test results
+echo "Passed $passed_tests, failed $failed_tests tests"
+if [ "$failed_tests" -gt 0 ]; then
     exit 1
 fi
 
