@@ -23,7 +23,7 @@ as a feature ('nuc' in this case)
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \
   >   "aa_muts.genes-args.json" \
-  >   --exclude-regex-paths "seqid" "gene1" "root['meta']['updated']"
+  >   --exclude-regex-paths "seqid" "gene1"
   {}
 Using a text file rather than command line arguments
 
@@ -45,5 +45,4 @@ Using a text file rather than command line arguments
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   "aa_muts.genes-args.json" \
   >   "aa_muts.genes-txt.json" \
-  > --exclude-paths "root['meta']['updated']"
   {}

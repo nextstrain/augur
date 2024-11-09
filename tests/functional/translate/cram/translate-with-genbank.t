@@ -18,5 +18,5 @@ Translate amino acids for genes using a GenBank file.
   amino acid mutations written to .* (re)
 
   $ python3 "$SCRIPTS/diff_jsons.py" $DATA/zika/aa_muts_genbank.json aa_muts.json \
-  >  --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]" "root['meta']['updated']"
+  >  --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]"
   {}

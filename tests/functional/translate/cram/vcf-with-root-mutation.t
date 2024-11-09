@@ -43,5 +43,5 @@ node is E (and so are all the other nodes))
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   aa_muts.truth.json \
   >   aa_muts.json \
-  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]" "root['meta']['updated']"
+  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]"
   {}

@@ -24,7 +24,7 @@ See <https://github.com/nextstrain/augur/issues/1380> for the bug this is testin
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
   >   "$DATA/nt_muts.ref-seq.json" \
   >   nt_muts.json \
-  >   --exclude-regex-paths "root\['nodes'\]\['.+'\]\['sequence'\]" "root\['generated_by'\]"
+  >   --exclude-regex-paths "root\['nodes'\]\['.+'\]\['sequence'\]"
   {'iterable_item_added': {"root['nodes']['sample_B']['muts'][0]": 'A30G'}}
 
   $ cat > expected.vcf <<EOF
