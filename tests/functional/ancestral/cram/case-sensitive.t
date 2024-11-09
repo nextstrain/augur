@@ -15,8 +15,7 @@ Change the _reference_ to lowercase
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
   >   "$TESTDIR/../data/simple-genome/nt_muts.ref-seq.json" \
-  >   "nt_muts.ref-seq.json" \
-  >   --exclude-paths "root['generated_by']"
+  >   "nt_muts.ref-seq.json" 
   {}
 
 
@@ -37,6 +36,5 @@ be lowecase which will be compared against the uppercase reference
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
   >   "$TESTDIR/../data/simple-genome/nt_muts.ref-seq.json" \
-  >   "nt_muts.ref-seq.json" \
-  >   --exclude-paths "root['generated_by']"
+  >   "nt_muts.ref-seq.json"
   {}
