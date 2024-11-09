@@ -447,8 +447,10 @@ def run(args):
 
             aa_result = run_ancestral(T, fname, reference_sequence=reference_sequence, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
                                         marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='aa')
-            if aa_result['tt'].data.full_length*3 != len(feat):
-                raise AugurError(f"length of translated alignment for {gene} does not match length of reference feature."
+            len_translated_alignment = aa_result['tt'].data.full_length*3
+            if len_translated_alignment != len(feat):
+                raise AugurError(f"length of translated alignment for {gene} ({len_translated_alignment})"
+                       f" does not match length of reference feature ({len(feat)})."
                        " Please make sure that the annotation matches the translations.")
 
             for key, node in anc_seqs['nodes'].items():
