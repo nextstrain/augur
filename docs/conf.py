@@ -156,7 +156,11 @@ intersphinx_mapping = {
 ## — so there's already an implicit "only at the beginning of a
 ## string" matching happening, and something like a plain `r'google'`
 ## regular expression will _NOT_ match all google.com URLs.
-linkcheck_ignore = []
+linkcheck_ignore = [
+     # This URL will occasionally fail and return 403 (broken).
+     # <https://github.com/nextstrain/.github/issues/106#issuecomment-2408239782>
+     r'^http://www\.microbesonline\.org/fasttree/',
+]
 linkcheck_anchors_ignore_for_url = [
      # Github uses anchor-looking links for highlighting lines but
      # handles the actual resolution with Javascript, so skip anchor
