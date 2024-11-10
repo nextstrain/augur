@@ -6,6 +6,7 @@
 
 * ancestral, translate: Add `--skip-validation` as an alias to `--validation-mode=skip`. [#1656][] (@victorlin)
 * clades: Allow customizing the validation of input node data JSON files with `--validation-mode` and `--skip-validation`. [#1656][] (@victorlin)
+* tree: When using iqtree, check for all synonyms of default args when detecting potential conflicts, e.g. `--threads-max` is equivalent to `-ntmax`. Previously, we were only checking for the latter. Also use new, preferred IQtree2 option names (e.g. `--polytomy` instead of `-czb` etc.). [#1547][] (@corneliusroemer)
 
 ### Bug Fixes
 
@@ -13,6 +14,7 @@
 * curate format-dates: Update help docs and improve failure messages to show use of `--expected-date-formats`. [#1653][] (@joverlee521)
 
 [#1644]: https://github.com/nextstrain/augur/issues/1644
+[#1547]: https://github.com/nextstrain/augur/pull/1547
 [#1653]: https://github.com/nextstrain/augur/pull/1653
 [#1656]: https://github.com/nextstrain/augur/pull/1656
 
