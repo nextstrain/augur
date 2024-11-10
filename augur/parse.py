@@ -34,11 +34,11 @@ def fix_dates(d: str, dayfirst: bool = True) -> str:
     '''
     try:
         try:
-            # pandas <2.2
-            from pandas.core.tools.datetimes import parsing # type: ignore
+            # pandas <= 2.1
+            from pandas.core.tools.datetimes import parsing  # type: ignore
         except ImportError:
-            # pandas >=2.2
-            from pandas._libs.tslibs import parsing # type: ignore
+            # pandas >= 2.2
+            from pandas._libs.tslibs import parsing
         try:
             # pandas <2
             results = parsing.parse_time_string(d, dayfirst=dayfirst)
