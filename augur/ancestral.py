@@ -314,7 +314,7 @@ def register_parser(parent_subparsers):
     )
     amino_acid_options_group.add_argument('--annotation',
                         help='GenBank or GFF file containing the annotation')
-    amino_acid_options_group.add_argument('--genes', nargs='+', action='extend', help="genes to translate (list or file containing list)")
+    amino_acid_options_group.add_argument('--genes', nargs='+', action='extend', help="genes to translate (list or file containing list), if not provided, all genes will be translated")
     amino_acid_options_group.add_argument('--translations', type=str, help="translated alignments for each CDS/Gene. "
                            "Currently only supported for FASTA-input. Specify the file name via a "
                            "template like 'aa_sequences_%%GENE.fasta' where %%GENE will be replaced "
@@ -349,10 +349,10 @@ def validate_arguments(args, is_vcf):
     This checking shouldn't be used by downstream code to assume arguments exist, however by checking for
     invalid combinations up-front we can exit quickly.
     """
-    mandatory_aa_arguments = (args.annotation, args.genes, args.translations)
-    all_aa_arguments = (*mandatory_aa_arguments, args.use_nextclade_gff_parsing)
+    mandatory_aa_arguments = (args.annotation, args.translations)
+    all_aa_arguments = (*mandatory_aa_arguments, args.use_nextclade_gff_parsing, args.genes)
     if any(all_aa_arguments) and not all(mandatory_aa_arguments):
-        raise AugurError("For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.")
+        raise AugurError("For amino acid sequence reconstruction, you must provide an annotation file and a template path to amino acid sequences.")
 
     if args.output_sequences and args.output_vcf:
         raise AugurError("Both sequence (fasta) and VCF output have been requested, but these are incompatible.")
@@ -431,8 +431,8 @@ def run(args):
     anc_seqs['annotations'] = {'nuc': {'start': 1, 'end': len(anc_seqs['reference']['nuc']),
                                        'strand': '+', 'type': 'source'}}
 
-    if not is_vcf and args.genes:
-        genes = parse_genes_argument(args.genes)
+    if not is_vcf and args.annotation:
+        genes = parse_genes_argument(args.genes) if args.genes else None
 
         from .utils import load_features
         ## load features; only requested features if genes given
@@ -444,7 +444,9 @@ def run(args):
                 f" don't match the provided sequence data coordinates ({anc_seqs['annotations']['nuc']['start']}..{anc_seqs['annotations']['nuc']['end']}).")
         
         print("Read in {} features from reference sequence file".format(len(features)))
-        for gene in genes:
+        for gene in features:
+            if gene == 'nuc':
+                continue
             print(f"Processing gene: {gene}")
             fname = args.translations.replace("%GENE", gene)
             feat = features[gene]

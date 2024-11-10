@@ -40,7 +40,7 @@ This should fail.
   >  --annotation $TESTDIR/../data/zika_outgroup.gb \
   >  --genes ENV PRO \
   >  --output-node-data "ancestral_mutations.json" > /dev/null
-  ERROR: For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.
+  ERROR: For amino acid sequence reconstruction, you must provide an annotation file and a template path to amino acid sequences.
   [2]
 
 Missing tree file 
