@@ -9,6 +9,6 @@ Expect error message.
   >  --method iqtree \
   >  --alignment "$TESTDIR/../data/aligned.fasta" \
   >  --tree-builder-args="--threads-max 1 --msa $TESTDIR/../data/aligned.fasta" \
-  >  --output tree_raw.nwk"
+  >  --output "tree_raw.nwk"
   ERROR: The following tree builder arguments conflict with hardcoded defaults. Remove these arguments and try again: --threads-max, --msa
   [1]
