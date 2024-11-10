@@ -362,7 +362,7 @@ def _read_gff_like_nextclade(reference, feature_names) -> Dict[str, SeqFeature]:
         feature_name = _lookup_feature_name_like_nextclade(feature)
         if feature_name == 'nuc':
             raise AugurError(f"Reference {reference!r} contains a gene with the name 'nuc'. This is not allowed.")
-        if feature_name in feature_names or feature_names is None:
+        if feature_names is None or feature_name in feature_names:
             features[feature_name] = feature
     
     if feature_names is not None:
