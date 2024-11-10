@@ -6,13 +6,17 @@ import numpy as np
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
+from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
-from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
+from .io.file import open_file
+from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .utils import write_json
 
+REGION_COLUMN = 'region'
+DEFAULT_REGION = 'global'
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("frequencies", help=__doc__)
@@ -21,12 +25,14 @@ def register_parser(parent_subparsers):
                         help="method by which frequencies should be estimated")
     parser.add_argument('--metadata', type=str, required=True, metavar="FILE",
                         help="metadata including dates for given samples")
-    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    parser.add_argument('--regions', type=str, nargs='+', default=['global'],
-                        help="region to subsample to")
+    parser.add_argument('--regions', type=str, nargs='+', action=ExtendOverwriteDefault, default=[DEFAULT_REGION],
+                        help="region to filter to. " \
+                            f"Regions should match values in the {REGION_COLUMN!r} column of the metadata file " \
+                            f"if specifying values other than the default {DEFAULT_REGION!r} region.")
     parser.add_argument("--pivot-interval", type=int, default=3,
                         help="number of units between pivots")
     parser.add_argument("--pivot-interval-units", type=str, default="months", choices=['months', 'weeks'],
@@ -43,9 +49,9 @@ def register_parser(parent_subparsers):
                         help="calculate frequencies for internal nodes as well as tips")
 
     # Alignment-specific arguments
-    parser.add_argument('--alignments', type=str, nargs='+',
+    parser.add_argument('--alignments', type=str, nargs='+', action='extend',
                         help="alignments to estimate mutations frequencies for")
-    parser.add_argument('--gene-names', nargs='+', type=str,
+    parser.add_argument('--gene-names', nargs='+', action='extend', type=str,
                         help="names of the sequences in the alignment, same order assumed")
     parser.add_argument('--ignore-char', type=str, default='',
                         help="character to be ignored in frequency calculations")
@@ -85,27 +91,43 @@ def format_frequencies(freq):
 
 def run(args):
     try:
-        metadata = read_metadata(args.metadata, delimiters=args.metadata_delimiters, id_columns=args.metadata_id_columns)
+        metadata_object = Metadata(args.metadata, args.metadata_delimiters, args.metadata_id_columns)
     except InvalidDelimiter:
         raise AugurError(
             f"Could not determine the delimiter of {args.metadata!r}. "
             f"Valid delimiters are: {args.metadata_delimiters!r}. "
             "This can be changed with --metadata-delimiters."
         )
+
+    columns_to_load = [metadata_object.id_column, METADATA_DATE_COLUMN]
+    if args.weights_attribute:
+        columns_to_load.append(args.weights_attribute)
+
+    filter_to_region = any(region != DEFAULT_REGION for region in args.regions)
+    if filter_to_region:
+        columns_to_load.append(REGION_COLUMN)
+
+    metadata = read_metadata(
+        args.metadata,
+        delimiters=[metadata_object.delimiter],
+        columns=columns_to_load,
+        id_columns=[metadata_object.id_column],
+        dtype="string",
+    )
     dates = get_numerical_dates(metadata, fmt='%Y-%m-%d')
     stiffness = args.stiffness
     inertia = args.inertia
 
-    if args.method == "kde":
-        # Load weights if they have been provided.
-        if args.weights:
-            with open(args.weights, "r", encoding='utf-8') as fh:
-                weights = json.load(fh)
+    # For KDE
+    weights = None
+    weights_attribute = None
 
-            weights_attribute = args.weights_attribute
-        else:
-            weights = None
-            weights_attribute = None
+    if args.method == "kde" and args.weights:
+        # Load weights if they have been provided.
+        with open_file(args.weights, "r") as fh:
+            weights = json.load(fh)
+
+        weights_attribute = args.weights_attribute
 
     if args.tree:
         tree = Phylo.read(args.tree, 'newick')
@@ -114,10 +136,12 @@ def run(args):
             tip.attr = {"num_date": np.mean(dates[tip.name])}
             tps.append(tip.attr["num_date"])
 
-            # Annotate tips with metadata to enable filtering and weighting of
-            # frequencies by metadata attributes.
-            for key, value in metadata.loc[tip.name].items():
-                tip.attr[key] = value
+            if weights_attribute:
+                # Annotate tip with weight attribute.
+                tip.attr[weights_attribute] = metadata.loc[tip.name, weights_attribute]
+
+            if filter_to_region:
+                tip.attr[REGION_COLUMN] = metadata.loc[tip.name, REGION_COLUMN]
 
         if args.method == "diffusion":
             # estimate tree frequencies
@@ -128,10 +152,10 @@ def run(args):
             for region in args.regions:
                 # Omit strains sampled prior to the first pivot from frequency calculations.
                 # (these tend to be reference strains included for phylogenetic context)
-                if region=='global':
+                if region==DEFAULT_REGION:
                     node_filter_func = lambda node: node.attr["num_date"] >= pivots[0]
                 else:
-                    node_filter_func = lambda node: (node.attr["region"] == region
+                    node_filter_func = lambda node: (node.attr[REGION_COLUMN] == region
                                                     and node.attr["num_date"] >= pivots[0])
 
                 tree_freqs = tree_frequencies(tree, pivots, method='SLSQP',

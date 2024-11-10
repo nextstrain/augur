@@ -6,6 +6,7 @@ import os
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
+from .io.file import open_file
 from .io.shell_command_runner import run_shell_command
 from .io.vcf import shquote
 from .utils import nthreads_value
@@ -23,7 +24,7 @@ def register_arguments(parser):
     Kept as a separate function than `register_parser` to continue to support
     unit tests that use this function to create argparser.
     """
-    parser.add_argument('--sequences', '-s', required=True, nargs="+", metavar="FASTA", help="sequences to align")
+    parser.add_argument('--sequences', '-s', required=True, nargs="+", action="extend", metavar="FASTA", help="sequences to align")
     parser.add_argument('--output', '-o', default="alignment.fasta", help="output file (default: %(default)s)")
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
@@ -369,7 +370,7 @@ def analyse_insertions(aln, ungapped, insertion_csv):
         for insertion_seq, strains in i_data.items():
             for strain in strains:
                 strain_data[strain][idx] = insertion_seq
-    with open(insertion_csv, 'w', encoding='utf-8') as fh:
+    with open_file(insertion_csv, 'w') as fh:
         print(",".join(header), file=fh)
         for strain in strain_data:
             print("{},{}".format(strain, ",".join(strain_data[strain])), file=fh)

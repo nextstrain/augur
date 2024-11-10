@@ -1,5 +1,5 @@
-Preparing Your Metadata
-=======================
+How do I prepare metadata?
+==========================
 
 Analyses are vastly more interesting if the sequences or samples
 analyzed have rich 'meta data' wherever possible. This metadata could
@@ -52,8 +52,7 @@ spaces, or ``()[]{}|#><``.
 Dates should be formated according as ``YYYY-MM-DD``. You can specify
 unknown dates or month by replacing the respected values by ``XX`` (ex:
 ``2013-01-XX`` or ``2011-XX-XX``) and completely unknown dates can be
-shown with ``20XX-XX-XX`` (which does not restrict the sequence to being
-in the 21st century - they could be earlier).
+shown with ``XXXX-XX-XX``.
 
 **Geography**
 
@@ -62,7 +61,7 @@ Geographic locations can be broken down, for example, into ``region``,
 geographic information as you wish. For ``region``, ``country``, and
 some ``division``\ s augur already knows many lat-long coordinates (see
 which ones it already knows by checking the list
-`here <https://github.com/nextstrain/augur/blob/master/augur/data/lat_longs.tsv>`__).
+`here <https://github.com/nextstrain/augur/blob/-/augur/data/lat_longs.tsv>`__).
 
 It is important that these are spelled consistently.
 
@@ -82,8 +81,7 @@ locations ('new_zealand' became 'New Zealand').
 
 Auspice will still do this if you are exporting 'V1' type JSON files
 (from augur v5 or augur v6 using ``export v1``), but will not do this if
-you are using ``export v2`` (`read
-more <../releases/migrating-v5-v6.html#prettifying-metadata-fields>`__).
+you are using ``export v2`` (:ref:`read more <prettifying-metadata-fields>`).
 Instead, you should update your metadata files so that traits look the
 same as you'd like them to display in Auspice (change 'new_zealand' to
 'New Zealand' in your metadata, and in any additional latitude-longitude

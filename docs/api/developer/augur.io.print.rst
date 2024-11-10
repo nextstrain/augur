@@ -1,5 +1,5 @@
-augur.io.print
-==============
+augur.io.print module
+=====================
 
 .. automodule:: augur.io.print
    :members:

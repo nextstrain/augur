@@ -66,4 +66,8 @@ augur import beast --mcc data/beast.mcc.nex --output-tree results/mers.new
     --most-recent-tip-date 2018.43
 ```
 
-A full [example build can be found here](https://github.com/nextstrain/augur/tree/master/tests/builds/beast_mers).
+A full [example build can be found here][]. (N.b., this build has been
+removed from the current version of the repository; the link here is
+to the last version prior to its removal.)
+
+[example build can be found here]: https://github.com/nextstrain/augur/blob/73b8a71103bae3a36b49acdee7c7c75a7e69a751/tests/builds/beast_mers/Snakefile

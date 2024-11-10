@@ -1,5 +1,5 @@
-augur.validate
-==============
+augur.validate module
+=====================
 
 .. automodule:: augur.validate
    :members:

@@ -1,20 +1,29 @@
 """
 Export version 2 JSON schema for visualization with Auspice
 """
+import os
 from pathlib import Path
 import sys
 import time
 from collections import defaultdict, deque, OrderedDict
 import warnings
 import numbers
+import math
 import re
 from Bio import Phylo
+from typing import Dict, Union, TypedDict, Any, Tuple
 
+from .argparse_ import ExtendOverwriteDefault, add_validation_arguments
 from .errors import AugurError
+from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
-from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
+from .utils import read_node_data, write_json, json_size, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
+
+
+MINIFY_THRESHOLD_MB = 5
+
 
 # Set up warnings & exceptions
 warn = warnings.warn
@@ -152,13 +161,13 @@ def convert_tree_to_json_structure(node, metadata, get_div, div=0):
     Returns
     -------
     dict:
-        See schema-export-v2.json#/$defs/tree for full details. 
+        See schema-export-v2.json#/$defs/tree for full details.
         Node names are always set, and divergence is set if applicable
     """
     node_struct = {'name': node.name, 'node_attrs': {}, 'branch_attrs': {}}
 
     if get_div is not None: # Store the (cumulative) observed divergence prior to this node
-        node_struct["node_attrs"]["div"] = div
+        node_struct["node_attrs"]["div"] = format_number(div)
 
     if node.clades:
         node_struct["children"] = []
@@ -389,7 +398,7 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             warn("[colorings] You asked for mutations (\"gt\"), but none are defined on the tree. They cannot be used as a coloring.")
             return False
         if key != "gt" and not trait_values:
-            warn("You asked for a color-by for trait '{}', but it has no values on the tree. It has been ignored.".format(key))
+            warn(f"Requested color-by field {key!r} does not exist and will not be used as a coloring or exported.")
             return False
         return True
 
@@ -728,8 +737,80 @@ def set_branch_attrs_on_tree(data_json, branch_attrs):
             _recursively_set_data(child)
     _recursively_set_data(data_json["tree"])
 
+def is_numeric(n:Any) -> bool:
+    # Typing a number is surprisingly hard in python, and `number.Number`
+    # doesn't work nicely with type hints. See <https://stackoverflow.com/a/73186301>
+    return isinstance(n, (int, float))
 
-def set_node_attrs_on_tree(data_json, node_attrs):
+def format_number(n: Union[int, float]) -> Union[int, float]:
+    if isinstance(n, int) or n==0:
+        return n
+    # We want to use three sig figs for the fractional part of the float, while
+    # preserving all the data in the integral (integer) part. We leverage the
+    # fact that python floats (incl scientific notation) storing the shortest
+    # decimal string that’s guaranteed to round back to x. Note that this means we
+    # drop trailing zeros, so it's not _quite_ sig figs.
+    integral = int(abs(n))
+    significand = math.floor(math.log10(integral))+1 if integral!=0 else 0
+    return float(f"{n:.{significand+3}g}")
+
+
+class ConfidenceNumeric(TypedDict):
+    # the python type is a tuple, but when serialised to JSON this is an array
+    confidence: Tuple[Union[int,float], Union[int,float]]
+
+class ConfidenceCategorical(TypedDict):
+    confidence: Dict[str,Union[int,float]]
+    entropy: float
+
+class EmptyDict(TypedDict):
+    """Empty dict for typing."""
+
+def attr_confidence(
+    node_name: str,
+    attrs: dict,
+    key: str,
+) -> Union[EmptyDict, ConfidenceNumeric, ConfidenceCategorical]:
+    """
+    Extracts and formats the confidence & entropy keys from the provided node-data attrs
+    If there is no confidence-related information an empty dict is returned.
+    If the information appears incorrect / incomplete, a warning is printed and an empty dict returned.
+    """
+    conf_key = f"{key}_confidence"
+    conf = attrs.get(conf_key, None)
+    if conf is None:
+        return {}
+
+    if isinstance(conf, list):
+        if len(conf)!=2:
+            warn(f"[confidence] node {node_name!r} specifies {conf_key!r} as a list of {len(conf)} values, not 2. Skipping confidence export.")
+            return {}
+        return {"confidence": (format_number(conf[0]), format_number(conf[1]))}
+
+    if isinstance(conf, dict):
+        entropy = attrs.get(f"{key}_entropy", None)
+        if not entropy or not is_numeric(entropy):
+            warn(f"[confidence] node {node_name!r} includes a mapping of confidence values but not an associated numeric entropy value. Skipping confidence export.")
+            return {}
+        if not all([is_numeric(v) for v in conf.values()]):
+            warn(f"[confidence] node {node_name!r} includes a mapping of confidence values but they are not all numeric. Skipping confidence export.")
+            return {}
+        # While most of the time confidences come from `augur traits` which already sorts the values, we sort them (again) here
+        # and only take confidence values over .1% and the top 4 elements.
+        # To minimise the JSON size we only print values to 3 s.f. which is enough for Auspice
+        conf = {
+            key:format_number(conf[key]) for key in
+            sorted(list(conf.keys()), key=lambda x: conf[x], reverse=True)
+            if conf[key]>0.001
+        }
+        return {"confidence": conf, "entropy": format_number(entropy)}
+
+    warn(f"[confidence] {key+'_confidence'!r} is of an unknown format. Skipping.")
+    return {}
+
+
+
+def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
     '''
     Assign desired colorings, metadata etc to the `node_attrs` of nodes in the tree
 
@@ -738,9 +819,16 @@ def set_node_attrs_on_tree(data_json, node_attrs):
     data_json : dict
     node_attrs: dict
         keys: strain names. values: dict with keys -> all available metadata (even "excluded" keys), values -> data (string / numeric / bool)
+    additional_metadata_columns: list
+        Requested additional metadata columns to export
     '''
 
     author_data = create_author_data(node_attrs)
+
+    def _transfer_additional_metadata_columns(node, raw_data):
+        for col in additional_metadata_columns:
+            if is_valid(raw_data.get(col, None)):
+                node["node_attrs"][col] = {"value": raw_data[col]}
 
     def _transfer_vaccine_info(node, raw_data):
         if raw_data.get("vaccine"):
@@ -761,9 +849,8 @@ def set_node_attrs_on_tree(data_json, node_attrs):
             raw_data["num_date"] = raw_data["numdate"]
             del raw_data["numdate"]
         if is_valid(raw_data.get("num_date", None)): # it's ok not to have temporal information
-            node["node_attrs"]["num_date"] = {"value": raw_data["num_date"]}
-            if is_valid(raw_data.get("num_date_confidence", None)):
-                node["node_attrs"]["num_date"]["confidence"] = raw_data["num_date_confidence"]
+            node["node_attrs"]["num_date"] = {"value": format_number(raw_data["num_date"])}
+            node["node_attrs"]["num_date"].update(attr_confidence(node["name"], raw_data, "num_date"))
 
     def _transfer_url_accession(node, raw_data):
         for prop in ["url", "accession"]:
@@ -779,12 +866,10 @@ def set_node_attrs_on_tree(data_json, node_attrs):
         exclude_list = ["gt", "num_date", "author"] # exclude special cases already taken care of
         trait_keys = trait_keys.difference(exclude_list)
         for key in trait_keys:
-            if is_valid(raw_data.get(key, None)):
-                node["node_attrs"][key] = {"value": raw_data[key]}
-                if is_valid(raw_data.get(key+"_confidence", None)):
-                    node["node_attrs"][key]["confidence"] = raw_data[key+"_confidence"]
-                if is_valid(raw_data.get(key+"_entropy", None)):
-                    node["node_attrs"][key]["entropy"] = raw_data[key+"_entropy"]
+            value = raw_data.get(key, None)
+            if is_valid(value):
+                node["node_attrs"][key] = {"value": format_number(value) if is_numeric(value) else value}
+                node["node_attrs"][key].update(attr_confidence(node["name"], raw_data, key))
 
     def _transfer_author_data(node):
         if node["name"] in author_data:
@@ -793,6 +878,9 @@ def set_node_attrs_on_tree(data_json, node_attrs):
     def _recursively_set_data(node):
         # get all the available information for this particular node
         raw_data = node_attrs[node["name"]]
+        # transfer requested metadata columns first so that the "special cases"
+        # below can overwrite them as necessary
+        _transfer_additional_metadata_columns(node, raw_data)
         # transfer "special cases"
         _transfer_vaccine_info(node, raw_data)
         _transfer_hidden_flag(node, raw_data)
@@ -848,7 +936,7 @@ def register_parser(parent_subparsers):
     required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
     required.add_argument('--output', metavar="JSON", required=True, help="Output file (typically for visualisation in auspice)")
 
-    config = parser.add_argument_group(                                                                                                                              
+    config = parser.add_argument_group(
         title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
             You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
@@ -859,54 +947,53 @@ def register_parser(parent_subparsers):
     config.add_argument('--maintainers', metavar="name", action="append", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
     config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
-    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', help="Geographic traits to be displayed on map")
-    config.add_argument('--color-by-metadata', metavar="trait", nargs='+', help="Metadata columns to include as coloring options")
-    config.add_argument('--panels', metavar="panels", nargs='+', choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
+    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', action='extend', help="Geographic traits to be displayed on map")
+    config.add_argument('--color-by-metadata', metavar="trait", nargs='+', action='extend', help="Metadata columns to include as coloring options")
+    config.add_argument('--metadata-columns', nargs="+", action="extend",
+                                 help="Metadata columns to export in addition to columns provided by --color-by-metadata or colorings in the Auspice configuration file. " +
+                                      "These columns will not be used as coloring options in Auspice but will be visible in the tree.")
+    config.add_argument('--panels', metavar="panels", nargs='+', action='extend', choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = parser.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
     optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action="extend", help="JSON files containing metadata for nodes in the tree")
     optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree")
-    optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+    optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+    optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                                  help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
 
+    minify_group = parser.add_argument_group(
+            title="OPTIONAL MINIFY SETTINGS",
+            description=f"""
+                By default, output JSON files (both main and sidecar) are automatically minimized if
+                the size of the un-minified main JSON file exceeds {MINIFY_THRESHOLD_MB} MB. Use
+                these options to override that behavior.
+                """
+        ).add_mutually_exclusive_group()
+    minify_group.add_argument('--minify-json', action="store_true", help="always export JSONs without indentation or line returns.")
+    minify_group.add_argument('--no-minify-json', action="store_true", help="always export JSONs to be human readable.")
+
+    root_sequence_group = parser.add_argument_group(
+            title="OPTIONAL ROOT-SEQUENCE SETTINGS",
+            description=f"""
+                The root-sequences describe the sequences (nuc + aa) for the parent of the tree's root-node. They may represent a
+                reference sequence or the inferred sequence at the root node, depending on how they were generated.
+                The data is taken directly from the `reference` key within the provided node-data JSONs.
+                These arguments are mutually exclusive.
+                """
+        ).add_mutually_exclusive_group()
+    root_sequence = root_sequence_group.add_mutually_exclusive_group()
+    root_sequence.add_argument('--include-root-sequence', action="store_true", help="Export as an additional JSON. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
+    root_sequence.add_argument('--include-root-sequence-inline', action="store_true", help="Export the root sequence within the dataset JSON. This should only be used for small genomes for file size reasons.")
+
     optional_settings = parser.add_argument_group(
-        title="OPTIONAL SETTINGS"
+        title="OTHER OPTIONAL SETTINGS"
     )
-    optional_settings.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
-    root_sequence = optional_settings.add_mutually_exclusive_group()
-    root_sequence.add_argument('--include-root-sequence', action="store_true", help="Export an additional JSON containing the root sequence (reference sequence for vcf) used to identify mutations. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
-    root_sequence.add_argument('--include-root-sequence-inline', action="store_true", help="Export the root sequence (reference sequence for vcf) used to identify mutations as part of the main dataset JSON. This should only be used for small genomes for file size reasons.")
-    optional_settings.add_argument(
-        '--validation-mode',
-        dest="validation_mode",
-        type=ValidationMode,
-        choices=[mode for mode in ValidationMode],
-        default=ValidationMode.ERROR,
-        help="""
-            Control if optional validation checks are performed and what
-            happens if they fail.
-
-            'error' and 'warn' modes perform validation and emit messages about
-            failed validation checks.  'error' mode causes a non-zero exit
-            status if any validation checks failed, while 'warn' does not.
-
-            'skip' mode performs no validation.
-
-            Note that some validation checks are non-optional and as such are
-            not affected by this setting.
-        """)
-    optional_settings.add_argument(
-        '--skip-validation',
-        dest="validation_mode",
-        action="store_const",
-        const=ValidationMode.SKIP,
-        help="Skip validation of input/output files, equivalent to --validation-mode=skip. Use at your own risk!")
+    add_validation_arguments(optional_settings)
 
     return parser
 
@@ -983,7 +1070,7 @@ def set_description(data_json, cmd_line_description_file):
     `meta.description` in *data_json* to the text provided.
     """
     try:
-        with open(cmd_line_description_file, encoding='utf-8') as description_file:
+        with open_file(cmd_line_description_file) as description_file:
             markdown_text = description_file.read()
             data_json['meta']['description'] = markdown_text
     except FileNotFoundError:
@@ -1081,6 +1168,26 @@ def get_config(args):
         del config["vaccine_choices"]
     return config
 
+
+def get_additional_metadata_columns(config, command_line_metadata_columns, metadata_names):
+    # Command line args override what is set in the config file
+    if command_line_metadata_columns:
+        potential_metadata_columns = command_line_metadata_columns
+    else:
+        potential_metadata_columns = config.get("metadata_columns", [])
+
+    additional_metadata_columns = []
+    for col in potential_metadata_columns:
+        # Match the column names corrected within parse_node_data_and_metadata
+        corrected_col = update_deprecated_names(col)
+        if corrected_col not in metadata_names:
+            warn(f"Requested metadata column {col!r} does not exist and will not be exported")
+            continue
+        additional_metadata_columns.append(corrected_col)
+
+    return additional_metadata_columns
+
+
 def run(args):
     configure_warnings()
     data_json = {"version": "v2", "meta": {"updated": time.strftime('%Y-%m-%d')}}
@@ -1126,6 +1233,7 @@ def run(args):
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
             parse_node_data_and_metadata(T, node_data_file, metadata_file)
     config = get_config(args)
+    additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
     # set metadata data structures
     set_title(data_json, config, args.title)
@@ -1154,7 +1262,7 @@ def run(args):
 
     # set tree structure
     data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs, node_div(T, node_attrs))
-    set_node_attrs_on_tree(data_json, node_attrs)
+    set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns)
     set_branch_attrs_on_tree(data_json, branch_attrs)
 
     set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
@@ -1165,8 +1273,21 @@ def run(args):
     if config.get("extensions"):
         data_json["meta"]["extensions"] = config["extensions"]
 
+    # Should output be minified?
+    # User-specified arguments take precedence before determining behavior based
+    # on the size of the tree.
+    if args.minify_json or os.environ.get("AUGUR_MINIFY_JSON"):
+        minify = True
+    elif args.no_minify_json:
+        minify = False
+    else:
+        if json_size(data_json) > MINIFY_THRESHOLD_MB * 10**6:
+            minify = True
+        else:
+            minify = False
+
     # Write outputs - the (unified) dataset JSON intended for auspice & perhaps the ref root-sequence JSON
-    indent = {"indent": None} if args.minify_json else {}
+    indent = {"indent": None} if minify else {}
     if args.include_root_sequence or args.include_root_sequence_inline:
         # Note - argparse enforces that only one of these args will be true
         if 'reference' in node_data:
@@ -1179,10 +1300,10 @@ def run(args):
                 # "auspice/zika_root-sequence.json".
                 output_path = Path(args.output)
                 root_sequence_path = output_path.parent / Path(output_path.stem + "_root-sequence" + output_path.suffix)
-                write_json(data=node_data['reference'], file_name=root_sequence_path, include_version=False, **indent)
+                write_json(data=node_data['reference'], file=root_sequence_path, include_version=False, **indent)
         else:
             fatal("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
-    write_json(data=orderKeys(data_json), file_name=args.output, include_version=False, **indent)
+    write_json(data=orderKeys(data_json), file=args.output, include_version=False, **indent)
 
     # validate outputs
     validate_data_json(args.output, args.validation_mode)

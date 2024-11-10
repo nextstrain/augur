@@ -13,7 +13,7 @@ Comma-delimited metadata is allowed by default. However, the output metadata wil
   $ ${AUGUR} filter \
   >  --metadata metadata.txt \
   >  --exclude-where column=A \
-  >  --output-metadata filtered.txt > /dev/null
+  >  --output-metadata filtered.txt 2>/dev/null
   $ cat filtered.txt
   strain\tcolumn (esc)
   SEQ_2\tB (esc)
@@ -62,7 +62,7 @@ Allow colon-delimited metadata. However, the output metadata will be tab-delimit
   >  --metadata metadata.txt \
   >  --metadata-delimiters ':' \
   >  --exclude-where column=A \
-  >  --output-metadata filtered.txt > /dev/null
+  >  --output-metadata filtered.txt 2>/dev/null
   $ cat filtered.txt
   strain\tcolumn (esc)
   SEQ_2\tB (esc)

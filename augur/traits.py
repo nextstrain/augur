@@ -5,7 +5,9 @@ Infer ancestral traits based on a tree.
 import numpy as np
 from collections import defaultdict
 import sys
+from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
+from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .utils import write_json, get_json_name
 TINY = 1e-12
@@ -86,7 +88,8 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
 
             marginal = [(letter_to_state[tt.gtr.alphabet[i]], pdis[i]) for i in range(len(tt.gtr.alphabet))]
             marginal.sort(key=lambda x: x[1], reverse=True) # sort on likelihoods
-            marginal = [(a, b) for a, b in marginal if b > 0.001][:4] #only take stuff over .1% and the top 4 elements
+            # Values are defined for all demes, although many/most will be 0, so only take those over 0.1%
+            marginal = [(a, b) for a, b in marginal if b > 0.001]
             conf = {a:b for a,b in marginal}
             node.__setattr__(field + "_entropy", S)
             node.__setattr__(field + "_confidence", conf)
@@ -98,12 +101,12 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("traits", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata")
-    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+",
+    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
-    parser.add_argument('--columns', required=True, nargs='+',
+    parser.add_argument('--columns', required=True, nargs='+', action='extend',
                         help='metadata fields to perform discrete reconstruction on')
     parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')
@@ -131,7 +134,11 @@ def run(args):
         traits = read_metadata(
             args.metadata,
             delimiters=args.metadata_delimiters,
-            id_columns=args.metadata_id_columns)
+            id_columns=args.metadata_id_columns,
+
+            # Read all columns as string for discrete trait analysis
+            dtype="string",
+        )
     except InvalidDelimiter:
         raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "
@@ -153,7 +160,7 @@ def run(args):
     if args.weights:
         weight_dict = {c:{} for c in args.columns}
         sep = ',' if args.weights.endswith('csv') else '\t'
-        with open(args.weights, 'r', encoding='utf-8') as fh:
+        with open_file(args.weights, 'r') as fh:
             for line in fh:
                 if line[0]=='#':
                     continue
@@ -201,7 +208,7 @@ def run(args):
             models[column]['transition_matrix'] = [list(x) for x in gtr.W]
 
         if gtr:
-            with open(out_prefix+'%s.mugration_model.txt'%column, 'w', encoding='utf-8') as ofile:
+            with open_file(out_prefix+'%s.mugration_model.txt'%column, 'w') as ofile:
                 ofile.write('Map from character to field name\n')
                 for k,v in alphabet.items():
                     ofile.write(k+':\t'+str(v)+'\n')

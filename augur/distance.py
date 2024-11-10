@@ -186,6 +186,7 @@ import pandas as pd
 import sys
 
 from .frequency_estimators import timestamp_to_float
+from .io.file import open_file
 from .reconstruct_sequences import load_alignments
 from .utils import annotate_parents_for_tree, first_line, read_node_data, write_json
 
@@ -213,7 +214,7 @@ def read_distance_map(map_file):
     [('default', 0.0), ('map', {'SigPep': {0: {('W', 'P'): -8.3}}})]
     """
     # Load the JSON.
-    with open(map_file, "r", encoding='utf-8') as fh:
+    with open_file(map_file, "r") as fh:
         json_distance_map = json.load(fh)
 
     # Confirm that all required fields are present.
@@ -659,11 +660,11 @@ def get_distances_to_all_pairs(tree, sequences_by_node_and_gene, distance_map, e
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("distance", help=first_line(__doc__))
     parser.add_argument("--tree", help="Newick tree", required=True)
-    parser.add_argument("--alignment", nargs="+", help="sequence(s) to be used, supplied as FASTA files", required=True)
-    parser.add_argument('--gene-names', nargs="+", type=str, help="names of the sequences in the alignment, same order assumed", required=True)
-    parser.add_argument("--attribute-name", nargs="+", help="name to store distances associated with the given distance map; multiple attribute names are linked to corresponding positional comparison method and distance map arguments", required=True)
-    parser.add_argument("--compare-to", nargs="+", choices=["root", "ancestor", "pairwise"], help="type of comparison between samples in the given tree including comparison of all nodes to the root (root), all tips to their last ancestor from a previous season (ancestor), or all tips from the current season to all tips in previous seasons (pairwise)", required=True)
-    parser.add_argument("--map", nargs="+", help="JSON providing the distance map between sites and, optionally, sequences present at those sites; the distance map JSON minimally requires a 'default' field defining a default numeric distance and a 'map' field defining a dictionary of genes and one-based coordinates", required=True)
+    parser.add_argument("--alignment", nargs="+", action="extend", help="sequence(s) to be used, supplied as FASTA files", required=True)
+    parser.add_argument('--gene-names', nargs="+", action="extend", type=str, help="names of the sequences in the alignment, same order assumed", required=True)
+    parser.add_argument("--attribute-name", nargs="+", action="extend", help="name to store distances associated with the given distance map; multiple attribute names are linked to corresponding positional comparison method and distance map arguments", required=True)
+    parser.add_argument("--compare-to", nargs="+", action="extend", choices=["root", "ancestor", "pairwise"], help="type of comparison between samples in the given tree including comparison of all nodes to the root (root), all tips to their last ancestor from a previous season (ancestor), or all tips from the current season to all tips in previous seasons (pairwise)", required=True)
+    parser.add_argument("--map", nargs="+", action="extend", help="JSON providing the distance map between sites and, optionally, sequences present at those sites; the distance map JSON minimally requires a 'default' field defining a default numeric distance and a 'map' field defining a dictionary of genes and one-based coordinates", required=True)
     parser.add_argument("--date-annotations", help="JSON of branch lengths and date annotations from augur refine for samples in the given tree; required for comparisons to earliest or latest date")
     parser.add_argument("--earliest-date", help="earliest date at which samples are considered to be from previous seasons (e.g., 2019-01-01). This date is only used in pairwise comparisons. If omitted, all samples prior to the latest date will be considered.")
     parser.add_argument("--latest-date", help="latest date at which samples are considered to be from previous seasons (e.g., 2019-01-01); samples from any date after this are considered part of the current season")

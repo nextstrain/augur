@@ -11,6 +11,7 @@ We're in the process of adding examples and more extensive documentation for eac
 
 	parse
 	curate/index
+	merge
 	index
 	filter
 	mask
@@ -32,3 +33,5 @@ We're in the process of adding examples and more extensive documentation for eac
 	version
 	import
 	measurements
+	read-file
+	write-file

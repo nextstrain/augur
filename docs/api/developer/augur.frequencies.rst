@@ -1,5 +1,5 @@
-augur.frequencies
-=================
+augur.frequencies module
+========================
 
 .. automodule:: augur.frequencies
    :members:

@@ -1,6 +1,9 @@
 """
-Format date fields to ISO 8601 dates (YYYY-MM-DD), where incomplete dates
-are masked with 'XX' (e.g. 2023 -> 2023-XX-XX).
+Format date fields to ISO 8601 dates (YYYY-MM-DD).
+
+If the provided ``--expected-date-formats`` represent incomplete dates then
+the incomplete dates are masked with 'XX'. For example, providing
+``%Y`` will allow year only dates to be formatted as ``2023-XX-XX``.
 """
 import re
 from datetime import datetime
@@ -12,21 +15,32 @@ from augur.types import DataErrorMethod
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
 
 
+# Default date formats that this command should parse
+# without additional input from the user.
+DEFAULT_EXPECTED_DATE_FORMATS = [
+    '%Y-%m-%d',
+    '%Y-%m-XX',
+    '%Y-XX-XX',
+    'XXXX-XX-XX',
+]
+
+
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("format-dates",
         parents=[parent_subparsers.shared_parser],
         help=__doc__)
 
     required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--date-fields", nargs="+",
+    required.add_argument("--date-fields", nargs="+", action="extend",
         help="List of date field names in the record that need to be standardized.")
-    required.add_argument("--expected-date-formats", nargs="+",
+
+    optional = parser.add_argument_group(title="OPTIONAL")
+    optional.add_argument("--expected-date-formats", nargs="+", action="extend",
+        default=DEFAULT_EXPECTED_DATE_FORMATS,
         help="Expected date formats that are currently in the provided date fields, " +
              "defined by standard format codes as listed at " +
              "https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes. " +
              "If a date string matches multiple formats, it will be parsed as the first matched format in the provided order.")
-
-    optional = parser.add_argument_group(title="OPTIONAL")
     optional.add_argument("--failure-reporting",
         type=DataErrorMethod.argtype,
         choices=list(DataErrorMethod),
@@ -106,6 +120,10 @@ def format_date(date_string, expected_formats):
 
 
     >>> expected_formats = ['%Y', '%Y-%m', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ', '%m-%d']
+    >>> format_date("", expected_formats)
+    'XXXX-XX-XX'
+    >>> format_date("  ", expected_formats)
+    'XXXX-XX-XX'
     >>> format_date("01-01", expected_formats)
     'XXXX-XX-XX'
     >>> format_date("2020", expected_formats)
@@ -121,6 +139,10 @@ def format_date(date_string, expected_formats):
     >>> format_date("2020-01-15T00:00:00Z", expected_formats)
     '2020-01-15'
     """
+
+    date_string = date_string.strip()
+    if date_string == '':
+        return 'XXXX-XX-XX'
 
     for date_format in expected_formats:
         try:
@@ -162,6 +184,10 @@ def format_date(date_string, expected_formats):
 def run(args, records):
     failures = []
     failure_reporting = args.failure_reporting
+    failure_suggestion = (
+        f"\nCurrent expected date formats are {args.expected_date_formats!r}. " +
+        "This can be updated with --expected-date-formats."
+    )
     for index, record in enumerate(records):
         record = record.copy()
         record_id = index
@@ -169,8 +195,8 @@ def run(args, records):
         for field in args.date_fields:
             date_string = record.get(field)
 
-            if not date_string:
-                continue
+            if date_string is None:
+                raise AugurError(f"Expected date field {field!r} not found in record {record_id!r}.")
 
             formatted_date_string = format_date(date_string, args.expected_date_formats)
             if formatted_date_string is None:
@@ -184,7 +210,7 @@ def run(args, records):
 
                 failure_message = f"Unable to format date string {date_string!r} in field {field!r} of record {record_id!r}."
                 if failure_reporting is DataErrorMethod.ERROR_FIRST:
-                    raise AugurError(failure_message)
+                    raise AugurError(failure_message + failure_suggestion)
 
                 if failure_reporting is DataErrorMethod.WARN:
                     print_err(f"WARNING: {failure_message}")
@@ -202,10 +228,10 @@ def run(args, records):
             '\n'.join(map(repr, failures))
         )
         if failure_reporting is DataErrorMethod.ERROR_ALL:
-            raise AugurError(failure_message)
+            raise AugurError(failure_message + failure_suggestion)
 
         elif failure_reporting is DataErrorMethod.WARN:
-            print_err(f"WARNING: {failure_message}")
+            print_err(f"WARNING: {failure_message}" + failure_suggestion)
 
         else:
             raise ValueError(f"Encountered unhandled failure reporting method: {failure_reporting!r}")

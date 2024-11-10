@@ -20,7 +20,7 @@ Test that --include_where still works with filtering on query.
   >  --metadata metadata.tsv \
   >  --query "quality=='good' & location=='colorado'" \
   >  --include include.txt \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
   $ sort filtered_strains.txt
   SEQ_1
   SEQ_3

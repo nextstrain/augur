@@ -10,6 +10,6 @@ Force include one South American record by country to get two total records.
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --exclude-where "region=South America" "region=North America" "region=Southeast Asia" \
   >  --include-where "country=Ecuador" \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
   $ wc -l filtered_strains.txt
   \s*2 .* (re)

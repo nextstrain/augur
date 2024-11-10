@@ -32,7 +32,8 @@ The LICENSE file included in ID3C's repo is copied below verbatim::
     SOFTWARE.
 """
 import json
-from datetime import datetime
+from datetime import date, datetime, time, timedelta
+from isodate import duration_isoformat
 from typing import Iterable
 from uuid import UUID
 
@@ -40,6 +41,31 @@ from uuid import UUID
 def as_json(value):
     """
     Converts *value* to a JSON string using our custom :class:`JsonEncoder`.
+
+    The custom encoder supports serialization of :class:`~datetime.date` objects:
+
+    >>> as_json(date(year=2024, month=7, day=17))
+    '"2024-07-17"'
+
+    :class:`~datetime.datetime` objects:
+
+    >>> as_json(datetime(year=2024, month=7, day=17, hour=11, minute=38))
+    '"2024-07-17T11:38:00"'
+
+    :class:`~datetime.time` objects:
+
+    >>> as_json(time(hour=11, minute=38))
+    '"11:38:00"'
+
+    :class:`~datetime.timedelta` objects:
+
+    >>> as_json(timedelta(days=42))
+    '"P42D"'
+
+    and :class:`~uuid.UUID` objects:
+
+    >>> as_json(UUID(int=147952133113722764103424939352979237618))
+    '"6f4e8b5a-8500-4928-b7ae-dc098a256af2"'
     """
     return json.dumps(value, allow_nan = False, cls = JsonEncoder)
 
@@ -96,11 +122,17 @@ class JsonEncoder(json.JSONEncoder):
         """
         Returns *value* as JSON or raises a TypeError.
         Serializes:
+        * :class:`~datetime.date` using :meth:`~datetime.date.isoformat()`
         * :class:`~datetime.datetime` using :meth:`~datetime.datetime.isoformat()`
+        * :class:`~datetime.time` using :meth:`~datetime.time.isoformat()`
+        * :class:`~datetime.timedelta` using ``isodate.duration_isoformat()``
         * :class:`~uuid.UUID` using ``str()``
         """
-        if isinstance(value, datetime):
+        if isinstance(value, (date, datetime, time)):
             return value.isoformat()
+
+        elif isinstance(value, timedelta):
+            return duration_isoformat(value)
 
         elif isinstance(value, UUID):
             return str(value)

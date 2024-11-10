@@ -1,5 +1,5 @@
-augur.frequency\_estimators
-===========================
+augur.frequency\_estimators module
+==================================
 
 .. automodule:: augur.frequency_estimators
    :members:

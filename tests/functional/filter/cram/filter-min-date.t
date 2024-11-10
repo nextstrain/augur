@@ -16,7 +16,7 @@ Test that --min-date is inclusive.
   $ ${AUGUR} filter \
   >  --metadata metadata.tsv \
   >  --min-date 2020-02-26 \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
   $ sort filtered_strains.txt
   SEQ_1
   SEQ_2

@@ -1,6 +1,7 @@
 import os
 import shlex
 
+from .file import open_file
 from .shell_command_runner import run_shell_command
 
 
@@ -22,22 +23,6 @@ def is_vcf(filename):
     True
     """
     return bool(filename) and any(filename.lower().endswith(x) for x in ('.vcf', '.vcf.gz'))
-
-
-def read_vcf(filename):
-    if filename.lower().endswith(".gz"):
-        import gzip
-        file = gzip.open(filename, mode="rt", encoding='utf-8')
-    else:
-        file = open(filename, encoding='utf-8')
-
-    chrom_line = next(line for line in file if line.startswith("#C"))
-    file.close()
-    headers = chrom_line.strip().split("\t")
-    sequences = headers[headers.index("FORMAT") + 1:]
-
-    # because we need 'seqs to remove' for VCF
-    return sequences, sequences.copy()
 
 
 def write_vcf(input_filename, output_filename, dropped_samps):
@@ -83,7 +68,7 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
 
     #prepare the header of the VCF & write out
     header=["#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT"]+seqNames
-    with open(vcf_file_name, 'w', encoding='utf-8') as the_file:
+    with open_file(vcf_file_name, 'w') as the_file:
         the_file.write( "##fileformat=VCFv4.2\n"+
                         "##source=NextStrain_Protein_Translation\n"+
                         "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
@@ -138,10 +123,10 @@ def write_VCF_translation(prot_dict, vcf_file_name, ref_file_name):
             vcfWrite.append("\t".join(output))
 
     #write it all out
-    with open(ref_file_name, 'w', encoding='utf-8') as the_file:
+    with open_file(ref_file_name, 'w') as the_file:
         the_file.write("\n".join(refWrite))
 
-    with open(vcf_file_name, 'a', encoding='utf-8') as the_file:
+    with open_file(vcf_file_name, 'a') as the_file:
         the_file.write("\n".join(vcfWrite))
 
     if vcf_file_name.lower().endswith('.gz'):

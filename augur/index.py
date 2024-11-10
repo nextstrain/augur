@@ -2,12 +2,13 @@
 """
 
 from itertools import combinations
-import sys
 import csv
 
 from .io.file import open_file
 from .io.sequences import read_sequences
-from .io.vcf import is_vcf, read_vcf
+from .io.vcf import is_vcf
+from treetime.vcf_utils import read_vcf
+
 
 
 DELIMITER = '\t'
@@ -40,10 +41,11 @@ def index_vcf(vcf_path, index_path):
         number of strains indexed
 
     """
-    strains, _ = read_vcf(vcf_path)
+    strains = list(read_vcf(vcf_path)['sequences'].keys())
+
     num_of_seqs = 0
 
-    with open_file(index_path, 'wt') as out_file:
+    with open_file(index_path, 'wt', newline='') as out_file:
         tsv_writer = csv.writer(out_file, delimiter = DELIMITER)
 
         #write header i output file
@@ -182,7 +184,7 @@ def index_sequences(sequences_path, sequence_index_path):
     tot_length = 0
     num_of_seqs = 0
 
-    with open_file(sequence_index_path, 'wt') as out_file:
+    with open_file(sequence_index_path, 'wt', newline='') as out_file:
         tsv_writer = csv.writer(out_file, delimiter = '\t', lineterminator='\n')
 
         #write header i output file
@@ -206,15 +208,11 @@ def run(args):
     ("?" and "-"), and other invalid characters in a set of sequences and write
     the composition as a data frame to the given sequence index path.
     '''
-    try:
-        if is_vcf(args.sequences):
-            num_of_seqs = index_vcf(args.sequences, args.output)
-            tot_length = None
-        else:
-            num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
-    except FileNotFoundError:
-        print(f"ERROR: Could not open sequences file '{args.sequences}'.", file=sys.stderr)
-        return 1
+    if is_vcf(args.sequences):
+        num_of_seqs = index_vcf(args.sequences, args.output)
+        tot_length = None
+    else:
+        num_of_seqs, tot_length = index_sequences(args.sequences, args.output)
 
     if args.verbose:
         if tot_length:

@@ -13,7 +13,28 @@ on:
 
   workflow_dispatch:
 
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
 jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v5
+    - uses: actions/checkout@v4
+    - run: pip install .[dev]
+    - run: mypy
+
+  pyright:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v5
+    - uses: actions/checkout@v4
+    - run: npx pyright --stats
+
   pytest-cram:
     name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }})
     runs-on: ubuntu-latest
@@ -27,17 +48,8 @@ jobs:
         biopython-version:
           # list of Biopython versions with support for a new Python version
           # from https://github.com/biopython/biopython/blob/master/NEWS.rst
-          - '1.76' # first to support Python 3.8
-          - '1.79' # first to support Python 3.9
           - '1.80' # first to support Python 3.10 and 3.11
           - ''     # latest
-        exclude:
-          # some older Biopython versions are incompatible with later Python versions
-          - { biopython-version: '1.76', python-version: '3.9' }
-          - { biopython-version: '1.76', python-version: '3.10' }
-          - { biopython-version: '1.76', python-version: '3.11' }
-          - { biopython-version: '1.79', python-version: '3.10' }
-          - { biopython-version: '1.79', python-version: '3.11' }
     defaults:
       run:
         shell: bash -l {0}
@@ -45,36 +57,177 @@ jobs:
       COVERAGE_FILE: ${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}
       COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
     steps:
-    - uses: actions/checkout@v3
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: actions/checkout@v4
+
+    - name: Set cache key
+      run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
+    # While it may be tempting to install Augur using Conda to avoid hardcoding
+    # the list of dependencies here, installing just the dependencies not
+    # available on PyPI allows us to test against dependencies installed by pip,
+    # which may have slightly different versions compared to Conda counterparts.
+    - name: Install dependencies from Conda
+      uses: mamba-org/setup-micromamba@v2
       with:
-        python-version: ${{ matrix.python-version }}
-        miniforge-variant: Mambaforge
-        channels: conda-forge,bioconda
-    - run: |
-        mamba install \
-          mafft \
-          raxml \
-          fasttree \
-          iqtree \
-          vcftools \
-          biopython=${{ matrix.biopython-version }}
+        create-args: mafft raxml fasttree iqtree vcftools sqlite tsv-utils biopython=${{ matrix.biopython-version }} python=${{ matrix.python-version }}
+        condarc: |
+          channels:
+            - conda-forge
+            - bioconda
+          channel_priority: strict
+        cache-environment: true
+        cache-environment-key: ${{ env.DATE }}
+        environment-name: augur
+
+    # Replace the Conda Augur installation with the local version.
     - run: pip install .[dev]
     - run: conda info
     - run: conda list
-    - run: pytest -c pytest.python3.ini --cov=augur
+    - run: pytest --cov=augur
     - run: cram tests/
       env:
         AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
-    - uses: actions/upload-artifact@v3
+    # Only upload coverage for one job
+    - if: matrix.python-version == '3.11' && matrix.biopython-version == ''
+      uses: actions/upload-artifact@v4
       with:
         name: coverage
+        include-hidden-files: true
         path: "${{ env.COVERAGE_FILE }}"
 
-  # TODO: Use the central pathogen-repo-ci workflow¹. Currently, this is not
-  # possible because it only supports "stock" docker and conda runtimes.
-  # ¹ https://github.com/nextstrain/.github/blob/-/.github/workflows/pathogen-repo-ci.yaml
+  # Replicating pathogen-repo-ci workflow because we decided not to support
+  # local versions of Augur in the centralized workflow
+  # <https://github.com/nextstrain/.github/issues/66>
+  # This job is for pathogen repos _do_ follow standard pathogen repo structure
+  # and new pathogens should be added here.
   pathogen-repo-ci:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        pathogen:
+          - dengue
+          - lassa
+          - measles
+          - mpox
+          - seasonal-cov
+          - zika
+
+    name: pathogen-repo-ci (${{ matrix.pathogen }})
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ./augur
+
+      - name: Set cache key
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
+      # Set up a Conda environment that replicates Nextstrain's Conda runtime.
+      - name: Install nextstrain-base from Conda
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          create-args: nextstrain-base
+          condarc: |
+            channels:
+              - nextstrain
+              - conda-forge
+              - bioconda
+            channel_priority: strict
+          cache-environment: true
+          cache-environment-key: ${{ env.DATE }}
+          environment-name: augur
+
+      # Replace the Conda Augur installation with the local version.
+      - run: pip install ./augur
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nextstrain/${{ matrix.pathogen }}
+          path: ./pathogen-repo
+
+      - name: Verify nextstrain-pathogen.yaml file
+        run: >
+          if [[ ! -f './pathogen-repo/nextstrain-pathogen.yaml' ]]; then
+
+            echo "To use this workflow, there must be a 'nextstrain-pathogen.yaml' file present in the repository root";
+            exit 1;
+          fi
+
+      - name: Run ingest
+        if: hashFiles('./pathogen-repo/ingest/Snakefile') && hashFiles('./pathogen-repo/ingest/build-configs/ci/config.yaml')
+        id: ingest
+        run: nextstrain build --ambient ./pathogen-repo/ingest --configfile build-configs/ci/config.yaml
+
+      - name: Run phylogenetic
+        if: hashFiles('./pathogen-repo/phylogenetic/Snakefile') && hashFiles('./pathogen-repo/phylogenetic/build-configs/ci/config.yaml') && !cancelled()
+        id: phylogenetic
+        run: nextstrain build --ambient ./pathogen-repo/phylogenetic --configfile build-configs/ci/config.yaml
+
+      - name: Run nextclade
+        if: hashFiles('./pathogen-repo/nextclade/Snakefile') && hashFiles('./pathogen-repo/nextclade/build-configs/ci/config.yaml') && !cancelled()
+        id: nextclade
+        run: nextstrain build --ambient ./pathogen-repo/nextclade --configfile build-configs/ci/config.yaml
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-${{ matrix.pathogen }}
+          if-no-files-found: ignore
+          path: |
+            ./pathogen-repo/ingest/.snakemake/log/
+            ./pathogen-repo/ingest/auspice/
+            ./pathogen-repo/ingest/benchmarks/
+            ./pathogen-repo/ingest/logs/
+            ./pathogen-repo/ingest/results/
+
+            ./pathogen-repo/phylogenetic/.snakemake/log/
+            ./pathogen-repo/phylogenetic/auspice/
+            ./pathogen-repo/phylogenetic/benchmarks/
+            ./pathogen-repo/phylogenetic/logs/
+            ./pathogen-repo/phylogenetic/results/
+
+            ./pathogen-repo/nextclade/.snakemake/log/
+            ./pathogen-repo/nextclade/auspice/
+            ./pathogen-repo/nextclade/benchmarks/
+            ./pathogen-repo/nextclade/logs/
+            ./pathogen-repo/nextclade/results/
+
+      - if: always()
+        name: Verify a workflow ran
+        env:
+          # "outcome" is success/failure/cancelled/skipped _before_
+          # "continue-on-error" is applied to calculate "conclusion"; we no
+          # longer use continue-on-error for these steps, but even so,
+          # conceptually here what we want is outcome not conclusion.
+          ingest: ${{ steps.ingest.outcome }}
+          phylogenetic: ${{ steps.phylogenetic.outcome }}
+          nextclade: ${{ steps.nextclade.outcome }}
+        run: |
+          # Show step outcomes in job logs…
+          echo "ingest        $ingest" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "phylogenetic  $phylogenetic" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "nextclade     $nextclade"| tee -a "$GITHUB_STEP_SUMMARY"
+
+          # Assert status; we're good if we see at least one success and the
+          # rest are success or skipped.
+          [[
+               ($ingest == success || $phylogenetic == success || $nextclade == success)
+            && ($ingest       == success || $ingest       == skipped)
+            && ($phylogenetic == success || $phylogenetic == skipped)
+            && ($nextclade    == success || $nextclade    == skipped)
+          ]]
+
+  # Replicating pathogen-repo-ci-v0 workflow because we decided not to support
+  # local versions of Augur in the centralized workflow
+  # <https://github.com/nextstrain/.github/issues/66>
+  # This particular jobs is for pathogen repos that do not follow the standard
+  # pathogen repo structure and is not expected to be updated.
+  # Any new pathogen repos should be added to the job replicating the latest version
+  # of the pathogen-repo-ci above.
+  pathogen-repo-ci-v0:
     runs-on: ubuntu-latest
     continue-on-error: true
     env:
@@ -82,7 +235,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - { pathogen: avian-flu, build-args: auspice/flu_avian_h5n1_ha.json }
+          - { pathogen: avian-flu, build-args: --configfile config/gisaid.yaml -pf test_target }
           - { pathogen: ebola }
           - { pathogen: lassa }
           # Disable monkeypox CI until pathogen-repo-ci supports custom build directories
@@ -99,17 +252,22 @@ jobs:
               build-args: --configfile profiles/ci/builds.yaml -p,
             }
           - { pathogen: tb }
-          - { pathogen: zika }
-    name: pathogen-repo-ci (${{ matrix.pathogen }})
+
+    name: pathogen-repo-ci-v0 (${{ matrix.pathogen }})
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ./augur
 
-      - uses: mamba-org/setup-micromamba@v1
+      - name: Set cache key
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
+      # Set up a Conda environment that replicates Nextstrain's Conda runtime.
+      - name: Install nextstrain-base from Conda
+        uses: mamba-org/setup-micromamba@v2
         with:
           create-args: nextstrain-base
           condarc: |
@@ -119,11 +277,13 @@ jobs:
               - bioconda
             channel_priority: strict
           cache-environment: true
+          cache-environment-key: ${{ env.DATE }}
           environment-name: augur
 
+      # Replace the Conda Augur installation with the local version.
       - run: pip install ./augur
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: nextstrain/${{ matrix.pathogen }}
           path: ./pathogen-repo
@@ -141,7 +301,7 @@ jobs:
       - run: nextstrain build --ambient ./pathogen-repo ${{ matrix.build-args }}
 
       - if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: output-${{ matrix.pathogen }}
           path: |
@@ -156,19 +316,20 @@ jobs:
     needs: [pytest-cram]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
       - run: pip install coverage
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: coverage
 
       - run: coverage combine .coverage@*
       - run: coverage xml
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
   build-docs:
@@ -176,3 +337,72 @@ jobs:
     with:
       docs-directory: docs/
       pip-install-target: .[dev]
+
+  check-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+
+      - uses: actions/checkout@v4
+
+      - run: pip install .[dev]
+
+      - run: ./devel/regenerate-developer-api-docs
+
+      - name: Check for changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git add .
+            git diff --staged >&2
+            echo "There are changes that affect the developer API docs. Please update: <https://github.com/nextstrain/augur/blob/-/docs/contribute/DEV_DOCS.md#regenerating-developer-api-docs>" >&2
+            echo "If there are changes to the Augur CLI, please manually adjust files under 'docs/usage/cli/'." >&2
+            exit 1
+          fi
+
+  release:
+    # Only run when called by the release workflow on the default branch
+    if: github.event_name == 'workflow_call' && github.workflow_ref == format('{0}/.github/workflows/release.yaml@refs/heads/{1}', github.repository, github.event.repository.default_branch)
+    needs: [pytest-cram]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch all branches and tags.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Set Nextstrain bot as git user
+        run: |
+          git config --global user.email "hello@nextstrain.org"
+          git config --global user.name "Nextstrain bot"
+      - run: python3 -m pip install --upgrade build twine
+      - run: devel/release ${{ github.event.inputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - run: git push origin master tag ${{ github.event.inputs.version }}
+      - name: Publish to PyPI
+        run: twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
+      - name: Create GitHub Release
+        run: ./devel/create-github-release "${{github.event.inputs.version }}" dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  rebuild-docker-image:
+    needs: [release]
+    runs-on: ubuntu-latest
+    steps:
+    # Delay for 10 minutes to allow the PyPI package to be available.
+    # See https://github.com/nextstrain/docker-base/issues/128
+    - name: Sleep for 10 minutes
+      run: sleep 600
+      shell: bash
+    - run: gh workflow run ci.yml --repo nextstrain/docker-base
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_WORKFLOW_DISPATCH }}

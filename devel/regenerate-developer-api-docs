@@ -1,0 +1,11 @@
+#!/bin/bash
+
+rm -f docs/api/developer/augur.*
+
+sphinx-apidoc \
+  --force \
+  --module-first \
+  --separate \
+  --no-toc \
+  --output-dir docs/api/developer \
+  augur

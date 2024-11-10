@@ -1,5 +1,5 @@
-augur.clades
-============
+augur.clades module
+===================
 
 .. automodule:: augur.clades
    :members:

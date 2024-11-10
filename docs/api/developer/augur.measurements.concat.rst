@@ -1,5 +1,5 @@
-augur.measurements.concat
-=========================
+augur.measurements.concat module
+================================
 
 .. automodule:: augur.measurements.concat
    :members:

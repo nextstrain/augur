@@ -1,5 +1,5 @@
-augur.io.json
-=============
+augur.io.json module
+====================
 
 .. automodule:: augur.io.json
    :members:

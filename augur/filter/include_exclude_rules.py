@@ -1,16 +1,17 @@
+import ast
 import json
 import operator
 import re
 import numpy as np
 import pandas as pd
-from typing import Any, Callable, Dict, List, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from augur.dates import is_date_ambiguous, get_numerical_dates
 from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
+from augur.io.strains import read_strains
 from augur.io.vcf import is_vcf as filename_is_vcf
-from augur.utils import read_strains
 from . import constants
 
 try:
@@ -78,7 +79,7 @@ def filter_by_exclude(metadata, exclude_file) -> FilterFunctionReturn:
     return set(metadata.index.values) - excluded_strains
 
 
-def _parse_filter_query(query):
+def parse_filter_query(query):
     """Parse an augur filter-style query and return the corresponding column,
     operator, and value for the query.
 
@@ -98,9 +99,9 @@ def _parse_filter_query(query):
 
     Examples
     --------
-    >>> _parse_filter_query("property=value")
+    >>> parse_filter_query("property=value")
     ('property', <built-in function eq>, 'value')
-    >>> _parse_filter_query("property!=value")
+    >>> parse_filter_query("property!=value")
     ('property', <built-in function ne>, 'value')
 
     """
@@ -143,7 +144,7 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     ['strain1', 'strain2']
 
     """
-    column, op, value = _parse_filter_query(exclude_where)
+    column, op, value = parse_filter_query(exclude_where)
     if column in metadata.columns:
         # Apply a test operator (equality or inequality) to values from the
         # column in the given query. This produces an array of boolean values we
@@ -164,7 +165,7 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     return filtered
 
 
-def filter_by_query(metadata, query) -> FilterFunctionReturn:
+def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[Dict[str, str]] = None) -> FilterFunctionReturn:
     """Filter metadata in the given pandas DataFrame with a query string and return
     the strain names that pass the filter.
 
@@ -174,6 +175,8 @@ def filter_by_query(metadata, query) -> FilterFunctionReturn:
         Metadata indexed by strain name
     query : str
         Query string for the dataframe.
+    column_types : str
+        Dict mapping of data type
 
     Examples
     --------
@@ -187,24 +190,77 @@ def filter_by_query(metadata, query) -> FilterFunctionReturn:
     # Create a copy to prevent modification of the original DataFrame.
     metadata_copy = metadata.copy()
 
-    # Support numeric comparisons in query strings.
-    #
-    # The built-in data type inference when loading the DataFrame does not
-    # support nullable numeric columns, so numeric comparisons won't work on
-    # those columns. pd.to_numeric does proper conversion on those columns, and
-    # will not make any changes to columns with other values.
-    #
-    # TODO: Parse the query string and apply conversion only to columns used for
-    # numeric comparison. Pandas does not expose the API used to parse the query
-    # string internally, so this is non-trivial and requires a bit of
-    # reverse-engineering. Commit 2ead5b3e3306dc1100b49eb774287496018122d9 got
-    # halfway there but had issues so it was reverted.
-    #
-    # TODO: Try boolean conversion?
-    for column in metadata_copy.columns:
-        metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='ignore')
+    if column_types is None:
+        column_types = {}
 
-    return set(metadata_copy.query(query).index.values)
+    # Set columns for type conversion.
+    variables = extract_variables(query)
+    if variables is not None:
+        columns = variables.intersection(metadata_copy.columns)
+    else:
+        # Column extraction failed. Apply type conversion to all columns.
+        columns = metadata_copy.columns
+
+    # If a type is not explicitly provided, try automatic conversion.
+    for column in columns:
+        column_types.setdefault(column, 'auto')
+
+    # Convert data types before applying the query.
+    # NOTE: This can behave differently between different chunks of metadata,
+    # but it's the best we can do.
+    for column, dtype in column_types.items():
+        if dtype == 'auto':
+            # Try numeric conversion followed by boolean conversion.
+            try:
+                # pd.to_numeric supports nullable numeric columns unlike pd.read_csv's
+                # built-in data type inference.
+                metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise')
+            except:
+                try:
+                    metadata_copy[column] = metadata_copy[column].map(_string_to_boolean)
+                except ValueError:
+                    # If both conversions fail, column values are preserved as strings.
+                    pass
+
+        elif dtype == 'int':
+            try:
+                metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise', downcast='integer')
+            except ValueError as e:
+                raise AugurError(f"Failed to convert value in column {column!r} to int. {e}")
+        elif dtype == 'float':
+            try:
+                metadata_copy[column] = pd.to_numeric(metadata_copy[column], errors='raise', downcast='float')
+            except ValueError as e:
+                raise AugurError(f"Failed to convert value in column {column!r} to float. {e}")
+        elif dtype == 'bool':
+            try:
+                metadata_copy[column] = metadata_copy[column].map(_string_to_boolean)
+            except ValueError as e:
+                raise AugurError(f"Failed to convert value in column {column!r} to bool. {e}")
+        elif dtype == 'str':
+            metadata_copy[column] = metadata_copy[column].astype('str', errors='ignore')
+
+    try:
+        return set(metadata_copy.query(query).index.values)
+    except Exception as e:
+        if isinstance(e, PandasUndefinedVariableError):
+            raise AugurError(f"Query contains a column that does not exist in metadata: {e}") from e
+        raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
+
+
+def _string_to_boolean(s: str):
+    """Convert a string to an optional boolean value.
+
+    Raises ValueError if it cannot be converted.
+    """
+    if s.lower() == 'true':
+        return True
+    elif s.lower() == 'false':
+        return False
+    elif s == '':
+        return None
+
+    raise ValueError(f"Unable to convert {s!r} to a boolean value.")
 
 
 def filter_by_ambiguous_date(metadata, date_column, ambiguity) -> FilterFunctionReturn:
@@ -368,7 +424,7 @@ def filter_by_sequence_index(metadata, sequence_index) -> FilterFunctionReturn:
     return metadata_strains & sequence_index_strains
 
 
-def filter_by_sequence_length(metadata, sequence_index, min_length) -> FilterFunctionReturn:
+def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunctionReturn:
     """Filter metadata by sequence length from a given sequence index.
 
     Parameters
@@ -384,13 +440,13 @@ def filter_by_sequence_length(metadata, sequence_index, min_length) -> FilterFun
     --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
-    >>> filter_by_sequence_length(metadata, sequence_index, min_length=27000)
+    >>> filter_by_min_length(metadata, sequence_index, min_length=27000)
     {'strain1'}
 
     It is possible for the sequence index to be missing strains present in the metadata.
 
     >>> sequence_index = pd.DataFrame([{"strain": "strain3", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
-    >>> filter_by_sequence_length(metadata, sequence_index, min_length=27000)
+    >>> filter_by_min_length(metadata, sequence_index, min_length=27000)
     set()
 
     """
@@ -401,6 +457,34 @@ def filter_by_sequence_length(metadata, sequence_index, min_length) -> FilterFun
     filtered_sequence_index["ACGT"] = filtered_sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
 
     return set(filtered_sequence_index[filtered_sequence_index["ACGT"] >= min_length].index.values)
+
+
+def filter_by_max_length(metadata, sequence_index, max_length) -> FilterFunctionReturn:
+    """Filter metadata by sequence length from a given sequence index.
+
+    Parameters
+    ----------
+    metadata : pandas.DataFrame
+        Metadata indexed by strain name
+    sequence_index : pandas.DataFrame
+        Sequence index
+    max_length : int
+        Maximum number of standard nucleotide characters (A, C, G, or T) in each sequence
+
+    Examples
+    --------
+    >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
+    >>> filter_by_max_length(metadata, sequence_index, max_length=27000)
+    {'strain2'}
+    """
+    strains = set(metadata.index.values)
+    filtered_sequence_index = sequence_index.loc[
+        sequence_index.index.intersection(strains)
+    ]
+    filtered_sequence_index["ACGT"] = filtered_sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
+
+    return set(filtered_sequence_index[filtered_sequence_index["ACGT"] <= max_length].index.values)
 
 
 def filter_by_non_nucleotide(metadata, sequence_index) -> FilterFunctionReturn:
@@ -487,7 +571,7 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
     set()
 
     """
-    column, op, value = _parse_filter_query(include_where)
+    column, op, value = parse_filter_query(include_where)
 
     if column in metadata.columns:
         # Apply a test operator (equality or inequality) to values from the
@@ -573,9 +657,13 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
 
     # Exclude strains by metadata, using pandas querying.
     if args.query:
+        kwargs = {"query": args.query}
+        if args.query_columns:
+            kwargs["column_types"] = {column: dtype for column, dtype in args.query_columns}
+
         exclude_by.append((
             filter_by_query,
-            {"query": args.query}
+            kwargs
         ))
 
     # Filter by ambiguous dates.
@@ -607,19 +695,29 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         ))
 
     # Filter by sequence length.
+    # Skip VCF files and warn the user that length filters do not
+    # make sense for VCFs.
+    is_vcf = filename_is_vcf(args.sequences)
     if args.min_length:
-        # Skip VCF files and warn the user that the min length filter does not
-        # make sense for VCFs.
-        is_vcf = filename_is_vcf(args.sequences)
-
-        if is_vcf: #doesn't make sense for VCF, ignore.
+        if is_vcf:
             print_err("WARNING: Cannot use min_length for VCF files. Ignoring...")
         else:
             exclude_by.append((
-                filter_by_sequence_length,
+                filter_by_min_length,
                 {
                     "sequence_index": sequence_index,
                     "min_length": args.min_length,
+                }
+            ))
+    if args.max_length:
+        if is_vcf:
+            print_err("WARNING: Cannot use max_length for VCF files. Ignoring...")
+        else:
+            exclude_by.append((
+                filter_by_max_length,
+                {
+                    "sequence_index": sequence_index,
+                    "max_length": args.max_length,
                 }
             ))
 
@@ -695,13 +793,13 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
     annotated in a sequence index.
 
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}, {"strain": "strain3", "A": 1250, "C": 1250, "G": 1250, "T": 1250}]).set_index("strain")
-    >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
+    >>> exclude_by = [(filter_by_min_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> include_by = [(force_include_where, {"include_where": "region=Europe"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
     >>> strains_to_keep
     {'strain1'}
     >>> sorted(strains_to_exclude, key=lambda record: record["strain"])
-    [{'strain': 'strain2', 'filter': 'filter_by_sequence_length', 'kwargs': '[["min_length", 27000]]'}, {'strain': 'strain3', 'filter': 'filter_by_sequence_length', 'kwargs': '[["min_length", 27000]]'}]
+    [{'strain': 'strain2', 'filter': 'filter_by_min_length', 'kwargs': '[["min_length", 27000]]'}, {'strain': 'strain3', 'filter': 'filter_by_min_length', 'kwargs': '[["min_length", 27000]]'}]
     >>> strains_to_include
     [{'strain': 'strain2', 'filter': 'force_include_where', 'kwargs': '[["include_where", "region=Europe"]]'}]
 
@@ -733,18 +831,10 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
     for filter_function, filter_kwargs in exclude_by:
         # Apply the current function with its given arguments. Each function
         # returns a set of strains that passed the corresponding filter.
-        try:
-            passed = metadata.pipe(
-                filter_function,
-                **filter_kwargs,
-            )
-        except Exception as e:
-            if filter_function is filter_by_query:
-                if isinstance(e, PandasUndefinedVariableError):
-                    raise AugurError(f"Query contains a column that does not exist in metadata.") from e
-                raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
-            else:
-                raise
+        passed = metadata.pipe(
+            filter_function,
+            **filter_kwargs,
+        )
 
         # Track the strains that failed this filter, so we can explain why later
         # on and update the list of strains to keep to intersect with the
@@ -795,9 +885,9 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
     Examples
     --------
     >>> from augur.dates import numeric_date
-    >>> from augur.filter.include_exclude_rules import filter_by_sequence_length, filter_by_min_date
+    >>> from augur.filter.include_exclude_rules import filter_by_min_length, filter_by_min_date
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}, {"strain": "strain3", "ACGT": 5000}]).set_index("strain")
-    >>> exclude_by = [(filter_by_sequence_length, {"sequence_index": sequence_index, "min_length": 27000})]
+    >>> exclude_by = [(filter_by_min_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> _filter_kwargs_to_str(exclude_by[0][1])
     '[["min_length", 27000]]'
     >>> exclude_by = [(filter_by_min_date, {"date_column": "date", "min_date": numeric_date("2020-03-01")})]
@@ -823,3 +913,71 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
         kwarg_list.append((key, value))
 
     return json.dumps(kwarg_list)
+
+
+def extract_variables(pandas_query: str):
+    """Try extracting all variable names used in a pandas query string.
+
+    If successful, return the variable names as a set. Otherwise, nothing is returned.
+
+    Examples
+    --------
+    >>> extract_variables("var1 == 'value'")
+    {'var1'}
+    >>> sorted(extract_variables("var1 == 'value' & var2 == 10"))
+    ['var1', 'var2']
+    >>> extract_variables("var1.str.startswith('prefix')")
+    {'var1'}
+    >>> extract_variables("this query is invalid")
+
+    Backtick quoting is also supported.
+
+    >>> extract_variables("`include me` == 'but not `me`'")
+    {'include me'}
+    >>> extract_variables("`include me once` == 'a' or `include me once` == 'b'")
+    {'include me once'}
+    """
+    # Since Pandas's query grammar is mostly a subset of Python's, which uses the
+    # ast stdlib under the hood, we can try to parse queries with that as well.
+    # Errors may arise from invalid query syntax or any unhandled Pandas-specific
+    # syntax. In those cases, don't return anything.
+    try:
+        # Replace the backtick quoting that is Pandas-specific syntax.
+        modified_query, replacements = _replace_backtick_quoting(pandas_query)
+        variables = set(node.id
+                        for node in ast.walk(ast.parse(modified_query))
+                        if isinstance(node, ast.Name))
+        for original_name, generated_name in replacements.items():
+            if generated_name in variables:
+                variables.remove(generated_name)
+                variables.add(original_name)
+        return variables
+    except:
+        return None
+
+
+def _replace_backtick_quoting(pandas_query: str):
+    """Replace backtick-quoted values with a generated value.
+
+    The generated value can be translated as a valid name (i.e. no spaces or
+    special characters).
+
+    Return the modified query and a dict mapping from the original to generated
+    value.
+    """
+    pattern = r"`([^`]+)`"
+    replacements: Dict[str, str] = {}
+    name_counter = 1
+
+    def replace(match: re.Match):
+        nonlocal replacements
+        nonlocal name_counter
+        original_value = match.group(1)
+
+        if original_value not in replacements:
+            replacements[original_value] = f'__augur_filter_{name_counter}'
+            name_counter += 1
+        return replacements[original_value]
+
+    modified_query = re.sub(pattern, replace, pandas_query)
+    return modified_query, replacements

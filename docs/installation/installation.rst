@@ -8,87 +8,81 @@ Installation
 .. contents::
    :local:
 
-Installing dependencies
-=======================
+Install Augur
+=============
 
-Augur uses some external bioinformatics programs:
+.. warning::
+   There are some package managers that have entries with a similar name.
 
-- ``augur align`` requires `mafft <https://mafft.cbrc.jp/alignment/software/>`__
+   * `Augur on PyPI <https://pypi.org/project/Augur/>`__. This is a different project. Use `nextstrain-augur <https://pypi.org/project/nextstrain-augur/>`__ instead.
+   * `augur on Debian <https://tracker.debian.org/pkg/augur>`__. This is an unofficial version not maintained by the Nextstrain core team. It may lag behind official Augur releases. We do not generally recommend its use.
 
-- ``augur tree`` requires at least one of:
 
-   - `IQ-TREE <http://www.iqtree.org/>`__ (used by default)
-   - `RAxML <https://sco.h-its.org/exelixis/web/software/raxml/>`__ (optional alternative)
-   - `FastTree <http://www.microbesonline.org/fasttree/>`__ (optional alternative)
+There are several ways to install Augur, ordered from least to most complex.
 
-- Bacterial data (or any VCF usage) requires `vcftools <https://vcftools.github.io/>`__
+.. tabs::
 
-If you use Conda or Mamba, you can install them in an active environment:
+   .. group-tab:: Nextstrain
 
-.. code:: bash
+      Augur is part of the Nextstrain project and is available in all :term:`Nextstrain runtimes <docs.nextstrain.org:runtime>`.
 
-   conda install -c conda-forge -c bioconda mafft raxml fasttree iqtree vcftools --yes
+      Continue by following the :doc:`Nextstrain installation guide <docs.nextstrain.org:install>`.
 
-On macOS using `Homebrew <https://brew.sh/>`__:
+      Once installed, you can use :doc:`cli:commands/shell` to run ``augur`` directly.
 
-.. code:: bash
+   .. group-tab:: Conda
 
-   brew tap brewsci/bio
-   brew install mafft iqtree raxml fasttree vcftools
+      Augur can be installed using Conda or another variant. This assumes you are familiar with how to `manage Conda environments <https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`__.
 
-On Debian/Ubuntu:
+      .. code:: bash
 
-.. code:: bash
+         conda install -c conda-forge -c bioconda augur
 
-   sudo apt install mafft iqtree raxml fasttree vcftools
+      This installs Augur along with all dependencies.
 
-Other Linux distributions will likely have the same packages available, although the names may differ slightly.
+   .. group-tab:: PyPI
 
-Install Augur as a user
-=======================
+      .. warning::
+         Installing other Python packages after Augur may cause dependency incompatibilities. If this happens, re-install Augur using the command in step 1.
 
-Using Mamba
------------
+      Augur is written in Python 3 and requires at least Python 3.8. It's published on `PyPI <https://pypi.org>`__ as `nextstrain-augur <https://pypi.org/project/nextstrain-augur>`__.
 
-This assumes you have Conda installed and an environment active. If not, refer to instructions for ambient runtime setup on `the Nextstrain installation guide <https://docs.nextstrain.org/en/latest/install.html>`__.
+      1. Install Augur along with Python dependencies.
 
-.. code:: bash
+         .. code:: bash
 
-   conda install -c conda-forge -c bioconda augur
+            python3 -m pip install nextstrain-augur
 
-If you encounter environment solving errors or want a faster installation process, use `mamba <https://github.com/TheSnakePit/mamba>`__ as a drop-in replacement for conda:
+      2. Install other dependencies.
 
-.. code:: bash
+         .. include:: non-python-dependencies.rst
 
-   mamba install -c conda-forge -c bioconda augur
+   .. group-tab:: Source
 
-Using pip from PyPi
--------------------
+      .. warning::
+         Installing other Python packages after Augur may cause dependency incompatibilities. If this happens, re-install Augur using the command in step 1.
 
-Augur is written in Python 3 and requires at least Python 3.8. It's published on `PyPi <https://pypi.org>`__ as `nextstrain-augur <https://pypi.org/project/nextstrain-augur>`__, so you can install it with ``pip`` like so:
+      Augur can be installed from source. This is useful if you want to use unreleased changes or develop Augur locally.
 
-.. code:: bash
+      1. Install Augur along with Python dependencies.
 
-   python3 -m pip install nextstrain-augur
+         .. code:: bash
 
-From source
------------
+            git clone https://github.com/nextstrain/augur.git
+            cd augur
+            python3 -m pip install .
 
-.. code:: bash
+         .. note::
 
-   git clone https://github.com/nextstrain/augur.git
-   python3 -m pip install .
+            For local development, install from source in editable mode with ``dev`` dependencies.
 
-This installs Augur along with external Python dependencies.
+            .. code:: bash
 
-Install Augur as a developer
-============================
+               python3 -m pip install -e .'[dev]'
 
-.. code:: bash
+      2. Install other dependencies.
 
-   python3 -m pip install -e '.[dev]'
-
-This installs dependencies necessary for local development.
+         .. include:: non-python-dependencies.rst
 
 Testing if it worked
 ====================

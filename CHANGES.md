@@ -2,11 +2,351 @@
 
 ## __NEXT__
 
-### Bug fixes
+### Features
 
+* ancestral, translate: Add `--skip-validation` as an alias to `--validation-mode=skip`. [#1656][] (@victorlin)
+* clades: Allow customizing the validation of input node data JSON files with `--validation-mode` and `--skip-validation`. [#1656][] (@victorlin)
+
+### Bug Fixes
+
+* index: Previously specifying a directory that does not exist in the path to `--output` would result in an incorrect error stating that the input file does not exist. It now shows the correct path responsible for the error. [#1644][] (@victorlin)
+* curate format-dates: Update help docs and improve failure messages to show use of `--expected-date-formats`. [#1653][] (@joverlee521)
 * ancestral: treat lowercase and upper case nucleotides in `--root-sequence` identically [#1323][] (@rneher and @corneliusroemer)
 
 [#1323]: https://github.com/nextstrain/augur/pull/1323
+[#1644]: https://github.com/nextstrain/augur/issues/1644
+[#1653]: https://github.com/nextstrain/augur/pull/1653
+[#1656]: https://github.com/nextstrain/augur/pull/1656
+
+## 26.0.0 (17 September 2024)
+
+### Major Changes
+
+* filter: Duplicate header names in the FASTA file (`--sequences`) will now result in an error. [#1613] (@victorlin)
+* parse: When both `strain` and `name` fields are present, the `strain` field will now be used as the sequence ID field. [#1629][] (@victorlin)
+* merge: Generated source columns (e.g. `__source_metadata_{NAME}`) are now omitted by default.  They may be explicitly included with `--source-columns=TEMPLATE` or explicitly omitted with `--no-source-columns`.  This may be a breaking change for any existing uses of `augur merge` relying on the generated columns, though as `augur merge` is relatively new we believe usage to be scant if extant at all. [#1625][] [#1632][] (@tsibley)
+
+### Bug Fixes
+
+* filter: Previously, when `--subsample-max-sequences` was slightly lower than the number of groups, it was possible to fail with an uncaught `AssertionError`. Internal calculations have been adjusted to prevent this from happening. [#1588][] [#1598][] (@victorlin)
+
+[#1588]: https://github.com/nextstrain/augur/issues/1588
+[#1598]: https://github.com/nextstrain/augur/issues/1598
+[#1613]: https://github.com/nextstrain/augur/pull/1613
+[#1625]: https://github.com/nextstrain/augur/issues/1625
+[#1629]: https://github.com/nextstrain/augur/pull/1629
+[#1632]: https://github.com/nextstrain/augur/issues/1632
+
+## 25.4.0 (3 September 2024)
+
+### Features
+
+* merge: Table-specific id columns and delimiters may now be specified, e.g. `--metadata-id-columns X=id Y=strain` and `--metadata-delimiters X=, Y=';'`, to allow more precise behaviour and avoid ordering issues. [#1594][] (@tsibley)
+
+### Bug Fixes
+
+* filter: Improved warning and error messages in the case of missing columns. [#1604] (@victorlin)
+* merge: Any user-customized `~/.sqliterc` file is now ignored so it doesn't break `augur merge`'s internal use of SQLite. [#1608][] (@tsibley)
+* merge: Non-id columns in metadata inputs that would conflict with the output id column are now forbidden and will cause an error if present.  Previously they would overwrite values in the output id column, causing incorrect output. [#1593][] (@tsibley)
+* import: Spaces in BEAST MCC tree annotations (for example, from a discrete state reconstruction) no longer break `augur import beast`'s parsing. [#1610][] (@watronfire)
+
+[#1593]: https://github.com/nextstrain/augur/pull/1593
+[#1594]: https://github.com/nextstrain/augur/pull/1594
+[#1604]: https://github.com/nextstrain/augur/pull/1604
+[#1608]: https://github.com/nextstrain/augur/pull/1608
+[#1610]: https://github.com/nextstrain/augur/pull/1610
+
+## 25.3.0 (22 August 2024)
+
+### Features
+
+* A new command, `augur merge`, now allows for generalized merging of two or more metadata tables. [#1563][] (@tsibley)
+* Two new commands, `augur read-file` and `augur write-file`, now allow external programs to do i/o like Augur by piping from/to these new commands.  They provide handling of compression formats and newlines consistent with the rest of Augur. [#1562][] (@tsibley)
+* A new debugging mode can be enabled by setting the `AUGUR_DEBUG` environment variable to `1` (or any non-empty value).  Currently the only effect is to print more information about handled (i.e. anticipated) errors.  For example, stack traces and parent exceptions in an exception chain are normally omitted for handled errors, but setting this env var includes them.  Future debugging and troubleshooting features, like verbose operation logging, will likely also condition on this new debugging mode. [#1577][] (@tsibley)
+* filter: Added the ability to use weights in subsampling. See help text of `--group-by-weights` and the updated [Filtering and Subsampling guide][] for more information. [#1454][] (@victorlin)
+
+### Bug Fixes
+
+* Embedded newlines in quoted field values of metadata files read/written by many commands, annotation files read by `augur curate apply-record-annotations`, and index files written by `augur index` are now properly handled. [#1561][] [#1564][] (@tsibley)
+* Output written to stderr (e.g. informational messages, warnings, errors, etc.) is now always line-buffered regardless of the Python version in use.  This helps with interleaved stderr and stdout.  Previously, stderr was block-buffered on Python 3.8 and line-buffered on 3.9 and higher. [#1563][] (@tsibley)
+
+[#1454]: https://github.com/nextstrain/augur/pull/1454
+[#1561]: https://github.com/nextstrain/augur/pull/1561
+[#1562]: https://github.com/nextstrain/augur/pull/1562
+[#1563]: https://github.com/nextstrain/augur/pull/1563
+[#1564]: https://github.com/nextstrain/augur/pull/1564
+[#1577]: https://github.com/nextstrain/augur/pull/1577
+[Filtering and Subsampling guide]: https://docs.nextstrain.org/en/latest/guides/bioinformatics/filtering-and-subsampling.html
+
+
+
+## 25.2.0 (24 July 2024)
+
+### Features
+
+* export v2: we now limit numerical precision on floats in the JSON. This should not change how a dataset is displayed / interpreted in Auspice but allows the gzipped & minimised JSON filesize to be reduced by around 30% (dataset-dependent). [#1512][] (@jameshadfield)
+* traits, export v2: `augur traits` now reports all confidence values above 0.1% rather than limiting them to the top 4 results. There is no change in the eventual Auspice dataset as `augur export v2` will still only consider the top 4. [#1512][] (@jameshadfield)
+* curate: Excel (`.xlsx` and `.xls`) and OpenOffice (`.ods`) spreadsheet files are now also supported as metadata inputs (`--metadata`).  The first sheet in the workbook is read as tabular data.  [#1550][] (@tsibley)
+
+### Bug Fixes
+
+* titers sub: Fixes a bug where antigenic weights were assigned to branches for substitutions in the incorrect order of `<derived allele><position><ancestral allele>` instead of `<ancestral allele><position><derived allele>`. [#1555][] (@huddlej)
+
+[#1512]: https://github.com/nextstrain/augur/pull/1512
+[#1550]: https://github.com/nextstrain/augur/pull/1550
+[#1555]: https://github.com/nextstrain/augur/pull/1555
+
+
+## 25.1.1 (15 July 2024)
+
+### Bug Fixes
+
+* curate parse-genbank-location: Fix a bug where a mix of empty and populated location-field values would result in inconsistent fields in the output NDJSON [#1531][](@genehack)
+
+[#1531]: https://github.com/nextstrain/augur/pull/1531
+
+
+## 25.1.0 (11 July 2024)
+
+### Features
+
+* Support xopen major version 2. Deprecate v1. Schedule for removal around November 2024. [#1532][] (@corneliusroemer)
+* Support networkx major version 3. [#1534][] (@corneliusroemer)
+
+[#1532]: https://github.com/nextstrain/augur/pull/1532
+[#1534]: https://github.com/nextstrain/augur/pull/1534
+
+## 25.0.0 (10 July 2024)
+
+### Major changes
+
+* curate format-dates: Raises an error if provided date field does not exist in records. [#1509][] (@joverlee521)
+* All curate subcommands: Verifies all input records have the same fields and raises an error if a record does not have matching fields. [#1518][] (@joverlee521)
+
+### Features
+
+* Added a new sub-command `augur curate apply-geolocation-rules` to apply user curated geolocation rules to the geolocation fields in a metadata file. Previously, this was available as a script within the nextstrain/ingest repo. [#1491][] (@victorlin)
+* Added a default color for the "Asia" region that will be used in `augur export` is no custom colors are provided. [#1490][] (@joverlee521)
+* Added a new sub-command `augur curate apply-record-annotations` to apply user curated annotations to existing fields in a metadata file. Previously, this was available as a `merge-user-metadata` in the nextstrain/ingest repo. [#1495][] (@joverlee521)
+* Added a new sub-command `augur curate abbreviate-authors` to abbreviate lists of authors to "<first author> et al." Previously, this was avaliable as the `transform-authors` script within the nextstrain/ingest repo. [#1483][] (@genehack)
+* Added a new sub-command `augur curate parse-genbank-location` to parse the `geo_loc_name` field from GenBank reconds. Previously, this was available as the `translate-genbank-location` script within the nextstrain/ingest repo. [#1485][] (@genehack)
+* curate format-dates: Added defaults to `--expected-date-formats` so that ISO 8601 dates (`%Y-%m-%d`) and its various masked forms (e.g. `%Y-XX-XX`) are automatically parsed by the command. [#1501][] (@joverlee521)
+* Added a new sub-command `augur curate transform-strain-name` to filter strain names based on matching a regular expression. Previously, this was available as the `transform-strain-names` script within the nextstrain/ingest repo. [#1514][] (@genehack)
+* Added a new sub-command `augur curate rename` to rename field / column names. Previously, a similar version was available as the `transform-field-names` script within the nextstrain/ingest repo however the behaviour is slightly changed here. [#1506][] (@jameshadfield)
+
+### Bug Fixes
+
+* filter: Improve speed of checking duplicates in metadata, especially for large files. [#1466][] (@victorlin)
+* curate: Stop adding double quotes to the metadata TSV output when field values have internal quotes. [#1493][] (@joverlee521)
+* curate format-dates: Mask empty date values as `XXXX-XX-XX` to represent unknown dates. [#1509][] (@joverlee521)
+
+[#1466]: https://github.com/nextstrain/augur/pull/1466
+[#1490]: https://github.com/nextstrain/augur/pull/1490
+[#1491]: https://github.com/nextstrain/augur/pull/1491
+[#1493]: https://github.com/nextstrain/augur/pull/1493
+[#1495]: https://github.com/nextstrain/augur/pull/1495
+[#1501]: https://github.com/nextstrain/augur/pull/1501
+[#1509]: https://github.com/nextstrain/augur/pull/1509
+[#1514]: https://github.com/nextstrain/augur/pull/1514
+[#1518]: https://github.com/nextstrain/augur/pull/1518
+[#1506]: https://github.com/nextstrain/augur/pull/1506
+
+## 24.4.0 (15 May 2024)
+
+### Features
+
+* All commands: Allow repeating an option that takes multiple values. Previously, if multiple option flags were specified (e.g. `--exclude-where 'region=A' --exclude-where 'region=B'`), only the last one was used. Now, all values are used. [#1445][] (@victorlin)
+* ancestral, translate: output node data files are now validated. The argument `--validation-mode` is added which controls this behaviour (default: error). This argument also controls validation of the input node-data file (ancestral only). [#1440][] (@jameshadfield)
+* export: Updated default latitudes and longitudes for geography traits. This only applies if you are **not** using `--lat-longs` to override the built in mappings. [#1449][] (@trvrb)
+
+### Bug Fixes
+
+* validation: we no longer exit with a non-zero exit code when the requested validation mode is "warn" [#1440][] (@jameshadfield)
+* validation: we no longer perform any validation when the requested validation mode is "skip" [#1440][] (@jameshadfield)
+* filter: Send all log messages to `stderr`. This allows output to be written to `stdout` (e.g. `--output-strains /dev/stdout`). [#1459][] (@victorlin)
+
+[#1440]: https://github.com/nextstrain/augur/pull/1440
+[#1445]: https://github.com/nextstrain/augur/pull/1445
+[#1449]: https://github.com/nextstrain/augur/pull/1449
+[#1459]: https://github.com/nextstrain/augur/pull/1459
+
+## 24.3.0 (18 March 2024)
+
+### Features
+
+* filter: Added a new option `--max-length` to filter out sequences that are longer than a certain amount of base pairs. [#1429][] (@victorlin)
+* parse: Added support for environments that use pandas 2.x. [#1436][] (@emollier, @victorlin)
+
+### Bug Fixes
+
+* filter: Updated docs with an example of tiered subsampling. [#1425][] (@victorlin)
+* export: Fixes bug [#1433] introduced in v23.1.0, that causes validation to fail when gene names start with `nuc`, e.g. `nucleocapsid`. [#1434][] (@corneliusroemer)
+* import: Fixes bug introduced in v24.2.0 that prevented `import beast` from running. [#1439][] (@tomkinsc)
+* translate, ancestral: Compound CDS are now exported as segmented CDS and are now viewable in Auspice.  [#1438][] (@jameshadfield)
+
+[#1425]: https://github.com/nextstrain/augur/pull/1425
+[#1429]: https://github.com/nextstrain/augur/pull/1429
+[#1433]: https://github.com/nextstrain/augur/issues/1433
+[#1434]: https://github.com/nextstrain/augur/pull/1434
+[#1436]: https://github.com/nextstrain/augur/pull/1436
+[#1438]: https://github.com/nextstrain/augur/pull/1438
+[#1439]: https://github.com/nextstrain/augur/pull/1439
+
+## 24.2.3 (23 February 2024)
+
+### Bug Fixes
+
+* filter: Updated the help and report text of `--min-length` to explicitly state that the minimum length filter only counts standard nucleotide characters A, C, G, or T (case-insensitive). This has been the behavior since version 3.0.3.dev1, but has never been explicitly documented. [#1422][] (@joverlee521)
+* frequencies: Fixed a bug introduced in 24.2.0 and 24.1.0 that prevented `--regions` from working when providing regions other than the default "global" region. [#1424]
+
+[#1422]: https://github.com/nextstrain/augur/pull/1422
+[#1424]: https://github.com/nextstrain/augur/pull/1424
+
+## 24.2.2 (16 February 2024)
+
+### Bug Fixes
+
+* filter: In versions 24.2.0 and 24.2.1, `--query` stopped working in cases where internal optimizations added in version 24.2.0 failed to parse the columns from the query. It now falls back to non-optimized behavior that allows queries to work. [#1418][] (@victorlin)
+* filter: Handle backtick quoting in internal optimizations of `--query`. [#1417][] (@victorlin)
+
+[#1417]: https://github.com/nextstrain/augur/pull/1417
+[#1418]: https://github.com/nextstrain/augur/pull/1418
+
+## 24.2.1 (14 February 2024)
+
+### Bug Fixes
+
+* frequencies: Fixed a bug introduced in 24.2.0 that prevented `--method diffusion` from working alongside `--tree`. [#1412][] (@victorlin)
+
+[#1412]: https://github.com/nextstrain/augur/issues/1412
+
+## 24.2.0 (12 February 2024)
+
+### Features
+
+* filter: Added a new option `--query-columns` that allows specifying what columns are used in `--query` along with the expected data types. If unspecified, automatic detection of columns and types is attempted. [#1294][] (@victorlin)
+* `augur.io.read_metadata`: A new optional `columns` argument allows specifying a subset of columns to load. The default behavior still loads all columns, so this is not a breaking change. [#1294][] (@victorlin)
+* `augur parse`: A new optional `--output-id-field` argument allows the user to select any ID field for the produced FASTA file (e.g. 'accession' instead of 'name' or 'strain'). [#1403][] (@j23414)
+  * When no `--output-id-field` is given and the data has both `name` and `strain` fields, continue to preferentially use `name` over `strain` as the sequence ID field; but, throw a deprecation warning that the order will be switched to prefer `strain` over `name` in the future to be consistent with the rest of Augur.
+  * Added entry to [DEPRECATED.md](./DEPRECATED.md).
+* Compression should now be supported for all input and output files. Please [open an issue](https://github.com/nextstrain/augur/issues) if you find one that doesn't! [#1381][] (@victorlin)
+* export v2: Add support to specify metadata columns to export without using them as colorings. This can be done with the `metadata_columns` property in the Auspice config JSON or via the `--metadata-columns` flag in the command line. [#1384][] (@joverlee521)
+
+### Bug Fixes
+
+* filter: In version 24.1.0, automatic conversion of boolean columns was accidentally removed. It has been restored with additional support for empty values evaluated as `None`. [#1410][] (@victorlin)
+* filter: The order of rows in `--output-metadata` and `--output-strains` now reflects the order in the original `--metadata`. [#1294][] (@victorlin)
+* filter, frequencies, refine: Performance improvements to reading the input metadata file. [#1294][] (@victorlin)
+    * For filter, this comes with increased writing times for `--output-metadata` and `--output-strains`. However, net I/O speed still decreased during testing of this change.
+* filter: Updated the help text of `--include` and `--include-where` to explicitly state that this can add strains that are missing an entry from `--sequences`. [#1389][] (@victorlin)
+* filter: Fixed the summary messages to properly reflect force-inclusion of strains that are missing an entry from `--sequences`. [#1389][] (@victorlin)
+* filter: Updated wording of summary messages. [#1389][] (@victorlin)
+* Enforce UTF-8 encoding when reading and writing files. Improve error messages when a non-UTF-8 file is used. [#1381][] (@victorlin)
+
+[#1294]: https://github.com/nextstrain/augur/pull/1294
+[#1381]: https://github.com/nextstrain/augur/pull/1381
+[#1384]: https://github.com/nextstrain/augur/pull/1384
+[#1389]: https://github.com/nextstrain/augur/pull/1389
+[#1410]: https://github.com/nextstrain/augur/pull/1410
+[#1403]: https://github.com/nextstrain/augur/pull/1403
+
+## 24.1.0 (30 January 2024)
+
+### Features
+
+* `augur.io.read_metadata`: A new optional `dtype` argument allows custom data types for all columns. Automatic type inference still happens by default, so this is not a breaking change. [#1252][] (@victorlin)
+* `augur.io.read_vcf` has been removed and usage replaced with TreeTime's function of the same name which has improved validation of the VCF file. [#1366][] (@jameshadfield)
+
+### Bug Fixes
+
+* filter, frequencies, refine: Speed up reading of the metadata file. [#1252][] (@victorlin)
+* traits: Previously, columns with only numeric values were treated as numerical data. These are now treated as categorical data for discrete trait analysis. [#1252][] (@victorlin)
+* Support Biopython `≥1.82` by requiring bcbio-gff `≥0.7.1`. [#1400][] (@victorlin)
+
+[#1252]: https://github.com/nextstrain/augur/pull/1252
+[#1366]: https://github.com/nextstrain/augur/pull/1366
+[#1400]: https://github.com/nextstrain/augur/pull/1400
+
+## 24.0.0 (22 January 2024)
+
+### Major Changes
+
+* ancestral, translate: For VCF inputs please ensure you are using TreeTime 0.11.2 or later. A large number of bugfixes and improvements have been added in both Augur and TreeTime. [#1355][] and [TreeTime #263][] (@jameshadfield)
+* ancestral, translate: GenBank files now require the (GFF mandatory) source feature to be present. [#1351][] (@jameshadfield)
+* ancestral, translate: For GFF files, we extract the genome/sequence coordinates by inspecting the sequence-region pragma, region type and/or source type. This information is now required. [#1351][] (@jameshadfield)
+
+### Features
+
+* ancestral, translate: Improvements to VCF inputs / outputs. [#1355][] and [TreeTime #263][] (@jameshadfield)
+    * Output VCF will better match the input VCF, including CHROM name and ploidy encoding.
+    * VCF inputs now require `--vcf-reference-output`
+    * AA sequences are now exported for the tree root
+    * VCF writing is now 3 orders of magnitude faster (dataset dependent)
+* ancestral, translate: A range of improvements to how we parse GFF and GenBank reference files. [#1351][] (@jameshadfield)
+    * translate will now always export a 'nuc' annotation in the output JSON, allowing it to pass validation
+    * Gene/CDS names of 'nuc' are now forbidden.
+    * If a Gene/CDS in the GFF/GenBank file is unparsed we now print a warning.
+* ancestral: For VCF alignments, a VCF output file is now only created when requested via `--output-vcf`. [#1344][] (@jameshadfield)
+* ancestral: Improvements to command line arguments. [#1344][] (@jameshadfield)
+     * Incompatible arguments are now checked, especially related to VCF vs FASTA inputs.
+     * `--vcf-reference` and `--root-sequence` are now mutually exclusive.
+* translate: Tree nodes are checked against the node-data JSON input to ensure sequences are present. [#1348][] (@jameshadfield)
+* utils::load_features: This function may now raise `AugurError`. [#1351][] (@jameshadfield)
+* export v2: Automatically minify large outputs. Use `--no-minify-json` to disable this default behavior. [#1352][] (@victorlin)
+* Added a new file [DEPRECATED.md](./DEPRECATED.md) to document timelines and progress of deprecated features in the Augur CLI and Python API. [#1371][] (@victorlin)
+
+### Bug Fixes
+
+* ancestral, translate: Various fixes to VCF inputs / outputs. [#1355][] and [TreeTime #263][] (@jameshadfield)
+    * Fix incorrect (but passing) tests
+    * Fix case-sensitive sequence comparisons between the root and reference sequences.
+    * Fix a bug where ambiguous alleles are not inferred (see [#1380][] for full details).
+    * Fix a bug where positions with no sequence information were assigned a base because the mask was not being computed (see [#1382][] for full details).
+    * More than one ALT allele is now correctly parsed
+    * Mutations followed by an insertion are now parsed
+    * Unchanged ref genotypes are now encoded as '0' rather than '.'
+    * ALT alleles "*" are now valid (introduced in VCF spec 4.2, but observed in VCF 4.1 files)
+    * Positions with no variation are no longer exported
+* ancestral, translate: Fixes for JSON (non-VCF) inputs. [#1355][] (@jameshadfield)
+    * The "reference" translations are now from the provided reference sequence, not from the root of the tree.  [#1355][] (@jameshadfield)
+    * Fix a bug where positions with no sequence information were assigned a base because the mask was not applied (see [#1382][] for full details)
+* ancestral, translate: Avoid incompatibilities with Biopython >=1.82. [#1374][], [#1387][] (@victorlin)
+* ancestral, translate: Address Biopython deprecation warnings. [#1379][] (@victorlin)
+* ancestral: Previously, the help text for `--genes` falsely claimed that it could accept a file. Now, it can truly claim that. [#1353][] (@victorlin)
+* translate: The 'source' ID for GFF files is now ignored as a potential gene feature (it is still used for overall nuc coords). [#1348][] (@jameshadfield)
+* translate: Improvements to command line arguments.  [#1348][] (@jameshadfield)
+    * `--tree` and `--ancestral-sequences` are now required arguments.
+    * separate VCF-only arguments into their own group
+* translate: Fixes a bug in the parsing behaviour of GFF files whereby the presence of the `--genes` command line argument would change how we read individual GFF lines. Issue [#1349][], PR [#1351][] (@jameshadfield)
+* If `TreeTimeError` is encountered Augur now exits with code 2 rather than 0. (This restores the original behaviour.) [#1367][] (@jameshadfield)
+* Deprecate `read_strains` from `augur.utils` and add it to the public API under `augur.io`. [#1353][] (@victorlin)
+
+
+[#1344]: https://github.com/nextstrain/augur/pull/1344
+[#1348]: https://github.com/nextstrain/augur/pull/1348
+[#1351]: https://github.com/nextstrain/augur/pull/1351
+[#1349]: https://github.com/nextstrain/augur/issues/1349
+[#1367]: https://github.com/nextstrain/augur/pull/1367
+[#1371]: https://github.com/nextstrain/augur/pull/1371
+[#1374]: https://github.com/nextstrain/augur/pull/1374
+[#1379]: https://github.com/nextstrain/augur/pull/1379
+[#1352]: https://github.com/nextstrain/augur/pull/1352
+[#1353]: https://github.com/nextstrain/augur/pull/1353
+[#1355]: https://github.com/nextstrain/augur/pull/1355
+[#1380]: https://github.com/nextstrain/augur/issues/1380
+[#1382]: https://github.com/nextstrain/augur/issues/1382
+[#1387]: https://github.com/nextstrain/augur/pull/1387
+[TreeTime #263]: https://github.com/neherlab/treetime/pull/263
+
+## 23.1.1 (7 November 2023)
+
+### Bug Fixes
+
+* Fix Python 3.11 installation for Conda environments. [#1334][] (@victorlin)
+* Bump `pyfastx` dependency to major versions 1 and 2. [#1335][] (@victorlin)
+
+[#1334]: https://github.com/nextstrain/augur/issues/1334
+[#1335]: https://github.com/nextstrain/augur/pull/1335
 
 ## 23.1.0 (22 September 2023)
 

@@ -1,0 +1,6 @@
+##fileformat=VCFv4.3
+##source="Manually created (james) to test augur translate with the 'simple-genome' data"
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	node_root	node_AB	sample_A	sample_B	sample_C
+gene1	2	.	P	L	.	PASS	.	GT	.	1	1	1	0
+gene2	2	.	V	D	.	PASS	.	GT	.	1	1	1	0

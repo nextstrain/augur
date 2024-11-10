@@ -1,0 +1,15 @@
+LOCUS       Simple-genome             50 bp    DNA     linear   VRL 05-DEC-2023
+DEFINITION  Synthetic genome used for Nextstrain testing
+KEYWORDS    .
+FEATURES             Location/Qualifiers
+     source          1..50
+                     /strain="Nextstrain/Simple-genome"
+     CDS             10..24
+                     /gene="gene1"
+                     /translation="MPCG"
+     CDS             complement(36..47)
+                     /gene="gene2"
+                     /translation="MVK"
+ORIGIN
+        1 AAAAAAAAAA TGCCCTGCGG GTAAAAAAAA AAAAACTACT TGACCATAAA
+//

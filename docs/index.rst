@@ -9,7 +9,7 @@ Augur: A bioinformatics toolkit for phylogenetic analysis
    The documentation you are viewing is Augur's reference guide, which means it is information-oriented and targeted at users who just need info about how Augur works.
 
    * If you have a question about how to achieve a specific goal with Augur, check out our :doc:`Augur-focused How-to Guides section <docs.nextstrain.org:guides/bioinformatics/index>` in the main Nextstrain documentation.
-   * If you want to learn the basics of how to use Augur from scratch, check out :doc:`docs.nextstrain.org:tutorials/creating-a-workflow` in the main Nextstrain documentation.
+   * If you want to learn the basics of how to use Augur from scratch, check out :doc:`docs.nextstrain.org:tutorials/creating-a-phylogenetic-workflow` in the main Nextstrain documentation.
    * If you want to understand how Augur fits together with Auspice to visualize results, check out our :doc:`Data Formats section <docs.nextstrain.org:reference/data-formats>` in the main Nextstrain documentation.
 
 
@@ -18,9 +18,6 @@ Augur is a bioinformatics toolkit to track evolution from sequence and serologic
 It provides a collection of commands which are designed to be composable into larger processing pipelines.
 Augur originated as part of `Nextstrain <https://nextstrain.org>`__, an open-source project to harness the scientific and public health potential of pathogen genome data.
 All source code is available on `GitHub <https://github.com/nextstrain/augur>`__.
-
-.. note:: We have just released version 6 of augur -- `check our upgrading guide <releases/migrating-v5-v6.html>`__
-
 
 Augur is composed of a series of modules and different workflows will use different parts of the pipeline.
 A selection of augur modules and different possible entry points are illustrated below.

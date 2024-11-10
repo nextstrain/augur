@@ -11,11 +11,12 @@ from collections import defaultdict
 import numpy as np
 from Bio import Phylo
 from treetime import TreeAnc
+from augur.io.file import open_file
 from augur.utils import write_json
 
 def register_parser(parent_subparsers):
     """
-    Arguments available to `augur import beast`
+    Arguments available to ``augur import beast``
     """
     beast_parser = parent_subparsers.add_parser('beast', help="Import beast analysis")
     beast_parser.add_argument("--beast", help=SUPPRESS, default=True) # used to disambiguate subcommands
@@ -37,20 +38,19 @@ def parse_beast_tree(data, tipMap, verbose=False):
 
     Parameters
     ----------
-    data : string
+    data : str
         The (really long) line in the NEXUS file beginning with "tree", pruned
         to start at the first "(" character.
     tipMap : dict
-        Mapping of tips (as encoded in `data`) to their names
-    verbose : bool, optional (default: false)
+        Mapping of tips (as encoded in ``data``) to their names
+    verbose : bool
         Should output be printed?
 
     Returns
     -------
-    <class 'Bio.Phylo.Newick.Clade'>
-
-    Author: Gytis Dudas
+    :py:class:`Bio.Phylo.Newick.Clade`
     """
+    # Author: Gytis Dudas
 
     i=0 ## is an adjustable index along the tree string, it is incremented to advance through the string
     stored_i=None ## store the i at the end of the loop, to make sure we haven't gotten stuck somewhere in an infinite loop
@@ -116,15 +116,15 @@ def parse_beast_tree(data, tipMap, verbose=False):
                 print('%d adding multitype node %s'%(i,multitypeNode.group(1)))
             i+=len(multitypeNode.group(1))
 
-        commentBlock=re.match(r'(\:)*\[(&[A-Za-z\_\-{}\,0-9\.\%=\"\'\+!#]+)\]',data[i:])## look for MCC comments
+        commentBlock=re.match(r'(\:)*\[(&[A-Za-z\_\-{}\,0-9\.\%=\"\'\+ !#]+)\]',data[i:])## look for MCC comments
         if commentBlock is not None:
             if verbose==True:
                 print('%d comment: %s'%(i,commentBlock.group(2)))
             comment=commentBlock.group(2)
             numerics=re.findall(r'[,&][A-Za-z\_\.0-9]+=[0-9\-Ee\.]+',comment) ## find all entries that have values as floats
-            strings=re.findall(r'[,&][A-Za-z\_\.0-9]+=["|\']*[A-Za-z\_0-9\.\+]+["|\']*',comment) ## strings
+            strings=re.findall(r'[,&][A-Za-z\_\.0-9]+=["|\']*[A-Za-z\_0-9\.\+ ]+["|\']*',comment) ## strings
             treelist=re.findall(r'[,&][A-Za-z\_\.0-9]+={[A-Za-z\_,{}0-9\.]+}',comment) ## complete history logged robust counting (MCMC trees)
-            sets=re.findall(r'[,&][A-Za-z\_\.0-9\%]+={[A-Za-z\.\-0-9eE,\"\_]+}',comment) ## sets and ranges
+            sets=re.findall(r'[,&][A-Za-z\_\.0-9\%]+={[A-Za-z\.\-0-9 ,\"\_]+}',comment) ## sets and ranges
             figtree=re.findall(r'\![A-Za-z]+=[A-Za-z0-9#]+',comment) ## figtree comments, in case MCC was manipulated in FigTree
 
             for vals in strings: ## string states go here
@@ -206,12 +206,12 @@ def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose
 
     Parameters
     ----------
-    tree_path : string or file handle open for reading
+    tree_path
         The nexus tree file
-    treestring_regex : string
+    treestring_regex : str
         The regex to match the tree string in the nexus file (the really long
         string which typically starts with "tree" and looks similar to a newick tree)
-    verbose : bool, optional (default: False)
+    verbose : bool
         Should output be printed?
 
     Raises
@@ -221,56 +221,47 @@ def parse_nexus(tree_path, treestring_regex=r'tree [A-Za-z\_]+([0-9]+)', verbose
 
     Returns
     -------
-    <class 'Bio.Phylo.BaseTree.Tree'>
+    :py:class:`Bio.Phylo.BaseTree.Tree`
         A tree with BEAST attrs set on each node (as applicable)
-
-    Author: Gytis Dudas
     """
+    # Author: Gytis Dudas
 
     tipFlag=False
     tips={}
     tipNum=0
     tree=None
 
-    if isinstance(tree_path,str): ## determine if path or handle was provided to function
-        try:
-            handle=open(tree_path,'r', encoding='utf-8')
-        except FileNotFoundError:
-            print("FATAL: No such file {}".format(tree_path))
-            sys.exit(2)
-    else:
-        handle=tree_path
+    with open_file(tree_path,'r') as handle: ## open tree_path as file, or consume directly if already a file handle
+        for line in handle: ## iterate over lines
+            l=line.strip('\n')
 
-    for line in handle: ## iterate over lines
-        l=line.strip('\n')
+            nTaxa=re.search(r'dimensions ntax=([0-9]+);',l.lower()) ## get number of tips that should be in tree
+            if nTaxa is not None:
+                tipNum=int(nTaxa.group(1))
+                if verbose:
+                    print('File should contain %d taxa'%(tipNum))
 
-        nTaxa=re.search(r'dimensions ntax=([0-9]+);',l.lower()) ## get number of tips that should be in tree
-        if nTaxa is not None:
-            tipNum=int(nTaxa.group(1))
-            if verbose:
-                print('File should contain %d taxa'%(tipNum))
+            treeString=re.search(treestring_regex,l) ## search for line with the tree
+            if treeString is not None:
+                treeString_start=l.index('(') ## find index of where tree string starts
+                tree=parse_beast_tree(l[treeString_start:], tipMap=tips, verbose=verbose) ## parse tree string
 
-        treeString=re.search(treestring_regex,l) ## search for line with the tree
-        if treeString is not None:
-            treeString_start=l.index('(') ## find index of where tree string starts
-            tree=parse_beast_tree(l[treeString_start:], tipMap=tips, verbose=verbose) ## parse tree string
+                if verbose:
+                    print('Identified tree string')
 
-            if verbose:
-                print('Identified tree string')
+            if tipFlag==True: ## going through tip encoding block
+                tipEncoding=re.search(r'([0-9]+) ([A-Za-z\-\_\/\.\'0-9 \|?]+)',l) ## search for key:value pairs
+                if tipEncoding is not None:
+                    tips[tipEncoding.group(1)]=tipEncoding.group(2).strip('"').strip("'") ## add to tips dict
+                    if verbose==True:
+                        print('Identified tip translation %s: %s'%(tipEncoding.group(1),tips[tipEncoding.group(1)]))
+                elif ';' not in l:
+                    print('tip not captured by regex:',l.replace('\t',''))
 
-        if tipFlag==True: ## going through tip encoding block
-            tipEncoding=re.search(r'([0-9]+) ([A-Za-z\-\_\/\.\'0-9 \|?]+)',l) ## search for key:value pairs
-            if tipEncoding is not None:
-                tips[tipEncoding.group(1)]=tipEncoding.group(2).strip('"').strip("'") ## add to tips dict
-                if verbose==True:
-                    print('Identified tip translation %s: %s'%(tipEncoding.group(1),tips[tipEncoding.group(1)]))
-            elif ';' not in l:
-                print('tip not captured by regex:',l.replace('\t',''))
-
-        if 'translate' in l.lower(): ## tip encoding starts on next line
-            tipFlag=True
-        if ';' in l:
-            tipFlag=False
+            if 'translate' in l.lower(): ## tip encoding starts on next line
+                tipFlag=True
+            if ';' in l:
+                tipFlag=False
 
     assert tree,'Tree not captured by regex'
     assert tree.count_terminals()==tipNum,'Not all tips have been parsed.'
@@ -290,7 +281,7 @@ def summarise_parsed_traits(tree):
     """
     Parameters
     ----------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
     """
     traits = {}
     for node in tree.find_clades():
@@ -317,11 +308,11 @@ def fake_alignment(T):
 
     Parameters
     -------
-    T : <class 'Bio.Phylo.BaseTree.Tree'>
+    T : :py:class:`Bio.Phylo.BaseTree.Tree`
 
     Returns
     -------
-    <class 'Bio.Align.MultipleSeqAlignment'>
+    :py:class:`Bio.Align.MultipleSeqAlignment`
     """
     from Bio import SeqRecord, Seq, Align
     seqs = []
@@ -350,16 +341,16 @@ def find_most_recent_tip(tree, tip_date_regex, tip_date_format, tip_date_delimet
 
     Parameters
     --------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
-    tip_date_regex : string
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
+    tip_date_regex : str
         The regex used to extract the date (e.g. isolate collection date
         from each tip in the string.
         default: hyphen delimited numbers at the end of tip name
-    tip_date_format : string
+    tip_date_format : str
         The format of the extracted date.
         (e.g. "%Y-%m-%d" goes with "2012-10-30")
-    tip_date_delimeter : string
-        The delimeter in `tip_date_format`
+    tip_date_delimeter : str
+        The delimeter in ``tip_date_format``
 
     Raises
     ------
@@ -370,9 +361,8 @@ def find_most_recent_tip(tree, tip_date_regex, tip_date_format, tip_date_delimet
     -------
     float
         The date of the most recent tip in the tree in decimal format
-
-    Author: Gytis Dudas
     """
+    # Author: Gytis Dudas
 
     def decimalDate(date, date_fmt, variable=False):
         """ Converts calendar dates in specified format to decimal date. """
@@ -406,14 +396,11 @@ def calc_tree_dates(tree, most_recent_tip_date, tip_date_regex, tip_date_format,
 
     Parameters
     --------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
-    # time_units : string
-    # tip_date : null | string
-    # most_recent_tip_data_fmt : string {"regex" | "decimal"}
-    most_recent_tip_date: numeric
-    tip_date_regex: string
-    tip_date_format: string
-    tip_date_delimeter: string
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
+    most_recent_tip_date: float
+    tip_date_regex: str
+    tip_date_format: str
+    tip_date_delimeter: str
 
     Returns
     --------
@@ -422,9 +409,8 @@ def calc_tree_dates(tree, most_recent_tip_date, tip_date_regex, tip_date_format,
             The root date offset
         [1] : float
             The date of the most recent tip in the tree
-
-    TODO: Time units are taken as years, but days are also common for BEAST analysis
     """
+    # TODO: Time units are taken as years, but days are also common for BEAST analysis
 
     if most_recent_tip_date:
         most_recent_tip = float(most_recent_tip_date)
@@ -449,7 +435,7 @@ def collect_node_data(tree, root_date_offset, most_recent_tip_date):
 
     Parameters
     --------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
     root_date_offset : float
     most_recent_tip_date : float
 
@@ -504,11 +490,11 @@ def compute_entropies_for_discrete_traits(tree):
 
     Properties
     ----------
-    tree : <class 'Bio.Phylo.BaseTree.Tree'>
+    tree : :py:class:`Bio.Phylo.BaseTree.Tree`
         BEAST traits are set as key-value pairs on node.attrs
-
-    Author: James Hadfield
     """
+    # Author: James Hadfield
+
     alphabets = defaultdict(list) ## store alphabets
     for clade in tree.find_clades(): ## iterate over branches
         for attr in [key for key in clade.attrs if isinstance(clade.attrs[key], dict)]: ## iterate over branch attributes
@@ -528,8 +514,8 @@ def compute_entropies_for_discrete_traits(tree):
 
 def print_what_to_do_next(nodes, mcc_path, tree_path, node_data_path):
     """
-    Print a suggested `auspice_config.json` file, which the user will have to configure
-    and provide to `augur export`. There is not enough information in a MCC tree to do
+    Print a suggested ``auspice_config.json`` file, which the user will have to configure
+    and provide to ``augur export``. There is not enough information in a MCC tree to do
     this automatically.
     """
 

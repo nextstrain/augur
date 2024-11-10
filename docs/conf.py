@@ -64,6 +64,7 @@ extensions = [
     'sphinx_autodoc_typehints', # must come after napoleon https://github.com/tox-dev/sphinx-autodoc-typehints/blob/1.21.4/README.md#compatibility-with-sphinxextnapoleon
     'sphinx_markdown_tables',
     'sphinx.ext.intersphinx',
+    'sphinx_tabs.tabs',
     'nextstrain.sphinx.theme',
 ]
 
@@ -130,15 +131,39 @@ nitpick_ignore = [
      # resolved by intersphinx for a proper link.
      ("py:class", "json.decoder.JSONDecodeError"),
      ("py:class", "json.encoder.JSONEncoder"),
+
+     # This class can't be referenced.
+     # <https://github.com/python/cpython/issues/101503>
+     ("py:class", "argparse._SubParsersAction"),
 ]
 
 # -- Cross-project references ------------------------------------------------
 
 intersphinx_mapping = {
-    'Bio': ('https://biopython.org/docs/latest/api/', None),
+    'Bio': ('https://biopython.org/docs/latest/', None),
     'docs.nextstrain.org': ('https://docs.nextstrain.org/en/latest/', None),
+    'cli': ('https://docs.nextstrain.org/projects/cli/en/stable', None),
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable', None),
     'pandas': ('https://pandas.pydata.org/docs', None),
     'treetime': ('https://treetime.readthedocs.io/en/stable/', None),
 }
+
+# -- Linkchecking ------------------------------------------------------------
+
+## NOTE: for both sets of regular expressions that follow, the
+## underlying linkchecker code uses `re.match()` to apply them to URLs
+## — so there's already an implicit "only at the beginning of a
+## string" matching happening, and something like a plain `r'google'`
+## regular expression will _NOT_ match all google.com URLs.
+linkcheck_ignore = [
+     # This URL will occasionally fail and return 403 (broken).
+     # <https://github.com/nextstrain/.github/issues/106#issuecomment-2408239782>
+     r'^http://www\.microbesonline\.org/fasttree/',
+]
+linkcheck_anchors_ignore_for_url = [
+     # Github uses anchor-looking links for highlighting lines but
+     # handles the actual resolution with Javascript, so skip anchor
+     # checks for Github URLs:
+     r'^https://github\.com',
+]

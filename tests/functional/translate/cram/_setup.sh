@@ -1,2 +1,3 @@
-pushd "$TESTDIR/../../" > /dev/null
-export AUGUR="${AUGUR:-../../bin/augur}"
+export AUGUR="${AUGUR:-$TESTDIR/../../../../bin/augur}"
+export SCRIPTS="$TESTDIR/../../../../scripts"
+set -o pipefail

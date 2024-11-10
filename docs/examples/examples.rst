@@ -45,4 +45,4 @@ Nextstrain community
 ====================
 
 Nextstrain also provides access to analyses by independent groups `stored and accessed via public GitHub repos <https://nextstrain.org/docs/contributing/community-builds>`__, all of which currently use augur.
-For the most up-to-date listing of these please see the `community section on the nextstrain front page. <https://nextstrain.org/#community>`__
+For the most up-to-date listing of these please see the `community section on the nextstrain site. <https://nextstrain.org/community>`__

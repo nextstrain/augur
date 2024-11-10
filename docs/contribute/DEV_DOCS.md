@@ -5,11 +5,13 @@ Thank you for helping us to improve Augur! Use the GitHub markdown preview sideb
 ## Getting started
 
 To be an effective, productive contributor, please start by reading the
-[**Nextstrain contributing guide**](https://github.com/nextstrain/.github/blob/master/CONTRIBUTING.md)
+[**Nextstrain contributing guide**](https://github.com/nextstrain/.github/blob/-/CONTRIBUTING.md)
 for useful information about how to pick an issue, submit your contributions, and so on.
 
+Please see the "Source" tab in [Augur's installation instructions](https://docs.nextstrain.org/projects/augur/en/stable/installation/installation.html) for details on how to install Augur for development.
+
 This project strictly adheres to the
-[Contributor Covenant Code of Conduct](https://github.com/nextstrain/.github/blob/master/CODE_OF_CONDUCT.md).
+[Contributor Covenant Code of Conduct](https://github.com/nextstrain/.github/blob/-/CODE_OF_CONDUCT.md).
 
 Please see the [open issues list](https://github.com/nextstrain/augur/issues) for currently available issues.
 
@@ -30,70 +32,52 @@ To to test your local changes (without installing them to your system), run the 
 
 Note that the `./bin/augur` convenience script is not installing `augur` system-wide with pip.
 
-As an alternative to using the convenience script and to install the dev dependencies, you can install augur from source
-as an **editable package** so that your global `augur` command always uses your
-local source code copy:
-
-```bash
-pip install -e '.[dev]'
-```
-
-Using an "editable package" is not recommended if you want to be able to compare output
-from a stable, released version of augur with your development version (e.g. comparing
-output of `augur` installed with pip and `./bin/augur` from your local source code).
-
 ### Testing
 
 Writing good tests and running tests helps maintain code quality and eases future refactoring.
-We use [pytest](https://docs.pytest.org) and [Cram](https://bitheap.org/cram/) to test augur.
-This section will describe how to write and run tests, and when they are run automatically.
+This section describes the different types of tests, how to write them, how to run them, and when they are run automatically.
 
-#### Writing Tests
+#### Overview
 
-It's good practice to write **unit tests** for any code contribution.
-The [pytest documentation](https://docs.pytest.org) and [Python documentation](https://docs.python.org) are good references for unit tests.
-Augur's unit tests are located in the `tests` directory and there is generally one test file for each code file.
+We encourage keeping tests up to date and covered for **any** code contribution. Please add a note in your PR if you need help with adding tests.
 
-On the other hand, [**doctests**](https://docs.python.org/3/library/doctest.html) are a type of tests that are written within a module's docstrings.
-They can be helpful for testing a real-world example and determining if a regression is introduced in a particular module.
+Tests consist of:
 
-A pull request that contributes new code **should always contain unit tests**.
-Optionally, a pull request may also contain doctests if the contributor believes a doctest would improve the documentation and execution of a real world example.
+1. Unit tests
+2. Doctests
+3. Functional tests
 
-We test augur's command line interface with functional tests implemented with the [Cram framework](https://bitheap.org/cram/).
-These tests complement existing unit tests of individual augur Python functions by running augur commands on the shell and confirming that these commands:
+The combined test coverage is currently [![codecov coverage badge showing % coverage - select for details](https://codecov.io/gh/nextstrain/augur/graph/badge.svg?token=n3ZS7rMRhY)](https://codecov.io/gh/nextstrain/augur). We realize that this number is not 100%, so the automated CI GitHub Actions workflow is augmented with external testing via running pathogen repo workflows using CI-specific input data.
+
+#### 1. Unit tests
+
+Unit tests are written using [pytest](https://docs.pytest.org).
+Augur's unit tests are located in the `tests` directory and prefixed with `test_`. There is generally one test file for each code file.
+
+#### 2. Doctests
+
+[Doctests](https://docs.python.org/3/library/doctest.html) are a type of test that are written within a module's docstrings.
+They can be helpful for testing a real-world example and determining if a regression is introduced in a particular module. They are run via `pytest`.
+
+#### 3. Functional tests
+
+Augur's command line interface is tested by functional tests implemented with the [Cram framework](https://bitheap.org/cram/).
+These tests complement existing unit tests of individual augur Python functions by running augur commands in the shell and confirming that these commands:
 
 1. execute without any errors
 2. produce exactly the expected outputs for the given inputs
 
 These tests can reveal bugs resulting from untested internal functions or untested combinations fo internal functions.
 
-Functional tests should either:
+Over time, we have changed the way we design and organize Augur's Cram tests. You might find older practices in existing tests that haven't been updated yet, but these are the latest guidelines that we've discovered to be helpful.
 
-* suitably test a single augur command with an eponymously named Cram file in `tests/functional/` (e.g., `mask.t` for augur mask)
-
-OR
-
-* test a complete build with augur commands with an appropriately named Cram file in `tests/builds/` (e.g., `zika.t` for the example Zika build)
-
-##### Functional tests of specific commands
-
-Functional tests of specific commands consist of a single Cram file per test and a corresponding directory of expected inputs and outputs to use for comparison of test results.
-
-The Cram file should test most reasonable combinations of command arguments and flags.
-
-##### Functional tests of example builds
-
-Functional tests of example builds use output from a real Snakemake workflow as expected inputs and outputs.
-These tests should confirm that all steps of a workflow can execute and produce the expected output.
-These tests reflect actual augur usage in workflows and are not intended to comprehensively test interfaces for specific augur commands.
-
-The Cram file should replicate the example workflow from start to end.
-These tests should use the output of the Snakemake workflow (e.g., files in `zika/results/` for the Zika build test) as the expected inputs and outputs.
+1. Keep cram files modular. This makes it easier to see which command is failing.
+2. Create files in the initial working directory (e.g. `./file.txt` or simply `file.txt`), as it is a temporary working directory unique to the test. Note that the name of the `$TMP` directory is misleading - although it is temporary, it is shared across all tests so you'll have to explicitly remove files at the end of each test to avoid affecting other tests. The initial directory of each test is a unique directory within `$TMP`.
+3. Each directory containing cram tests should have a setup script named `_setup.sh`. Keep all shared setup commands in this file.
 
 ##### Comparing outputs of augur commands
 
-Compare deterministic outputs of augur commands with a `diff` between the expected and observed output files.
+Compare deterministic outputs of augur commands in a functional test with a `diff` between the expected and observed output files.
 For extremely simple deterministic outputs, use the expected text written to standard output instead of creating a separate expected output file.
 
 To compare trees with stochastic branch lengths:
@@ -105,12 +89,11 @@ To compare JSON outputs with stochastic numerical values, use `scripts/diff_json
 
 Both tree and JSON comparison scripts rely on [deepdiff](https://deepdiff.readthedocs.io/en/latest/) for underlying comparisons.
 
-##### Tips for writing Cram tests
+#### When to use which type of test
 
-Cram is a simple testing framework that is also very versatile. Over time, we have changed the way we design and organize Augur's Cram tests. You might find older practices in existing tests that haven't been updated yet, but these are the latest guidelines that we've discovered to be helpful.
-
-1. Keep cram files modular. This makes it easier to see which command is failing.
-2. Create files in the initial working directory, as it is a temporary working directory unique to the test. Note that the name of the `$TMP` directory is misleading - although it is temporary, it is shared across all tests so you'll have to explicitly remove files at the end of each test to avoid affecting other tests. The initial directory of each test is a unique directory within `$TMP`.
+1. Unit tests should be used for the [public API](https://docs.nextstrain.org/projects/augur/en/stable/api/public/index.html).
+2. Unit tests should be used if you want to test specific behavior of a class or function.
+3. Doctests or functional tests should be used if you believe it would improve the documentation and execution of a real world example.
 
 #### Running Tests
 
@@ -135,6 +118,14 @@ To run a specific integration test with cram, you can use the following command:
 cram tests/functional/clades.t
 ```
 
+To run cram tests locally and capture test coverage data, you can use this invocation:
+
+```bash
+AUGUR="coverage run --data-file="$PWD/.coverage" $PWD/bin/augur" cram
+```
+
+You can provide one or more cram test file names to get coverage for just those tests, or omit file names to run the entire cram test suite.
+
 Troubleshooting tip: As tests run on the development code in the augur repository, your environment should not have an existing augur installation that could cause a conflict in pytest.
 
 We use continuous integration with GitHub Actions to run tests on every pull request submitted to the project.
@@ -149,9 +140,36 @@ During development you can run static type checks using [mypy][]:
     $ mypy
     # No output is good!
 
-There are also many [editor integrations for mypy][].
+and [pyright][]:
+
+    $ npx pyright
+    0 errors, 0 warnings, 0 informations
+
+There are also many [editor integrations for mypy][], and Pyright can be
+[configured for VS Code][].
 
 [editor integrations for mypy]: https://github.com/python/mypy#integrations
+[configured for VS Code]: https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance#settings-and-customization
+
+### Removing features
+
+Instead of removing a feature from one release to the next, consider first deprecating the feature
+by adding a warning output and a [deprecation entry](../../DEPRECATED.md). This allows a period of
+transition time where both the deprecated feature and a suggested alternative can be adopted.
+
+### Updating the changelog
+
+The [changelog](../../CHANGES.md) should be updated in every pull request that
+makes a functional change to the behavior of a command or improves
+documentation. Changelog entries are separated into three categories to define
+the upcoming release number:
+
+1. Major Changes
+2. Features
+3. Bug Fixes
+
+Documentation changes can be listed under "bug fixes" since they do not impact
+functionality but are still good note for users.
 
 ### Releasing
 
@@ -172,9 +190,12 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
       ```
 2. Define a new version number `X.X.X` based on changes and Semantic Versioning rules.
 
-##### 2. Curate [CHANGES.md](../../CHANGES.md)
+    > [!NOTE]
+    > If releasing a major version, consider removing a [deprecated feature](../../DEPRECATED.md).
 
-1. Go through each PR and note the PRs that didn't provide an update to [CHANGES.md](../../CHANGES.md).
+##### 2. Curate changelog entries
+
+1. Go through each PR and note the PRs that didn't provide a [changelog update](#updating-the-changelog).
 2. For the PRs missing a changelog update, add an entry summarizing the changes in the PR.
     - Keep headers and formatting consistent with the rest of the file.
 3. Open a PR with these changes. If changes are clear and you feel confident in the release notes, merge without PR approval. Otherwise, or if unsure, add [nextstrain/core](https://github.com/orgs/nextstrain/teams/core) as a reviewer and wait for approval before proceeding with the release.
@@ -207,14 +228,14 @@ If there are changes to the Python version or dependency list:
 4. Wait for an auto-bump PR in [bioconda-recipes][].
 5. Add a comment in the auto-bump PR `Please close this in favor of #<your PR number>`.
 
-[bioconda-recipes]: https://github.com/bioconda/bioconda-recipes/pull/34509
+[bioconda-recipes]: https://github.com/bioconda/bioconda-recipes/pulls?q=is%3Apr+is%3Aopen+label%3Aautobump+augur
 
 ##### 5. Build/Release Nextstrain/conda-base
 
 1. Wait for the bioconda-recipe PR to be merged.
 2. Wait for the new version of Augur to be available [on bioconda](https://anaconda.org/bioconda/augur).
 3. Manually run the [conda-base CI workflow](https://github.com/nextstrain/conda-base/actions/workflows/ci.yaml) on the `main` branch.
-4. Ensure workflow runs successfully.
+4. Ensure workflow runs successfully and that the summary outputs for Ubuntu and MacOS builds include `augur` with the appropriate version in the list of changed packages.
 
 #### Notes
 
@@ -245,7 +266,7 @@ release, see [this section of the docker-base README](https://github.com/nextstr
 
 ### Maintaining Bioconda package
 
-Bioconda hosts [augur’s conda package](http://bioconda.github.io/recipes/augur/README.html) and defines augur’s dependencies in [a conda recipe YAML file](https://github.com/bioconda/bioconda-recipes/blob/master/recipes/augur/meta.yaml).
+Bioconda hosts [augur’s conda package](http://bioconda.github.io/recipes/augur/README.html) and defines augur’s dependencies in [a conda recipe YAML file](https://github.com/bioconda/bioconda-recipes/blob/-/recipes/augur/meta.yaml).
 New releases on GitHub automatically trigger a new Bioconda release.
 
 To modify augur’s dependencies or other aspects of its conda environment, [follow Bioconda’s contributing guide](https://bioconda.github.io/contributor/index.html).
@@ -289,6 +310,29 @@ The documentation source-files are located in `./docs`, with `./docs/index.rst` 
 Each subsection of the documentation is a subdirectory inside `./docs`.
 For instance, the tutorials are all found in `./docs/tutorials` and are included in the documentation website via the directive in `./docs/index.rst`.
 
+### When to update
+
+Docs should be updated any time a new Python file is added or updated. Docs are
+largely generated from the Python file contents such as docstrings, but each
+Python file must be accompanied by at least one corresponding reStructuredText
+file in order to render the pages.
+
+- If a new Python file is added, a new reStructuredText file should be added
+  under `docs/api/developer`. This can be done
+  [using a script](#regenerating-developer-api-docs).
+- If the new Python file represents a subcommand of `augur`, a new
+  reStructuredText file should be added under `docs/usage/cli/` in addition to
+  the new file under `docs/api/developer`.
+
+### Regenerating developer API docs
+
+To regenerate the developer API documentation after adding, renaming, or removing an augur
+submodule, autogenerate a new API file as follows.
+
+```bash
+./devel/regenerate-developer-api-docs
+```
+
 ### Building documentation
 
 Building the documentation locally is useful to test changes.
@@ -320,13 +364,6 @@ Sphinx can build other formats, such as epub. To see other available formats, ru
 
 ```bash
 make -C docs help
-```
-
-To update the API documentation after adding or removing an augur submodule,
-autogenerate a new API file as follows.
-
-```bash
-sphinx-apidoc -T -f -MeT -o docs/api augur
 ```
 
 To make doc rebuilds faster, Sphinx caches built documentation by default,

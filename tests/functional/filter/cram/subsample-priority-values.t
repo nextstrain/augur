@@ -27,7 +27,7 @@ not have a priority score.
   >  --metadata metadata.tsv \
   >  --priority priorities.tsv \
   >  --subsample-max-sequences 5 \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
   $ sort filtered_strains.txt
   SEQ_1
   SEQ_2
@@ -43,7 +43,7 @@ values).
   >  --metadata metadata.tsv \
   >  --priority priorities.tsv \
   >  --subsample-max-sequences 4 \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
   $ sort filtered_strains.txt
   SEQ_1
   SEQ_2
@@ -56,7 +56,7 @@ Subsample 1 less strain. SEQ_4 should now be dropped.
   >  --metadata metadata.tsv \
   >  --priority priorities.tsv \
   >  --subsample-max-sequences 3 \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
   $ sort filtered_strains.txt
   SEQ_1
   SEQ_2
@@ -68,7 +68,7 @@ Subsample 1 less strain. SEQ_1 should now be dropped.
   >  --metadata metadata.tsv \
   >  --priority priorities.tsv \
   >  --subsample-max-sequences 2 \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
   $ sort filtered_strains.txt
   SEQ_2
   SEQ_3
@@ -79,6 +79,6 @@ Subsample 1 less strain. SEQ_1 should now be dropped.
   >  --metadata metadata.tsv \
   >  --priority priorities.tsv \
   >  --subsample-max-sequences 1 \
-  >  --output-strains filtered_strains.txt > /dev/null
+  >  --output-strains filtered_strains.txt 2>/dev/null
   $ sort filtered_strains.txt
   SEQ_3

@@ -9,6 +9,7 @@ import numpy as np
 from Bio import Phylo
 from argparse import SUPPRESS
 from collections import defaultdict
+from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
 from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
@@ -312,7 +313,7 @@ def add_core_args(parser):
     core = parser.add_argument_group("REQUIRED")
     core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
     core.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata")
-    core.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+",
+    core.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                       help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     core.add_argument('--node-data', required=True, nargs='+', action="extend", help="JSON files with meta data for each node")
     core.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")

@@ -10,6 +10,6 @@ Check output of min/max date filters.
   >  --max-date 2016-02-01 \
   >  --output-metadata filtered_metadata.tsv
   8 strains were dropped during filtering
-  \t1 of these were dropped because they were earlier than 2015.0 or missing a date (esc)
-  \t7 of these were dropped because they were later than 2016.09 or missing a date (esc)
+  	1 was dropped because it was earlier than 2015.0 or missing a date
+  	7 were dropped because they were later than 2016.09 or missing a date
   4 strains passed all filters

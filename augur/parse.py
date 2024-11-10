@@ -1,13 +1,17 @@
 """
 Parse delimited fields from FASTA sequence names into a TSV and FASTA file.
 """
+import Bio.SeqRecord
 import pandas as pd
 import sys
+from typing import Dict, Sequence, Tuple
 
 from .io.file import open_file
 from .io.sequences import read_sequences, write_sequences
 from .dates import get_numerical_date_from_value
 from .errors import AugurError
+
+PARSE_DEFAULT_ID_COLUMNS = ("strain", "name")
 
 forbidden_characters = str.maketrans(
     {' ': None,
@@ -29,8 +33,18 @@ def fix_dates(d, dayfirst=True):
     On failure to parse the date, the function will return the input.
     '''
     try:
-        from pandas.core.tools.datetimes import parsing
-        results = parsing.parse_time_string(d, dayfirst=dayfirst)
+        try:
+            # pandas <= 2.1
+            from pandas.core.tools.datetimes import parsing
+        except ImportError:
+            # pandas >= 2.2
+            from pandas._libs.tslibs import parsing
+        try:
+            # pandas 2.x
+            results = parsing.parse_datetime_string_with_reso(d, dayfirst=dayfirst)
+        except AttributeError:
+            # pandas 1.x
+            results = parsing.parse_time_string(d, dayfirst=dayfirst)
         if len(results) == 2:
             dto, res = results
         else:
@@ -81,27 +95,34 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     return res
 
 
-def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettify_fields=None, fix_dates_format=None):
+def parse_sequence(
+        sequence: Bio.SeqRecord.SeqRecord,
+        fields: Sequence[str],
+        strain_key: str,
+        separator: str,
+        prettify_fields: Sequence[str],
+        fix_dates_format: str,
+    ) -> Tuple[Bio.SeqRecord.SeqRecord, Dict[str, str]]:
     """Parse a single sequence record into a sequence record and associated metadata.
 
     Parameters
     ----------
-    sequence : Bio.SeqRecord.SeqRecord
+    sequence
         a BioPython sequence record to parse with metadata stored in its description field.
 
-    fields : list or tuple
+    fields
         a list of names for fields expected in the given record's description.
 
-    strain_key : str
+    strain_key
         name of the field to use as the given sequence's unique id
 
-    separator : str
+    separator
         delimiter to split record description by.
 
-    prettify_fields : list or tuple
+    prettify_fields
         a list of field names for which the values in those fields should be prettified.
 
-    fix_dates_format : str
+    fix_dates_format
         parse "date" field into the requested canonical format ("dayfirst" or "monthfirst").
 
     Returns
@@ -133,8 +154,6 @@ def parse_sequence(sequence, fields, strain_key="strain", separator="|", prettif
             dayfirst=fix_dates_format=='dayfirst'
         )
 
-    metadata["strain"] = sequence.id
-
     return sequence, metadata
 
 
@@ -143,8 +162,10 @@ def register_parser(parent_subparsers):
     parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
     parser.add_argument('--output-sequences', required=True, help="output sequences file")
     parser.add_argument('--output-metadata', required=True, help="output metadata file")
-    parser.add_argument('--fields', required=True, nargs='+', help="fields in fasta header")
-    parser.add_argument('--prettify-fields', nargs='+', help="apply string prettifying operations (underscores to spaces, capitalization, etc) to specified metadata fields")
+    parser.add_argument('--output-id-field', required=False,
+                        help=f"The record field to use as the sequence identifier in the FASTA output. If not provided, this will use the first available of {PARSE_DEFAULT_ID_COLUMNS}. If none of those are available, this will use the first field in the fasta header.")
+    parser.add_argument('--fields', required=True, nargs='+', action='extend', help="fields in fasta header")
+    parser.add_argument('--prettify-fields', nargs='+', action='extend', help="apply string prettifying operations (underscores to spaces, capitalization, etc) to specified metadata fields")
     parser.add_argument('--separator', default='|', help="separator of fasta header")
     parser.add_argument('--fix-dates', choices=['dayfirst', 'monthfirst'],
                                 help="attempt to parse non-standard dates and output them in standard YYYY-MM-DD format")
@@ -162,12 +183,18 @@ def run(args):
     # field to index the dictionary and the data frame
     meta_data = {}
 
-    if 'name' in args.fields:
-        strain_key = 'name'
-    elif 'strain' in args.fields:
-        strain_key = 'strain'
+    strain_key = None
+    if args.output_id_field:
+        if args.output_id_field not in args.fields:
+            raise AugurError(f"Output id field '{args.output_id_field}' not found in fields {args.fields}.")
+        strain_key = args.output_id_field
     else:
-        strain_key = args.fields[0]
+        for possible_id in PARSE_DEFAULT_ID_COLUMNS:
+            if possible_id in args.fields:
+                strain_key = possible_id
+                break
+        if not strain_key:
+            strain_key = args.fields[0]
 
     # loop over sequences, parse fasta header of each sequence
     with open_file(args.output_sequences, "wt") as handle:

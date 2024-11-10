@@ -37,7 +37,7 @@ Test all outputs with --include-where.
   >   --output-metadata metadata-filtered.tsv \
   >   --output-strains strains-filtered.txt \
   >   --output-sequences sequences-filtered.fasta \
-  >   > /dev/null 2>&1
+  >   2>/dev/null
   $ cat metadata-filtered.tsv | tail -n+2 | sort -k1
   a\t1 (esc)
   b\t2 (esc)
@@ -72,7 +72,7 @@ Test all outputs with --include.
   >   --output-metadata metadata-filtered.tsv \
   >   --output-strains strains-filtered.txt \
   >   --output-sequences sequences-filtered.fasta \
-  >   > /dev/null 2>&1
+  >   2>/dev/null
   $ cat metadata-filtered.tsv | tail -n+2 | sort -k1
   a\t1 (esc)
   b\t2 (esc)

@@ -25,7 +25,7 @@ Test that nothing is filtered out due to missing sequence data.
   >   --metadata metadata.tsv \
   >   --sequences sequences.fasta \
   >   --output-strains filtered_strains.txt \
-  >   > /dev/null 2>&1
+  >   2>/dev/null
   $ sort filtered_strains.txt
   1
   2

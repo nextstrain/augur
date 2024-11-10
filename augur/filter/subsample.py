@@ -1,15 +1,21 @@
+from collections import defaultdict
 import heapq
 import itertools
 import uuid
 import numpy as np
 import pandas as pd
-from typing import Collection
+from textwrap import dedent
+from typing import Collection, Dict, Iterable, List, Optional, Set, Tuple, Union
 
-from augur.dates import get_iso_year_week
+from augur.dates import get_year_month, get_year_week
 from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
-from augur.io.print import print_err
+from augur.io.print import print_err, _n
 from . import constants
+from .weights_file import WEIGHTS_COLUMN, COLUMN_VALUE_FOR_DEFAULT_WEIGHT, get_default_weight, get_weighted_columns, read_weights_file
+
+Group = Tuple[str, ...]
+"""Combination of grouping column values in tuple form."""
 
 
 def get_groups_for_subsampling(strains, metadata, group_by=None):
@@ -45,7 +51,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month"]
     >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, (2020, 1)), 'strain2': (2020, (2020, 2))}
+    {'strain1': (2020, '2020-01'), 'strain2': (2020, '2020-02')}
 
     If we omit the grouping columns, the result will group by a dummy column.
 
@@ -67,12 +73,18 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month", "missing_column"]
     >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, (2020, 1), 'unknown'), 'strain2': (2020, (2020, 2), 'unknown')}
+    {'strain1': (2020, '2020-01', 'unknown'), 'strain2': (2020, '2020-02', 'unknown')}
+
+    We can group metadata without any non-ID columns.
+
+    >>> metadata = pd.DataFrame([{"strain": "strain1"}, {"strain": "strain2"}]).set_index("strain")
+    >>> get_groups_for_subsampling(strains, metadata, group_by=('_dummy',))
+    {'strain1': ('_dummy',), 'strain2': ('_dummy',)}
     """
     metadata = metadata.loc[list(strains)]
     group_by_strain = {}
 
-    if metadata.empty:
+    if len(metadata) == 0:
         return group_by_strain
 
     if not group_by or group_by == ('_dummy',):
@@ -99,11 +111,6 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             raise AugurError(f"{constants.DATE_MONTH_COLUMN!r} and {constants.DATE_WEEK_COLUMN!r} grouping cannot be used together.")
 
     if generated_columns_requested:
-
-        for col in sorted(generated_columns_requested):
-            if col in metadata.columns:
-                print_err(f"WARNING: `--group-by {col}` uses a generated {col} value from the {METADATA_DATE_COLUMN!r} column. The custom '{col}' column in the metadata is ignored for grouping purposes.")
-                metadata.drop(col, axis=1, inplace=True)
 
         if METADATA_DATE_COLUMN not in metadata:
             # Set generated columns to 'unknown'.
@@ -137,15 +144,16 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             if constants.DATE_YEAR_COLUMN in generated_columns_requested:
                 metadata[constants.DATE_YEAR_COLUMN] = metadata[f'{temp_prefix}year']
             if constants.DATE_MONTH_COLUMN in generated_columns_requested:
-                metadata[constants.DATE_MONTH_COLUMN] = list(zip(
-                    metadata[f'{temp_prefix}year'],
-                    metadata[f'{temp_prefix}month']
-                ))
+                metadata[constants.DATE_MONTH_COLUMN] = metadata.apply(lambda row: get_year_month(
+                    row[f'{temp_prefix}year'],
+                    row[f'{temp_prefix}month']
+                    ), axis=1
+                )
             if constants.DATE_WEEK_COLUMN in generated_columns_requested:
                 # Note that week = (year, week) from the date.isocalendar().
                 # Do not combine the raw year with the ISO week number alone,
                 # since raw year ≠ ISO year.
-                metadata[constants.DATE_WEEK_COLUMN] = metadata.apply(lambda row: get_iso_year_week(
+                metadata[constants.DATE_WEEK_COLUMN] = metadata.apply(lambda row: get_year_week(
                     row[f'{temp_prefix}year'],
                     row[f'{temp_prefix}month'],
                     row[f'{temp_prefix}day']
@@ -248,64 +256,254 @@ class PriorityQueue:
             yield item
 
 
-def create_queues_by_group(groups, max_size, max_attempts=100, random_seed=None):
-    """Create a dictionary of priority queues per group for the given maximum size.
+def get_probabilistic_group_sizes(groups, target_group_size, random_seed=None):
+    """Create a dictionary of maximum sizes per group.
 
-    When the maximum size is fractional, probabilistically sample the maximum
-    size from a Poisson distribution. Make at least the given number of maximum
-    attempts to create queues for which the sum of their maximum sizes is
-    greater than zero.
+    Probabilistically generate varying sizes from a Poisson distribution. Make
+    at least the given number of maximum attempts to generate sizes for which
+    the total of all sizes is greater than zero.
 
     Examples
     --------
-
-    Create queues for two groups with a fixed maximum size.
-
-    >>> groups = ("2015", "2016")
-    >>> queues = create_queues_by_group(groups, 2)
-    >>> sum(queue.max_size for queue in queues.values())
-    4
-
-    Create queues for two groups with a fractional maximum size. Their total max
+    Get sizes for two groups with a fractional maximum size. Their total
     size should still be an integer value greater than zero.
 
+    >>> groups = ("2015", "2016")
     >>> seed = 314159
-    >>> queues = create_queues_by_group(groups, 0.1, random_seed=seed)
-    >>> int(sum(queue.max_size for queue in queues.values())) > 0
+    >>> group_sizes = get_probabilistic_group_sizes(groups, 0.1, random_seed=seed)
+    >>> int(sum(group_sizes.values())) > 0
     True
 
     A subsequent run of this function with the same groups and random seed
-    should produce the same queues and queue sizes.
+    should produce the same group sizes.
 
-    >>> more_queues = create_queues_by_group(groups, 0.1, random_seed=seed)
-    >>> [queue.max_size for queue in queues.values()] == [queue.max_size for queue in more_queues.values()]
+    >>> more_group_sizes = get_probabilistic_group_sizes(groups, 0.1, random_seed=seed)
+    >>> list(group_sizes.values()) == list(more_group_sizes.values())
     True
 
     """
-    queues_by_group = {}
-    total_max_size = 0
-    attempts = 0
-
-    if max_size < 1.0:
-        random_generator = np.random.default_rng(random_seed)
+    assert target_group_size < 1.0
 
     # For small fractional maximum sizes, it is possible to randomly select
     # maximum queue sizes that all equal zero. When this happens, filtering
     # fails unexpectedly. We make multiple attempts to create queues with
     # maximum sizes greater than zero for at least one queue.
+    random_generator = np.random.default_rng(random_seed)
+    total_max_size = 0
+    attempts = 0
+    max_attempts = 100
+    max_sizes_per_group = {}
+
     while total_max_size == 0 and attempts < max_attempts:
         for group in sorted(groups):
-            if max_size < 1.0:
-                queue_max_size = random_generator.poisson(max_size)
-            else:
-                queue_max_size = max_size
+            max_sizes_per_group[group] = random_generator.poisson(target_group_size)
 
-            queues_by_group[group] = PriorityQueue(queue_max_size)
-
-        total_max_size = sum(queue.max_size for queue in queues_by_group.values())
+        total_max_size = sum(max_sizes_per_group.values())
         attempts += 1
 
-    return queues_by_group
+    return max_sizes_per_group
+
+
+TARGET_SIZE_COLUMN = '_augur_filter_target_size'
+INPUT_SIZE_COLUMN = '_augur_filter_input_size'
+OUTPUT_SIZE_COLUMN = '_augur_filter_subsampling_output_size'
+
+
+def get_weighted_group_sizes(
+        records_per_group: Dict[Group, int],
+        group_by: List[str],
+        weights_file: str,
+        target_total_size: int,
+        output_sizes_file: Optional[str],
+        random_seed: Optional[int],
+    ) -> Dict[Group, int]:
+    """Return target group sizes based on weights defined in ``weights_file``.
+    """
+    groups = records_per_group.keys()
+
+    weights = read_weights_file(weights_file)
+
+    weighted_columns = get_weighted_columns(weights_file)
+
+    # Other columns in group_by are considered unweighted.
+    unweighted_columns = list(set(group_by) - set(weighted_columns))
+
+    if unweighted_columns:
+        # This has the side effect of weighting the values *alongside* (rather
+        # than within) each weighted group. After dropping unused groups, adjust
+        # weights to ensure equal weighting of unweighted columns *within* each
+        # weighted group defined by the weighted columns.
+        weights = _add_unweighted_columns(weights, groups, group_by, unweighted_columns)
+
+        weights = _handle_incomplete_weights(weights, weights_file, weighted_columns, group_by, groups)
+        weights = _drop_unused_groups(weights, groups, group_by)
+
+        weights = _adjust_weights_for_unweighted_columns(weights, weighted_columns, unweighted_columns)
+    else:
+        weights = _handle_incomplete_weights(weights, weights_file, weighted_columns, group_by, groups)
+        weights = _drop_unused_groups(weights, groups, group_by)
+
+    weights = _calculate_weighted_group_sizes(weights, target_total_size, random_seed)
+
+    # Add columns to summarize the input data
+    weights[INPUT_SIZE_COLUMN] = weights.apply(lambda row: records_per_group[tuple(row[group_by].values)], axis=1)
+    weights[OUTPUT_SIZE_COLUMN] = weights[[INPUT_SIZE_COLUMN, TARGET_SIZE_COLUMN]].min(axis=1)
+
+    # Warn on any under-sampled groups
+    for _, row in weights.iterrows():
+        if row[INPUT_SIZE_COLUMN] < row[TARGET_SIZE_COLUMN]:
+            sequences = _n('sequence', 'sequences', row[TARGET_SIZE_COLUMN])
+            are = _n('is', 'are', row[INPUT_SIZE_COLUMN])
+            group = list(f'{col}={value!r}' for col, value in row[group_by].items())
+            print_err(f"WARNING: Targeted {row[TARGET_SIZE_COLUMN]} {sequences} for group {group} but only {row[INPUT_SIZE_COLUMN]} {are} available.")
+
+    if output_sizes_file:
+        weights.to_csv(output_sizes_file, index=False, sep='\t')
+
+    return dict(zip(weights[group_by].apply(tuple, axis=1), weights[TARGET_SIZE_COLUMN]))
+
+
+def _add_unweighted_columns(
+        weights: pd.DataFrame,
+        groups: Iterable[Group],
+        group_by: List[str],
+        unweighted_columns: List[str],
+    ) -> pd.DataFrame:
+    """Add the unweighted columns to the weights DataFrame.
+    
+    This is done by extending the existing weights to the newly created groups.
+    """
+
+    # Get unique values for each unweighted column.
+    values_for_unweighted_columns = defaultdict(set)
+    for group in groups:
+        # NOTE: The ordering of entries in `group` corresponds to the column
+        # names in `group_by`, but only because `get_groups_for_subsampling`
+        # conveniently retains the order. This could be more tightly coupled,
+        # but it works.
+        column_to_value_map = dict(zip(group_by, group))
+        for column in unweighted_columns:
+            values_for_unweighted_columns[column].add(column_to_value_map[column])
+
+    # Create a DataFrame for all permutations of values in unweighted columns.
+    lists = [list(values_for_unweighted_columns[column]) for column in unweighted_columns]
+    unweighted_permutations = pd.DataFrame(list(itertools.product(*lists)), columns=unweighted_columns)
+
+    return pd.merge(unweighted_permutations, weights, how='cross')
+
+
+def _drop_unused_groups(
+        weights: pd.DataFrame,
+        groups: Collection[Group],
+        group_by: List[str],
+    ) -> pd.DataFrame:
+    """Drop any groups from ``weights`` that don't appear in ``groups``.
+    """
+    weights.set_index(group_by, inplace=True)
+
+    # Pandas only uses MultiIndex if there is more than one column in the index.
+    valid_index: Set[Union[Group, str]]
+    if len(group_by) > 1:
+        valid_index = set(groups)
+    else:
+        valid_index = set(group[0] for group in groups)
+
+    extra_groups = set(weights.index) - valid_index
+    if extra_groups:
+        count = len(extra_groups)
+        unit = _n("group", "groups", count)
+        print_err(f"NOTE: Skipping {count} {unit} due to lack of entries in metadata.")
+        weights = weights[weights.index.isin(valid_index)]
+
+    weights.reset_index(inplace=True)
+
+    return weights
+
+
+def _adjust_weights_for_unweighted_columns(
+        weights: pd.DataFrame,
+        weighted_columns: List[str],
+        unweighted_columns: Collection[str],
+    ) -> pd.DataFrame:
+    """Adjust weights for unweighted columns to reflect equal weighting within each weighted group.
+    """
+    columns = _n('column', 'columns', len(unweighted_columns))
+    those = _n('that', 'those', len(unweighted_columns))
+    print_err(f"NOTE: Weights were not provided for the {columns} {', '.join(repr(col) for col in unweighted_columns)}. Using equal weights across values in {those} {columns}.")        
+
+    weights_grouped = weights.groupby(weighted_columns)
+    weights[WEIGHTS_COLUMN] = weights_grouped[WEIGHTS_COLUMN].transform(lambda x: x / len(x))
+
+    return weights
+
+
+def _calculate_weighted_group_sizes(
+        weights: pd.DataFrame,
+        target_total_size: int,
+        random_seed: Optional[int],
+    ) -> pd.DataFrame:
+    """Calculate maximum group sizes based on weights.
+    """
+    weights[TARGET_SIZE_COLUMN] = pd.Series(weights[WEIGHTS_COLUMN] / weights[WEIGHTS_COLUMN].sum() * target_total_size)
+
+    # Group sizes must be whole numbers. Round probabilistically by adding a
+    # random number between [0,1) and truncating the decimal part.
+    rng = np.random.default_rng(random_seed)
+    weights[TARGET_SIZE_COLUMN] = (weights[TARGET_SIZE_COLUMN].add(pd.Series(rng.random(len(weights))))).astype(int)
+
+    return weights
+
+
+def _handle_incomplete_weights(
+        weights: pd.DataFrame,
+        weights_file: str,
+        weighted_columns: List[str],
+        group_by: List[str],
+        groups: Iterable[Group],
+    ) -> pd.DataFrame:
+    """Handle the case where the weights file does not cover all rows in the metadata.
+    """
+    missing_groups = set(groups) - set(weights[group_by].apply(tuple, axis=1))
+
+    if not missing_groups:
+        return weights
+
+    # Collect the column values that are missing weights.
+    missing_values_by_column = defaultdict(set)
+    for group in missing_groups:
+        # NOTE: The ordering of entries in `group` corresponds to the column
+        # names in `group_by`, but only because `get_groups_for_subsampling`
+        # conveniently retains the order. This could be more tightly coupled,
+        # but it works.
+        column_to_value_map = dict(zip(group_by, group))
+        for column in weighted_columns:
+            missing_values_by_column[column].add(column_to_value_map[column])
+
+    columns_with_values = '\n            - '.join(f'{column!r}: {list(sorted(values))}' for column, values in sorted(missing_values_by_column.items()))
+
+    default_weight = get_default_weight(weights, weighted_columns)
+
+    if not default_weight:
+        raise AugurError(dedent(f"""\
+            The input metadata contains these values under the following columns that are not covered by {weights_file!r}:
+            - {columns_with_values}
+            To fix this, either:
+            (1) specify weights explicitly - add entries to {weights_file!r} for the values above, or
+            (2) specify a default weight - add an entry to {weights_file!r} with the value {COLUMN_VALUE_FOR_DEFAULT_WEIGHT!r} for all columns"""))
+    else:
+        print_err(dedent(f"""\
+            WARNING: The input metadata contains these values under the following columns that are not directly covered by {weights_file!r}:
+            - {columns_with_values}
+            The default weight of {default_weight!r} will be used for all groups defined by those values."""))
+
+        missing_weights = pd.DataFrame(sorted(missing_groups), columns=group_by)
+        missing_weights[WEIGHTS_COLUMN] = default_weight
+        return pd.merge(weights, missing_weights, on=[*group_by, WEIGHTS_COLUMN], how='outer')
+
+
+def create_queues_by_group(max_sizes_per_group):
+    return {group: PriorityQueue(max_size)
+            for group, max_size in max_sizes_per_group.items()}
 
 
 def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabilistic=True):
@@ -350,10 +548,7 @@ def calculate_sequences_per_group(target_max_value, group_sizes, allow_probabili
     except TooManyGroupsError as error:
         if allow_probabilistic:
             print_err(f"WARNING: {error}")
-            sequences_per_group = _calculate_fractional_sequences_per_group(
-                target_max_value,
-                group_sizes,
-            )
+            sequences_per_group = target_max_value / len(group_sizes)
             probabilistic_used = True
         else:
             raise error
@@ -436,52 +631,3 @@ def _calculate_sequences_per_group(
         return int(hi)
     else:
         return int(lo)
-
-
-def _calculate_fractional_sequences_per_group(
-        target_max_value: int,
-        group_sizes: Collection[int]
-) -> float:
-    """Returns the fractional sequences per group for the given list of group
-    sequences such that the total doesn't exceed the requested number of
-    samples.
-
-    Parameters
-    ----------
-    target_max_value : int
-        the total number of sequences allowed across all groups
-    group_sizes : Collection[int]
-        the number of sequences in each group
-
-    Returns
-    -------
-    float
-        fractional maximum number of sequences allowed per group to meet the
-        required maximum total sequences allowed
-
-    Examples
-    --------
-    >>> np.around(_calculate_fractional_sequences_per_group(4, [4, 2]), 4)
-    1.9375
-    >>> np.around(_calculate_fractional_sequences_per_group(2, [4, 2]), 4)
-    0.9688
-
-    Unlike the integer-based version of this function, the fractional version
-    can accept a maximum number of sequences that exceeds the number of groups.
-    In this case, the function returns a fraction that can be used downstream,
-    for example with Poisson sampling.
-
-    >>> np.around(_calculate_fractional_sequences_per_group(1, [4, 2]), 4)
-    0.4844
-    """
-    lo = 1e-5
-    hi = float(target_max_value)
-
-    while (hi / lo) > 1.1:
-        mid = (lo + hi) / 2
-        if _calculate_total_sequences(mid, group_sizes) <= target_max_value:
-            lo = mid
-        else:
-            hi = mid
-
-    return (lo + hi) / 2
