@@ -27,7 +27,7 @@ if __name__ == "__main__":
     for regex in args.exclude_regex_paths or []:
         result = re.compile(regex).search("'")
         if result is not None:
-            print(
+            raise Exception(
                 f"Exclude regex {regex} matches `'` which means this diff will always pass which is probably not what you want.\n"
                 "You probably forgot to escape something in your regex. See for example: https://stackoverflow.com/a/79173188/7483211"
             )
