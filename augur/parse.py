@@ -25,7 +25,7 @@ forbidden_characters = str.maketrans(
      '\\': '_'}
 )
 
-def fix_dates(d, dayfirst=True):
+def fix_dates(d: str, dayfirst: bool = True) -> str:
     '''
     attempt to parse a date string using pandas date parser. If ambiguous,
     the argument 'dayfirst' determines whether month or day is assumed to be
@@ -35,7 +35,7 @@ def fix_dates(d, dayfirst=True):
     try:
         try:
             # pandas <= 2.1
-            from pandas.core.tools.datetimes import parsing
+            from pandas.core.tools.datetimes import parsing  # type: ignore
         except ImportError:
             # pandas >= 2.2
             from pandas._libs.tslibs import parsing
@@ -44,7 +44,7 @@ def fix_dates(d, dayfirst=True):
             results = parsing.parse_datetime_string_with_reso(d, dayfirst=dayfirst)
         except AttributeError:
             # pandas 1.x
-            results = parsing.parse_time_string(d, dayfirst=dayfirst)
+            results = parsing.parse_time_string(d, dayfirst=dayfirst)  # type: ignore
         if len(results) == 2:
             dto, res = results
         else:
