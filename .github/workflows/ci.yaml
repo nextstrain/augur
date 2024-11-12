@@ -357,7 +357,7 @@ jobs:
 
   release:
     # Only run when called by the release workflow on the default branch
-    if: github.event_name == 'workflow_call' && github.workflow_ref == format('{0}/.github/workflows/release.yaml@refs/heads/{1}', github.repository, github.event.repository.default_branch)
+    if: github.workflow_ref == format('{0}/.github/workflows/release.yaml@refs/heads/{1}', github.repository, github.event.repository.default_branch)
     needs: [pytest-cram]
     runs-on: ubuntu-latest
     steps:
