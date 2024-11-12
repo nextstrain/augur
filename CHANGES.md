@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 26.1.0 (12 November 2024)
+
 ### Features
 
 * ancestral, translate: Add `--skip-validation` as an alias to `--validation-mode=skip`. [#1656][] (@victorlin)
