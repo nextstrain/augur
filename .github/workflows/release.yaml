@@ -11,5 +11,6 @@ on:
 jobs:
   run:
     uses: ./.github/workflows/ci.yaml
+    secrets: inherit
     with:
       version: ${{ inputs.version }}
