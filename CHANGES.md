@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Features
+
+- curate: change output metadata to [RFC 4180 CSV-like TSVs][] to match the TSV format output by other Augur subcommands and the Nextstrain ecosystem as discussed in [#1566][]. [#1565][] (@joverlee521)
+
+[#1565]: https://github.com/nextstrain/augur/pull/1565
+[#1566]: https://github.com/nextstrain/augur/issues/1566
+[RFC 4180 CSV-like TSVs]: https://datatracker.ietf.org/doc/html/rfc4180
 
 ## 26.1.0 (12 November 2024)
 
