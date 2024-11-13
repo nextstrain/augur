@@ -4,14 +4,10 @@
 
 ### Features
 
+- support pandas v2. [#1671] (@corneliusroemer and @victorlin)
 - curate: change output metadata to [RFC 4180 CSV-like TSVs][] to match the TSV format output by other Augur subcommands and the Nextstrain ecosystem as discussed in [#1566][]. [#1565][] (@joverlee521)
-- Support pandas v2. [#1671] (@corneliusroemer and @victorlin)
 
-### Bug fixes
 
-- parse: fix test failure with pandas 2.2. [#1471] (@emollier)
-
-[#1471]: https://github.com/nextstrain/augur/pull/1471
 [#1565]: https://github.com/nextstrain/augur/pull/1565
 [#1566]: https://github.com/nextstrain/augur/issues/1566
 [RFC 4180 CSV-like TSVs]: https://datatracker.ietf.org/doc/html/rfc4180
@@ -29,7 +25,9 @@
 
 * index: Previously specifying a directory that does not exist in the path to `--output` would result in an incorrect error stating that the input file does not exist. It now shows the correct path responsible for the error. [#1644][] (@victorlin)
 * curate format-dates: Update help docs and improve failure messages to show use of `--expected-date-formats`. [#1653][] (@joverlee521)
+* parse: fix test failure with pandas 2.2. [#1471] (@emollier)
 
+[#1471]: https://github.com/nextstrain/augur/pull/1471
 [#1644]: https://github.com/nextstrain/augur/issues/1644
 [#1547]: https://github.com/nextstrain/augur/pull/1547
 [#1653]: https://github.com/nextstrain/augur/pull/1653
