@@ -12,8 +12,7 @@ This is an oversight and ideally would be fixed
   >   --clades "$TESTDIR/../data/toy_clades_nuc.tsv" \
   >   --output-node-data toy_clades_1.json &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/toy_clades_1.json" toy_clades_1.json \
-  >   --exclude-paths "root['generated_by']"
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/toy_clades_1.json" toy_clades_1.json
   {}
 
 A clade which exists at the root is identified (and correctly propogated) if the root sequence
@@ -25,8 +24,7 @@ is explicitly set.
   >   --clades "$TESTDIR/../data/toy_clades_nuc.tsv" \
   >   --output-node-data toy_clades_2a.json &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/toy_clades_2.json" toy_clades_2a.json \
-  >   --exclude-paths "root['generated_by']"
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/toy_clades_2.json" toy_clades_2a.json
   {}
 
 A clade which exists at the root is identified (and correctly propogated) without a root sequence
@@ -38,6 +36,5 @@ if the (branch leading to the) root has the clade-defining mutation.
   >   --clades "$TESTDIR/../data/toy_clades_nuc.tsv" \
   >   --output-node-data toy_clades_2b.json &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/toy_clades_2.json" toy_clades_2b.json \
-  >   --exclude-paths "root['generated_by']"
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/toy_clades_2.json" toy_clades_2b.json
   {}

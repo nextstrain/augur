@@ -3,6 +3,7 @@
 import argparse
 import deepdiff
 import json
+import re
 
 from augur.argparse_ import ExtendOverwriteDefault
 
@@ -15,11 +16,21 @@ if __name__ == "__main__":
     parser.add_argument("first_json", help="first JSON to compare")
     parser.add_argument("second_json", help="second JSON to compare")
     parser.add_argument("--significant-digits", type=int, default=5, help="number of significant digits to use when comparing numeric values")
-    parser.add_argument("--exclude-paths", nargs="+", action=ExtendOverwriteDefault, help="list of paths to exclude from consideration when performing a diff", default=["root['generated_by']['version']"])
+    parser.add_argument("--exclude-paths", nargs="+", action=ExtendOverwriteDefault, help="list of paths to exclude from consideration when performing a diff", default=["root['generated_by']", "root['meta']['updated']"])
     parser.add_argument("--exclude-regex-paths", nargs="+", action="extend", help="list of path regular expressions to exclude from consideration when performing a diff")
     parser.add_argument("--ignore-numeric-type-changes", action="store_true", help="ignore numeric type changes in the diff (e.g., int of 1 to float of 1.0)")
 
     args = parser.parse_args()
+
+    # Test for most fatal errors in regex path usage
+    # Exclude regexes should never match `'`, otherwise the diff is always going to pass
+    for regex in args.exclude_regex_paths or []:
+        result = re.compile(regex).search("'")
+        if result is not None:
+            raise Exception(
+                f"Exclude regex {regex} matches `'` which means this diff will always pass which is probably not what you want.\n"
+                "You probably forgot to escape something in your regex. See for example: https://stackoverflow.com/a/79173188/7483211"
+            )
 
     with open(args.first_json, "r") as fh:
         first_json = json.load(fh)

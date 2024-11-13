@@ -22,11 +22,14 @@
 
 * index: Previously specifying a directory that does not exist in the path to `--output` would result in an incorrect error stating that the input file does not exist. It now shows the correct path responsible for the error. [#1644][] (@victorlin)
 * curate format-dates: Update help docs and improve failure messages to show use of `--expected-date-formats`. [#1653][] (@joverlee521)
+* tests: Fix false negative tests due to incorrect use of DeepDiff's `--exclude-regex-path` option. [#1665][] [#1666][] (@corneliusroemer)
 
 [#1644]: https://github.com/nextstrain/augur/issues/1644
 [#1547]: https://github.com/nextstrain/augur/pull/1547
 [#1653]: https://github.com/nextstrain/augur/pull/1653
 [#1656]: https://github.com/nextstrain/augur/pull/1656
+[#1665]: https://github.com/nextstrain/augur/issues/1665
+[#1666]: https://github.com/nextstrain/augur/pull/1666
 
 ## 26.0.0 (17 September 2024)
 

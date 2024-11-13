@@ -18,7 +18,7 @@ which validate the output will fail as it's missing a 'nuc' annotation.
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \
   >   "aa_muts.json" \
-  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]" "root['meta']['updated']" 
+  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]"
   {}
 
 Same as above but using a GenBank file. This changes the 'type' of the annotations,
@@ -33,5 +33,5 @@ but this is irrelevant for Auspice's use and simply reflects the reference sourc
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \
   >   "aa_muts.genbank.json" \
-  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]" "root\['annotations'\]\['.+'\]\['type'\]" "root['meta']['updated']" 
+  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['(seqid|type)'\]"
   {}

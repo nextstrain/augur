@@ -36,7 +36,7 @@ Setup
 
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   expected.json "nt_muts.json" \
-  >   --exclude-regex-paths "root\['annotations'\]" "root\['generated_by'\]" "root\['reference'\]"
+  >   --exclude-paths "annotations" "generated_by" "reference"
   {}
 
   $ python3 "$SCRIPTS/compare-json-vcf.py" \

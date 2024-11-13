@@ -89,6 +89,8 @@ To compare JSON outputs with stochastic numerical values, use `scripts/diff_json
 
 Both tree and JSON comparison scripts rely on [deepdiff](https://deepdiff.readthedocs.io/en/latest/) for underlying comparisons.
 
+When using `diff_jsons.py`'s `--exclude-regex-paths` argument, make sure to escape any special regex characters, in particular square brackets: do this `\['seqid'\]`, not this `['seqid']`. See [#1655](https://github.com/nextstrain/augur/issues/1665) for what happens if you don't.
+
 #### When to use which type of test
 
 1. Unit tests should be used for the [public API](https://docs.nextstrain.org/projects/augur/en/stable/api/public/index.html).

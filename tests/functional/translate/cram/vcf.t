@@ -26,7 +26,7 @@ Setup
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \
   >   aa_muts.json \
-  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]" "root['meta']['updated']"
+  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]"
   {}
 
 ------------------------------   MISSING TEST   ----------------------------------

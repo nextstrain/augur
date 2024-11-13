@@ -13,6 +13,5 @@ Test custom membership key + label key. The only change should be the key names
 
   $ cat clades_custom.json | sed "s/lineage/clade_membership/" | sed "s/origin/clade/" > clades_sed.json
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/clades.json" clades_sed.json \
-  >   --exclude-paths "root['generated_by']"
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/clades.json" clades_sed.json
   {}

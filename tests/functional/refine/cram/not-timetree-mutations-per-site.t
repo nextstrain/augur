@@ -28,5 +28,5 @@ Confirm that trees match expected topology and branch lengths, given that the ou
   >   "$TESTDIR/../data/mutations_per_site_branch_lengths.json" \
   >   branch_lengths.json \
   >   --significant-digits 0 \
-  >   --exclude-paths "root['generated_by']['version']" "root['input_tree']"
+  >   --exclude-paths "generated_by" "input_tree"
   {}

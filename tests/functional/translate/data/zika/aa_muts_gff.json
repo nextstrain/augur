@@ -13,11 +13,18 @@
       "start": 457,
       "strand": "+",
       "type": "gene"
+    },
+    "nuc": {
+      "end": 10769,
+      "seqid": "genemap.gff",
+      "start": 1,
+      "strand": "+",
+      "type": "##sequence-region pragma"
     }
   },
   "generated_by": {
     "program": "augur",
-    "version": "16.0.3"
+    "version": "26.0.0"
   },
   "nodes": {
     "BRA/2016/FC_6706": {
@@ -91,7 +98,10 @@
       }
     },
     "NODE_0000006": {
-      "aa_muts": {},
+      "aa_muts": {
+        "CA": [],
+        "PRO": []
+      },
       "aa_sequences": {
         "CA": "MKNPKKKSGGFRIVNMLKRGVARVSPFGGLKRLPAGLLLGHGPIRMVLAILAFLRFTAIKPSLGLINRWGSVGKKEAMEIIKKFKKDLAAMLRIINARKEKKRRGADTSVGIVGLLLTTAMA",
         "PRO": "AEVTRRGSAYYMYLDRNDAGEAISFPTTLGMNKCYIQIMDLGHMCDATMSYECPMLDEGVEPDDVDCWCNTTSTWVVYGTCHHKKGEARRSRR"
