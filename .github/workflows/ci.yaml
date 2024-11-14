@@ -49,7 +49,7 @@ jobs:
         biopython-version:
           # list of Biopython versions with support for a new Python version
           # from https://github.com/biopython/biopython/blob/master/NEWS.rst
-          - '1.80' # first to support Python 3.10 and 3.11
+          - '1.82' # first to support Python 3.10 and 3.11
           - ''     # latest
     defaults:
       run:
