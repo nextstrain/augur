@@ -4,14 +4,15 @@
 
 ### Features
 
-- support pandas v2. [#1671] (@corneliusroemer and @victorlin)
+- support Python 3.12 (@corneliusroemer)
+- support Pandas v2. [#1671] (@corneliusroemer and @victorlin)
 - curate: change output metadata to [RFC 4180 CSV-like TSVs][] to match the TSV format output by other Augur subcommands and the Nextstrain ecosystem as discussed in [#1566][]. [#1565][] (@joverlee521)
-
 
 [#1565]: https://github.com/nextstrain/augur/pull/1565
 [#1566]: https://github.com/nextstrain/augur/issues/1566
 [RFC 4180 CSV-like TSVs]: https://datatracker.ietf.org/doc/html/rfc4180
 [#1671]: https://github.com/nextstrain/augur/pull/1671
+[#1678]: https://github.com/nextstrain/augur/pull/1678
 
 ## 26.1.0 (12 November 2024)
 
