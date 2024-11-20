@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 26.2.0 (20 November 2024)
+
 ### Features
 
 - This is the first version to officially support Python 3.12 and Pandas v2. [#1671] [#1678] (@corneliusroemer, @victorlin)
