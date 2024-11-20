@@ -204,9 +204,8 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
 
 1. Go to [this GitHub Actions workflow](https://github.com/nextstrain/augur/actions/workflows/release.yaml).
 2. Select **Run workflow**. In the new menu:
-    1. Ensure `master` branch is selected.
-    2. In **New version X.X.X**, provide the new version number.
-    3. Select **Run workflow**.
+    1. In **New version X.X.X**, provide the new version number.
+    2. Select **Run workflow**.
 3. Ensure workflow runs successfully.
     - Ensure the [docker-base CI action triggered by nextstrain-bot](https://github.com/nextstrain/docker-base/actions/workflows/ci.yml?query=branch%3Amaster+actor%3Anextstrain-bot) runs successfully.
 
