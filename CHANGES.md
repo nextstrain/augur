@@ -4,7 +4,7 @@
 
 ### Features
 
-- support Python 3.12 (@corneliusroemer)
+- support Python 3.12 [#1678] (@corneliusroemer)
 - support Pandas v2. [#1671] (@corneliusroemer and @victorlin)
 - curate: change output metadata to [RFC 4180 CSV-like TSVs][] to match the TSV format output by other Augur subcommands and the Nextstrain ecosystem as discussed in [#1566][]. [#1565][] (@joverlee521)
 
