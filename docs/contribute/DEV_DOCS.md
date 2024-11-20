@@ -207,7 +207,7 @@ Versions for this project, Augur, from 3.0.0 onwards aim to follow the
     1. In **New version X.X.X**, provide the new version number.
     2. Select **Run workflow**.
 3. Ensure workflow runs successfully.
-    - Ensure the [docker-base CI action triggered by nextstrain-bot](https://github.com/nextstrain/docker-base/actions/workflows/ci.yml?query=branch%3Amaster+actor%3Anextstrain-bot) runs successfully.
+    - Ensure the [docker-base CI action triggered by nextstrain-bot](https://github.com/nextstrain/docker-base/actions/workflows/ci.yml?query=actor%3Anextstrain-bot) runs successfully.
 
 ##### 4. Update on Bioconda
 
