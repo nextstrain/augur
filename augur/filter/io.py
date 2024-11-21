@@ -3,16 +3,21 @@ import csv
 from argparse import Namespace
 import os
 import re
+from shutil import which
+from subprocess import Popen, PIPE
+from tempfile import mkstemp
 from textwrap import dedent
-from typing import Sequence, Set
+from typing import Iterable, Sequence, Set
 import numpy as np
 from collections import defaultdict
 from xopen import xopen
+from shutil import copyfileobj
 
 from augur.errors import AugurError
 from augur.io.file import open_file
 from augur.io.metadata import Metadata, METADATA_DATE_COLUMN
 from augur.io.print import print_err
+from augur.write_file import BUFFER_SIZE
 from .constants import GROUP_BY_GENERATED_COLUMNS
 from .include_exclude_rules import extract_variables, parse_filter_query
 
@@ -96,46 +101,80 @@ def read_priority_scores(fname):
         raise AugurError(f"missing or malformed priority scores file {fname}")
 
 
-def write_metadata_based_outputs(input_metadata_path: str, delimiters: Sequence[str],
-                                 id_columns: Sequence[str], output_metadata_path: str,
-                                 output_strains_path: str, ids_to_write: Set[str]):
+def get_cat(file):
+    if file.endswith(".gz"):
+        return which("gzcat")
+    if file.endswith(".xz"):
+        return which("xzcat")
+    if file.endswith(".zst"):
+        return which("zstdcat")
+    else:
+        return which("cat")
+
+
+def write_metadata(input_metadata_path: str, delimiters: Sequence[str],
+                   id_columns: Sequence[str], output_metadata_path: str,
+                   ids_to_write: Set[str]):
     """
-    Write output metadata and/or strains file given input metadata information
+    Write output metadata file given input metadata information
     and a set of IDs to write.
     """
     input_metadata = Metadata(input_metadata_path, delimiters, id_columns)
 
-    # Handle all outputs with one pass of metadata. This requires using
-    # conditionals both outside of and inside the loop through metadata rows.
+    tsv_join = which("tsv-join")
+    cat = get_cat(input_metadata_path)
 
-    # Make these conditionally set variables available at this scope.
-    output_metadata_handle = None
-    output_metadata = None
-    output_strains = None
+    if tsv_join and cat:
+        # Write the IDs to a temporary single-column TSV file for tsv-join
+        strains_fd, strains_path = mkstemp(prefix="augur-filter-", suffix=".tsv")
+        os.close(strains_fd)
+        with open(strains_path, "w") as f:
+            f.write(input_metadata.id_column + '\n')
+            for strain in ids_to_write:
+                f.write(strain + '\n')
 
-    # Set up output streams.
-    if output_metadata_path:
-        output_metadata_handle = xopen(output_metadata_path, "w", newline="")
-        output_metadata = csv.DictWriter(output_metadata_handle, fieldnames=input_metadata.columns,
-                                         delimiter="\t", lineterminator=os.linesep)
-        output_metadata.writeheader()
-    if output_strains_path:
-        output_strains = open(output_strains_path, "w")
+        # Open a process to stream the input metadata as text (handling compression)
+        cat_args = [cat, input_metadata_path]
+        cat_process = Popen(cat_args, stdout=PIPE)
 
-    # Write outputs based on rows in the original metadata.
-    for row in input_metadata.rows():
-        row_id = row[input_metadata.id_column]
-        if row_id in ids_to_write:
-            if output_metadata:
-                output_metadata.writerow(row)
-            if output_strains:
-                output_strains.write(row_id + '\n')
+        # Use tsv-join to subset the input metadata by the IDs in the temporary file
+        tsv_join_args = [
+            tsv_join,
+            '-H',
+            '--filter-file', strains_path,
+            '--key-fields', input_metadata.id_column,
+        ]
 
-    # Close file handles.
-    if output_metadata_handle:
-        output_metadata_handle.close()
-    if output_strains:
-        output_strains.close()
+        with xopen(output_metadata_path, "wb") as output_metadata_handle:
+            tsv_join_process = Popen(tsv_join_args, stdin=cat_process.stdout, stdout=PIPE)
+            # Ignore mypy error: https://github.com/python/mypy/issues/14943
+            copyfileobj(tsv_join_process.stdout, output_metadata_handle, BUFFER_SIZE)  # type: ignore
+            tsv_join_process.wait()
+            if tsv_join_process.returncode != 0:
+                raise AugurError(f"Failed to output metadata: {tsv_join_process.stderr.read().decode().strip()}")
+
+        # Remove the temporary file
+        os.unlink(strains_path)
+    else:
+        with xopen(output_metadata_path, "w") as output_metadata_handle:
+            output_metadata = csv.DictWriter(output_metadata_handle, fieldnames=input_metadata.columns,
+                                             delimiter="\t", lineterminator=os.linesep)
+            output_metadata.writeheader()
+
+            # Write outputs based on rows in the original metadata.
+            for row in input_metadata.rows():
+                row_id = row[input_metadata.id_column]
+                if row_id in ids_to_write:
+                    output_metadata.writerow(row)
+
+
+def write_strains(output_strains_path: str, ids_to_write: Iterable[str]):
+    """
+    Write set of strains to a plain text file, one ID per row.
+    """
+    with open(output_strains_path, "w") as f:
+        for strain in sorted(ids_to_write):
+            f.write(strain + '\n')
 
 
 # These are the types accepted in the following function.
