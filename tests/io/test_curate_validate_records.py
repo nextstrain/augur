@@ -1,5 +1,5 @@
 import pytest
-from augur.curate import validate_records
+from augur.curate._shared import validate_records
 from augur.errors import AugurError
 
 

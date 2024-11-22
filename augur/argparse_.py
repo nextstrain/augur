@@ -1,7 +1,8 @@
 """
 Custom helpers for the argparse standard library.
 """
-from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup
+import argparse
+from argparse import Action, ArgumentParser, _ArgumentGroup
 from typing import Union
 from .types import ValidationMode
 
@@ -32,16 +33,14 @@ def add_default_command(parser):
     parser.set_defaults(__command__ = default_command)
 
 
-def add_command_subparsers(subparsers, commands, command_attribute='__command__'):
+def register_commands(parser: argparse.ArgumentParser, commands, command_attribute='__command__'):
     """
     Add subparsers for each command module.
 
     Parameters
     ----------
-    subparsers: argparse._SubParsersAction
-        The special subparsers action object created by the parent parser
-        via `parser.add_subparsers()`.
-
+    parser
+        ArgumentParser object.
     commands: list[types.ModuleType]
         A list of modules that are commands that require their own subparser.
         Each module is required to have a `register_parser` function to add its own
@@ -51,6 +50,8 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         Optional attribute name for the commands. The default is `__command__`,
         which allows top level augur to run commands directly via `args.__command__.run()`.
     """
+    subparsers = parser.add_subparsers()
+
     for command in commands:
         # Allow each command to register its own subparser
         subparser = command.register_parser(subparsers)
@@ -59,9 +60,8 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         if command_attribute:
             subparser.set_defaults(**{command_attribute: command})
 
-        # Use the same formatting class for every command for consistency.
-        # Set here to avoid repeating it in every command's register_parser().
-        subparser.formatter_class = ArgumentDefaultsHelpFormatter
+        # Ensure all subparsers format like the top-level parser
+        subparser.formatter_class = parser.formatter_class
 
         if not subparser.description and command.__doc__:
             subparser.description = command.__doc__
@@ -69,6 +69,10 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         # If a command doesn't have its own run() function, then print its help when called.
         if not getattr(command, "run", None):
             add_default_command(subparser)
+
+        # Recursively register any subcommands
+        if getattr(subparser, "subcommands", None):
+            register_commands(subparser, subparser.subcommands)
 
 
 class HideAsFalseAction(Action):
