@@ -2,21 +2,9 @@ import os
 from contextlib import contextmanager
 from io import IOBase
 from textwrap import dedent
-from xopen import xopen
+from xopen import xopen, _PipedCompressionProgram
 from augur.errors import AugurError
 
-# Workaround to maintain compatibility with both xopen v1 and v2
-# Around November 2024, we shall drop support for xopen v1
-# by removing the try-except block and using
-# _PipedCompressionProgram directly
-try:
-    from xopen import _PipedCompressionProgram as PipedCompressionReader
-    from xopen import _PipedCompressionProgram as PipedCompressionWriter
-except ImportError:
-    from xopen import (  # type: ignore[attr-defined, no-redef]  
-        PipedCompressionReader,
-        PipedCompressionWriter,
-    )
 
 ENCODING = "utf-8"
 
@@ -63,7 +51,7 @@ def open_file(path_or_buffer, mode="r", **kwargs):
                 Try re-saving the file using the {e.encoding!r} encoding."""))
 
 
-    elif isinstance(path_or_buffer, (IOBase, PipedCompressionReader, PipedCompressionWriter)):
+    elif isinstance(path_or_buffer, (IOBase, _PipedCompressionProgram)):
         yield path_or_buffer
 
     else:

@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Major Changes
+
+- Drop support for xopen <2.0.0. [#1692] (@victorlin)
+
+[#1692]: https://github.com/nextstrain/augur/pull/1692
 
 ## 26.2.0 (20 November 2024)
 
