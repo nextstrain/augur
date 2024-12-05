@@ -6,7 +6,7 @@ available for backwards compatibility, but should not be used in new code.
 
 ## `xopen` major version 1
 
-*Deprecated in version 25.1.0 (July 2024). Planned for removal November 2024 or after.*
+*Deprecated in version 25.1.0 (July 2024). Removed in version 27.0.0 (December 2024).*
 
 ## `augur parse` preference of `name` over `strain` as the sequence ID field
 
