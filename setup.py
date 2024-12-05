@@ -66,7 +66,7 @@ setuptools.setup(
         "pyfastx >=1.0.0, <3.0",
         "python_calamine >=0.2.0",
         "scipy ==1.*",
-        "xopen[zstd] >=1.7.0, <3" # TODO: Deprecated, remove v1 support around November 2024
+        "xopen[zstd] >=2.0.0, <3"
     ],
     extras_require = {
         'dev': [
