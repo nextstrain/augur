@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Major Changes
+
+- Drop support for Python 3.8. [#1693] (@victorlin)
+
+[#1693]: https://github.com/nextstrain/augur/pull/1693
 
 ## 26.2.0 (20 November 2024)
 

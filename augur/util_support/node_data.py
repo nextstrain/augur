@@ -31,8 +31,6 @@ class NodeData:
                     raise exception
         """
 
-        # TODO Python 3.9: Use the new dictionary union operator (https://www.python.org/dev/peps/pep-0584/)
-
         if key not in d or (
             not isinstance(d[key], dict) and not isinstance(value, dict)
         ):
