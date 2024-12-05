@@ -24,11 +24,7 @@ def main():
         errors="backslashreplace",
         newline=None,
 
-        # Always line-buffer stderr since we only use it for messaging, not
-        # data output.  This is the Python default from 3.9 onwards, but we
-        # also run on 3.8 where it's not.  Be consistent regardless of Python
-        # version.
-        line_buffering=True,
+        # By default, stderr is always line-buffered.
     )
 
     return augur.run( argv[1:] )
