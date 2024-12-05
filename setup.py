@@ -57,7 +57,7 @@ setuptools.setup(
         "cvxopt >=1.1.9, ==1.*",
         "importlib_resources >=5.3.0; python_version < '3.11'",
         "isodate ==0.6.*",
-        "jsonschema >=3.0.0, ==3.*",
+        "jsonschema >=4.18.0, ==4.*",
         "networkx >= 2.5, <4",
         "numpy ==1.*",
         "packaging >=19.2",
@@ -65,6 +65,7 @@ setuptools.setup(
         "phylo-treetime >=0.11.2, <0.12",
         "pyfastx >=1.0.0, <3.0",
         "python_calamine >=0.2.0",
+        "referencing >=0.29.1, <1.0",
         "scipy ==1.*",
         "xopen[zstd] >=1.7.0, <3" # TODO: Deprecated, remove v1 support around November 2024
     ],

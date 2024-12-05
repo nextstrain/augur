@@ -9,6 +9,7 @@ import jsonschema
 import jsonschema.exceptions
 import re
 from itertools import groupby
+from referencing import Registry
 from textwrap import indent
 from typing import Iterable, Union
 from augur.data import as_file
@@ -48,21 +49,23 @@ def load_json_schema(path, refs=None):
         for k, v in refs.items():
             with as_file(v) as file, open_file(file, "r") as fh:
                 schema_store[k] = json.load(fh)
-        resolver = jsonschema.RefResolver.from_schema(schema,store=schema_store)
-        schema_validator = Validator(schema, resolver=resolver)
+
+        # Create a dummy retrieval function to handle URIs not present in
+        # schema_store. This often indicates a typo (the $ref doesn't match the
+        # key of the schema_store) or we forgot to add a local mapping for a new
+        # $ref.
+        def retrieve(uri):
+            # Take advantage of the fact that BaseException is not handled by
+            # Registry.get_or_retrieve. This means the custom error message is
+            # printed instead of the less helpful default:
+            #    jsonschema.exceptions._WrappedReferencingError: Unresolvable: https://…
+            raise BaseException(f"The schema used for validation could not resolve a local file for {uri!r}. " +
+                            "Please check the schema used and update the appropriate schema_store as needed." )
+
+        registry = Registry(retrieve=retrieve).with_contents(schema_store.items())
+        schema_validator = Validator(schema, registry=registry)
     else:
         schema_validator = Validator(schema)
-
-    # By default $ref URLs which we don't define in a schema_store are fetched
-    # by jsonschema. This often indicates a typo (the $ref doesn't match the key
-    # of the schema_store) or we forgot to add a local mapping for a new $ref.
-    # Either way, Augur should not be accessing the network. 
-    def resolve_remote(url):
-        # The exception type is not important as jsonschema will catch & re-raise as a RefResolutionError
-        raise Exception(f"The schema used for validation attempted to fetch the remote URL {url!r}. " +
-                        "Augur should resolve schema references to local files, please check the schema used " +
-                        "and update the appropriate schema_store as needed." )
-    schema_validator.resolver.resolve_remote = resolve_remote
 
     return schema_validator
 
