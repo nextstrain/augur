@@ -2,6 +2,15 @@
 
 ## __NEXT__
 
+### Major Changes
+
+- Drop support for older versions of jsonschema (<4.18.0). [#1691] (@victorlin)
+
+### Bug fixes
+
+- export: validation will no longer crash with `KeyError: 'tree'` when newer versions of jsonschema (≥4.18.0) are installed. [#1691] (@victorlin)
+
+[#1691]: https://github.com/nextstrain/augur/pull/1691
 
 ## 26.2.0 (20 November 2024)
 
