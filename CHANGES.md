@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 27.0.0 (9 December 2024)
+
 ### Major Changes
 
 - Drop support for Python 3.8. [#1693] (@victorlin)
