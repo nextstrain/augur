@@ -34,6 +34,13 @@ this should be considered an implementation detail that may change in the
 future.  The SQLite 3 CLI, sqlite3, must be available.  If it's not on PATH (or
 you want to use a version different from what's on PATH), set the SQLITE3
 environment variable to path of the desired sqlite3 executable.
+
+Quotes are added around values with `certain characters`_ (array maps to `ASCII`_ positions).
+This should not impact downstream usage.
+
+.. _certain characters: https://sqlite.org/src/artifact/883d1470#:~:text=static%20const%20char%20needCsvQuote%5B%5D
+.. _ASCII: https://en.wikipedia.org/wiki/ASCII
+
 """
 import os
 import re
