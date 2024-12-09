@@ -40,6 +40,8 @@ Try out an analysis of real virus data by [completing the Zika tutorial](https:/
 
 Huddleston J, Hadfield J, Sibley TR, Lee J, Fay K, Ilcisin M, Harkins E, Bedford T, Neher RA, Hodcroft EB, (2021). Augur: a bioinformatics toolkit for phylogenetic analyses of human pathogens. Journal of Open Source Software, 6(57), 2906, https://doi.org/10.21105/joss.02906
 
+For other formats, refer to [CITATION.cff](./CITATION.cff).
+
 ## License and copyright
 
 Copyright 2014-2022 Trevor Bedford and Richard Neher.
