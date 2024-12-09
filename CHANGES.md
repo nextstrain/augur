@@ -10,8 +10,9 @@
 
 ### Bug fixes
 
-- export: validation will no longer crash with `KeyError: 'tree'` when newer versions of jsonschema (≥4.18.0) are installed. [#1691] (@victorlin)
+- export: validation will no longer crash with `KeyError: 'tree'` when newer versions of jsonschema (≥4.18.0) are installed. [#1358] (@victorlin)
 
+[#1358]: https://github.com/nextstrain/augur/issues/1358
 [#1691]: https://github.com/nextstrain/augur/pull/1691
 [#1692]: https://github.com/nextstrain/augur/pull/1692
 [#1693]: https://github.com/nextstrain/augur/pull/1693
