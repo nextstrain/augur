@@ -168,3 +168,8 @@ linkcheck_anchors_ignore_for_url = [
      # checks for Github URLs:
      r'^https://github\.com',
 ]
+
+# Ignore text fragment anchors
+linkcheck_anchors_ignore = [
+    r'^:~:text='
+]
