@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+- merge: Clarify quoting behavior in docs. [#1694] (@victorlin)
+
+[#1694]: https://github.com/nextstrain/augur/issues/1694
 
 ## 27.0.0 (9 December 2024)
 
