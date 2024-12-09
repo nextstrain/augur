@@ -4,14 +4,15 @@
 
 ### Major Changes
 
+- Drop support for Python 3.8. [#1693] (@victorlin)
 - Drop support for older versions of jsonschema (<4.18.0). [#1691] (@victorlin)
 - Drop support for xopen <2.0.0. [#1692] (@victorlin)
-- Drop support for Python 3.8. [#1693] (@victorlin)
 
 ### Bug fixes
 
-- export: validation will no longer crash with `KeyError: 'tree'` when newer versions of jsonschema (≥4.18.0) are installed. [#1691] (@victorlin)
+- export: validation will no longer crash with `KeyError: 'tree'` when newer versions of jsonschema (≥4.18.0) are installed. [#1358] (@victorlin)
 
+[#1358]: https://github.com/nextstrain/augur/issues/1358
 [#1691]: https://github.com/nextstrain/augur/pull/1691
 [#1692]: https://github.com/nextstrain/augur/pull/1692
 [#1693]: https://github.com/nextstrain/augur/pull/1693
