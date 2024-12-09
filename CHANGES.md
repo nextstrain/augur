@@ -6,6 +6,7 @@
 
 - Drop support for older versions of jsonschema (<4.18.0). [#1691] (@victorlin)
 - Drop support for xopen <2.0.0. [#1692] (@victorlin)
+- Drop support for Python 3.8. [#1693] (@victorlin)
 
 ### Bug fixes
 
@@ -13,6 +14,7 @@
 
 [#1691]: https://github.com/nextstrain/augur/pull/1691
 [#1692]: https://github.com/nextstrain/augur/pull/1692
+[#1693]: https://github.com/nextstrain/augur/pull/1693
 
 ## 26.2.0 (20 November 2024)
 
