@@ -5,12 +5,14 @@
 ### Major Changes
 
 - Drop support for older versions of jsonschema (<4.18.0). [#1691] (@victorlin)
+- Drop support for xopen <2.0.0. [#1692] (@victorlin)
 
 ### Bug fixes
 
 - export: validation will no longer crash with `KeyError: 'tree'` when newer versions of jsonschema (≥4.18.0) are installed. [#1691] (@victorlin)
 
 [#1691]: https://github.com/nextstrain/augur/pull/1691
+[#1692]: https://github.com/nextstrain/augur/pull/1692
 
 ## 26.2.0 (20 November 2024)
 
