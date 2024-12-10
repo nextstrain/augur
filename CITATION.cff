@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+
+preferred-citation:
+  type: article
+  title: "Augur: a bioinformatics toolkit for phylogenetic analyses of human pathogens"
+  doi: "10.21105/joss.02906"
+  journal: "Journal of Open Source Software"
+  year: 2021
+  month: 1
+  volume: 6
+  issue: 57
+  start: 2906
+  end: 2906
+
+  authors:
+    - family-names: Huddleston
+      given-names:  John
+
+    - family-names: Hadfield
+      given-names:  James
+
+    - family-names: Sibley
+      given-names:  Thomas R.
+
+    - family-names: Lee
+      given-names:  Jover
+
+    - family-names: Fay
+      given-names:  Kairsten
+
+    - family-names: Ilcisin
+      given-names:  Misja
+
+    - family-names: Harkins
+      given-names:  Elias
+
+    - family-names: Bedford
+      given-names:  Trevor
+
+    - family-names: Neher
+      given-names:  Richard A.
+
+    - family-names: Hodcroft
+      given-names:  Emma B.
