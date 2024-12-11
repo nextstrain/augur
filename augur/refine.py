@@ -316,7 +316,7 @@ def run(args):
             # infer ancestral sequence for the purpose of counting mutations
             # sample mutations from the root profile, otherwise use most likely state.
             # Reconstruct tip states to avoid mutations to N or W etc be counted
-            tt.infer_ancestral_sequences(marginal=True, reconstruct_tip_states='True', sample_from_profile='root')
+            tt.infer_ancestral_sequences(marginal=True, reconstruct_tip_states=True, sample_from_profile='root')
         nuc_map = profile_maps['nuc']
 
         def are_sequence_states_different(nuc1, nuc2):
