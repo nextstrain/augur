@@ -85,7 +85,7 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
 
     # only infer ancestral sequences, leave branch length untouched
     tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=bool_marginal,
-                                 reconstruct_tip_states=infer_tips)
+                                 reconstruct_tip_states=infer_tips, sample_from_profile='root')
 
     return tt
 
@@ -104,7 +104,7 @@ def create_mask(is_vcf, tt, reference_sequence, aln):
         only used if is_vcf
     aln : dict
         describes variation (relative to reference) per sample. Only used if is_vcf.
-        
+
     Returns
     -------
     numpy.ndarray(bool)
@@ -122,7 +122,7 @@ def create_mask(is_vcf, tt, reference_sequence, aln):
                 if alt=='N':
                     ambig_positions.append(pos)
             # ambig_positions = [pos for pos, alt in sample_data.items() if alt=='N']
-            np.add.at(ambiguous_count, ambig_positions, 1)       
+            np.add.at(ambiguous_count, ambig_positions, 1)
         # Secondly, if the VCF defines no mutations but the ref is "N":
         no_info_sites = np.array(list(reference_sequence)) == 'N'
         no_info_sites[list(variable_sites)] = False
@@ -171,7 +171,7 @@ def collect_mutations(tt, mask, character_map=None, reference_sequence=None, inf
 
     # Note that for mutations reported across the tree we don't have to consider
     # the mask, because while sites which are all Ns may have an inferred base,
-    # there will be no variablity and thus no mutations.  
+    # there will be no variablity and thus no mutations.
     for n in tt.tree.find_clades():
         data[n.name] = [a+str(int(pos)+inc)+cm(d)
                         for a,pos,d in n.mutations]
@@ -185,7 +185,7 @@ def collect_mutations(tt, mask, character_map=None, reference_sequence=None, inf
                 data[tt.tree.root.name].append(f"{root_state}{pos+1}{tree_state}")
 
     return data
-        
+
 def collect_sequences(tt, mask, reference_sequence=None, infer_ambiguous=False):
     """
     Create a full sequence for every node on the tree. Masked positions will
@@ -198,7 +198,7 @@ def collect_sequences(tt, mask, reference_sequence=None, infer_ambiguous=False):
         instance of treetime with valid ancestral reconstruction
     mask : numpy.ndarray(bool)
         Mask these positions by changing them to the ambiguous nucleotide
-    reference_sequence : str or None 
+    reference_sequence : str or None
     infer_ambiguous : bool, optional
         if true, request the reconstructed sequences from treetime, otherwise retain input ambiguities
 
@@ -437,7 +437,7 @@ def run(args):
             features['nuc'].location.end != anc_seqs['annotations']['nuc']['end']):
             raise AugurError(f"The 'nuc' annotation coordinates parsed from {args.annotation!r} ({features['nuc'].location.start+1}..{features['nuc'].location.end})"
                 f" don't match the provided sequence data coordinates ({anc_seqs['annotations']['nuc']['start']}..{anc_seqs['annotations']['nuc']['end']}).")
-        
+
         print("Read in {} features from reference sequence file".format(len(features)))
         for gene in genes:
             print(f"Processing gene: {gene}")
