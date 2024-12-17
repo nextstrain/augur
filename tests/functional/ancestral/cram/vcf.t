@@ -15,6 +15,7 @@ but it will have the reference sequence attached.
   >  --vcf-reference $DATA/reference.fasta \
   >  --output-node-data "nt_muts.vcf-input.ref-seq.json" \
   >  --output-vcf nt_muts.vcf \
+  >  --seed 314159 \
   >  --inference marginal > /dev/null
 
 
@@ -33,7 +34,7 @@ here as it's not relevant to what I'm trying to test.
   > #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	node_root	sample_C	node_AB	sample_B	sample_A
   > 1	5	.	A	C	.	PASS	.	GT	1	1	1	1	1
   > 1	7	.	A	G	.	PASS	.	GT	0	0	1	1	1
-  > 1	14	.	C	T	.	PASS	.	GT	0	0	1	1	1
+  > 1	14	.	C	T	.	PASS	.	GT	1	0	1	1	1
   > 1	18	.	C	T	.	PASS	.	GT	1	1	0	0	0
   > 1	33	.	A	C,G	.	PASS	.	GT	0	0	2	2	1
   > 1	39	.	C	T	.	PASS	.	GT	0	0	0	0	1
