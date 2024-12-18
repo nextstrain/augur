@@ -15,6 +15,7 @@ ancestor).
   >  --root-sequence $TESTDIR/../data/zika_outgroup.gb \
   >  --genes ENV PRO \
   >  --translations $TESTDIR/../data/aa_sequences_%GENE.fasta \
+  >  --seed 314159 \
   >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations.json" > /dev/null
 
 Check that the reference length was correctly exported as the nuc annotation
