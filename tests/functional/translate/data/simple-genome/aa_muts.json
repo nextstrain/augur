@@ -29,9 +29,7 @@
   "nodes": {
     "node_AB": {
       "aa_muts": {
-        "gene1": [
-          "P2L"
-        ],
+        "gene1": [],
         "gene2": [
           "V2D"
         ]
@@ -39,11 +37,13 @@
     },
     "node_root": {
       "aa_muts": {
-        "gene1": [],
+        "gene1": [
+          "P2L"
+        ],
         "gene2": []
       },
       "aa_sequences": {
-        "gene1": "MPCG*",
+        "gene1": "MLCG*",
         "gene2": "MVK*"
       }
     },
@@ -61,7 +61,9 @@
     },
     "sample_C": {
       "aa_muts": {
-        "gene1": [],
+        "gene1": [
+          "L2P"
+        ],
         "gene2": []
       }
     }
