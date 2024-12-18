@@ -1,0 +1,76 @@
+{
+  "annotations": {
+    "gene1": {
+      "end": 24,
+      "seqid": "data/reference.gff",
+      "start": 10,
+      "strand": "+",
+      "type": "gene"
+    },
+    "gene2": {
+      "end": 47,
+      "seqid": "data/reference.gff",
+      "start": 36,
+      "strand": "-",
+      "type": "gene"
+    },
+    "nuc": {
+      "end": 50,
+      "seqid": "data/reference.gff",
+      "start": 1,
+      "strand": "+",
+      "type": "##sequence-region pragma"
+    }
+  },
+  "generated_by": {
+    "program": "augur",
+    "version": "23.1.1"
+  },
+  "nodes": {
+    "node_AB": {
+      "aa_muts": {
+        "gene1": [],
+        "gene2": [
+          "V2D"
+        ]
+      }
+    },
+    "node_root": {
+      "aa_muts": {
+        "gene1": [
+          "P2L",
+          "G4E"
+        ],
+        "gene2": []
+      },
+      "aa_sequences": {
+        "gene1": "MLCE*",
+        "gene2": "MVK*"
+      }
+    },
+    "sample_A": {
+      "aa_muts": {
+        "gene1": [],
+        "gene2": []
+      }
+    },
+    "sample_B": {
+      "aa_muts": {
+        "gene1": [],
+        "gene2": []
+      }
+    },
+    "sample_C": {
+      "aa_muts": {
+        "gene1": [
+          "L2P"
+        ],
+        "gene2": []
+      }
+    }
+  },
+  "reference": {
+    "gene1": "MPCG*",
+    "gene2": "MVK*"
+  }
+}

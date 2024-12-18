@@ -34,14 +34,12 @@ The _reference_ produced is the actual reference, not using the mutations in the
   MVK* (no-eol)
 
 However the aa_mutations should annotate the aa_sequence on the root node as
-having the G3E AA mutation, i.e. MPCE* instead of MPCG*, as well as a
-corresponding AA mutation on the root node G4E (i.e. reference is G, but root
-node is E (and so are all the other nodes))
-
-  $ sed '46s/MPCG/MPCE/' "$DATA/aa_muts.json" |  sed '42s/\[\]/\["G4E"\]/' > aa_muts.truth.json
+having the G4E AA mutation, as well as a corresponding AA mutation on the root
+node G4E (i.e. reference is G, but root node is E (and so are all the other
+nodes)).
 
   $ python3 "$SCRIPTS/diff_jsons.py" \
-  >   aa_muts.truth.json \
+  >   $DATA/aa_muts_with_root_mutation.json \
   >   aa_muts.json \
   >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]" "root['meta']['updated']"
   {}
