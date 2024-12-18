@@ -7,11 +7,15 @@ in cases where strings contain diacritics (see https://unicode.org/faq/normaliza
 import unicodedata
 
 from augur.utils import first_line
+from ._shared import shared_parser, validate
+
+
+COMMAND_NAME = "normalize-strings"
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("normalize-strings",
-        parents=[parent_subparsers.shared_parser],
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
+        parents=[shared_parser],
         help=first_line(__doc__))
 
     optional = parser.add_argument_group(title="OPTIONAL")
@@ -44,6 +48,7 @@ def normalize_strings(record, form='NFC'):
     }
 
 
+@validate(COMMAND_NAME)
 def run(args, records):
     for record in records:
         yield normalize_strings(record, args.form)

@@ -5,6 +5,10 @@ from collections import defaultdict
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.utils import first_line
+from ._shared import shared_parser, validate
+
+
+COMMAND_NAME = "apply-geolocation-rules"
 
 
 class CyclicGeolocationRulesError(AugurError):
@@ -187,8 +191,8 @@ def transform_geolocations(geolocation_rules, geolocation):
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("apply-geolocation-rules",
-        parents=[parent_subparsers.shared_parser],
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
+        parents=[shared_parser],
         help=first_line(__doc__))
 
     parser.add_argument("--region-field", default="region",
@@ -210,6 +214,7 @@ def register_parser(parent_subparsers):
     return parser
 
 
+@validate(COMMAND_NAME)
 def run(args, records):
     location_fields = [args.region_field, args.country_field, args.division_field, args.location_field]
 
