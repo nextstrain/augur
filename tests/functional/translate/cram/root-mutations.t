@@ -28,4 +28,4 @@ is unchanged (MPCG*). There is also a mutation E4G at the root node to compensat
   >   "$DATA/aa_muts.json" \
   >   "aa_muts.json" \
   >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]" "root['meta']['updated']"
-  {'values_changed': {"root['reference']['gene1']": {'new_value': 'MPCE*', 'old_value': 'MPCG*'}}, 'iterable_item_added': {"root['nodes']['node_root']['aa_muts']['gene1'][0]": 'E4G'}}
+  {'values_changed': {"root['reference']['gene1']": {'new_value': 'MPCE*', 'old_value': 'MPCG*'}}, 'iterable_item_added': {"root['nodes']['node_root']['aa_muts']['gene1'][1]": 'E4G'}}
