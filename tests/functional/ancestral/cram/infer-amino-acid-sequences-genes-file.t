@@ -10,6 +10,7 @@ Infer ancestral nucleotide and amino acid sequences, using a genes file.
   >  --annotation $TESTDIR/../data/zika_outgroup.gb \
   >  --genes $TESTDIR/../data/genes.txt \
   >  --translations $TESTDIR/../data/aa_sequences_%GENE.fasta \
+  >  --seed 314159 \
   >  --output-node-data ancestral_mutations.json \
   >  --output-sequences ancestral_sequences.fasta \
   >  --output-translations ancestral_aa_sequences_%GENE.fasta > /dev/null

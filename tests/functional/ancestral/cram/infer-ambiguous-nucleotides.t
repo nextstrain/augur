@@ -9,6 +9,7 @@ There should not be N bases in the inferred output sequences.
   >  --tree $TESTDIR/../data/tree.nwk \
   >  --alignment $TESTDIR/../data/aligned.fasta \
   >  --infer-ambiguous \
+  >  --seed 314159 \
   >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations.json" \
   >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences.fasta" > /dev/null
 
