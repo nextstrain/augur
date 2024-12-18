@@ -11,6 +11,9 @@ build:
       # generated from the full git history in conf.py.
       - git fetch --unshallow
 
+sphinx:
+  configuration: docs/conf.py
+
 python:
   install:
     - method: pip
