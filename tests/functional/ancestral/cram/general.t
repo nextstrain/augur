@@ -14,6 +14,7 @@ node-data JSON we diff against.
   >  --alignment "$TESTDIR/../data/simple-genome/sequences.fasta" \
   >  --root-sequence "$TESTDIR/../data/simple-genome/reference.fasta" \
   >  --output-node-data "nt_muts.ref-seq.json" \
+  >  --seed 314159 \
   >  --inference marginal > /dev/null
 
 
@@ -34,6 +35,7 @@ mutations (as there's nothing to compare the root node to)
   >  --tree "$TESTDIR/../data/simple-genome/tree.nwk" \
   >  --alignment "$TESTDIR/../data/simple-genome/sequences.fasta" \
   >  --output-node-data "nt_muts.no-ref-seq.json" \
+  >  --seed 314159 \
   >  --inference marginal > /dev/null
 
 

@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+- Explicitly specify how the root and ambiguous states are handled during sequence reconstruction and mutation counting. Fixes issue [#1689][] (@rneher) and was resolved in PR [#1690][].
+
+[#1689]: https://github.com/nextstrain/augur/pull/1689
+[#1690]: https://github.com/nextstrain/augur/pull/1690
 
 ## 27.0.0 (9 December 2024)
 
