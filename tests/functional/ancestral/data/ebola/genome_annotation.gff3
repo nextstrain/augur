@@ -1,0 +1,54 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NC_006432.1 1 18875
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=186540
+NC_006432.1	RefSeq	region	1	18875	.	+	.	ID=NC_006432.1:1..18875;Dbxref=taxon:186540;country=Uganda;gbkey=Src;isolate=Sudan virus/H.sapiens-tc/UGA/2000/Gulu-808892;isolation-source=human;mol_type=viral cRNA;note=isolated in 2000
+NC_006432.1	RefSeq	five_prime_UTR	1	55	.	+	.	ID=id-NC_006432.1:1..55;Note=leader region;function=regulation of initiation of RNA replication;gbkey=5'UTR
+NC_006432.1	RefSeq	gene	56	3007	.	+	.	ID=gene-SEVgp1;Dbxref=GeneID:3160777;Name=NP;gbkey=Gene;gene=NP;gene_biotype=protein_coding;locus_tag=SEVgp1
+NC_006432.1	RefSeq	mRNA	56	3007	.	+	.	ID=rna-SEVgp1;Parent=gene-SEVgp1;Dbxref=GeneID:3160777;gbkey=mRNA;gene=NP;locus_tag=SEVgp1;product=nucleoprotein
+NC_006432.1	RefSeq	exon	56	3007	.	+	.	ID=exon-SEVgp1-1;Parent=rna-SEVgp1;Dbxref=GeneID:3160777;gbkey=mRNA;gene=NP;locus_tag=SEVgp1;product=nucleoprotein
+NC_006432.1	RefSeq	CDS	458	2674	.	+	0	ID=cds-YP_138520.1;Parent=rna-SEVgp1;Dbxref=GenBank:YP_138520.1,GeneID:3160777;Name=NP;Note=predominant component of nucleocapsid;gbkey=CDS;gene=NP;locus_tag=SEVgp1;product=nucleoprotein;protein_id=YP_138520.1
+NC_006432.1	RefSeq	regulatory_region	56	67	.	+	.	ID=id-SEVgp1;Parent=gene-SEVgp1;Dbxref=GeneID:3160777;Note=predicted transcription start site;gbkey=regulatory;gene=NP;locus_tag=SEVgp1;regulatory_class=other
+NC_006432.1	RefSeq	polyA_signal_sequence	2496	3007	.	+	.	ID=id-SEVgp1-2;Parent=gene-SEVgp1;Dbxref=GeneID:3160777;gbkey=regulatory;gene=NP;locus_tag=SEVgp1;regulatory_class=polyA_signal_sequence
+NC_006432.1	RefSeq	gene	3013	4382	.	+	.	ID=gene-SEVgp2;Dbxref=GeneID:3160776;Name=VP35;gbkey=Gene;gene=VP35;gene_biotype=protein_coding;locus_tag=SEVgp2
+NC_006432.1	RefSeq	mRNA	3013	4382	.	+	.	ID=rna-SEVgp2;Parent=gene-SEVgp2;Dbxref=GeneID:3160776;gbkey=mRNA;gene=VP35;locus_tag=SEVgp2;product=VP35
+NC_006432.1	RefSeq	exon	3013	4382	.	+	.	ID=exon-SEVgp2-1;Parent=rna-SEVgp2;Dbxref=GeneID:3160776;gbkey=mRNA;gene=VP35;locus_tag=SEVgp2;product=VP35
+NC_006432.1	RefSeq	CDS	3138	4127	.	+	0	ID=cds-YP_138521.1;Parent=rna-SEVgp2;Dbxref=GenBank:YP_138521.1,GeneID:3160776;Name=VP35;Note=cofactor in polymerase complex%3B type I IFN antagonist;gbkey=CDS;gene=VP35;locus_tag=SEVgp2;product=polymerase complex protein;protein_id=YP_138521.1
+NC_006432.1	RefSeq	regulatory_region	3013	3024	.	+	.	ID=id-SEVgp2;Parent=gene-SEVgp2;Dbxref=GeneID:3160776;Note=predicted transcription start site;gbkey=regulatory;gene=VP35;locus_tag=SEVgp2;regulatory_class=other
+NC_006432.1	RefSeq	polyA_signal_sequence	4372	4382	.	+	.	ID=id-SEVgp2-2;Parent=gene-SEVgp2;Dbxref=GeneID:3160776;gbkey=regulatory;gene=VP35;locus_tag=SEVgp2;regulatory_class=polyA_signal_sequence
+NC_006432.1	RefSeq	gene	4365	5875	.	+	.	ID=gene-SEVgp3;Dbxref=GeneID:3160775;Name=VP40;gbkey=Gene;gene=VP40;gene_biotype=protein_coding;locus_tag=SEVgp3
+NC_006432.1	RefSeq	mRNA	4365	5875	.	+	.	ID=rna-SEVgp3;Parent=gene-SEVgp3;Dbxref=GeneID:3160775;gbkey=mRNA;gene=VP40;locus_tag=SEVgp3;product=VP40
+NC_006432.1	RefSeq	exon	4365	5875	.	+	.	ID=exon-SEVgp3-1;Parent=rna-SEVgp3;Dbxref=GeneID:3160775;gbkey=mRNA;gene=VP40;locus_tag=SEVgp3;product=VP40
+NC_006432.1	RefSeq	CDS	4454	5434	.	+	0	ID=cds-YP_138522.1;Parent=rna-SEVgp3;Dbxref=GenBank:YP_138522.1,GeneID:3160775;Name=VP40;Note=most abundant protein in virion;gbkey=CDS;gene=VP40;locus_tag=SEVgp3;product=matrix protein;protein_id=YP_138522.1
+NC_006432.1	RefSeq	regulatory_region	4365	4376	.	+	.	ID=id-SEVgp3;Parent=gene-SEVgp3;Dbxref=GeneID:3160775;Note=predicted transcription start site;gbkey=regulatory;gene=VP40;locus_tag=SEVgp3;regulatory_class=other
+NC_006432.1	RefSeq	polyA_signal_sequence	5864	5875	.	+	.	ID=id-SEVgp3-2;Parent=gene-SEVgp3;Dbxref=GeneID:3160775;gbkey=regulatory;gene=VP40;locus_tag=SEVgp3;regulatory_class=polyA_signal_sequence
+NC_006432.1	RefSeq	gene	5883	8241	.	+	.	ID=gene-SEVgp4;Dbxref=GeneID:3160774;Name=GP;gbkey=Gene;gene=GP;gene_biotype=protein_coding;locus_tag=SEVgp4
+NC_006432.1	RefSeq	CDS	5998	6882	.	+	0	ID=cds-YP_138523.1;Parent=gene-SEVgp4;Dbxref=GenBank:YP_138523.1,GeneID:3160774;Name=GP;Note=structural glycoprotein%3B processed by furin to yield GP1-GP2 heterodimer that forms membrane-anchored trimers (peplomers);exception=RNA editing;gbkey=CDS;gene=GP;locus_tag=SEVgp4;product=spike glycoprotein;protein_id=YP_138523.1
+NC_006432.1	RefSeq	CDS	6882	8027	.	+	0	ID=cds-YP_138523.1;Parent=gene-SEVgp4;Dbxref=GenBank:YP_138523.1,GeneID:3160774;Name=GP;Note=structural glycoprotein%3B processed by furin to yield GP1-GP2 heterodimer that forms membrane-anchored trimers (peplomers);exception=RNA editing;gbkey=CDS;gene=GP;locus_tag=SEVgp4;product=spike glycoprotein;protein_id=YP_138523.1
+NC_006432.1	RefSeq	CDS	5998	6881	.	+	0	ID=cds-YP_009246341.1;Parent=gene-SEVgp4;Dbxref=GenBank:YP_009246341.1,GeneID:3160774;Name=ssGP;Note=second non-structural secreted glycoprotein%3B super small secreted glycoprotein%3B secreted in a monomeric form%3B one A residue is deleted or two additional A residues are inserted at the editing site during transcription of the GP gene;exception=RNA editing;gbkey=CDS;gene=GP;locus_tag=SEVgp4;product=second secreted glycoprotein;protein_id=YP_009246341.1
+NC_006432.1	RefSeq	CDS	6883	6955	.	+	1	ID=cds-YP_009246341.1;Parent=gene-SEVgp4;Dbxref=GenBank:YP_009246341.1,GeneID:3160774;Name=ssGP;Note=second non-structural secreted glycoprotein%3B super small secreted glycoprotein%3B secreted in a monomeric form%3B one A residue is deleted or two additional A residues are inserted at the editing site during transcription of the GP gene;exception=RNA editing;gbkey=CDS;gene=GP;locus_tag=SEVgp4;product=second secreted glycoprotein;protein_id=YP_009246341.1
+NC_006432.1	RefSeq	mRNA	5883	8241	.	+	.	ID=rna-SEVgp4;Parent=gene-SEVgp4;Dbxref=GeneID:3160774;Note=unedited mRNA;gbkey=mRNA;gene=GP;locus_tag=SEVgp4;product=sGP
+NC_006432.1	RefSeq	exon	5883	8241	.	+	.	ID=exon-SEVgp4-1;Parent=rna-SEVgp4;Dbxref=GeneID:3160774;Note=unedited mRNA;gbkey=mRNA;gene=GP;locus_tag=SEVgp4;product=sGP
+NC_006432.1	RefSeq	CDS	5998	7116	.	+	0	ID=cds-YP_138524.1;Parent=rna-SEVgp4;Dbxref=GenBank:YP_138524.1,GeneID:3160774;Name=sGP;Note=small non-structural secreted glycoprotein%3B forms dimers linked by disulfide bonds (parallel orientation)%3B processed by furin to yield sGP and delta peptide%3B sGP;gbkey=CDS;gene=GP;locus_tag=SEVgp4;product=small secreted glycoprotein;protein_id=YP_138524.1
+NC_006432.1	RefSeq	sequence_feature	6877	6883	.	+	.	ID=id-SEVgp4;Dbxref=GeneID:3160774;Note=transcription editing site%3B polymerase slippage of 1 nucleotide (-1 direction) during transcription results in the addition of an extra adenosine and the translation of an altenate frame leading to expression of GP;gbkey=misc_feature;gene=GP;locus_tag=SEVgp4
+NC_006432.1	RefSeq	polyA_signal_sequence	8231	8241	.	+	.	ID=id-SEVgp4-2;Parent=gene-SEVgp4;Dbxref=GeneID:3160774;gbkey=regulatory;gene=GP;locus_tag=SEVgp4;regulatory_class=polyA_signal_sequence
+NC_006432.1	RefSeq	gene	8224	9697	.	+	.	ID=gene-SEVgp5;Dbxref=GeneID:3160773;Name=VP30;gbkey=Gene;gene=VP30;gene_biotype=protein_coding;locus_tag=SEVgp5
+NC_006432.1	RefSeq	mRNA	8224	9697	.	+	.	ID=rna-SEVgp5;Parent=gene-SEVgp5;Dbxref=GeneID:3160773;gbkey=mRNA;gene=VP30;locus_tag=SEVgp5;product=VP30
+NC_006432.1	RefSeq	exon	8224	9697	.	+	.	ID=exon-SEVgp5-1;Parent=rna-SEVgp5;Dbxref=GeneID:3160773;gbkey=mRNA;gene=VP30;locus_tag=SEVgp5;product=VP30
+NC_006432.1	RefSeq	CDS	8441	9307	.	+	0	ID=cds-YP_138525.1;Parent=rna-SEVgp5;Dbxref=GenBank:YP_138525.1,GeneID:3160773;Name=VP30;gbkey=CDS;gene=VP30;locus_tag=SEVgp5;product=minor nucleoprotein;protein_id=YP_138525.1
+NC_006432.1	RefSeq	regulatory_region	8224	8235	.	+	.	ID=id-SEVgp5;Parent=gene-SEVgp5;Dbxref=GeneID:3160773;Note=predicted transcription start site;gbkey=regulatory;gene=VP30;locus_tag=SEVgp5;regulatory_class=other
+NC_006432.1	RefSeq	polyA_signal_sequence	9686	9697	.	+	.	ID=id-SEVgp5-2;Parent=gene-SEVgp5;Dbxref=GeneID:3160773;gbkey=regulatory;gene=VP30;locus_tag=SEVgp5;regulatory_class=polyA_signal_sequence
+NC_006432.1	RefSeq	gene	9826	11474	.	+	.	ID=gene-SEVgp6;Dbxref=GeneID:3160772;Name=VP24;gbkey=Gene;gene=VP24;gene_biotype=protein_coding;locus_tag=SEVgp6
+NC_006432.1	RefSeq	mRNA	9826	11474	.	+	.	ID=rna-SEVgp6;Parent=gene-SEVgp6;Dbxref=GeneID:3160772;gbkey=mRNA;gene=VP24;locus_tag=SEVgp6;product=VP24
+NC_006432.1	RefSeq	exon	9826	11474	.	+	.	ID=exon-SEVgp6-1;Parent=rna-SEVgp6;Dbxref=GeneID:3160772;gbkey=mRNA;gene=VP24;locus_tag=SEVgp6;product=VP24
+NC_006432.1	RefSeq	CDS	10299	11054	.	+	0	ID=cds-YP_138526.1;Parent=rna-SEVgp6;Dbxref=GenBank:YP_138526.1,GeneID:3160772;Name=VP24;gbkey=CDS;gene=VP24;locus_tag=SEVgp6;product=membrane-associated protein;protein_id=YP_138526.1
+NC_006432.1	RefSeq	regulatory_region	9826	9837	.	+	.	ID=id-SEVgp6;Parent=gene-SEVgp6;Dbxref=GeneID:3160772;Note=predicted transcription start site;gbkey=regulatory;gene=VP24;locus_tag=SEVgp6;regulatory_class=other
+NC_006432.1	RefSeq	polyA_signal_sequence	11464	11474	.	+	.	ID=id-SEVgp6-2;Parent=gene-SEVgp6;Dbxref=GeneID:3160772;gbkey=regulatory;gene=VP24;locus_tag=SEVgp6;regulatory_class=polyA_signal_sequence
+NC_006432.1	RefSeq	gene	11457	18494	.	+	.	ID=gene-SEVgp7;Dbxref=GeneID:3160771;Name=L;gbkey=Gene;gene=L;gene_biotype=protein_coding;locus_tag=SEVgp7
+NC_006432.1	RefSeq	mRNA	11457	18494	.	+	.	ID=rna-SEVgp7;Parent=gene-SEVgp7;Dbxref=GeneID:3160771;gbkey=mRNA;gene=L;locus_tag=SEVgp7;product=polymerase
+NC_006432.1	RefSeq	exon	11457	18494	.	+	.	ID=exon-SEVgp7-1;Parent=rna-SEVgp7;Dbxref=GeneID:3160771;gbkey=mRNA;gene=L;locus_tag=SEVgp7;product=polymerase
+NC_006432.1	RefSeq	CDS	11535	18167	.	+	0	ID=cds-YP_138527.1;Parent=rna-SEVgp7;Dbxref=GenBank:YP_138527.1,GeneID:3160771;Name=L;Note=translation may start at the 2nd methionine codon of the ORF;gbkey=CDS;gene=L;locus_tag=SEVgp7;product=RNA-dependent RNA polymerase;protein_id=YP_138527.1
+NC_006432.1	RefSeq	regulatory_region	11457	11468	.	+	.	ID=id-SEVgp7;Parent=gene-SEVgp7;Dbxref=GeneID:3160771;Note=predicted transcription start site;gbkey=regulatory;gene=L;locus_tag=SEVgp7;regulatory_class=other
+NC_006432.1	RefSeq	polyA_signal_sequence	18483	18494	.	+	.	ID=id-SEVgp7-2;Parent=gene-SEVgp7;Dbxref=GeneID:3160771;gbkey=regulatory;gene=L;locus_tag=SEVgp7;regulatory_class=polyA_signal_sequence
+NC_006432.1	RefSeq	five_prime_UTR	18495	18875	.	+	.	ID=id-NC_006432.1:18495..18875;Note=trailer region;function=regulation of initiation of RNA replication;gbkey=5'UTR
