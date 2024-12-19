@@ -11,6 +11,7 @@ Change the _reference_ to lowercase
   >  --alignment "$TESTDIR/../data/simple-genome/sequences.fasta" \
   >  --root-sequence ref.lower.fasta \
   >  --output-node-data "nt_muts.ref-seq.json" \
+  >  --seed 314159 \
   >  --inference marginal > /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
@@ -33,6 +34,7 @@ be lowecase which will be compared against the uppercase reference
   >  --alignment sequences.lower.fasta \
   >  --root-sequence "$TESTDIR/../data/simple-genome/reference.fasta" \
   >  --output-node-data "nt_muts.ref-seq.json" \
+  >  --seed 314159 \
   >  --inference marginal > /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \

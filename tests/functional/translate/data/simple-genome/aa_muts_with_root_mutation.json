@@ -38,12 +38,13 @@
     "node_root": {
       "aa_muts": {
         "gene1": [
-          "P2L"
+          "P2L",
+          "G4E"
         ],
         "gene2": []
       },
       "aa_sequences": {
-        "gene1": "MLCG*",
+        "gene1": "MLCE*",
         "gene2": "MVK*"
       }
     },
