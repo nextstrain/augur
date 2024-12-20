@@ -45,14 +45,14 @@ jobs:
           - '3.10'
           - '3.11'
           - '3.12'
-        biopython-version: 
-          # list of Biopython versions with support for a new Python version 
-          # from https://github.com/biopython/biopython/blob/master/NEWS.rst 
+        biopython-version:
+          # list of Biopython versions with support for a new Python version
+          # from https://github.com/biopython/biopython/blob/master/NEWS.rst
           - '1.80' # first to support Python 3.10 and 3.11
           - '1.82' # first to support Python 3.12
-          - ''     # latest 
-        exclude: 
-          # some older Biopython versions are incompatible with later Python versions 
+          - ''     # latest
+        exclude:
+          # some older Biopython versions are incompatible with later Python versions
           - { biopython-version: '1.80', python-version: '3.12' }
     defaults:
       run:
