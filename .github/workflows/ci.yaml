@@ -114,7 +114,11 @@ jobs:
           - lassa
           - measles
           - mpox
+          - oropouche
+          - rabies
           - seasonal-cov
+          - wnv
+          - yellow-fever
           - zika
 
     name: pathogen-repo-ci (${{ matrix.pathogen }})
