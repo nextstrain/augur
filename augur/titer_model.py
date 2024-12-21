@@ -226,7 +226,7 @@ class TiterCollection(object):
         else:
             self.titers = titers
             strain_counts = type(self).count_strains(titers)
-            self.strains = strain_counts.keys()
+            self.strains = list(strain_counts.keys())
 
     def read_titers(self, fname):
         self.titer_fname = fname
@@ -415,7 +415,7 @@ class TiterModel(object):
                 from random import sample
                 tmp = set(self.test_strains)
                 tmp.difference_update(self.ref_strains) # don't use references viruses in the set to sample from
-                training_strains = sample(tmp, int(training_fraction*len(tmp)))
+                training_strains = sample(sorted(tmp), int(training_fraction*len(tmp)))
                 for tmpstrain in self.ref_strains:      # add all reference viruses to the training set
                     if tmpstrain not in training_strains:
                         training_strains.append(tmpstrain)
@@ -504,7 +504,7 @@ class TiterModel(object):
             pred_titer = self.predict_titer(key[0], key[1], cutoff=cutoff)
             validation[key] = (val, pred_titer)
 
-        validation_array = np.array(validation.values())
+        validation_array = np.array(list(validation.values()))
         actual = validation_array[:,0]
         predicted = validation_array[:,1]
 
@@ -517,7 +517,7 @@ class TiterModel(object):
                         'rms_error': np.sqrt(np.mean((actual-predicted)**2)),
         }
         pprint(model_performance)
-        model_performance['values'] = validation.values()
+        model_performance['values'] = list(validation.values())
 
         self.validation = model_performance
 
