@@ -417,7 +417,7 @@ class TiterModel(object):
                 from random import sample
                 tmp = set(self.test_strains)
                 tmp.difference_update(self.ref_strains) # don't use references viruses in the set to sample from
-                training_strains = sample(tmp, int(training_fraction*len(tmp)))
+                training_strains = sample(sorted(tmp), int(training_fraction*len(tmp)))
                 for tmpstrain in self.ref_strains:      # add all reference viruses to the training set
                     if tmpstrain not in training_strains:
                         training_strains.append(tmpstrain)
