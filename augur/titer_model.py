@@ -38,42 +38,42 @@ class TiterCollection(object):
         >>> type(measurements)
         <class 'dict'>
         >>> len(measurements)
-        11
+        248
         >>> len(strains)
-        13
+        62
         >>> len(sources)
-        5
+        15
 
         Inspect specific measurements. First, inspect a measurement that has a
         specific value in the input.
 
-        >>> measurements[("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10"))]
-        [80.0]
+        >>> measurements[("A/Wisconsin/3/2007", ("A/Wisconsin/3/2007", "A/Wis3/07"))]
+        [5120.0]
 
         Next, inspect a measurement that has a thresholded value at the lower
-        bound of detection (e.g., "<80"). This measurement should be reported as
-        one half of its threshold value (e.g., 40.0).
+        bound of detection (e.g., "<40"). This measurement should be reported as
+        one half of its threshold value (e.g., 20.0).
 
-        >>> measurements[("A/Acores/11/2013", ("A/Victoria/208/2009", "F7/10"))]
-        [40.0]
+        >>> measurements[("A/HongKong/1/1968", ("A/Victoria/3/1975", "A/Vic/3/75"))]
+        [20.0]
 
         Inspect a measurement that has a thresholded value at the upper bound of
-        detection (">1280"). This measurement should be reported as twice its
-        threshold value (e.g., 2560.0).
+        detection (">5120"). This measurement should be reported as twice its
+        threshold value (e.g., 10240.0).
 
-        >>> measurements[("A/Acores/SU43/2012", ("A/Texas/50/2012", "F36/12"))]
-        [2560.0]
+        >>> measurements[("A/Wisconsin/3/2007", ("A/Uruguay/716/2007", "A/Uru716/07"))]
+        [10240.0]
 
         Confirm that excluding sources produces fewer measurements.
 
-        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv", excluded_sources=["NIMR_Sep2013_7-11.csv"])
+        >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv", excluded_sources=["Hay2001"])
         >>> len(measurements)
-        5
+        223
 
         Request measurements for a test/reference/serum tuple that should not
         exist after excluding its source.
 
-        >>> measurements.get(("A/Acores/11/2013", ("A/Alabama/5/2010", "F27/10")))
+        >>> measurements.get(("A/HongKong/1/1968", ("A/HongKong/1/1968", "A/HK/1/68")))
         >>>
 
         Missing titer data should produce an error.
@@ -150,12 +150,10 @@ class TiterCollection(object):
         --------
         >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> titer_counts = TiterCollection.count_strains(measurements)
-        >>> titer_counts["A/Acores/11/2013"]
-        6
-        >>> titer_counts["A/Acores/SU43/2012"]
-        3
-        >>> titer_counts["A/Cairo/63/2012"]
-        2
+        >>> titer_counts["A/Auckland/6/2003"]
+        4
+        >>> titer_counts["A/Brisbane/9/2006"]
+        15
         """
         counts = defaultdict(int)
         for key in titers.keys():
@@ -187,22 +185,26 @@ class TiterCollection(object):
         --------
         >>> measurements, strains, sources = TiterCollection.load_from_file("tests/data/titer_model/h3n2_titers_subset.tsv")
         >>> len(measurements)
-        11
+        248
 
         Test the case when a test strain exists in the subset but the none of
         its corresponding reference strains do.
 
-        >>> len(TiterCollection.filter_strains(measurements, ["A/Acores/11/2013"]))
+        >>> len(TiterCollection.filter_strains(measurements, ["A/Oslo/244/1997"]))
         0
 
-        Test when both the test and reference strains exist in the subset.
+        Test when both the test and reference strains exist in the subset. This
+        first test gets a heterologous pair (first and second strain) and the
+        autologous pair for the second strain.
 
-        >>> len(TiterCollection.filter_strains(measurements, ["A/Acores/11/2013", "A/Alabama/5/2010", "A/Athens/112/2012"]))
+        >>> len(TiterCollection.filter_strains(measurements, ["A/Oslo/244/1997", "A/Johannesburg/33/1994"]))
         2
-        >>> len(TiterCollection.filter_strains(measurements, ["A/Acores/11/2013", "A/Acores/SU43/2012", "A/Alabama/5/2010", "A/Athens/112/2012"]))
-        3
+
+        Test when no strains are provided.
+
         >>> len(TiterCollection.filter_strains(measurements, []))
         0
+
         """
         return {key: value for key, value in titers.items()
                 if key[0] in strains and key[1][0] in strains}
@@ -318,11 +320,11 @@ class TiterCollection(object):
         >>> titers = TiterCollection(measurements)
         >>> sera, ref_strains, test_strains = titers.strain_census(measurements)
         >>> len(sera)
-        9
+        66
         >>> len(ref_strains)
-        9
+        27
         >>> len(test_strains)
-        13
+        62
 
         Parameters
         ----------
