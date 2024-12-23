@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug Fixes
+
+* titers: Fix type errors in code associated with cross-validation of models. [#1688][] (@huddlej)
+
+[#1688]: https://github.com/nextstrain/augur/pull/1688
 
 ## 27.0.0 (9 December 2024)
 
