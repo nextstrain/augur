@@ -8,6 +8,7 @@ The default is to infer ambiguous bases, so there should not be N bases in the i
   $ ${AUGUR} ancestral \
   >  --tree $TESTDIR/../data/tree.nwk \
   >  --alignment $TESTDIR/../data/aligned.fasta \
+  >  --seed 314159 \
   >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations.json" \
   >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences.fasta" > /dev/null
 

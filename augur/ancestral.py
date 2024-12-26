@@ -39,7 +39,7 @@ from .util_support.node_data_file import NodeDataObject
 
 def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
                                  marginal=False, fill_overhangs=True, infer_tips=False,
-                                 alphabet='nuc'):
+                                 alphabet='nuc', rng_seed=None):
     """infer ancestral sequences using TreeTime
 
     Parameters
@@ -68,6 +68,8 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
         alphabet to use for ancestral sequence inference. Default is the nucleotide
         alphabet that included a gap character 'nuc'. Alternative is `aa` for amino
         acids.
+    rng_seed : int, optional
+        random seed value to use for inference
 
     Returns
     -------
@@ -78,14 +80,14 @@ def ancestral_sequence_inference(tree=None, aln=None, ref=None, infer_gtr=True,
     from treetime import TreeAnc
 
     tt = TreeAnc(tree=tree, aln=aln, ref=ref, gtr='JC69', alphabet=alphabet,
-                 fill_overhangs=fill_overhangs, verbose=1)
+                 fill_overhangs=fill_overhangs, verbose=1, rng_seed=rng_seed)
 
     # convert marginal (from args.inference) from 'joint' or 'marginal' to True or False
     bool_marginal = (marginal == "marginal")
 
     # only infer ancestral sequences, leave branch length untouched
     tt.infer_ancestral_sequences(infer_gtr=infer_gtr, marginal=bool_marginal,
-                                 reconstruct_tip_states=infer_tips)
+                                 reconstruct_tip_states=infer_tips, sample_from_profile='root')
 
     return tt
 
@@ -104,7 +106,7 @@ def create_mask(is_vcf, tt, reference_sequence, aln):
         only used if is_vcf
     aln : dict
         describes variation (relative to reference) per sample. Only used if is_vcf.
-        
+
     Returns
     -------
     numpy.ndarray(bool)
@@ -122,7 +124,7 @@ def create_mask(is_vcf, tt, reference_sequence, aln):
                 if alt=='N':
                     ambig_positions.append(pos)
             # ambig_positions = [pos for pos, alt in sample_data.items() if alt=='N']
-            np.add.at(ambiguous_count, ambig_positions, 1)       
+            np.add.at(ambiguous_count, ambig_positions, 1)
         # Secondly, if the VCF defines no mutations but the ref is "N":
         no_info_sites = np.array(list(reference_sequence)) == 'N'
         no_info_sites[list(variable_sites)] = False
@@ -171,7 +173,7 @@ def collect_mutations(tt, mask, character_map=None, reference_sequence=None, inf
 
     # Note that for mutations reported across the tree we don't have to consider
     # the mask, because while sites which are all Ns may have an inferred base,
-    # there will be no variablity and thus no mutations.  
+    # there will be no variablity and thus no mutations.
     for n in tt.tree.find_clades():
         data[n.name] = [a+str(int(pos)+inc)+cm(d)
                         for a,pos,d in n.mutations]
@@ -185,7 +187,7 @@ def collect_mutations(tt, mask, character_map=None, reference_sequence=None, inf
                 data[tt.tree.root.name].append(f"{root_state}{pos+1}{tree_state}")
 
     return data
-        
+
 def collect_sequences(tt, mask, reference_sequence=None, infer_ambiguous=False):
     """
     Create a full sequence for every node on the tree. Masked positions will
@@ -198,7 +200,7 @@ def collect_sequences(tt, mask, reference_sequence=None, infer_ambiguous=False):
         instance of treetime with valid ancestral reconstruction
     mask : numpy.ndarray(bool)
         Mask these positions by changing them to the ambiguous nucleotide
-    reference_sequence : str or None 
+    reference_sequence : str or None
     infer_ambiguous : bool, optional
         if true, request the reconstructed sequences from treetime, otherwise retain input ambiguities
 
@@ -227,14 +229,14 @@ def collect_sequences(tt, mask, reference_sequence=None, infer_ambiguous=False):
     return sequences
 
 def run_ancestral(T, aln, reference_sequence=None, is_vcf=False, full_sequences=False, fill_overhangs=False,
-                  infer_ambiguous=False, marginal=False, alphabet='nuc'):
+                  infer_ambiguous=False, marginal=False, alphabet='nuc', rng_seed=None):
     """
     ancestral nucleotide reconstruction using TreeTime
     """
 
     tt = ancestral_sequence_inference(tree=T, aln=aln, ref=reference_sequence if is_vcf else None, marginal=marginal,
                                       fill_overhangs = fill_overhangs, alphabet=alphabet,
-                                      infer_tips = infer_ambiguous)
+                                      infer_tips = infer_ambiguous, rng_seed=rng_seed)
 
     character_map = {}
     for x in tt.gtr.profile_map:
@@ -295,6 +297,7 @@ def register_parser(parent_subparsers):
     )
     global_options_group.add_argument('--inference', default='joint', choices=["joint", "marginal"],
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
+    global_options_group.add_argument('--seed', type=int, help="seed for random number generation")
 
     nucleotide_options_group = parser.add_argument_group(
         "nucleotide options",
@@ -416,7 +419,8 @@ def run(args):
     infer_ambiguous = args.infer_ambiguous and not args.keep_ambiguous
     full_sequences = not is_vcf
     nuc_result = run_ancestral(T, aln, reference_sequence=ref if ref else None, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
-                               full_sequences=full_sequences, marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='nuc')
+                               full_sequences=full_sequences, marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='nuc',
+                               rng_seed=args.seed)
     anc_seqs = nuc_result['mutations']
     anc_seqs['reference'] = {'nuc': nuc_result['root_seq']}
 
@@ -437,7 +441,7 @@ def run(args):
             features['nuc'].location.end != anc_seqs['annotations']['nuc']['end']):
             raise AugurError(f"The 'nuc' annotation coordinates parsed from {args.annotation!r} ({features['nuc'].location.start+1}..{features['nuc'].location.end})"
                 f" don't match the provided sequence data coordinates ({anc_seqs['annotations']['nuc']['start']}..{anc_seqs['annotations']['nuc']['end']}).")
-        
+
         print("Read in {} features from reference sequence file".format(len(features)))
         for gene in genes:
             print(f"Processing gene: {gene}")
@@ -446,7 +450,7 @@ def run(args):
             reference_sequence = str(feat.extract(Seq(ref)).translate()) if ref else None
 
             aa_result = run_ancestral(T, fname, reference_sequence=reference_sequence, is_vcf=is_vcf, fill_overhangs=not args.keep_overhangs,
-                                        marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='aa')
+                                        marginal=args.inference, infer_ambiguous=infer_ambiguous, alphabet='aa', rng_seed=args.seed)
             len_translated_alignment = aa_result['tt'].data.full_length*3
             if len_translated_alignment != len(feat):
                 raise AugurError(f"length of translated alignment for {gene} ({len_translated_alignment})"

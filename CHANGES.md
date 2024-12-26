@@ -2,11 +2,17 @@
 
 ## __NEXT__
 
+### Features
+
+* ancestral: Add `--seed` argument to enable deterministic inference of root states by TreeTime. [#1690][] (@huddlej)
+
 ### Bug Fixes
 
+* ancestral, refine: Explicitly specify how the root and ambiguous states are handled during sequence reconstruction and mutation counting. [#1690][] (@rneher)
 * titers: Fix type errors in code associated with cross-validation of models. [#1688][] (@huddlej)
 
 [#1688]: https://github.com/nextstrain/augur/pull/1688
+[#1690]: https://github.com/nextstrain/augur/pull/1690
 
 ## 27.0.0 (9 December 2024)
 
@@ -29,8 +35,8 @@
 
 ### Features
 
-- This is the first version to officially support Python 3.12 and Pandas v2. [#1671] [#1678] (@corneliusroemer, @victorlin)
-- curate: change output metadata to [RFC 4180 CSV-like TSVs][] to match the TSV format output by other Augur subcommands and the Nextstrain ecosystem as discussed in [#1566][]. [#1565][] (@joverlee521)
+* This is the first version to officially support Python 3.12 and Pandas v2. [#1671] [#1678] (@corneliusroemer, @victorlin)
+* curate: change output metadata to [RFC 4180 CSV-like TSVs][] to match the TSV format output by other Augur subcommands and the Nextstrain ecosystem as discussed in [#1566][]. [#1565][] (@joverlee521)
 
 [#1565]: https://github.com/nextstrain/augur/pull/1565
 [#1566]: https://github.com/nextstrain/augur/issues/1566

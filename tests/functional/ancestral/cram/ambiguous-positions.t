@@ -19,6 +19,7 @@ Setup
   >  --tree "$DATA/tree.nwk" \
   >  --alignment snps.vcf \
   >  --vcf-reference reference.fasta \
+  >  --seed 314159 \
   >  --output-node-data nt_muts.json \
   >  --output-vcf nt_muts.vcf > /dev/null
 
@@ -44,4 +45,3 @@ Setup
   >   --vcf nt_muts.vcf \
   >   --json nt_muts.json \
   >   --ref reference.fasta > /dev/null
-

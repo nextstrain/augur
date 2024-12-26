@@ -12,7 +12,6 @@
     "node_AB": {
       "muts": [
         "A7G",
-        "C14T",
         "T18C",
         "A33G",
         "A43T"
@@ -22,9 +21,10 @@
     "node_root": {
       "muts": [
         "A5C",
+        "C14T",
         "C18T"
       ],
-      "sequence": "AAAACAAAAATGCCCTGTGGGTAAAAAAAAAAAAACTACTTGACCATAAA"
+      "sequence": "AAAACAAAAATGCTCTGTGGGTAAAAAAAAAAAAACTACTTGACCATAAA"
     },
     "sample_A": {
       "muts": [
@@ -40,7 +40,9 @@
       "sequence": "AAAACAGAAATGCTCTGCGGGTAAAAAAAAAAGAACTACTTATCCATAAA"
     },
     "sample_C": {
-      "muts": [],
+      "muts": [
+        "T14C"
+      ],
       "sequence": "AAAACAAAAATGCCCTGTGGGTAAAAAAAAAAAAACTACTTGACCATAAA"
     }
   },
