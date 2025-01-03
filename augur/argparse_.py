@@ -1,7 +1,7 @@
 """
 Custom helpers for the argparse standard library.
 """
-from argparse import Action, ArgumentParser, _ArgumentGroup, HelpFormatter, SUPPRESS, OPTIONAL, ZERO_OR_MORE
+from argparse import Action, ArgumentParser, _ArgumentGroup, HelpFormatter, SUPPRESS, OPTIONAL, ZERO_OR_MORE, _ExtendAction
 from typing import Union
 from .types import ValidationMode
 
@@ -27,6 +27,13 @@ class CustomHelpFormatter(HelpFormatter):
     """
     def _get_help_string(self, action: Action):
         help = action.help
+
+        if action.default is not None and action.default != []:
+            if isinstance(action, ExtendOverwriteDefault):
+                help += ' Specified values will override the default list.'
+            if isinstance(action, _ExtendAction):
+                help += ' Specified values will extend the default list.'
+
         if '%(default)' not in action.help:
             if action.default is not SUPPRESS:
                 defaulting_nargs = [OPTIONAL, ZERO_OR_MORE]
