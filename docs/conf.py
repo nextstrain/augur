@@ -132,9 +132,10 @@ nitpick_ignore = [
      ("py:class", "json.decoder.JSONDecodeError"),
      ("py:class", "json.encoder.JSONEncoder"),
 
-     # This class can't be referenced.
+     # These classes can't be referenced.
      # <https://github.com/python/cpython/issues/101503>
      ("py:class", "argparse._SubParsersAction"),
+     ("py:class", "argparse.HelpFormatter"),
 ]
 
 # -- Cross-project references ------------------------------------------------

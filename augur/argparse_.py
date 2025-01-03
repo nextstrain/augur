@@ -1,23 +1,38 @@
 """
 Custom helpers for the argparse standard library.
 """
-from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup
+from argparse import Action, ArgumentParser, _ArgumentGroup, HelpFormatter, SUPPRESS, OPTIONAL, ZERO_OR_MORE
 from typing import Union
 from .types import ValidationMode
 
 
 # Include this in an argument help string to suppress the automatic appending
-# of the default value by argparse.ArgumentDefaultsHelpFormatter.  This works
-# because the automatic appending is conditional on the presence of %(default),
-# so we include it but then format it as a zero-length string .0s.  🙃
+# of the default value by CustomHelpFormatter.  This works because the
+# automatic appending is conditional on the presence of %(default), so we
+# include it but then format it as a zero-length string .0s.  🙃
 #
 # Another solution would be to add an extra attribute to the argument (the
-# argparse.Action instance) and then subclass ArgumentDefaultsHelpFormatter to
-# condition on that new attribute, but that seems more brittle.
+# argparse.Action instance) and then modify CustomHelpFormatter to condition
+# on that new attribute, but that seems more brittle.
 #
-# Copied from the Nextstrain CLI repo
+# Initially copied from the Nextstrain CLI repo
 # https://github.com/nextstrain/cli/blob/017c53805e8317951327d24c04184615cc400b09/nextstrain/cli/argparse.py#L13-L21
 SKIP_AUTO_DEFAULT_IN_HELP = "%(default).0s"
+
+
+class CustomHelpFormatter(HelpFormatter):
+    """Customize help text.
+
+    Initially copied from argparse.ArgumentDefaultsHelpFormatter.
+    """
+    def _get_help_string(self, action: Action):
+        help = action.help
+        if '%(default)' not in action.help:
+            if action.default is not SUPPRESS:
+                defaulting_nargs = [OPTIONAL, ZERO_OR_MORE]
+                if action.option_strings or action.nargs in defaulting_nargs:
+                    help += ' (default: %(default)s)'
+        return help
 
 
 def add_default_command(parser):
@@ -61,7 +76,7 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
 
         # Use the same formatting class for every command for consistency.
         # Set here to avoid repeating it in every command's register_parser().
-        subparser.formatter_class = ArgumentDefaultsHelpFormatter
+        subparser.formatter_class = CustomHelpFormatter
 
         if not subparser.description and command.__doc__:
             subparser.description = command.__doc__
