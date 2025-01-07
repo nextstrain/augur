@@ -55,6 +55,7 @@ def register_parser(
     parser.add_argument(
         "--backup-fields",
         nargs="*",
+        action="extend",
         default=[],
         help="List of backup fields to use as strain name if the value in 'strain' "
         + "does not match the strain regex pattern. "

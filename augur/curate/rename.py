@@ -13,7 +13,7 @@ def register_parser(parent_subparsers):
     help = __doc__)
 
     required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--field-map", nargs="+", required=True,
+    required.add_argument("--field-map", nargs="+", action="extend", required=True,
         help="Rename fields/columns via '{old_field_name}={new_field_name}'. " +
              "If the new field already exists, then the renaming of the old field will be skipped. " +
              "Multiple entries with the same '{old_field_name}' will duplicate the field/column. " +
