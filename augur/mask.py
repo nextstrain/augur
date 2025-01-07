@@ -7,6 +7,7 @@ from shutil import copyfile
 
 from Bio.Seq import MutableSeq
 
+from .argparse_ import ExtendOverwriteDefault
 from .io.file import open_file
 from .io.sequences import read_sequences, write_sequences
 from .io.shell_command_runner import run_shell_command
@@ -176,7 +177,7 @@ def register_arguments(parser):
     parser.add_argument('--mask-from-beginning', type=int, default=0, help="FASTA Only: Number of sites to mask from beginning")
     parser.add_argument('--mask-from-end', type=int, default=0, help="FASTA Only: Number of sites to mask from end")
     parser.add_argument('--mask-invalid', action='store_true', help="FASTA Only: Mask invalid nucleotides")
-    parser.add_argument("--mask-sites", nargs='+', action='extend', type = int,  help="1-indexed list of sites to mask")
+    parser.add_argument("--mask-sites", nargs='+', action=ExtendOverwriteDefault, type = int,  help="1-indexed list of sites to mask")
     parser.add_argument('--output', '-o', help="output file")
     parser.add_argument('--no-cleanup', dest="cleanup", action="store_false",
                         help="Leave intermediate files around. May be useful for debugging")

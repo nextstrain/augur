@@ -4,6 +4,7 @@ Renames fields / columns of the input data
 
 from typing import Iterable, Literal, Union, List, Tuple
 import argparse
+from augur.argparse_ import ExtendOverwriteDefault
 from augur.io.print import print_err
 from augur.errors import AugurError
 
@@ -13,7 +14,7 @@ def register_parser(parent_subparsers):
     help = __doc__)
 
     required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--field-map", nargs="+", action="extend", required=True,
+    required.add_argument("--field-map", nargs="+", action=ExtendOverwriteDefault, required=True,
         help="Rename fields/columns via '{old_field_name}={new_field_name}'. " +
              "If the new field already exists, then the renaming of the old field will be skipped. " +
              "Multiple entries with the same '{old_field_name}' will duplicate the field/column. " +

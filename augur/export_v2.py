@@ -945,20 +945,20 @@ def register_parser(parent_subparsers):
     )
     config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
-    config.add_argument('--maintainers', metavar="name", action="extend", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
+    config.add_argument('--maintainers', metavar="name", action=ExtendOverwriteDefault, nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
     config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
-    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', action='extend', help="Geographic traits to be displayed on map")
-    config.add_argument('--color-by-metadata', metavar="trait", nargs='+', action='extend', help="Metadata columns to include as coloring options")
-    config.add_argument('--metadata-columns', nargs="+", action="extend",
+    config.add_argument('--geo-resolutions', metavar="trait", nargs='+', action=ExtendOverwriteDefault, help="Geographic traits to be displayed on map")
+    config.add_argument('--color-by-metadata', metavar="trait", nargs='+', action=ExtendOverwriteDefault, help="Metadata columns to include as coloring options")
+    config.add_argument('--metadata-columns', nargs="+", action=ExtendOverwriteDefault,
                                  help="Metadata columns to export in addition to columns provided by --color-by-metadata or colorings in the Auspice configuration file. " +
                                       "These columns will not be used as coloring options in Auspice but will be visible in the tree.")
-    config.add_argument('--panels', metavar="panels", nargs='+', action='extend', choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
+    config.add_argument('--panels', metavar="panels", nargs='+', action=ExtendOverwriteDefault, choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = parser.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
-    optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action="extend", help="JSON files containing metadata for nodes in the tree")
+    optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action=ExtendOverwriteDefault, help="JSON files containing metadata for nodes in the tree")
     optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree")
     optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")

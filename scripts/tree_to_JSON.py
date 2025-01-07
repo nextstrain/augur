@@ -6,6 +6,7 @@ import sys, csv, logging, json, argparse, imp, math
 from collections import defaultdict
 sys.path.append('')
 from base.colorLogging import ColorizingStreamHandler
+from augur.argparse_ import ExtendOverwriteDefault
 
 
 version = 0.1
@@ -19,9 +20,9 @@ def get_command_line_args():
     beast = parser.add_argument_group('beast')
     beast.add_argument('--nexus', type=str, help="Path to nexus file")
     beast.add_argument('--most_recent_tip', type=float, help="Date of the most recent tip (in decimal format)")
-    beast.add_argument('--discrete_traits', type=str, nargs='+', action='extend', default=[], help="Discrete traits to extract from the BEAST annotations")
-    beast.add_argument('--continuous_traits', type=str, nargs='+', action='extend', default=[], help="Continuous traits to extract from the BEAST annotations")
-    beast.add_argument('--make_traits_log', type=str, nargs='+', action='extend', default=[], help="Convert these (continous) traits to log space: y=-ln(x)")
+    beast.add_argument('--discrete_traits', type=str, nargs='+', action=ExtendOverwriteDefault, default=[], help="Discrete traits to extract from the BEAST annotations")
+    beast.add_argument('--continuous_traits', type=str, nargs='+', action=ExtendOverwriteDefault, default=[], help="Continuous traits to extract from the BEAST annotations")
+    beast.add_argument('--make_traits_log', type=str, nargs='+', action=ExtendOverwriteDefault, default=[], help="Convert these (continous) traits to log space: y=-ln(x)")
     beast.add_argument("--fake_divergence", action="store_true", help="Set the divergence as time (prevents auspice crashing)")
 
 
@@ -34,8 +35,8 @@ def get_command_line_args():
     general.add_argument("--debug", action="store_const", dest="loglevel", const=logging.DEBUG, help="Enable debugging logging")
     general.add_argument('--output_prefix', '-o', required=True, type=str, help="Output prefix (i.e. \"_meta.json\" will be appended to this)")
     general.add_argument('--title', default=None, type=str, help="Title (to be displayed by auspice)")
-    general.add_argument("--defaults", type=str, nargs='+', action='extend', default=[], help="Auspice defaults. Format: \"key:value\"")
-    general.add_argument("--filters", type=str, nargs='+', action='extend', default=[], help="Auspice filters.")
+    general.add_argument("--defaults", type=str, nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice defaults. Format: \"key:value\"")
+    general.add_argument("--filters", type=str, nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice filters.")
     general.add_argument('--geo', type=str, help="CSV File w. header \"trait,value,latitude,longitude\". Turns on the map panel.")
 
 

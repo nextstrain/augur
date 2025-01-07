@@ -8,7 +8,7 @@ the incomplete dates are masked with 'XX'. For example, providing
 import re
 from datetime import datetime
 
-from augur.argparse_ import SKIP_AUTO_DEFAULT_IN_HELP
+from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
@@ -31,11 +31,11 @@ def register_parser(parent_subparsers):
         help=__doc__)
 
     required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--date-fields", nargs="+", action="extend",
+    required.add_argument("--date-fields", nargs="+", action=ExtendOverwriteDefault,
         help="List of date field names in the record that need to be standardized.")
 
     optional = parser.add_argument_group(title="OPTIONAL")
-    optional.add_argument("--expected-date-formats", nargs="+", action="extend",
+    optional.add_argument("--expected-date-formats", nargs="+", action=ExtendOverwriteDefault,
         help=f"""Custom date formats for values in the provided date fields, defined by standard
                  format codes available at
                  <https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes>.

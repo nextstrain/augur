@@ -7,6 +7,7 @@ exist.
 import argparse
 import re
 from typing import Generator, List
+from augur.argparse_ import ExtendOverwriteDefault
 from augur.io.print import print_err
 from augur.utils import first_line
 
@@ -55,7 +56,7 @@ def register_parser(
     parser.add_argument(
         "--backup-fields",
         nargs="*",
-        action="extend",
+        action=ExtendOverwriteDefault,
         default=[],
         help="List of backup fields to use as strain name if the value in 'strain' "
         + "does not match the strain regex pattern. "
