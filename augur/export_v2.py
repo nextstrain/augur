@@ -945,7 +945,7 @@ def register_parser(parent_subparsers):
     )
     config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
-    config.add_argument('--maintainers', metavar="name", action="append", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
+    config.add_argument('--maintainers', metavar="name", action="extend", nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
     config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
     config.add_argument('--geo-resolutions', metavar="trait", nargs='+', action='extend', help="Geographic traits to be displayed on map")
@@ -1034,20 +1034,17 @@ def set_display_defaults(data_json, config):
 
 def set_maintainers(data_json, config, cmd_line_maintainers):
     # Command-line args overwrite the config file
-    # Command-line info could come in as multiple lists w/multiple values, ex:
-    #       [['Name1 <url1>'], ['Name2 <url2>', 'Name3 <url3>'], ['Name4 <url4>']]
     # They may or may not all have URLs
     if cmd_line_maintainers:
         maintainers = []
-        for arg_entry in cmd_line_maintainers:
-            for maint in arg_entry:
-                res = re.search('<(.*)>', maint)
-                url = res.group(1) if res else ''
-                name = maint.split("<")[0].strip()
-                tmp_dict = {'name': name}
-                if url:
-                    tmp_dict['url'] = url
-                maintainers.append(tmp_dict)
+        for maint in cmd_line_maintainers:
+            res = re.search('<(.*)>', maint)
+            url = res.group(1) if res else ''
+            name = maint.split("<")[0].strip()
+            tmp_dict = {'name': name}
+            if url:
+                tmp_dict['url'] = url
+            maintainers.append(tmp_dict)
         data_json['meta']['maintainers'] = maintainers
     elif config.get("maintainer"): # v1-type specification
         data_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
