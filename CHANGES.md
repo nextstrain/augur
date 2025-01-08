@@ -10,13 +10,16 @@
 
 * ancestral, refine: Explicitly specify how the root and ambiguous states are handled during sequence reconstruction and mutation counting. [#1690][] (@rneher)
 * titers: Fix type errors in code associated with cross-validation of models. [#1688][] (@huddlej)
-* Add help text to clarify difference in behavior between options that override defaults (e.g. `--metadata-delimiters`) vs. options that extend existing defaults (e.g. `--expected-date-formats`). [#1705][] (@victorlin)
 * export: The help text for `--lat-longs` has been improved with a link to the defaults and specifics around the overriding behavior. [#1715][] (@victorlin)
 * augur.io.read_metadata: Pandas versions <1.4.0 prevented this function from properly setting the index column's data type. Support for those older versions has been dropped. [#1716][] (@victorlin)
+* In version 24.4.0, one of the new features was that all options that take multiple values could be repeated. Unfortunately, it overlooked a few that have been fixed in this version. [#1707][] (@victorlin)
+    * `augur curate rename --field-map`
+    * `augur curate transform-strain-name --backup-fields`
+* `augur curate format-dates --expected-date-formats` help text has been improved with clarifications regarding how values provided interact with builtin formats. [#1707][] (@victorlin)
 
 [#1688]: https://github.com/nextstrain/augur/pull/1688
 [#1690]: https://github.com/nextstrain/augur/pull/1690
-[#1705]: https://github.com/nextstrain/augur/pull/1705
+[#1707]: https://github.com/nextstrain/augur/issues/1707
 [#1715]: https://github.com/nextstrain/augur/pull/1715
 [#1716]: https://github.com/nextstrain/augur/pull/1716
 
