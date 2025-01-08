@@ -16,9 +16,9 @@ from . import constants
 
 try:
     # pandas ≥1.5.0 only
-    PandasUndefinedVariableError = pd.errors.UndefinedVariableError  # type: ignore
+    PandasUndefinedVariableError = pd.errors.UndefinedVariableError  # type: ignore[attr-defined]
 except AttributeError:
-    PandasUndefinedVariableError = pd.core.computation.ops.UndefinedVariableError  # type: ignore
+    PandasUndefinedVariableError = pd.core.computation.ops.UndefinedVariableError  # type: ignore[attr-defined, misc]
 
 
 # The strains to keep as a result of applying a filter function.
