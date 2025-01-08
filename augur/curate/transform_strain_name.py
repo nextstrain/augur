@@ -42,7 +42,7 @@ def register_parser(
 ) -> argparse._SubParsersAction:
     parser = parent_subparsers.add_parser(
         "transform-strain-name",
-        parents=[parent_subparsers.shared_parser],  # type: ignore
+        parents=[parent_subparsers.shared_parser],  # type: ignore[attr-defined]
         help=first_line(__doc__),
     )
 
