@@ -1,8 +1,9 @@
 """
 Custom helpers for the argparse standard library.
 """
-from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup
-from typing import Union
+from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
+from itertools import chain
+from typing import Iterable, Optional, Tuple, Union
 from .types import ValidationMode
 
 
@@ -126,3 +127,28 @@ def add_validation_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
         action="store_const",
         const=ValidationMode.SKIP,
         help="Skip validation of input/output files, equivalent to --validation-mode=skip. Use at your own risk!")
+
+
+# Originally copied from nextstrain/cli/argparse.py in the Nextstrain CLI project¹.
+#
+# ¹ <https://github.com/nextstrain/cli/blob/4a00d7100eff811eab6df34db73c7f6d4196e22b/nextstrain/cli/argparse.py#L252-L271>
+def walk_commands(parser: ArgumentParser, command: Optional[Tuple[str, ...]] = None) -> Iterable[Tuple[Tuple[str, ...], ArgumentParser]]:
+    if command is None:
+        command = (parser.prog,)
+
+    yield command, parser
+
+    subparsers = chain.from_iterable(
+        action.choices.items()
+            for action in parser._actions
+             if isinstance(action, _SubParsersAction))
+
+    visited = set()
+
+    for subname, subparser in subparsers:
+        if subparser in visited:
+            continue
+
+        visited.add(subparser)
+
+        yield from walk_commands(subparser, (*command, subname))

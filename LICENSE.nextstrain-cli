@@ -1,8 +1,11 @@
-This license applies to the original copy of resource functions from the
-Nextstrain CLI project into this project, incorporated in
-"augur/data/__init__.py". Any subsequent modifications to this project's copy of
-those functions are licensed under the license of this project, not of
-Nextstrain CLI.
+This license applies to the original copy of functions from the Nextstrain CLI
+project into this project, namely
+
+- resource functions incorporated as "augur/data/__init__.py"
+- walk_commands() function incorporated into "augur/argparse_.py"
+
+Any subsequent modifications to this project's copy of these functions are
+licensed under the license of this project, not of Nextstrain CLI.
 
 MIT License
 
