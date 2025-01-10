@@ -20,6 +20,7 @@ from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimite
 from .types import ValidationMode
 from .utils import read_node_data, write_json, json_size, read_config, read_lat_longs, read_colors
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
+from .version import __version__
 
 
 MINIFY_THRESHOLD_MB = 5
@@ -964,7 +965,13 @@ def register_parser(parent_subparsers):
     optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                                  help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
-    optional_inputs.add_argument('--lat-longs', metavar="TSV", help="Latitudes and longitudes for geography traits (overrides built in mappings)")
+    optional_inputs.add_argument('--lat-longs', metavar="TSV",
+        help=f"""Latitudes and longitudes for geography traits. See this file for the format:
+                 <https://github.com/nextstrain/augur/blob/{__version__}/augur/data/lat_longs.tsv>.
+                 This file provides the default set of latitudes and longitudes. An additional file
+                 specified by this option will extend the default set. Duplicates based on the first
+                 two columns will be resolved by taking the coordinates from the user-provided
+                 file.""")
 
     minify_group = parser.add_argument_group(
             title="OPTIONAL MINIFY SETTINGS",
