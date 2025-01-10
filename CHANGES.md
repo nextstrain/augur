@@ -11,10 +11,12 @@
 * ancestral, refine: Explicitly specify how the root and ambiguous states are handled during sequence reconstruction and mutation counting. [#1690][] (@rneher)
 * titers: Fix type errors in code associated with cross-validation of models. [#1688][] (@huddlej)
 * Add help text to clarify difference in behavior between options that override defaults (e.g. `--metadata-delimiters`) vs. options that extend existing defaults (e.g. `--expected-date-formats`). [#1705][] (@victorlin)
+* export: The help text for `--lat-longs` has been improved with a link to the defaults and specifics around the overriding behavior. [#1715][] (@victorlin)
 
 [#1688]: https://github.com/nextstrain/augur/pull/1688
 [#1690]: https://github.com/nextstrain/augur/pull/1690
 [#1705]: https://github.com/nextstrain/augur/pull/1705
+[#1715]: https://github.com/nextstrain/augur/pull/1715
 
 ## 27.0.0 (9 December 2024)
 
