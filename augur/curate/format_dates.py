@@ -15,9 +15,9 @@ from augur.types import DataErrorMethod
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
 
 
-# Default date formats that this command should parse
+# Builtin date formats that this command should parse
 # without additional input from the user.
-DEFAULT_EXPECTED_DATE_FORMATS = [
+BUILTIN_DATE_FORMATS = [
     '%Y-%m-%d',
     '%Y-%m-XX',
     '%Y-XX-XX',
@@ -36,11 +36,13 @@ def register_parser(parent_subparsers):
 
     optional = parser.add_argument_group(title="OPTIONAL")
     optional.add_argument("--expected-date-formats", nargs="+", action="extend",
-        default=DEFAULT_EXPECTED_DATE_FORMATS,
-        help="Expected date formats that are currently in the provided date fields, " +
-             "defined by standard format codes as listed at " +
-             "https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes. " +
-             "If a date string matches multiple formats, it will be parsed as the first matched format in the provided order.")
+        help=f"""Custom date formats for values in the provided date fields, defined by standard
+                 format codes available at
+                 <https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes>.
+                 If a value matches multiple formats, it will be parsed using the first match.
+                 The following formats are builtin and automatically used:
+                 {", ".join(repr(x).replace("%", "%%") for x in BUILTIN_DATE_FORMATS)}.
+                 User-provided values are considered after the builtin formats.""")
     optional.add_argument("--failure-reporting",
         type=DataErrorMethod.argtype,
         choices=list(DataErrorMethod),
@@ -182,10 +184,14 @@ def format_date(date_string, expected_formats):
 
 
 def run(args, records):
+    expected_date_formats = BUILTIN_DATE_FORMATS
+    if args.expected_date_formats:
+        expected_date_formats.extend(args.expected_date_formats)
+
     failures = []
     failure_reporting = args.failure_reporting
     failure_suggestion = (
-        f"\nCurrent expected date formats are {args.expected_date_formats!r}. " +
+        f"\nCurrent expected date formats are {expected_date_formats!r}. " +
         "This can be updated with --expected-date-formats."
     )
     for index, record in enumerate(records):
@@ -198,7 +204,7 @@ def run(args, records):
             if date_string is None:
                 raise AugurError(f"Expected date field {field!r} not found in record {record_id!r}.")
 
-            formatted_date_string = format_date(date_string, args.expected_date_formats)
+            formatted_date_string = format_date(date_string, expected_date_formats)
             if formatted_date_string is None:
                 # Mask failed date formatting before processing error methods
                 # to ensure failures are masked even when failures are "silent"
