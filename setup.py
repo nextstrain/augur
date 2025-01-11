@@ -61,7 +61,7 @@ setuptools.setup(
         "networkx >= 2.5, <4",
         "numpy ==1.*",
         "packaging >=19.2",
-        "pandas >=1.0.0, <3",
+        "pandas >=1.4.0, <3",
         "phylo-treetime >=0.11.2, <0.12",
         "pyfastx >=1.0.0, <3.0",
         "python_calamine >=0.2.0",
