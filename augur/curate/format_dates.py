@@ -42,6 +42,7 @@ def register_parser(parent_subparsers):
             format codes available at
             <https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes>.
             If a value matches multiple formats, it will be parsed using the first match.
+            Use 'XX' to match masked parts of the date (e.g. '%%m/XX/%%Y').
             The following formats are builtin and automatically used:
             {", ".join(repr(x).replace("%", "%%") for x in BUILTIN_DATE_FORMATS)}.
             User-provided values are considered after the builtin formats."""))
