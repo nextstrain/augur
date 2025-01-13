@@ -281,7 +281,8 @@
                                     "type": "number"
                                 }
                             }
-                        }
+                        },
+                        "^none$": false
                     }
                 },
                 "branch_attrs": {
@@ -296,7 +297,8 @@
                                     "$comment": "e.g. clade->3c3a",
                                     "$comment": "string is parsed unchanged by Auspice",
                                     "type": "string"
-                                }
+                                },
+                                "^none$": false
                             }
                         },
                         "mutations": {
