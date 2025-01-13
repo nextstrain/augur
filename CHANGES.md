@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* export v2: The string "none" is now an invalid value for `--color-by-metadata` and `--metadata-columns` options and will be ignored to prevent clashes with Auspice's internal use of "none". [#1113][] (@joverlee521)
+* schema: The string "none" is now an invalid branch label, node_attr key, and coloring key. [#1113][] (@joverlee521)
+
+[#1113]: https://github.com/nextstrain/augur/pull/1113
 
 ## 27.2.0 (22 January 2025)
 
