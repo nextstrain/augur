@@ -22,7 +22,8 @@
                 "properties": {
                     "key": {
                         "description": "They key used to access the value of this coloring on each node",
-                        "type": "string"
+                        "type": "string",
+                        "not": {"const": "none"}
                     },
                     "title": {
                         "description": "Text to be displayed in the \"color by\" dropdown and legends",
@@ -265,7 +266,7 @@
             "$comment": "These columns will not be used as coloring options in Auspice but will be visible in the tree.",
             "type": "array",
             "uniqueItems": true,
-            "items": {"type": "string"}
+            "items": {"type": "string", "not": {"const": "none"}}
         },
         "extensions": {
             "description": "Data to be passed through to the the resulting dataset JSON",
