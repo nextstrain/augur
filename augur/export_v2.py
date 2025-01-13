@@ -25,6 +25,9 @@ from .version import __version__
 
 MINIFY_THRESHOLD_MB = 5
 
+# Invalid metadata columns because they are used internally by Auspice
+INVALID_METADATA_COLUMNS = ("none")
+
 
 # Set up warnings & exceptions
 warn = warnings.warn
@@ -400,6 +403,10 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
             return False
         if key != "gt" and not trait_values:
             warn(f"Requested color-by field {key!r} does not exist and will not be used as a coloring or exported.")
+            return False
+        if key in INVALID_METADATA_COLUMNS:
+            warn(f"You asked for a color-by for trait {key!r}, but this is an invalid coloring key.\n"
+                  "It will be ignored during export, please rename field if you would like to use it as a coloring.")
             return False
         return True
 
@@ -950,10 +957,13 @@ def register_parser(parent_subparsers):
     config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
     config.add_argument('--warning', metavar="text or file", help="Text or file in Markdown format to be displayed as a warning banner by Auspice")
     config.add_argument('--geo-resolutions', metavar="trait", nargs='+', action=ExtendOverwriteDefault, help="Geographic traits to be displayed on map")
-    config.add_argument('--color-by-metadata', metavar="trait", nargs='+', action=ExtendOverwriteDefault, help="Metadata columns to include as coloring options")
+    config.add_argument('--color-by-metadata', metavar="trait", nargs='+', action=ExtendOverwriteDefault,
+        help="Metadata columns to include as coloring options. " +
+             f"Ignores columns named {INVALID_METADATA_COLUMNS!r}, so please rename them if you would like to include them as colorings.")
     config.add_argument('--metadata-columns', nargs="+", action=ExtendOverwriteDefault,
-                                 help="Metadata columns to export in addition to columns provided by --color-by-metadata or colorings in the Auspice configuration file. " +
-                                      "These columns will not be used as coloring options in Auspice but will be visible in the tree.")
+        help="Metadata columns to export in addition to columns provided by --color-by-metadata or colorings in the Auspice configuration file. " +
+             "These columns will not be used as coloring options in Auspice but will be visible in the tree. " +
+             f"Ignores columns named {INVALID_METADATA_COLUMNS!r}, so please rename them if you would like to include them as metadata fields.")
     config.add_argument('--panels', metavar="panels", nargs='+', action=ExtendOverwriteDefault, choices=['tree', 'map', 'entropy', 'frequencies', 'measurements'], help="Restrict panel display in auspice. Options are %(choices)s. Ignore this option to display all available panels.")
 
     optional_inputs = parser.add_argument_group(
@@ -1195,6 +1205,10 @@ def get_additional_metadata_columns(config, command_line_metadata_columns, metad
 
     additional_metadata_columns = []
     for col in potential_metadata_columns:
+        if col in INVALID_METADATA_COLUMNS:
+            warn(f"You asked for a metadata field {col!r}, but this is an invalid field.\n"
+                  "It will be ignored during export, please rename field if you would like to include as a metadata field.")
+            continue
         # Match the column names corrected within parse_node_data_and_metadata
         corrected_col = update_deprecated_names(col)
         if corrected_col not in metadata_names:
