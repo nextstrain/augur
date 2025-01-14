@@ -28,9 +28,9 @@
 
 ### Major Changes
 
-- Drop support for Python 3.8. [#1693] (@victorlin)
-- Drop support for older versions of jsonschema (<4.18.0). [#1691] (@victorlin)
-- Drop support for xopen <2.0.0. [#1692] (@victorlin)
+* Drop support for Python 3.8. [#1693] (@victorlin)
+* Drop support for older versions of jsonschema (<4.18.0). [#1691] (@victorlin)
+* Drop support for xopen <2.0.0. [#1692] (@victorlin)
 
 ### Bug fixes
 
