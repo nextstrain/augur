@@ -30,7 +30,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description = "Process a given JSONs")
     parser.add_argument('--json', required=True, type=str, help="prepared JSON")
     parser.add_argument('--trait', required=True, type=str, help="prepared JSON")
-    parser.add_argument('--header', nargs='*', action='extend', type=str, help="header fields")
+    parser.add_argument('--header', nargs='*', action=ExtendOverwriteDefault, type=str, help="header fields")
     parser.add_argument('--date_format', nargs='*', action=ExtendOverwriteDefault, default=["%Y-%m-%d"], type=str, help="if needed. default: [%%Y-%%m-%%d]")
     params = parser.parse_args()
 

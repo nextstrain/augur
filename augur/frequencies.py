@@ -49,9 +49,9 @@ def register_parser(parent_subparsers):
                         help="calculate frequencies for internal nodes as well as tips")
 
     # Alignment-specific arguments
-    parser.add_argument('--alignments', type=str, nargs='+', action='extend',
+    parser.add_argument('--alignments', type=str, nargs='+', action=ExtendOverwriteDefault,
                         help="alignments to estimate mutations frequencies for")
-    parser.add_argument('--gene-names', nargs='+', action='extend', type=str,
+    parser.add_argument('--gene-names', nargs='+', action=ExtendOverwriteDefault, type=str,
                         help="names of the sequences in the alignment, same order assumed")
     parser.add_argument('--ignore-char', type=str, default='',
                         help="character to be ignored in frequency calculations")

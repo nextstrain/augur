@@ -1,45 +1,24 @@
 """
 Custom helpers for the argparse standard library.
 """
-from argparse import Action, ArgumentParser, _ArgumentGroup, HelpFormatter, SUPPRESS, OPTIONAL, ZERO_OR_MORE, _ExtendAction
-from typing import Union
+from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
+from itertools import chain
+from typing import Iterable, Optional, Tuple, Union
 from .types import ValidationMode
 
 
 # Include this in an argument help string to suppress the automatic appending
-# of the default value by CustomHelpFormatter.  This works because the
-# automatic appending is conditional on the presence of %(default), so we
-# include it but then format it as a zero-length string .0s.  🙃
+# of the default value by argparse.ArgumentDefaultsHelpFormatter.  This works
+# because the automatic appending is conditional on the presence of %(default),
+# so we include it but then format it as a zero-length string .0s.  🙃
 #
 # Another solution would be to add an extra attribute to the argument (the
-# argparse.Action instance) and then modify CustomHelpFormatter to condition
-# on that new attribute, but that seems more brittle.
+# argparse.Action instance) and then subclass ArgumentDefaultsHelpFormatter to
+# condition on that new attribute, but that seems more brittle.
 #
-# Initially copied from the Nextstrain CLI repo
+# Copied from the Nextstrain CLI repo
 # https://github.com/nextstrain/cli/blob/017c53805e8317951327d24c04184615cc400b09/nextstrain/cli/argparse.py#L13-L21
 SKIP_AUTO_DEFAULT_IN_HELP = "%(default).0s"
-
-
-class CustomHelpFormatter(HelpFormatter):
-    """Customize help text.
-
-    Initially copied from argparse.ArgumentDefaultsHelpFormatter.
-    """
-    def _get_help_string(self, action: Action):
-        help = action.help
-
-        if action.default is not None and action.default != []:
-            if isinstance(action, ExtendOverwriteDefault):
-                help += ' Specified values will override the default list.'
-            if isinstance(action, _ExtendAction):
-                help += ' Specified values will extend the default list.'
-
-        if '%(default)' not in action.help:
-            if action.default is not SUPPRESS:
-                defaulting_nargs = [OPTIONAL, ZERO_OR_MORE]
-                if action.option_strings or action.nargs in defaulting_nargs:
-                    help += ' (default: %(default)s)'
-        return help
 
 
 def add_default_command(parser):
@@ -83,7 +62,7 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
 
         # Use the same formatting class for every command for consistency.
         # Set here to avoid repeating it in every command's register_parser().
-        subparser.formatter_class = CustomHelpFormatter
+        subparser.formatter_class = ArgumentDefaultsHelpFormatter
 
         if not subparser.description and command.__doc__:
             subparser.description = command.__doc__
@@ -148,3 +127,28 @@ def add_validation_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
         action="store_const",
         const=ValidationMode.SKIP,
         help="Skip validation of input/output files, equivalent to --validation-mode=skip. Use at your own risk!")
+
+
+# Originally copied from nextstrain/cli/argparse.py in the Nextstrain CLI project¹.
+#
+# ¹ <https://github.com/nextstrain/cli/blob/4a00d7100eff811eab6df34db73c7f6d4196e22b/nextstrain/cli/argparse.py#L252-L271>
+def walk_commands(parser: ArgumentParser, command: Optional[Tuple[str, ...]] = None) -> Iterable[Tuple[Tuple[str, ...], ArgumentParser]]:
+    if command is None:
+        command = (parser.prog,)
+
+    yield command, parser
+
+    subparsers = chain.from_iterable(
+        action.choices.items()
+            for action in parser._actions
+             if isinstance(action, _SubParsersAction))
+
+    visited = set()
+
+    for subname, subparser in subparsers:
+        if subparser in visited:
+            continue
+
+        visited.add(subparser)
+
+        yield from walk_commands(subparser, (*command, subname))

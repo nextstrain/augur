@@ -106,7 +106,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
-    parser.add_argument('--columns', required=True, nargs='+', action='extend',
+    parser.add_argument('--columns', required=True, nargs='+', action=ExtendOverwriteDefault,
                         help='metadata fields to perform discrete reconstruction on')
     parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')

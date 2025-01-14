@@ -8,7 +8,7 @@ from Bio import Phylo
 from .reconstruct_sequences import load_alignments
 from .titer_model import InsufficientDataException
 from .utils import write_json
-from .argparse_ import add_default_command
+from .argparse_ import add_default_command, ExtendOverwriteDefault
 
 
 def register_parser(parent_subparsers):
@@ -17,7 +17,7 @@ def register_parser(parent_subparsers):
     add_default_command(parser)
 
     tree_model = subparsers.add_parser('tree', help='tree model')
-    tree_model.add_argument('--titers', nargs='+', action='extend', type=str, required=True, help="file with titer measurements")
+    tree_model.add_argument('--titers', nargs='+', action=ExtendOverwriteDefault, type=str, required=True, help="file with titer measurements")
     tree_model.add_argument('--tree', '-t', type=str, required=True, help="tree to perform fit titer model to")
     tree_model.add_argument('--allow-empty-model', action="store_true", help="allow model to be empty")
     tree_model.add_argument('--attribute-prefix', default="", help="prefix for node attributes in the JSON output including cumulative titer drop ('cTiter') and per-branch titer drop ('dTiter'). Set a prefix to disambiguate annotations from multiple tree model JSONs in the final Auspice JSON.")
@@ -27,9 +27,9 @@ def register_parser(parent_subparsers):
     )
 
     sub_model = subparsers.add_parser('sub', help='substitution model')
-    sub_model.add_argument('--titers', nargs='+', action='extend', type=str, required=True, help="file with titer measurements")
-    sub_model.add_argument('--alignment', nargs='+', action='extend', type=str, required=True, help="sequence to be used in the substitution model, supplied as fasta files")
-    sub_model.add_argument('--gene-names', nargs='+', action='extend', type=str, required=True, help="names of the sequences in the alignment, same order assumed")
+    sub_model.add_argument('--titers', nargs='+', action=ExtendOverwriteDefault, type=str, required=True, help="file with titer measurements")
+    sub_model.add_argument('--alignment', nargs='+', action=ExtendOverwriteDefault, type=str, required=True, help="sequence to be used in the substitution model, supplied as fasta files")
+    sub_model.add_argument('--gene-names', nargs='+', action=ExtendOverwriteDefault, type=str, required=True, help="names of the sequences in the alignment, same order assumed")
     sub_model.add_argument('--tree', '-t', type=str, help="optional tree to annotate fit titer model to")
     sub_model.add_argument('--allow-empty-model', action="store_true", help="allow model to be empty")
     sub_model.add_argument('--attribute-prefix', default="", help="prefix for node attributes in the JSON output including cumulative titer drop ('cTiterSub') and per-substitution titer drop ('dTiterSub'). Set a prefix to disambiguate annotations from multiple substitution model JSONs in the final Auspice JSON.")

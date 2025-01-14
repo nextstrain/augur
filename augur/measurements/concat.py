@@ -3,6 +3,7 @@ Concatenate multiple measurements JSONs into a single JSON file
 """
 import sys
 
+from augur.argparse_ import ExtendOverwriteDefault
 from augur.utils import first_line, write_json
 from augur.validate import (
     measurements as read_measurements_json,
@@ -16,7 +17,7 @@ def register_parser(parent_subparsers):
     required = parser.add_argument_group(
         title="REQUIRED"
     )
-    required.add_argument("--jsons", required=True, type=str, nargs="+", action="extend", metavar="JSONs",
+    required.add_argument("--jsons", required=True, type=str, nargs="+", action=ExtendOverwriteDefault, metavar="JSONs",
         help="Measurement JSON files to concatenate.")
     required.add_argument("--output-json", required=True, metavar="JSON", type=str,
         help="Output JSON file")

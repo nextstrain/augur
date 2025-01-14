@@ -315,7 +315,7 @@ def add_core_args(parser):
     core.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata")
     core.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                       help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    core.add_argument('--node-data', required=True, nargs='+', action="extend", help="JSON files with meta data for each node")
+    core.add_argument('--node-data', required=True, nargs='+', action=ExtendOverwriteDefault, help="JSON files with meta data for each node")
     core.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")
     core.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json).")
     core.add_argument('--auspice-config', help="file with auspice configuration")

@@ -4,6 +4,7 @@ Applies titlecase to string fields in a metadata record
 import re
 from typing import Optional, Set, Union
 
+from augur.argparse_ import ExtendOverwriteDefault
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
@@ -14,13 +15,13 @@ def register_parser(parent_subparsers):
     help = __doc__)
     
     required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--titlecase-fields", nargs="*", action="extend",
+    required.add_argument("--titlecase-fields", nargs="*", action=ExtendOverwriteDefault,
         help="List of fields to convert to titlecase.", required=True)
 
     optional = parser.add_argument_group(title="OPTIONAL")
-    optional.add_argument("--articles", nargs="*", action="extend",
+    optional.add_argument("--articles", nargs="*", action=ExtendOverwriteDefault,
         help="List of articles that should not be converted to titlecase.")
-    optional.add_argument("--abbreviations", nargs="*", action="extend",
+    optional.add_argument("--abbreviations", nargs="*", action=ExtendOverwriteDefault,
         help="List of abbreviations that should not be converted to titlecase, keeps uppercase.")
 
     optional.add_argument("--failure-reporting",
