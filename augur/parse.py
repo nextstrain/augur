@@ -138,8 +138,8 @@ def parse_sequence(
     sequence_fields = map(str.strip, sequence.description.split(separator))
     metadata = dict(zip(fields, sequence_fields))
 
-    tmp_name = metadata[strain_key].translate(forbidden_characters)
-    sequence.name = sequence.id = tmp_name
+    metadata[strain_key] = metadata[strain_key].translate(forbidden_characters)
+    sequence.name = sequence.id = metadata[strain_key]
     sequence.description = ''
 
     if prettify_fields:

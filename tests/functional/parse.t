@@ -45,7 +45,7 @@ Parse Zika sequences into sequences and metadata using a different metadata fiel
   >   --fix-dates monthfirst
 
   $ diff -u "parse/sequences_other.fasta" "$TMP/sequences.fasta"
-  $ diff -u "parse/metadata.tsv" "$TMP/metadata.tsv"
+  $ diff -u "parse/metadata_other.tsv" "$TMP/metadata.tsv"
   $ rm -f "$TMP/sequences.fasta" "$TMP/metadata.tsv"
 
 Try to parse Zika sequences with a misspelled field.
