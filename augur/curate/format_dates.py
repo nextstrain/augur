@@ -7,6 +7,7 @@ the incomplete dates are masked with 'XX'. For example, providing
 """
 import re
 from datetime import datetime
+from textwrap import dedent
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
@@ -36,13 +37,14 @@ def register_parser(parent_subparsers):
 
     optional = parser.add_argument_group(title="OPTIONAL")
     optional.add_argument("--expected-date-formats", nargs="+", action=ExtendOverwriteDefault,
-        help=f"""Custom date formats for values in the provided date fields, defined by standard
-                 format codes available at
-                 <https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes>.
-                 If a value matches multiple formats, it will be parsed using the first match.
-                 The following formats are builtin and automatically used:
-                 {", ".join(repr(x).replace("%", "%%") for x in BUILTIN_DATE_FORMATS)}.
-                 User-provided values are considered after the builtin formats.""")
+        help=dedent(f"""\
+            Custom date formats for values in the provided date fields, defined by standard
+            format codes available at
+            <https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes>.
+            If a value matches multiple formats, it will be parsed using the first match.
+            The following formats are builtin and automatically used:
+            {", ".join(repr(x).replace("%", "%%") for x in BUILTIN_DATE_FORMATS)}.
+            User-provided values are considered after the builtin formats."""))
     optional.add_argument("--failure-reporting",
         type=DataErrorMethod.argtype,
         choices=list(DataErrorMethod),
