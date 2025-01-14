@@ -15,13 +15,14 @@
 * In version 24.4.0, one of the new features was that all options that take multiple values could be repeated. Unfortunately, it overlooked a few that have been fixed in this version. [#1707][] (@victorlin)
     * `augur curate rename --field-map`
     * `augur curate transform-strain-name --backup-fields`
-* `augur curate format-dates --expected-date-formats` help text has been improved with clarifications regarding how values provided interact with builtin formats. [#1707][] (@victorlin)
+* `augur curate format-dates --expected-date-formats` help text has been improved with clarifications regarding how values provided interact with builtin formats and how to match masked date parts. [#1707][], [#1718][] (@victorlin)
 
 [#1688]: https://github.com/nextstrain/augur/pull/1688
 [#1690]: https://github.com/nextstrain/augur/pull/1690
 [#1707]: https://github.com/nextstrain/augur/issues/1707
 [#1715]: https://github.com/nextstrain/augur/pull/1715
 [#1716]: https://github.com/nextstrain/augur/pull/1716
+[#1718]: https://github.com/nextstrain/augur/pull/1718
 
 ## 27.0.0 (9 December 2024)
 
