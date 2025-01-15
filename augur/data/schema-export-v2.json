@@ -3,7 +3,7 @@
     "$id": "https://nextstrain.org/schemas/dataset/v2",
     "type": "object",
     "title": "Nextstrain dataset v2",
-    "description": "Typically produced by Augur (`augur export v2`) and consumed by Auspice.  Combines dataset v1 meta and tree files together into one file, with additional changes.",
+    "description": "A file representing an Auspice dataset. Typically produced by Augur (`augur export v2`) and consumed by Auspice.",
     "additionalProperties": false,
     "required": ["version", "meta", "tree"],
     "properties": {
