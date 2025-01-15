@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 27.1.0 (15 January 2025)
+
 ### Features
 
 * ancestral: Add `--seed` argument to enable deterministic inference of root states by TreeTime. [#1690][] (@huddlej)
