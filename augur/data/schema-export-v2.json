@@ -22,7 +22,7 @@
                     "type" : "string"
                 },
                 "updated" : {
-                    "description": "Auspice displays this (currently only in the footer)",
+                    "description": "Auspice displays this in the byline and footer.",
                     "type" : "string",
                     "pattern": "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$"
                 },
