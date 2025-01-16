@@ -59,7 +59,7 @@ setuptools.setup(
         "isodate ==0.6.*",
         "jsonschema >=4.18.0, ==4.*",
         "networkx >= 2.5, <4",
-        "numpy ==1.*",
+        "numpy >=1, <3",
         "packaging >=19.2",
         "pandas >=1.4.0, <3",
         "phylo-treetime >=0.11.2, <0.12",
