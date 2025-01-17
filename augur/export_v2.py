@@ -1076,7 +1076,7 @@ def set_description(data_json, cmd_line_description_file):
     try:
         with open_file(cmd_line_description_file) as description_file:
             markdown_text = description_file.read()
-            data_json['meta']['description'] = markdown_text
+        data_json['meta']['description'] = markdown_text
     except FileNotFoundError:
         fatal("Provided desciption file {} does not exist".format(cmd_line_description_file))
 
