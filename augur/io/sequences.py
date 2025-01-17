@@ -1,13 +1,18 @@
 import Bio.SeqIO
 
 from augur.errors import AugurError
+from importlib.metadata import version
+from packaging.version import Version
 from typing import Iterator, Iterable
 from .file import open_file
 
 
+BIOPYTHON_FASTA_FORMAT = "fasta" if Version(version("biopython")) < Version("1.85") else "fasta-pearson"
+
+
 def read_sequence(
     path: str,
-    format: str = "fasta",
+    format: str = BIOPYTHON_FASTA_FORMAT,
 ) -> Bio.SeqIO.SeqRecord:
     """Read a single sequence from a path.
 
@@ -19,7 +24,7 @@ def read_sequence(
 
 def read_sequences(
     *paths: Iterable[str],
-    format: str = "fasta",
+    format: str = BIOPYTHON_FASTA_FORMAT,
 ) -> Iterator[Bio.SeqIO.SeqRecord]:
     """Read sequences from one or more paths.
 
