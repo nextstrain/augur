@@ -5,6 +5,18 @@ from typing import Iterator, Iterable
 from .file import open_file
 
 
+def read_sequence(
+    path: str,
+    format: str = "fasta",
+) -> Bio.SeqIO.SeqRecord:
+    """Read a single sequence from a path.
+
+    Automatically infers compression mode.
+    """
+    with open_file(path) as handle:
+        return Bio.SeqIO.read(handle, format)
+
+
 def read_sequences(
     *paths: Iterable[str],
     format: str = "fasta",
