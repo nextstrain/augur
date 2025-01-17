@@ -32,7 +32,7 @@ from Bio.SeqRecord import SeqRecord
 from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_json, get_json_name, \
     genome_features_to_auspice_annotation
 from .io.file import open_file
-from .io.sequences import read_sequence
+from .io.sequences import read_sequence, BIOPYTHON_FASTA_FORMAT
 from .io.vcf import is_vcf as is_filename_vcf
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
@@ -399,7 +399,7 @@ def run(args):
         aln = args.alignment
         ref = None
         if args.root_sequence:
-            for fmt in ['fasta', 'genbank']:
+            for fmt in [BIOPYTHON_FASTA_FORMAT, 'genbank']:
                 try:
                     ref = str(read_sequence(args.root_sequence, format=fmt).seq).upper()
                     break
