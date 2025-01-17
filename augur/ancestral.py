@@ -398,7 +398,7 @@ def run(args):
         aln = args.alignment
         ref = None
         if args.root_sequence:
-            for fmt in ['fasta', 'genbank']:
+            for fmt in ['fasta-pearson', 'genbank']:
                 try:
                     ref = str(SeqIO.read(args.root_sequence, fmt).seq).upper()
                     break

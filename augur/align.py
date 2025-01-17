@@ -196,7 +196,7 @@ def read_sequences(*fnames):
     seqs = {}
     try:
         for fname in fnames:
-            for record in SeqIO.parse(fname, 'fasta'):
+            for record in SeqIO.parse(fname, 'fasta-pearson'):
                 if record.name in seqs and record.seq != seqs[record.name].seq:
                     raise AlignmentError("Detected duplicate input strains \"%s\" but the sequences are different." % record.name)
                     # if the same sequence then we can proceed (and we only take one)
@@ -240,7 +240,7 @@ def read_reference(ref_fname):
         raise AlignmentError("ERROR: Cannot read reference sequence."
                              "\n\tmake sure the file \"%s\" exists"%ref_fname)
     try:
-        ref_seq = SeqIO.read(ref_fname, 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
+        ref_seq = SeqIO.read(ref_fname, 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta-pearson')
     except:
         raise AlignmentError("ERROR: Cannot read reference sequence."
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)

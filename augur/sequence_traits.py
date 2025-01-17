@@ -91,7 +91,7 @@ def read_in_translate_vcf(vcf_file, ref_file):
                 samps = header[sampLoc:]
                 nsamp = len(samps)
 
-    for refSeq in SeqIO.parse(ref_file, format='fasta'):
+    for refSeq in SeqIO.parse(ref_file, format='fasta-pearson'):
         prots[refSeq.name]['reference'] = str(refSeq.seq)
         posN = np.unique(prots[refSeq.name]['positions'])
         prots[refSeq.name]['positions'] = list(posN)

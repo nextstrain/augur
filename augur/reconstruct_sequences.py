@@ -73,7 +73,7 @@ def run(args):
     if(is_vcf):
         node_data["nodes"][root_node]['aa_sequences'] = {}
         with open_file(args.vcf_aa_reference) as handle:
-            for record in SeqIO.parse(handle, "fasta"):
+            for record in SeqIO.parse(handle, "fasta-pearson"):
                 if record.id==args.gene:
                     #'root' may not be same as 'reference', so apply any mutations at root here!
                     node_data["nodes"][root_node]['aa_sequences'][record.id] = get_sequence(str(record.seq), node_data["nodes"][root_node]["aa_muts"][record.id])
