@@ -39,6 +39,31 @@ def read_sequences(
                 yield sequence
 
 
+def read_single_sequence(
+    path: Union[str, os.PathLike],
+    format: str = "fasta",
+) -> Bio.SeqIO.SeqRecord:
+    """Read a single sequence from a path.
+
+    Automatically infers compression mode.
+
+    Parameters
+    ----------
+    path
+        Path to a sequence file.
+
+    format
+        Format of input sequences matching any of those supported by BioPython
+        (e.g., "fasta", "genbank", etc.).
+
+    Returns
+    -------
+        A single sequence record from the given path.
+    """
+    with open_file(path) as handle:
+        return Bio.SeqIO.read(handle, format)
+
+
 def write_sequences(sequences, path_or_buffer, format="fasta"):
     """Write sequences to a given path in the given format.
 
