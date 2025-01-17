@@ -1,10 +1,26 @@
 import Bio.SeqIO
 
 from augur.errors import AugurError
+from typing import Iterator, Iterable
 from .file import open_file
 
 
-def read_sequences(*paths, format="fasta"):
+def read_sequence(
+    path: str,
+    format: str = "fasta",
+) -> Bio.SeqIO.SeqRecord:
+    """Read a single sequence from a path.
+
+    Automatically infers compression mode.
+    """
+    with open_file(path) as handle:
+        return Bio.SeqIO.read(handle, format)
+
+
+def read_sequences(
+    *paths: Iterable[str],
+    format: str = "fasta",
+) -> Iterator[Bio.SeqIO.SeqRecord]:
     """Read sequences from one or more paths.
 
     Automatically infer compression mode (e.g., gzip, etc.) and return a stream
@@ -12,18 +28,12 @@ def read_sequences(*paths, format="fasta"):
 
     Parameters
     ----------
-    paths : list of str or `os.PathLike`
+    paths
         One or more paths to sequence files of any type supported by BioPython.
 
-    format : str
+    format
         Format of input sequences matching any of those supported by BioPython
         (e.g., "fasta", "genbank", etc.).
-
-    Yields
-    ------
-    Bio.SeqRecord.SeqRecord
-        Sequence record from the given path(s).
-
     """
     for path in paths:
         # Open the given path as a handle, inferring the file's compression.
