@@ -34,6 +34,10 @@
                     "$comment": "Generally a description of the phylogeny and/or acknowledgements in Markdown format.",
                     "type": "string"
                 },
+                "warning" : {
+                    "description": "Text in Markdown format to be displayed by Auspice as a warning banner under the byline.",
+                    "type": "string"
+                },
                 "maintainers": {
                     "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/maintainers"
                 },

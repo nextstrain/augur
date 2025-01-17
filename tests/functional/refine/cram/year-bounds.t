@@ -38,7 +38,8 @@ Limit ambiguous dates to be within (2000, 2020).
   >  --divergence-units mutations &> /dev/null
 
 Check that the inferred date is 2020-12-31.
-TODO: Using jq woud be cleaner, but requires an extra dev dependency.
+TODO: Switch to use jq once it's available in a well-defined test environment.
+<https://github.com/nextstrain/augur/issues/1557>
 
   $ python3 -c 'import json, sys; print(json.load(sys.stdin)["nodes"]["PAN/CDC_259359_V1_V3/2015"]["date"])' < branch_lengths.json
   2020-12-31
