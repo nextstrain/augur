@@ -7,7 +7,7 @@ and refactored over time.
 import sys
 from collections import defaultdict
 
-def ensure_no_duplicate_names(root, ValidateError):
+def ensure_no_duplicate_names(tree, ValidateError):
     """
     Check that all node names are identical, which is required for auspice (v2) JSONs.
     """
@@ -18,10 +18,14 @@ def ensure_no_duplicate_names(root, ValidateError):
         names.add(node["name"])
         if "children" in node:
             [recurse(child) for child in node["children"]]
-    recurse(root)
+    if isinstance(tree, list):
+        for subtree in tree:
+            recurse(subtree)
+    else:
+        recurse(tree)
 
 
-def collectTreeAttrsV2(root, warn):
+def collectTreeAttrsV2(tree, warn):
     """
     Collect all keys specified on `node["node_attrs"]` throughout the tree
     and the values associated with them. Note that this will only look at
@@ -47,7 +51,12 @@ def collectTreeAttrsV2(root, warn):
             [recurse(child) for child in node["children"]]
         else:
             num_terminal += 1
-    recurse(root)
+
+    if isinstance(tree, list):
+        for subtree in tree:
+            recurse(subtree)
+    else:
+        recurse(tree)
 
     for data in seen.values():
         if data["count"] == num_nodes:
@@ -56,7 +65,7 @@ def collectTreeAttrsV2(root, warn):
     return(seen, num_terminal)
 
 
-def collectMutationGenes(root):
+def collectMutationGenes(tree):
     """
     Returns a set of all genes specified in the tree in the "aa_muts" objects
     """
@@ -67,17 +76,28 @@ def collectMutationGenes(root):
             genes.update(mutations.keys())
         if "children" in node:
             [recurse(child) for child in node["children"]]
-    recurse(root)
+
+    if isinstance(tree, list):
+        for subtree in tree:
+            recurse(subtree)
+    else:
+        recurse(tree)
+
     genes -= {"nuc"}
     return genes
 
-def collectBranchLabels(root):
+def collectBranchLabels(tree):
     labels = set()
     def recurse(node):
         labels.update(node.get("branch_attrs", {}).get("labels", {}).keys())
         if "children" in node:
             [recurse(child) for child in node["children"]]
-    recurse(root)
+
+    if isinstance(tree, list):
+        for subtree in tree:
+            recurse(subtree)
+    else:
+        recurse(tree)
     return labels
 
 def verifyMainJSONIsInternallyConsistent(data, ValidateError):
