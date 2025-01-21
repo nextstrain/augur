@@ -13,7 +13,7 @@ def read_sequences(*paths, format="fasta"):
     Parameters
     ----------
     paths : list of str or `os.PathLike`
-        One or more paths to sequence files of any type supported by BioPython.
+        One or more paths to sequence files.
 
     format : str
         Format of input sequences matching any of those supported by BioPython
