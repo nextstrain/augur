@@ -2,6 +2,8 @@ import Bio.SeqIO
 import os
 
 from augur.errors import AugurError
+from importlib.metadata import version as installed_version
+from packaging.version import Version
 from typing import Iterator, Iterable, Union
 from .file import open_file
 
@@ -11,8 +13,15 @@ def get_biopython_format(augur_format: str) -> str:
     supported_formats = {"fasta", "genbank"}
     if augur_format not in supported_formats:
         raise AugurError(f"Sequence file format {augur_format!r} is invalid. Must be one of {', '.join(repr(f) for f in sorted(supported_formats))}.")
+
     # Supported formats are valid Biopython formats
-    return augur_format
+    biopython_format = augur_format
+
+    # Allow comments in FASTA format using fasta-pearson in later biopython versions
+    if Version(installed_version("biopython")) >= Version("1.85") and biopython_format == "fasta":
+        biopython_format = "fasta-pearson"
+
+    return biopython_format
 
 
 def read_sequences(

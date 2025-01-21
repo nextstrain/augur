@@ -81,7 +81,7 @@ def genbank_reference():
 class TestFormat:
     def test_fasta(self):
         biopython_format = augur.io.sequences.get_biopython_format("fasta")
-        assert biopython_format == "fasta"
+        assert biopython_format == "fasta" or biopython_format == "fasta-pearson"
 
     def test_genbank(self):
         biopython_format = augur.io.sequences.get_biopython_format("genbank")
