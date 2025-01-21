@@ -12,6 +12,7 @@ from collections import defaultdict
 from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
 from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
+from .io.sequences import read_sequences
 from .utils import read_node_data, write_json, read_config, read_lat_longs, read_colors
 
 def convert_tree_to_json_structure(node, metadata, div=0, strains=None):
@@ -300,7 +301,7 @@ def get_root_sequence(root_node, ref=None, translations=None):
         from Bio import SeqIO
         refseq = SeqIO.read(ref, 'fasta')
         root_sequence['nuc']=str(refseq.seq)
-        for gene in SeqIO.parse(translations, 'fasta'):
+        for gene in read_sequences(translations, format='fasta'):
             root_sequence[gene.id] = str(gene.seq)
     else:
         root_sequence["nuc"] = root_node["sequence"]

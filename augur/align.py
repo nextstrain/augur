@@ -8,6 +8,7 @@ import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
 from .argparse_ import ExtendOverwriteDefault
 from .io.file import open_file
+from .io.sequences import read_sequences
 from .io.shell_command_runner import run_shell_command
 from .io.vcf import shquote
 from .utils import nthreads_value
@@ -197,7 +198,7 @@ def read_and_validate_sequences(*fnames):
     seqs = {}
     try:
         for fname in fnames:
-            for record in SeqIO.parse(fname, 'fasta'):
+            for record in read_sequences(fname, format='fasta'):
                 if record.name in seqs and record.seq != seqs[record.name].seq:
                     raise AlignmentError("Detected duplicate input strains \"%s\" but the sequences are different." % record.name)
                     # if the same sequence then we can proceed (and we only take one)

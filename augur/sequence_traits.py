@@ -7,6 +7,7 @@ import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
 from .io.file import PANDAS_READ_CSV_OPTIONS, open_file
+from .io.sequences import read_sequences
 from .utils import write_json, get_json_name
 
 def read_in_translate_vcf(vcf_file, ref_file):
@@ -35,7 +36,6 @@ def read_in_translate_vcf(vcf_file, ref_file):
         relative to the reference
 
     """
-    from Bio import SeqIO
     import numpy as np
 
     def mutation_struct():
@@ -91,7 +91,7 @@ def read_in_translate_vcf(vcf_file, ref_file):
                 samps = header[sampLoc:]
                 nsamp = len(samps)
 
-    for refSeq in SeqIO.parse(ref_file, format='fasta'):
+    for refSeq in read_sequences(ref_file, format='fasta'):
         prots[refSeq.name]['reference'] = str(refSeq.seq)
         posN = np.unique(prots[refSeq.name]['positions'])
         prots[refSeq.name]['positions'] = list(posN)
