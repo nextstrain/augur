@@ -6,6 +6,15 @@ from typing import Iterator, Iterable, Union
 from .file import open_file
 
 
+def get_biopython_format(augur_format: str) -> str:
+    """Validate sequence file format and return the inferred Biopython format."""
+    supported_formats = {"fasta", "genbank"}
+    if augur_format not in supported_formats:
+        raise AugurError(f"Sequence file format {augur_format!r} is invalid. Must be one of {', '.join(repr(f) for f in sorted(supported_formats))}.")
+    # Supported formats are valid Biopython formats
+    return augur_format
+
+
 def read_sequences(
     *paths: Iterable[Union[str, os.PathLike]],
     format: str = "fasta",
@@ -13,7 +22,7 @@ def read_sequences(
     """Read sequences from one or more paths.
 
     Automatically infer compression mode (e.g., gzip, etc.) and return a stream
-    of sequence records in the requested format (e.g., "fasta", "genbank", etc.).
+    of sequence records given the file format.
 
     Parameters
     ----------
@@ -21,8 +30,7 @@ def read_sequences(
         One or more paths to sequence files.
 
     format
-        Format of input sequences matching any of those supported by BioPython
-        (e.g., "fasta", "genbank", etc.).
+        Format of input sequences. Either "fasta" or "genbank".
 
     Returns
     -------
@@ -33,7 +41,7 @@ def read_sequences(
         # This way we can pass a handle to BioPython's SeqIO interface
         # regardless of the compression mode.
         with open_file(path) as handle:
-            sequences = Bio.SeqIO.parse(handle, format)
+            sequences = Bio.SeqIO.parse(handle, get_biopython_format(format))
 
             for sequence in sequences:
                 yield sequence
@@ -53,15 +61,14 @@ def read_single_sequence(
         Path to a sequence file.
 
     format
-        Format of input sequences matching any of those supported by BioPython
-        (e.g., "fasta", "genbank", etc.).
+        Format of input file. Either "fasta" or "genbank".
 
     Returns
     -------
         A single sequence record from the given path.
     """
     with open_file(path) as handle:
-        return Bio.SeqIO.read(handle, format)
+        return Bio.SeqIO.read(handle, get_biopython_format(format))
 
 
 def write_sequences(sequences, path_or_buffer, format="fasta"):

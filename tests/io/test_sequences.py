@@ -78,6 +78,21 @@ def genbank_reference():
     return "tests/data/zika_outgroup.gb"
 
 
+class TestFormat:
+    def test_fasta(self):
+        biopython_format = augur.io.sequences.get_biopython_format("fasta")
+        assert biopython_format == "fasta"
+
+    def test_genbank(self):
+        biopython_format = augur.io.sequences.get_biopython_format("genbank")
+        assert biopython_format == "genbank"
+
+    def test_vcf(self):
+        with pytest.raises(AugurError) as e_info:
+            augur.io.sequences.get_biopython_format("vcf")
+        assert str(e_info.value) == "Sequence file format 'vcf' is invalid. Must be one of 'fasta', 'genbank'."
+
+
 class TestReadSequences:
     def test_read_sequences_from_single_file(self, fasta_filename):
         sequences = augur.io.sequences.read_sequences(fasta_filename, format="fasta")
