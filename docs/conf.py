@@ -161,6 +161,7 @@ linkcheck_ignore = [
      # <https://github.com/nextstrain/.github/issues/106#issuecomment-2408239782>
      r'^http://www\.microbesonline\.org/fasttree/',
      r'^https://academic\.oup\.com/ve/article/4/1/vex042/4794731',
+     r'https://www\.gnu\.org/software/bash/manual/bash\.html#ANSI_002dC-Quoting',
 ]
 linkcheck_anchors_ignore_for_url = [
      # Github uses anchor-looking links for highlighting lines but
