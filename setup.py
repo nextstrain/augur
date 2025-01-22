@@ -77,7 +77,7 @@ setuptools.setup(
             "freezegun >=0.3.15",
             "mypy",
             "nextstrain-sphinx-theme >=2022.5",
-            "pandas-stubs >=1.0.0, <3",
+            "pandas-stubs >=1.4.0, <3",
             "pylint >=1.7.6",
             "pytest >=5.4.1",
             "pytest-cov >=2.8.1",
