@@ -948,6 +948,7 @@ def register_parser(parent_subparsers):
     config.add_argument('--maintainers', metavar="name", action=ExtendOverwriteDefault, nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
     config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
+    config.add_argument('--warning', metavar="text or file", help="Text or file in Markdown format to be displayed as a warning banner by Auspice")
     config.add_argument('--geo-resolutions', metavar="trait", nargs='+', action=ExtendOverwriteDefault, help="Geographic traits to be displayed on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', action=ExtendOverwriteDefault, help="Metadata columns to include as coloring options")
     config.add_argument('--metadata-columns', nargs="+", action=ExtendOverwriteDefault,
@@ -1076,9 +1077,21 @@ def set_description(data_json, cmd_line_description_file):
     try:
         with open_file(cmd_line_description_file) as description_file:
             markdown_text = description_file.read()
-            data_json['meta']['description'] = markdown_text
+        data_json['meta']['description'] = markdown_text
     except FileNotFoundError:
         fatal("Provided desciption file {} does not exist".format(cmd_line_description_file))
+
+def set_warning(data_json, text_or_file):
+    """
+    Read warning provided by *text_or_file* and set
+    `meta.warning` in *data_json* to the text provided.
+    """
+    if os.path.exists(text_or_file):
+        with open_file(text_or_file) as description_file:
+            markdown_text = description_file.read()
+        data_json['meta']['warning'] = markdown_text
+    else:
+        data_json['meta']['warning'] = text_or_file
 
 def create_branch_mutations(branch_attrs, node_data):
     for node_name, node_info in node_data['nodes'].items():
@@ -1247,6 +1260,8 @@ def run(args):
     set_annotations(data_json, node_data)
     if args.description:
         set_description(data_json, args.description)
+    if args.warning:
+        set_warning(data_json, args.warning)
 
     try:
         set_colorings(
