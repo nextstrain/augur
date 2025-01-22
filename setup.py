@@ -61,6 +61,7 @@ setuptools.setup(
         "networkx >= 2.5, <4",
         "numpy ==1.*",
         "packaging >=19.2",
+        # Sync this with 'pandas-stubs' dev dependency
         "pandas >=1.4.0, <3",
         "phylo-treetime >=0.11.2, <0.12",
         "pyfastx >=1.0.0, <3.0",
@@ -77,7 +78,7 @@ setuptools.setup(
             "freezegun >=0.3.15",
             "mypy",
             "nextstrain-sphinx-theme >=2022.5",
-            "pandas-stubs >=1.0.0, <3",
+            "pandas-stubs >=1.4.0, <3",
             "pylint >=1.7.6",
             "pytest >=5.4.1",
             "pytest-cov >=2.8.1",
