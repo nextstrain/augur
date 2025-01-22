@@ -72,7 +72,7 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
     tuple of str
         The existing alignment filename, the new sequences filename, and the name of the reference sequence.
     """
-    seqs = read_sequences(*sequences)
+    seqs = read_and_validate_sequences(*sequences)
     seqs_to_align_fname = output + ".to_align.fasta"
 
     if existing_aln_fname:
@@ -191,7 +191,8 @@ def postprocess(output_file, ref_name, keep_reference, fill_gaps):
 
 #####################################################################################################
 
-def read_sequences(*fnames):
+# Note: This is effectively augur.io.read_sequences with extra validation.
+def read_and_validate_sequences(*fnames):
     """return list of sequences from all fnames"""
     seqs = {}
     try:
