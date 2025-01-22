@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 27.2.0 (22 January 2025)
+
 ### Features
 
 * export: Added a new option `--warning` to display a warning banner in Auspice, supported as of Auspice version 2.62.0. [#1722][] (@victorlin)
