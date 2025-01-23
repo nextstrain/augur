@@ -286,20 +286,35 @@ def run(args: argparse.Namespace):
             with sqlite3.connect(db.path) as connection:
                 connection.row_factory = sqlite3.Row
 
-                metadata_ids = {x[m.id_column] for x in
-                                connection.execute(f"""select {sqlite_quote_id(m.id_column)}
-                                                         from {sqlite_quote_id(m.table_name)}
-                                                    """)}
+                metadata_only = {
+                    row[m.id_column]
+                    for row in
+                    connection.execute(f"""
+                        select {sqlite_quote_id(m.id_column)}
+                          from {sqlite_quote_id(m.table_name)}
+                         where {sqlite_quote_id(m.id_column)} not in (
+                            select {sqlite_quote_id(SEQUENCE_ID_COLUMN)}
+                              from {sqlite_quote_id(s.table_name)}
+                        )
+                    """)
+                }
+                sequence_only = {
+                    row[SEQUENCE_ID_COLUMN]
+                    for row in
+                    connection.execute(f"""
+                        select {sqlite_quote_id(SEQUENCE_ID_COLUMN)}
+                          from {sqlite_quote_id(s.table_name)}
+                         where {sqlite_quote_id(SEQUENCE_ID_COLUMN)} not in (
+                            select {sqlite_quote_id(m.id_column)}
+                              from {sqlite_quote_id(m.table_name)}
+                        )
+                    """)
+                }
 
-                sequence_ids = {x[SEQUENCE_ID_COLUMN] for x in
-                                connection.execute(f"""select {sqlite_quote_id(SEQUENCE_ID_COLUMN)}
-                                                         from {sqlite_quote_id(s.table_name)}
-                                                    """)}
-
-            for x in sorted(metadata_ids - sequence_ids):
-                print_info(f"WARNING: Sequence {x!r} in {m.path!r} is missing from {s.path!r}. Outputs may continue to be mismatched.")
-            for x in sorted(sequence_ids - metadata_ids):
-                print_info(f"WARNING: Sequence {x!r} in {s.path!r} is missing from {m.path!r}. Outputs may continue to be mismatched.")
+            for x in sorted(metadata_only):
+                print_info(f"WARNING: ID {x!r} in {m.path!r} is missing from {s.path!r}. Outputs may continue to be mismatched.")
+            for x in sorted(sequence_only):
+                print_info(f"WARNING: ID {x!r} in {s.path!r} is missing from {m.path!r}. Outputs may continue to be mismatched.")
 
 
     # Write outputs.
@@ -569,9 +584,20 @@ def get_sequences(input_sequences: List[str]):
 def load_sequences(db: Database, sequences: List[Union[NamedSequenceFile, UnnamedSequenceFile]]):
     for s in sequences:
         print_info(f"Reading sequence IDs from {s.path!r}…")
-        ids = [seq.id for seq in read_sequences(s.path)]
+        # FIXME: Skip for unnamed sequences? This is only used for named sequences to check against paired metadata.
+        db.run(f"create table {sqlite_quote_id(s.table_name)} ({sqlite_quote_id(SEQUENCE_ID_COLUMN)} text);")
+        for seq in read_sequences(s.path):
+            db.run(f"insert into {sqlite_quote_id(s.table_name)} ({sqlite_quote_id(SEQUENCE_ID_COLUMN)}) values (?);", (seq.id,))
 
-        if duplicates := [item for item, count in count_unique(ids) if count > 1]:
+        # FIXME: run should return the list, copy usage from metadata_only
+        duplicates = db.run(f"""
+            select {sqlite_quote_id(SEQUENCE_ID_COLUMN)}, count(*)
+            from {sqlite_quote_id(s.table_name)}
+            group by {sqlite_quote_id(SEQUENCE_ID_COLUMN)}
+            having count(*) > 1;
+        """)
+
+        if duplicates:
             raise AugurError(dedent(f"""\
                 IDs must be unique within a sequence input file.
 
@@ -580,10 +606,6 @@ def load_sequences(db: Database, sequences: List[Union[NamedSequenceFile, Unname
                   {indented_list([repr(x) for x in duplicates], '                ' + '  ')}
                 """))
 
-        # FIXME: Skip for unnamed sequences? This is only used for named sequences to check against paired metadata.
-        db.run(f"create table {sqlite_quote_id(s.table_name)} ({sqlite_quote_id(SEQUENCE_ID_COLUMN)} text);")
-        values = ", ".join([f"('{id}')" for id in ids])
-        db.run(f"insert into {sqlite_quote_id(s.table_name)} ({sqlite_quote_id(SEQUENCE_ID_COLUMN)}) values {values};")
 
         db.run(f'create unique index {sqlite_quote_id(f"{s.table_name}_id")} on {sqlite_quote_id(s.table_name)}({sqlite_quote_id(SEQUENCE_ID_COLUMN)});')
 
