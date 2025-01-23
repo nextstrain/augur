@@ -1,0 +1,114 @@
+{
+  "version": "v2",
+  "meta": {
+    "updated": "2025-01-13",
+    "maintainers": [
+      {
+        "name": "Nextstrain Team"
+      }
+    ],
+    "colorings": [
+      {
+        "key": "location",
+        "title": "location",
+        "type": "categorical"
+      }
+    ],
+    "filters": [
+      "location"
+    ],
+    "panels": [
+      "tree"
+    ]
+  },
+  "tree": {
+    "name": "ROOT",
+    "node_attrs": {
+      "div": 0
+    },
+    "branch_attrs": {},
+    "children": [
+      {
+        "name": "tipA",
+        "node_attrs": {
+          "div": 1,
+          "location": {
+            "value": "delta"
+          }
+        },
+        "branch_attrs": {}
+      },
+      {
+        "name": "internalBC",
+        "node_attrs": {
+          "div": 2
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "tipB",
+            "node_attrs": {
+              "div": 3,
+              "location": {
+                "value": "gamma"
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipC",
+            "node_attrs": {
+              "div": 3,
+              "location": {
+                "value": "gamma"
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      },
+      {
+        "name": "internalDEF",
+        "node_attrs": {
+          "div": 5,
+          "location": {
+            "value": "alpha"
+          }
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "tipD",
+            "node_attrs": {
+              "div": 8,
+              "location": {
+                "value": "alpha"
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipE",
+            "node_attrs": {
+              "div": 9,
+              "location": {
+                "value": "alpha"
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipF",
+            "node_attrs": {
+              "div": 6,
+              "location": {
+                "value": "beta"
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      }
+    ]
+  }
+}
