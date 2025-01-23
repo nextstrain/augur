@@ -8,7 +8,7 @@ import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
 from .argparse_ import ExtendOverwriteDefault
 from .io.file import open_file
-from .io.sequences import read_sequences
+from .io.sequences import read_sequences, read_single_sequence
 from .io.shell_command_runner import run_shell_command
 from .io.vcf import shquote
 from .utils import nthreads_value
@@ -242,7 +242,7 @@ def read_reference(ref_fname):
         raise AlignmentError("ERROR: Cannot read reference sequence."
                              "\n\tmake sure the file \"%s\" exists"%ref_fname)
     try:
-        ref_seq = SeqIO.read(ref_fname, 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
+        ref_seq = read_single_sequence(ref_fname, format='genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
     except:
         raise AlignmentError("ERROR: Cannot read reference sequence."
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)

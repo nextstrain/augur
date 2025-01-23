@@ -32,6 +32,7 @@ from Bio.SeqRecord import SeqRecord
 from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_json, get_json_name, \
     genome_features_to_auspice_annotation
 from .io.file import open_file
+from .io.sequences import read_single_sequence
 from .io.vcf import is_vcf as is_filename_vcf
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
@@ -400,7 +401,7 @@ def run(args):
         if args.root_sequence:
             for fmt in ['fasta', 'genbank']:
                 try:
-                    ref = str(SeqIO.read(args.root_sequence, fmt).seq).upper()
+                    ref = str(read_single_sequence(args.root_sequence, format=fmt).seq).upper()
                     break
                 except:
                     pass
