@@ -60,6 +60,15 @@ T = TypeVar('T')
 print_info = print_err
 
 
+# Locate how to re-invoke ourselves (_this_ specific Augur).
+if sys.executable:
+    augur = f"{shquote(sys.executable)} -m augur"
+else:
+    # A bit unusual we don't know our own Python executable, but assume we
+    # can access ourselves as the ``augur`` command.
+    augur = f"augur"
+
+
 class NamedMetadata(Metadata):
     name: str
     """User-provided descriptive name for this metadata file."""
@@ -173,15 +182,6 @@ def run(args):
         NamedMetadata(name, path, [delim  for name_, delim  in metadata_delimiters if not name_ or name_ == name] or DEFAULT_DELIMITERS,
                                   [column for name_, column in metadata_id_columns if not name_ or name_ == name] or DEFAULT_ID_COLUMNS)
             for name, path in metadata]
-
-
-    # Locate how to re-invoke ourselves (_this_ specific Augur).
-    if sys.executable:
-        augur = f"{shquote(sys.executable)} -m augur"
-    else:
-        # A bit unusual we don't know our own Python executable, but assume we
-        # can access ourselves as the ``augur`` command.
-        augur = f"augur"
 
 
     # Work with a temporary, on-disk SQLite database under a name we control so
