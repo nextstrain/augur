@@ -6,8 +6,10 @@
 
 * export v2: The string "none" is now an invalid value for `--color-by-metadata` and `--metadata-columns` options and will be ignored to prevent clashes with Auspice's internal use of "none". [#1113][] (@joverlee521)
 * schema: The string "none" is now an invalid branch label, node_attr key, and coloring key. [#1113][] (@joverlee521)
+* curate apply-geolocation-rules: The geolocation rule matching has been updated to be case-insensitive. [#1740][] (@joverlee521)
 
 [#1113]: https://github.com/nextstrain/augur/pull/1113
+[#1740]: https://github.com/nextstrain/augur/pull/1740
 
 ## 27.2.0 (22 January 2025)
 
