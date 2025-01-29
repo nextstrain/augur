@@ -8,7 +8,16 @@
 * schema: The string "none" is now an invalid branch label, node_attr key, and coloring key. [#1113][] (@joverlee521)
 * curate apply-geolocation-rules: The geolocation rule matching has been updated to be case-insensitive. Use the new `--case-sensitive` flag if you want to revert to the previous behavior of case-sensitive matching. [#1740][], [#1741][] (@joverlee521)
 
+### Features
+
+* All commands: Support compressed formats for input sequence files. This was already the case for most commands. Internal standardization extends the support to all other commands. [#1730][] (@victorlin)
+
+### Internal changes
+
+* Added a new function `augur.io.sequences.read_single_sequence` as a wrapper around `Bio.SeqIO.read` with support for compressed formats, similar to the `augur.io.sequences.read_sequences` wrapper around `Bio.SeqIO.parse`. [#1730][] (@victorlin)
+
 [#1113]: https://github.com/nextstrain/augur/pull/1113
+[#1730]: https://github.com/nextstrain/augur/pull/1730
 [#1740]: https://github.com/nextstrain/augur/pull/1740
 [#1741]: https://github.com/nextstrain/augur/pull/1741
 
