@@ -61,6 +61,9 @@ def load_geolocation_rules(geolocation_rules_file):
                     "Please make sure it is formatted as 'region/country/division/location'.")
                 continue
 
+            # Store raw locations in lowercase to support case-insensitive
+            # matching of geolocation rules
+            raw = [x.lower() for x in raw]
 
             geolocation_rules[raw[0]][raw[1]][raw[2]][raw[3]] = annot
 
@@ -88,7 +91,8 @@ def get_annotated_geolocation(geolocation_rules, raw_geolocation, rule_traversal
     current_rules = geolocation_rules
     # Traverse the geolocation rules based using the rule_traversal values
     for field_value in rule_traversal:
-        current_rules = current_rules.get(field_value)
+        # Use lowercase for field_value for case-insensitive rule matching
+        current_rules = current_rules.get(field_value.lower())
         # If we hit `None`, then we know there are no matching rules, so stop the rule traversal
         if current_rules is None:
             break
@@ -205,7 +209,8 @@ def register_parser(parent_subparsers):
              "are formatted as '<region>/<country>/<division>/<location>'. " +
              "If creating a general rule, then the raw field value can be substituted with '*'." +
              "Lines starting with '#' will be ignored as comments." +
-             "Trailing '#' will be ignored as comments.")
+             "Trailing '#' will be ignored as comments. " +
+             "Note that the raw geolocation matching is case-insensitive.")
 
     return parser
 
