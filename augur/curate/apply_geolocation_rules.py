@@ -11,7 +11,7 @@ class CyclicGeolocationRulesError(AugurError):
     pass
 
 
-def load_geolocation_rules(geolocation_rules_file):
+def load_geolocation_rules(geolocation_rules_file, case_sensitive):
     """
     Loads the geolocation rules from the provided *geolocation_rules_file*.
     Returns the rules as a dict:
@@ -63,14 +63,14 @@ def load_geolocation_rules(geolocation_rules_file):
 
             # Store raw locations in lowercase to support case-insensitive
             # matching of geolocation rules
-            raw = [x.lower() for x in raw]
+            raw = [x if case_sensitive else x.lower() for x in raw]
 
             geolocation_rules[raw[0]][raw[1]][raw[2]][raw[3]] = annot
 
     return geolocation_rules
 
 
-def get_annotated_geolocation(geolocation_rules, raw_geolocation, rule_traversal = None):
+def get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, rule_traversal = None):
     """
     Gets the annotated geolocation for the *raw_geolocation* in the provided
     *geolocation_rules*.
@@ -106,7 +106,7 @@ def get_annotated_geolocation(geolocation_rules, raw_geolocation, rule_traversal
     if isinstance(current_rules, dict):
         next_traversal_target = raw_geolocation[len(rule_traversal)]
         rule_traversal.append(next_traversal_target)
-        return get_annotated_geolocation(geolocation_rules, raw_geolocation, rule_traversal)
+        return get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, rule_traversal)
 
     # We did not find any matching rule for the last traversal target
     if current_rules is None:
@@ -139,10 +139,10 @@ def get_annotated_geolocation(geolocation_rules, raw_geolocation, rule_traversal
         # we can find a matching rule.
         rule_traversal[-1] = '*'
 
-        return get_annotated_geolocation(geolocation_rules, raw_geolocation, rule_traversal)
+        return get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, rule_traversal)
 
 
-def transform_geolocations(geolocation_rules, geolocation):
+def transform_geolocations(geolocation_rules, geolocation, case_sensitive):
     """
     Transform the provided *geolocation* by looking it up in the provided
     *geolocation_rules*.
@@ -160,7 +160,7 @@ def transform_geolocations(geolocation_rules, geolocation):
     continue_to_apply = True
 
     while continue_to_apply:
-        annotated_values = get_annotated_geolocation(geolocation_rules, transformed_values)
+        annotated_values = get_annotated_geolocation(geolocation_rules, transformed_values, case_sensitive)
 
         # Stop applying rules if no annotated values were found
         if annotated_values is None:
@@ -210,7 +210,9 @@ def register_parser(parent_subparsers):
              "If creating a general rule, then the raw field value can be substituted with '*'." +
              "Lines starting with '#' will be ignored as comments." +
              "Trailing '#' will be ignored as comments. " +
-             "Note that the raw geolocation matching is case-insensitive.")
+             "Note that the raw geolocation matching is case-insensitive unless the `--case-sensitive` flag is provided.")
+    parser.add_argument("--case-sensitive", action="store_true",
+        help="Use case-sensitive matching of raw geolocation fields to geolocation rules.")
 
     return parser
 
@@ -218,11 +220,14 @@ def register_parser(parent_subparsers):
 def run(args, records):
     location_fields = [args.region_field, args.country_field, args.division_field, args.location_field]
 
-    geolocation_rules = load_geolocation_rules(args.geolocation_rules)
+    geolocation_rules = load_geolocation_rules(args.geolocation_rules, args.case_sensitive)
 
     for record in records:
 
-        annotated_values = transform_geolocations(geolocation_rules, [record.get(field, '') for field in location_fields])
+        annotated_values = transform_geolocations(
+            geolocation_rules,
+            [record.get(field, '') for field in location_fields],
+            args.case_sensitive)
 
         for index, field in enumerate(location_fields):
             record[field] = annotated_values[index]
