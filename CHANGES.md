@@ -7,10 +7,16 @@
 * export v2: The string "none" is now an invalid value for `--color-by-metadata` and `--metadata-columns` options and will be ignored to prevent clashes with Auspice's internal use of "none". [#1113][] (@joverlee521)
 * schema: The string "none" is now an invalid branch label, node_attr key, and coloring key. [#1113][] (@joverlee521)
 * curate apply-geolocation-rules: The geolocation rule matching has been updated to be case-insensitive. Use the new `--case-sensitive` flag if you want to revert to the previous behavior of case-sensitive matching. [#1740][], [#1741][] (@joverlee521)
+* `augur.io.read_sequences`: Only accept the values `"fasta"` and `"genbank"` for format, instead of allowing any value supported by Biopython. [#1731][] (@victorlin)
+    * This also applies to `augur.io.sequences.read_single_sequence`, which is not in the public API.
 
 ### Features
 
 * All commands: Support compressed formats for input sequence files. This was already the case for most commands. Internal standardization extends the support to all other commands. [#1730][] (@victorlin)
+
+### Bug Fixes
+
+* When using >=Biopython 1.85: properly detect `augur ancestral --root-sequence` file format and, for all commands, support FASTA files with comments. [#1731][] (@victorlin)
 
 ### Internal changes
 
@@ -18,6 +24,7 @@
 
 [#1113]: https://github.com/nextstrain/augur/pull/1113
 [#1730]: https://github.com/nextstrain/augur/pull/1730
+[#1731]: https://github.com/nextstrain/augur/pull/1731
 [#1740]: https://github.com/nextstrain/augur/pull/1740
 [#1741]: https://github.com/nextstrain/augur/pull/1741
 
