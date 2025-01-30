@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 28.0.0 (30 January 2025)
+
 ### Major Changes
 
 * export v2: The string "none" is now an invalid value for `--color-by-metadata` and `--metadata-columns` options and will be ignored to prevent clashes with Auspice's internal use of "none". [#1113][] (@joverlee521)
