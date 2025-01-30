@@ -11,6 +11,7 @@ from .__version__ import __version__
 
 from augur.data import as_file
 from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
+from augur.io.sequences import read_single_sequence
 from augur.io.print import print_err
 
 from augur.types import ValidationMode
@@ -409,8 +410,7 @@ def _read_genbank(reference, feature_names):
         If 'nuc' annotation not parsed
         If a CDS feature is given the name 'nuc'
     """
-    from Bio import SeqIO
-    gb = SeqIO.read(reference, 'genbank')
+    gb = read_single_sequence(reference, format='genbank')
     features = {
         'nuc': _read_nuc_annotation_from_genbank(gb, reference)
     }

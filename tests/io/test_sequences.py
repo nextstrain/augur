@@ -120,6 +120,41 @@ class TestReadSequences:
         sequences = augur.io.sequences.read_sequences(fasta_filename, gzip_fasta_filename, lzma_fasta_filename, format="fasta")
         assert len(list(sequences)) == 9
 
+    def test_read_sequences_format_misused(self, fasta_filename):
+        """
+        Specifying a format without the 'format' key name results in the
+        string being interpreted as a path.
+        """
+        sequences = augur.io.sequences.read_sequences(fasta_filename, "fasta")
+
+        # Note: the error is not raised until the "path" is opened.
+        next(sequences)
+        with pytest.raises(FileNotFoundError) as e_info:
+            list(sequences)
+        assert str(e_info.value).endswith("No such file or directory: 'fasta'")
+
+
+class TestReadSingleSequence:
+    def test_read_single_sequence(self, tmpdir):
+        filename = str(tmpdir / "sequences.fasta")
+        SeqIO.write(generate_sequences(1), filename, "fasta")
+        sequence = augur.io.sequences.read_single_sequence(filename, format="fasta")
+        assert sequence.name == "SEQ_1"
+
+    def test_read_no_sequence_error(self, tmpdir):
+        filename = str(tmpdir / "sequences.fasta")
+        SeqIO.write(generate_sequences(0), filename, "fasta")
+        with pytest.raises(ValueError) as e_info:
+            augur.io.sequences.read_single_sequence(filename, format="fasta")
+        assert str(e_info.value) == "No records found in handle"
+
+    def test_read_multiple_sequence_error(self, tmpdir):
+        filename = str(tmpdir / "sequences.fasta")
+        SeqIO.write(generate_sequences(2), filename, "fasta")
+        with pytest.raises(ValueError) as e_info:
+            augur.io.sequences.read_single_sequence(filename, format="fasta")
+        assert str(e_info.value) == "More than one record found in handle"
+
 
 class TestWriteSequences:
     def test_write_sequences(self, tmpdir, sequences):

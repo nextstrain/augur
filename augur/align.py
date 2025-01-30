@@ -8,6 +8,7 @@ import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
 from .argparse_ import ExtendOverwriteDefault
 from .io.file import open_file
+from .io.sequences import read_sequences, read_single_sequence
 from .io.shell_command_runner import run_shell_command
 from .io.vcf import shquote
 from .utils import nthreads_value
@@ -72,7 +73,7 @@ def prepare(sequences, existing_aln_fname, output, ref_name, ref_seq_fname):
     tuple of str
         The existing alignment filename, the new sequences filename, and the name of the reference sequence.
     """
-    seqs = read_sequences(*sequences)
+    seqs = read_and_validate_sequences(*sequences)
     seqs_to_align_fname = output + ".to_align.fasta"
 
     if existing_aln_fname:
@@ -191,12 +192,13 @@ def postprocess(output_file, ref_name, keep_reference, fill_gaps):
 
 #####################################################################################################
 
-def read_sequences(*fnames):
+# Note: This is effectively augur.io.read_sequences with extra validation.
+def read_and_validate_sequences(*fnames):
     """return list of sequences from all fnames"""
     seqs = {}
     try:
         for fname in fnames:
-            for record in SeqIO.parse(fname, 'fasta'):
+            for record in read_sequences(fname, format='fasta'):
                 if record.name in seqs and record.seq != seqs[record.name].seq:
                     raise AlignmentError("Detected duplicate input strains \"%s\" but the sequences are different." % record.name)
                     # if the same sequence then we can proceed (and we only take one)
@@ -240,7 +242,7 @@ def read_reference(ref_fname):
         raise AlignmentError("ERROR: Cannot read reference sequence."
                              "\n\tmake sure the file \"%s\" exists"%ref_fname)
     try:
-        ref_seq = SeqIO.read(ref_fname, 'genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
+        ref_seq = read_single_sequence(ref_fname, format='genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
     except:
         raise AlignmentError("ERROR: Cannot read reference sequence."
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
