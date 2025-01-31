@@ -29,11 +29,11 @@ disk space.  Tables are not required to be entirely loadable into memory.  The
 transient disk space required is approximately the sum of the uncompressed size
 of the inputs.
 
-SQLite is used behind the scenes to implement the merge, but, at least for now,
-this should be considered an implementation detail that may change in the
-future.  The SQLite 3 CLI, sqlite3, must be available.  If it's not on PATH (or
-you want to use a version different from what's on PATH), set the SQLITE3
-environment variable to path of the desired sqlite3 executable.
+SQLite is used behind the scenes to implement the merge, but this should be
+considered an implementation detail that may change in the future.  The SQLite 3
+CLI, sqlite3, must be available.  If it's not on PATH (or you want to use a
+version different from what's on PATH), set the SQLITE3 environment variable to
+path of the desired sqlite3 executable.
 """
 import os
 import re
