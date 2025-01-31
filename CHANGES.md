@@ -4,12 +4,14 @@
 
 ### Features
 
+* merge: Support merging of sequence files with `--sequences`. [#1579][] (@victorlin)
 * read-file: Multiple files are now accepted. [#1815][] (@victorlin)
 
 ### Bug fixes
 
 * Added a missing redirect for the environment variables documentation page from its previous location. [#1812][] (@tsibley)
 
+[#1579]: https://github.com/nextstrain/augur/issues/1579
 [#1812]: https://github.com/nextstrain/augur/pull/1812
 [#1815]: https://github.com/nextstrain/augur/pull/1815
 
