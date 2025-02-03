@@ -1,3 +1,4 @@
+# General geolocation rules for renaming locations without hierarchical constraints
 */*/*/24 de Diciembre	*/*/*/Parque Real
 */*/*/Agualva cacem	*/*/*/Agualva
 */*/*/Barcelona H	*/*/*/Barcelona
@@ -90,6 +91,8 @@
 */*/Zurich/*	*/*/Zürich/*
 */*/Île-de-France/*	*/*/Ile de France/*
 */*/Ústí nad Labem/*	*/*/Usti nad Labem/*
+
+# Regions
 Afrique/*/*/*	Africa/*/*/*
 Asai/*/*/*	Asia/*/*/*
 Asian/*/*/*	Asia/*/*/*
@@ -102,15 +105,25 @@ North-America/*/*/*	North America/*/*/*
 Soth America/*/*/*	South America/*/*/*
 South Asia/*/*/*	Asia/*/*/*
 South Smerica/*/*/*	South America/*/*/*
+
+# Afghanistan
 Asia/Afghanistan/Nangarhar/Jalalabad	Asia/Afghanistan/Nangarhar/Jalalabad AF
+
+# Albania
 Europe/Albania/Moerfelden-Walldorf/*	Europe/Albania/Albania/*
 Europe/Kosovo/Shqiperi/	Europe/Albania/Albania/
+
+# Algeria
 Africa/Algeria/Alger/	Africa/Algeria/Algiers/Alger
 Africa/Algeria/Eddis/	Africa/Algeria/M'Sila Province/Eddis
 Africa/Algeria/Setif/*	Africa/Algeria/Sétif/*
 Europe/Algeria/Eddis/	Africa/Algeria/M'Sila Province/Eddis
+
+# Andorra
 Europe/Andorre/*/*	Europe/Andorra/*/*
 Europe/Andorre/Andorre/*	Europe/Andorra/Andorra/*
+
+# Angola
 Africa/Angola/Bengo/Dande	Africa/Angola/Bengo/Dande (Bengo)
 Africa/Angola/Bié/*	Africa/Angola/Bie/*
 Africa/Angola/C. Cubango/*	Africa/Angola/Cuando Cubango/*
@@ -120,11 +133,15 @@ Africa/Angola/Huíla/*	Africa/Angola/Huila AO/*
 Africa/Angola/Luanda/C Sequele	Africa/Angola/Luanda/Cacuaco
 Africa/Angola/Luanda/Dande	Africa/Angola/Luanda/Dande (Luanda)
 Africa/Angola/Luanda/Viana	Africa/Angola/Luanda/Viana AO
+
+# Antigua and Barbuda
 South America/Antigua and Barbuda//	North America/Antigua and Barbuda/Antigua and Barbuda/
 South America/Antigua and Barbuda/Antigua and Barbuda/*	North America/Antigua and Barbuda/Antigua and Barbuda/*
 South America/Antigua and Barbuda/Caribbean/	North America/Antigua and Barbuda/Antigua and Barbuda/
 South America/Antigua/*/*	North America/Antigua and Barbuda/*/*
 South America/Antigua/Caribbean/*	North America/Antigua and Barbuda/Antigua and Barbuda/*
+
+# Argentina
 South America/Argentina/*Sin Dato*/	South America/Argentina/Argentina/
 South America/Argentina/Alberti/	South America/Argentina/Buenos Aires/Alberti
 South America/Argentina/Azul/	South America/Argentina/Buenos Aires/Azul
@@ -286,13 +303,21 @@ South America/Argentina/Tucuman/Concepcion	South America/Argentina/Tucuman/Conce
 South America/Argentina/Tucuman/San Pablo	South America/Argentina/Tucuman/San Pablo AR
 South America/Argentina/Tucumán/*	South America/Argentina/Tucuman/*
 South America/Argentina/Villa Fiorito/	South America/Argentina/Buenos Aires/Villa Fiorito
+
+# Armenia
 Europe/Armenia/*/*	Asia/Armenia/*/*
 Europe/Armenia/Erevan/*	Asia/Armenia/Yerevan/*
+
+# Aruba
 South America/Netherlands/Aruba/*	South America/Aruba/Aruba/*
+
+# Australia
 Oceania/Australia/Act/*	Oceania/Australia/Australian Capital Territory/*
 Oceania/Australia/South Brisbane/	Oceania/Australia/Queensland/South Brisbane
 Oceania/Australia/Victoria/Clayton	Oceania/Australia/Victoria/Clayton AU
 Oceania/Australia/Victoria?/*	Oceania/Australia/Victoria/*
+
+# Austria
 Europe/Austria/Aigen-Voglhub/	Europe/Austria/Upper Austria/Aigen-Voglhub
 Europe/Austria/Aldrans/	Europe/Austria/Tyrol/Aldrans
 Europe/Austria/Altenhof Am Hausruck/	Europe/Austria/Upper Austria/Altenhof Am Hausruck
@@ -519,10 +544,16 @@ Europe/Austria/Weyregg Am Attersee/	Europe/Austria/Upper Austria/Weyregg Am Atte
 Europe/Austria/Wien/	Europe/Austria/Vienna/
 Europe/Austria/Zams/	Europe/Austria/Tyrol/Zams
 Europe/Austria/Zell Am Moos/	Europe/Austria/Upper Austria/Zell Am Moos
+
+# Bahamas
 North America/Bahamas/The Bahamas/*	North America/Bahamas/Bahamas/*
 North America/The Bahamas/*/*	North America/Bahamas/*/*
+
+# Bahrain
 */Bahrein/*/*	*/Bahrain/*/*
 Asia/Bahrain/Manama/	Asia/Bahrain/Capital Governorate/Manama
+
+# Bangladesh
 Asia/Bangaldesh/*/*	Asia/Bangladesh/*/*
 Asia/Bangladeah/*/*	Asia/Bangladesh/*/*
 Asia/Bangladesh/*/City Corporation	Asia/Bangladesh/*/
@@ -778,11 +809,15 @@ Asia/Bangladesh/Turag/*	Asia/Bangladesh/Dhaka/*
 Asia/Bangladesh/Unknown/	Asia/Bangladesh/Bangladesh/
 Asia/Bangladesh/Uttara/Dhaka	Asia/Bangladesh/Dhaka/Uttara
 Asia/Bangladesh/Wari/Dhaka	Asia/Bangladesh/Dhaka/Wari
+
+# Barbados
 North America/Barbados/Caribbean/*	North America/Barbados/Barbados/*
 North America/Caribbean/Barbados/	North America/Barbados/Barbados/
 South America/Barbados//	North America/Barbados/Barbados/
 South America/Barbados/Barbados/*	North America/Barbados/Barbados/*
 South America/Barbados/Caribbean/*	North America/Barbados/Barbados/*
+
+# Belarus
 Europe/Belarus/Brest Region/Brest	Europe/Belarus/Brest Region/Brest BY
 Europe/Belarus/Brest/	Europe/Belarus/Brest Region/Brest BY
 Europe/Belarus/Gomel/*	Europe/Belarus/Gomel Region/*
@@ -791,6 +826,8 @@ Europe/Belarus/Homel Region/*	Europe/Belarus/Gomel Region/*
 Europe/Belarus/Mogilev/*	Europe/Belarus/Mogilev Region/*
 Europe/Belarus/Rrcem/	Europe/Belarus/Belarus/
 Europe/Belarus/Vitebsk/*	Europe/Belarus/Vitebsk Region/*
+
+# Belgium
 Europe/Belgique/Lobbes/	Europe/Belgium/Thuin/Lobbes
 Europe/Belgium/'S Gravenwezel/	Europe/Belgium/Antwerpen/'s-Gravenwezel
 Europe/Belgium/'s Gravenbrakel/*	Europe/Belgium/Braine-Le-Comte/*
@@ -6826,9 +6863,13 @@ Europe/Belgium/Évregnies/	Europe/Belgium/Tournai-Mouscron/Évregnies
 Europe/Belgium/Œudeghien/	Europe/Belgium/Ath/Œudeghien
 Europe/Blegium/*/*	Europe/Belgium/*/*
 Europe/Country/Namen/	Europe/Belgium/Namur/
+
+# Belize
 North America/Belize/San Pedro Town/	North America/Belize/Belize/San Pedro Town
 North America/Belize/San Pedro/	North America/Belize/Belize/San Pedro Town
 North America/Belize/Toledo/*	North America/Belize/Toledo BZ/*
+
+# Benin
 Africa/Benin/Aplahoue/	Africa/Benin/Couffo/Aplahoue
 Africa/Benin/Athieme/	Africa/Benin/Mono/Athieme
 Africa/Benin/Bohicon/	Africa/Benin/Zou/Bohicon
@@ -6840,14 +6881,22 @@ Africa/Benin/Klouekanme/	Africa/Benin/Couffo/Klouekanme
 Africa/Benin/Lalo/	Africa/Benin/Couffo/Lalo
 Africa/Benin/Littoral/*	Africa/Benin/Littoral BJ/*
 Africa/Benin/Porto-Novo/	Africa/Benin/Oueme/Porto-Novo
+
+# Bermuda
 South America/Bermuda//	North America/Bermuda/Bermuda/
 South America/Bermuda/Bermuda/	North America/Bermuda/Bermuda/
+
+# Bolivia
 South America/Bolivia/La Paz/	South America/Bolivia/La Paz BO/
 South America/Bolivia/Santa Cruz-El Torno/*	South America/Bolivia/Santa Cruz BO/El Torno
 South America/Bolivia/Santa Cruz-Pailon/*	South America/Bolivia/Santa Cruz BO/Pailon
 South America/Bolivia/Santa Cruz/*	South America/Bolivia/Santa Cruz BO/*
 South America/Bolivia/Sucre/	South America/Bolivia/Chuquisaca/Sucre BO
+
+# Bonaire
 South America/Netherlands/Bonaire/*	South America/Bonaire/Bonaire/*
+
+# Bosnia and Herzegovina
 Europe/Bosni and Herzegovina/*/*	Europe/Bosnia and Herzegovina/*/*
 Europe/Bosnia and Herzegovina/Bihać/*	Europe/Bosnia and Herzegovina/Bihac/*
 Europe/Bosnia and Herzegovina/Capljina/	Europe/Bosnia and Herzegovina/Herzegowina-Neretva/Capljina
@@ -6866,6 +6915,8 @@ Europe/Bosnia and Herzegovina/Stolac/	Europe/Bosnia and Herzegovina/Herzegowina-
 Europe/Bosnia and Herzegovina/Velika Kladuša/	Europe/Bosnia and Herzegovina/Una-Sana/Velika Kladuša
 Europe/Bosnia and Herzegovina/Visoko/	Europe/Bosnia and Herzegovina/Zenica-Doboj/Visoko
 Europe/Bosnia and Herzegovina/Vogošća/*	Europe/Bosnia and Herzegovina/Vogosca/*
+
+# Botswana
 Africa/Botswana/Africa/Botswana	Africa/Botswana/Botswana/
 Africa/Botswana/Boatle/	Africa/Botswana/Southern East/Boatle
 Africa/Botswana/Bobirwa/Bobonong	Africa/Botswana/Central District BW/Bobirwa
@@ -7011,6 +7062,8 @@ Africa/Botswana/Tatisiding/	Africa/Botswana/North-East District/Tati Siding
 Africa/Botswana/Thabala/	Africa/Botswana/Central District BW/Thabala
 Africa/Botswana/Tlokweng/	Africa/Botswana/Southern East/Tlokweng
 Africa/Gaborone/Lobatse/	Africa/Botswana/Southern East/Lobatse (Southern East)
+
+# Brazil
 Europe/Brazil/Bahia/Alcobaca	Europe/Brazil/Bahia/Alcobaca BR
 North America/Brazil/Mato Grosso do Sul/Santo Anastacio	North America/Brazil/São Paulo/Santo Anastacio
 Soth America/Brazil/Espirito Santo/Barra de Sao Francisco	South America/Brazil/Espirito Santo/Barra do Sao Francisco
@@ -7878,10 +7931,14 @@ South America/Santa Catarina/Navegantes/	South America/Brazil/Santa Catarina/Nav
 South America/Santa Catarina/Seara/	South America/Brazil/Santa Catarina/Seara
 South America/Santa Catarina/Videira/	South America/Brazil/Santa Catarina/Videira
 South America/Sergipe/Estancia/	South America/Brazil/Sergipe/Estancia
+
+# Bulgaria
 Europe/Bulgaria/Kyrdjali/	Europe/Bulgaria/Kardzhali/
 Europe/Bulgaria/Kyrdzhali/*	Europe/Bulgaria/Kardzhali/*
 Europe/Bulgaria/Montana/*	Europe/Bulgaria/Montana BG/*
 Europe/Bulgaria/Tyrgovishte/*	Europe/Bulgaria/Targovishte/*
+
+# Burkina Faso
 Africa/Burkina Faso/Bagassi/	Africa/Burkina Faso/Boucle Du Mouhoun/Bagassi
 Africa/Burkina Faso/Banfora/	Africa/Burkina Faso/Cascades/Banfora
 Africa/Burkina Faso/Batie/*	Africa/Burkina Faso/Sud-Ouest/Batié
@@ -7901,9 +7958,13 @@ Africa/Burkina Faso/Plateau-Central/Loumbila	Africa/Burkina Faso/Plateau-Central
 Africa/Burkina Faso/Ziniare/	Africa/Burkina Faso/Plateau Central/Ziniare
 Africa/Burkinafaso/*/*	Africa/Burkina Faso/*/*
 Africa/Burkinafaso/Boromo/*	Africa/Burkina Faso/Boucle du Mouhoun Region/Boromo
+
+# Cabo Verde
 Africa/Cabo Verde/Mindelo/	Africa/Cabo Verde/Nossa Senhora da Luz/Mindelo
 Africa/Cabo Verde/Praia/	Africa/Cabo Verde/Nossa Senhora da Graça/Praia
 Africa/Cabo Verde/Santiago/*	Africa/Cabo Verde/Santiago CV/*
+
+# Cameroon
 Africa/Cameroon/Ambam/	Africa/Cameroon/South Region/Ambam
 Africa/Cameroon/Center Region/*	Africa/Cameroon/Centre Region/*
 Africa/Cameroon/Centre CM/*	Africa/Cameroon/Centre Region/*
@@ -7919,6 +7980,8 @@ Africa/Cameroon/South East Region/	Africa/Cameroon/East Region/
 Africa/Cameroon/South/*	Africa/Cameroon/South Region/*
 Africa/Cameroon/West/*	Africa/Cameroon/Cameroon/*
 Africa/Cameroon/Yaounde/*	Africa/Cameroon/Yaoundé/*
+
+# Canada
 North America/Canada/Calgary/	North America/Canada/Alberta/Calgary
 North America/Canada/Ontario/Hamilton	North America/Canada/Ontario/Hamilton CA
 North America/Canada/Ontario/On K8P 4L2	North America/Canada/Ontario/
@@ -7926,6 +7989,8 @@ North America/Canada/Ontario/On L1M 2G1	North America/Canada/Ontario/
 North America/Canada/Ontario/Ottawa	North America/Canada/Ontario/Ottawa CA
 North America/Canada/Province Of Quebec/*	North America/Canada/Quebec/*
 North America/Canada/Toronto/	North America/Canada/Ontario/Toronto
+
+# Chile
 South America/Chile/Aisen/*	South America/Chile/Aysén/*
 South America/Chile/Antofagasta./*	South America/Chile/Antofagasta/*
 South America/Chile/Antofagasta/Calama	South America/Chile/Antofagasta/Calama (Antofagasta)
@@ -8126,6 +8191,8 @@ South America/Chile/Ñuble/San Nicolas	South America/Chile/Ñuble/San Nicolas (�
 South America/Chile/Ñuble/San Nicolas CL	South America/Chile/Ñuble/San Nicolas (Ñuble)
 South America/Chile/�Uble/*	South America/Chile/Ñuble/*
 South America/Chile/�Uble/San Carlos	South America/Chile/Ñuble/San Carlos (Ñuble)
+
+# China
 Asia/China/Anhui/Bozhou	Asia/China/Anhui/Bozhou (Anhui)
 Asia/China/Anhui/Lu`An	Asia/China/Anhui/Lu'An
 Asia/China/Anhui/Suzhou	Asia/China/Anhui/Suzhou (Anhui)
@@ -8163,6 +8230,8 @@ Asia/China/Yunnan/Puer City	Asia/China/Yunnan/Pu'Er
 Asia/China/Zhanjiang/	Asia/China/Guangdong/Zhanjiang
 Asia/China/Zhejiang/Shaoxing	Asia/China/Zhejiang/Keqiao
 Asia/China/Zhejiang/Taizhou	Asia/China/Zhejiang/Taizhou (Zhejiang)
+
+# Colombia
 South America/Colombia//Caldas	South America/Colombia/Antioquia/Caldas CO
 South America/Colombia//Quindio	South America/Colombia/Quindio/
 South America/Colombia/Amazonas/*	South America/Colombia/Departamento de Amazonas/*
@@ -8402,6 +8471,8 @@ South America/Colombia/Vaupez/*	South America/Colombia/Vaupes/*
 South America/Colombia/Vaupés/Mitú	South America/Colombia/Vaupes/Mitu
 South America/Colombia/Vichada/Inirida	South America/Colombia/Guiania/Inirida
 South America/Colombia/Villagarzon/Putumayo	South America/Colombia/Putumayo/Villagarzon (Putumayo)
+
+# Costa Rica
 */Costa Rica/Heredia Barva/	*/Costa Rica/Heredia/Barva
 North America/Costa Rica/97J3+5Cw, Limon, los Lagos, Costa Rica/	North America/Costa Rica/Limon/
 North America/Costa Rica/Alajuela/Central	North America/Costa Rica/Alajuela/
@@ -8465,6 +8536,8 @@ North America/Costa Rica/San Jose/Vazquez De Coronado	North America/Costa Rica/S
 North America/Costa Rica/San José/*	North America/Costa Rica/San Jose/*
 North America/Costa Rica/Tibas/	North America/Costa Rica/San Jose/Tibas
 North America/Costa Rica/Unknown/	North America/Costa Rica/Costa Rica/
+
+# Croatia
 Europe/Coatia/*/*	Europe/Croatia/*/*
 Europe/Croatia/Bjelovar - Bilogora County/*	Europe/Croatia/Bjelovar-Bilogora County/*
 Europe/Croatia/Bjelovar Bilogora County/*	Europe/Croatia/Bjelovar-Bilogora County/*
@@ -8530,8 +8603,14 @@ Europe/Croatia/Zagreb County/	Europe/Croatia/Zagreb/
 Europe/Croatia/Šibenik - Knin County/*	Europe/Croatia/Sibenik-Knin County/*
 Europe/Croatia/Šibenik- Knin County/*	Europe/Croatia/Sibenik-Knin County/*
 Europe/Croatia/Šibenik-Knin County/*	Europe/Croatia/Sibenik-Knin County/*
+
+# Curacao
 South America/Netherlands/Curacao/*	South America/Curacao/Curacao/*
+
+# Cyprus
 Asia/Cyprus/*/*	Europe/Cyprus/*/*
+
+# Czech Republic
 */Czech Repubic/*/*	*/Czech Republic/*/*
 Czech Republic/Central Bohemian Region//	Europe/Czech Republic/Central Bohemian Region/
 Czech Republic/Central Bohemian Region/Kladno/*	Europe/Czech Republic/Central Bohemian Region/Kladno
@@ -8848,6 +8927,8 @@ Europe/Czech Republic/Zlín Region/Vsetin	Europe/Czech Republic/Zlín Region/Vse
 Europe/Czech Republic/Ústí nad Labem Region/*	Europe/Czech Republic/Usti nad Labem/*
 Europe/Czech Republic/Ústí nad Labem Region/Litoměřice	Europe/Czech Republic/Usti nad Labem/Litomerice
 Europe/Czechrepublic/*/*	Europe/Czech Republic/*/*
+
+# Côte d'Ivoire
 */Côte d'Ivoire/Dabakala/	*/Côte d'Ivoire/Vallée du Bandama/Dabakala
 Africa/Cote D'Ivoire/*/*	Africa/Côte d'Ivoire/*/*
 Africa/Cote D'Ivoire/Bouake/*	Africa/Côte d'Ivoire/Bouaké/*
@@ -8879,19 +8960,29 @@ Africa/Côte d'Ivoire/Treicheville/	Africa/Côte d'Ivoire/Abidjan/Treichville
 Africa/Côte d'Ivoire/Treichville/*	Africa/Côte d'Ivoire/Treicheville/*
 Africa/Côte d'Ivoire/Yamoussoukro/*	Africa/Côte d'Ivoire/Yamoussoukro/*
 Africa/Ivory Coast/*/*	Africa/Côte d'Ivoire/*/*
+
+# Democratic Republic of the Congo
 Africa/Democratic Republic of Congo/*/*	Africa/Democratic Republic of the Congo/*/*
 Africa/Democratic Republic of the Congo/Bukavu/	Africa/Democratic Republic of the Congo/Sud Kivu/Bukavu
 Africa/Democratic Republic of the Congo/Haut Katanga/*	Africa/Democratic Republic of the Congo/Haut-Katanga/*
 Africa/Democratic Republic of the Congo/Nord-Kivu/*	Africa/Democratic Republic of the Congo/Nord Kivu/*
 Africa/Democratic Republic of the Congo/Sud-Kivu/*	Africa/Democratic Republic of the Congo/Sud Kivu/*
+
+# Denmark
 Europe/Denmark/Na/	Europe/Denmark/Denmark/
 Europe/Denmark/Na/*	Europe/Denmark//*
 Europe/Denmark/Region Unknown/	Europe/Denmark/Denmark/
 Europe/Faroe Islands//	Europe/Denmark/Faroe Islands/
 Europe/Faroe Islands/Faroe Islands/*	Europe/Denmark/Faroe Islands/*
+
+# Djibouti
 Africa/Djibouti/Djbouti/*	Africa/Djibouti/Djibouti/*
+
+# Dominica
 North America/Dominica/Caribbean/*	North America/Dominica/Dominica/*
 South America/Dominica/Caribbean/	North America/Dominica/Dominica/
+
+# Dominican Republic
 North America/Dominican Republic/Caribbean/*	North America/Dominican Republic//*
 North America/Dominican Republic/Distrito Nacional/	North America/Dominican Republic/Santo Domingo/Distrito Nacional
 North America/Dominican Republic/Distrito Nacional/Santo Domingo	North America/Dominican Republic/Santo Domingo/Distrito Nacional
@@ -8906,6 +8997,8 @@ North America/Dominican Republic/Santo Domingo Oeste/	North America/Dominican Re
 North America/Dominican Republic/Santo Domingo Oeste/Santo Domingo	North America/Dominican Republic/Santo Domingo/Santo Domingo Oeste
 North America/Dominican Republic/Valverde/Mao	North America/Dominican Republic/Valverde/Mao DO
 North America/USA/Dominican Republic/	North America/Dominican Republic/Dominican Republic/
+
+# Ecuador
 South America/Ecuador/Aguarico/Orellana	South America/Ecuador/Orellana/Aguarico
 South America/Ecuador/Azuay/Cuenca	South America/Ecuador/Azuay/Cuenca EC
 South America/Ecuador/Azuay/Huaynacapac	South America/Ecuador/Azuay/Huayna Cápac
@@ -8970,6 +9063,8 @@ South America/Ecuador/Santo Domingo de los Tsachilas/Santo Domingo	South America
 South America/Ecuador/Santo Domingo de los Tsáchilas/Santo Domingo	South America/Ecuador/Santo Domingo de los Tsachilas/Santo Domingo de los Colorados
 South America/Ecuador/Santo Domingo/*	South America/Ecuador/Santo Domingo de los Tsachilas/*
 South America/Ecuador/Zamora-Chinchipe/Zamora	South America/Ecuador/Zamora-Chinchipe/Zamora EC
+
+# Egypt
 */Egypt/*/*	Africa/Egypt/*/*
 Africa/Egypt/Alexandria Governorate/*	Africa/Egypt/Alexandria/*
 Africa/Egypt/Cairo/Giza	Africa/Egypt/Giza/
@@ -8983,6 +9078,8 @@ Africa/Egypt/Qulyiubia/*	Africa/Egypt/Qalyubiyya/*
 Africa/Egypt/Red Sea Governorate/*	Africa/Egypt/Red Sea/*
 Africa/Egypt/Sharqia/*	Africa/Egypt/Sharqia Governorate/*
 Africa/Egypt/Sohage/*	Africa/Egypt/Sohag/*
+
+# El Salvador
 North America/El Salvador/Chalatenango/La Palma	North America/El Salvador/Chalatenango/La Palma SV
 North America/El Salvador/Chalatenango/La Reina	North America/El Salvador/Chalatenango/La Reina SV
 North America/El Salvador/Chalatenango/Nueva Concepcion	North America/El Salvador/Chalatenango/Nueva Concepcion SV
@@ -9000,7 +9097,11 @@ North America/El Salvador/San Salvador/Santo Tomas	North America/El Salvador/El 
 North America/El Salvador/Santa Ana/Coatepeque	North America/El Salvador/Santa Ana/Coatepeque SV
 North America/El Salvador/Santa Ana/Santa Ana	North America/El Salvador/Santa Ana/Santa Ana SV
 North America/El Salvador/Sonsonate/Armenia	North America/El Salvador/Sonsonate/Armenia SV
+
+# Equatorial Guinea
 Africa/Equatorial Guinea/Bioko sur/*	Africa/Equatorial Guinea/Bioko Sur/*
+
+# Estonia
 Europe/Estonia/Central Estonia/*	Europe/Estonia/Estonia/*
 Europe/Estonia/Harju Maakond/*	Europe/Estonia/Harjumaa/*
 Europe/Estonia/Harju/*	Europe/Estonia/Harjumaa/*
@@ -9022,6 +9123,8 @@ Europe/Estonia/Valga Maakond/*	Europe/Estonia/Valga/*
 Europe/Estonia/Viljandi Maakond/*	Europe/Estonia/Viljandi/*
 Europe/Estonia/Voru Maakond/*	Europe/Estonia/Võru/*
 Europe/Estonia/Western Estonia/*	Europe/Estonia/Estonia/*
+
+# Eswatini
 Africa/Eswatini/Matsapha/	Africa/Eswatini/Manzini/Matsapha
 Africa/Eswatini/Piggs Peak/	Africa/Eswatini/Hhohho/Piggs Peak
 Africa/Eswatini/Siphofaneni/	Africa/Eswatini/Lubombo/Siphofaneni
@@ -9029,11 +9132,17 @@ Africa/Eswatini/Siteki/	Africa/Eswatini/Lubombo/Siteki
 Africa/Kenya/Hhohho/*	Africa/Eswatini/Hhohho/*
 Africa/Kenya/Manzini/*	Africa/Eswatini/Manzini/*
 Africa/Namibia/Manzini/	Africa/Eswatini/Manzini/
+
+# Ethiopia
 Africa/Ethiopia/Addisababa/*	Africa/Ethiopia/Addis Ababa/*
+
+# Finland
 Europe/Finland/Kanta-Hame/*	Europe/Finland/Kanta-Häme/*
 Europe/Finland/Lapland/	Europe/Finland/Finland/Rovaniemi
 Europe/Finland/Paijat-Hame/*	Europe/Finland/Päijät-Häme/*
 Europe/Finland/Vaasa/	Europe/Finland/Ostrobothnia/Vaasa
+
+# France
 */France/*/*	Europe/France/*/*
 */French Guiana/C.S. St Georges Uf 4910/	Europe/France/French Guiana/St Georges (French Guiana)
 */French Guiana/Cs Apatou/	Europe/France/French Guiana/Apatou
@@ -9494,9 +9603,15 @@ South America/Guyane Francaise/Guyane Francaise/	Europe/France/French Guiana/
 South America/Guyane//	Europe/France/French Guiana/
 South America/Guyane/Cayenne/	Europe/France/French Guiana/Cayenne (French Guiana)
 South America/Guyane/Guyane/	Europe/France/French Guiana/
+
+# French Polynesia
 Oceania/French Polynesia/Tahiti/*	Oceania/French Polynesia/Windward Islands/*
 Oceania/Polynesia/Papeete/	Oceania/French Polynesia/Windward Islands/Papeete
+
+# Gabon
 Africa/Gabon/Central Africa/	Africa/Gabon/Gabon/
+
+# Georgia
 */Georgia/*/*	Asia/Georgia/*/*
 Asia/Georgia//	Asia/Georgia/Georgia (Asia)/
 Asia/Georgia/Akhaltsikhe/	Asia/Georgia/Samtskhe-Javakheti/Akhaltsikhe
@@ -9505,6 +9620,8 @@ Asia/Georgia/Georgia (Europe)/*	Asia/Georgia/Georgia (Asia)/*
 Asia/Georgia/Georgia/*	Asia/Georgia/Georgia (Asia)/*
 Asia/Georgia/Gori/	Asia/Georgia/Inner Kartli/Gori
 Asia/Georgia/Kutaisi/	Asia/Georgia/Imereti/Kutaisi
+
+# Germany
 Europe/Germany/?/*	Europe/Germany/Germany/
 Europe/Germany/Augsburg/	Europe/Germany/Bavaria/Augsburg
 Europe/Germany/Augsburg/Bavaria	Europe/Germany/Bavaria/Augsburg
@@ -9566,6 +9683,8 @@ Europe/Germany/Unknown/	Europe/Germany/Germany/
 Europe/Germany/Western Pomerania/*	Europe/Germany/Mecklenburg-Vorpommern/*
 Europe/Switzerland/Baden-Wuerttemberg/	Europe/Germany/Baden-Wuerttemberg/
 North America/Germany/Rhineland-Palatinate/*	Europe/Germany/Rheinland-Pfalz/*
+
+# Ghana
 Africa/Ghana/Abuakwa North/	Africa/Ghana/Eastern Region GH/Abuakwa North
 Africa/Ghana/Accra Metro/	Africa/Ghana/Greater Accra/Accra
 Africa/Ghana/Accra/	Africa/Ghana/Greater Accra/Accra
@@ -9618,7 +9737,11 @@ Africa/Ghana/Western Region/Koforidua	Africa/Ghana/Eastern Region GH/Koforidua
 Africa/Ghana/Western Region/Kwahu West	Africa/Ghana/Western Region/Kwahu West (Western Region)
 Africa/Ghana/Western Region/New Juaben South	Africa/Ghana/Western Region/New Juaben South (Western Region)
 Africa/Ghana/Western/*	Africa/Ghana/Western Region/*
+
+# Gibraltar
 Europe/Gibraltar//	Europe/Gibraltar/Gibraltar/
+
+# Greece
 Europe/Greece/Aetolia Acarnania/	Europe/Greece/Western Greece/Aetolia Acarnania
 Europe/Greece/Aetolia Akarnania/	Europe/Greece/Western Greece/Aetolia Acarnania
 Europe/Greece/Alexandria/	Europe/Greece/Central Macedonia/Alexandria GR
@@ -9642,15 +9765,21 @@ Europe/Greece/Southern Aegean Islands/*	Europe/Greece/South Aegean/*
 Europe/Greece/Sporades/	Europe/Greece/Thessaly/Sporades
 Europe/Greece/Thessalia/*	Europe/Greece/Thessaly/*
 Europe/Greece/Western Macedonia Region/*	Europe/Greece/Western Macedonia/*
+
+# Grenada
 North America/Grenada/Caribbean/*	North America/Grenada/Grenada/*
 South America/Grenada/*/*	North America/Grenada/*/*
 South America/Grenada/Caribbean/	North America/Grenada/Grenada/
+
+# Guadeloupe
 Europe/France/Guadeloupe/*	North America/Guadeloupe/Guadeloupe/*
 Europe/Guadeloupe/*/*	North America/Guadeloupe/*/*
 North America/Guadeloupe/Pointe-À-Pitre/*	North America/Guadeloupe/Pointe-A-Pitre/*
 North America/Guadeloupe/Saint-Francois/*	North America/Guadeloupe/Saint-François/*
 North America/Guadeloupe/Trois-Rivieres/*	North America/Guadeloupe/Trois-Rivières/*
 North America/Martinique/Pointe-A-Pitre/*	North America/Guadeloupe/Pointe-A-Pitre/*
+
+# Guatemala
 */Guatemala/*/*	North America/Guatemala/*/*
 North America/Guatemala/Alta Verapaz/Coban	North America/Guatemala/Alta Verapaz/Cobán
 North America/Guatemala/Alta Verapaz/San Cristobal	North America/Guatemala/Alta Verapaz/San Cristobal GT
@@ -9774,6 +9903,8 @@ North America/Guatemala/Zacapa/La Reforma GT	North America/Guatemala/Zacapa/La R
 North America/Guatemala/Zacapa/La Union	North America/Guatemala/Zacapa/La Union GT
 North America/Guatemala/Zacapa/No Refiere	North America/Guatemala/Zacapa/No Refiere (Zacapa)
 North America/Guatemala/Zacapa/San Diego	North America/Guatemala/Zacapa/San Diego GT
+
+# Guinea
 Africa/Guinea/Coyah/	Africa/Guinea/Kindia/Coyah
 Africa/Guinea/Dixin/	Africa/Guinea/Conakry/Dixin
 Africa/Guinea/Dubreka/	Africa/Guinea/Dubréka/
@@ -9786,9 +9917,15 @@ Africa/Guinea/Matoto/	Africa/Guinea/Conakry/Matoto
 Africa/Guinea/Nzerekore/*	Africa/Guinea/Nzerekore Region/*
 Africa/Guinea/Ratoma/	Africa/Guinea/Conakry/Ratoma
 Africa/Guinea/Siguri/	Africa/Guinea/Siguiri/
+
+# Guyana
 South America/Guyana/Caribbean/	South America/Guyana/Guyana/
+
+# Haiti
 North America/Haiti/Centre/*	North America/Haiti/Centre HT/*
 North America/Haiti/Ost/*	North America/Haiti/Ouest/*
+
+# Honduras
 North America/Honduras/Atlantida/*	North America/Honduras/Atlántida/*
 North America/Honduras/Colon/*	North America/Honduras/Departamento Colon/*
 North America/Honduras/Colón/*	North America/Honduras/Colón Department/*
@@ -9801,8 +9938,12 @@ North America/Honduras/Fracisco Morazan/*	North America/Honduras/Francisco Moraz
 North America/Honduras/Francisco Morazan/*	North America/Honduras/Francisco Morazán/*
 North America/Honduras/La Paz/	North America/Honduras/La Paz HN/
 South America/Honduras/*/*	North America/Honduras/*/*
+
+# Hong Kong
 Asia/China/Hong Kong/	Asia/Hong Kong/Hong Kong/Hong Kong
 Asia/China/Hong Kong/Hong Kong	Asia/Hong Kong/Hong Kong/Hong Kong
+
+# Hungary
 Europe/Hungary/Bacs-Kiskun County/*	Europe/Hungary/Bács-Kiskun County/*
 Europe/Hungary/Bacs-Kiskun/*	Europe/Hungary/Bács-Kiskun County/*
 Europe/Hungary/Baranya/*	Europe/Hungary/Baranya County/*
@@ -9825,7 +9966,11 @@ Europe/Hungary/Szabolcs-Szatmar-Bereg/*	Europe/Hungary/Szabolcs-Szatmár-Bereg C
 Europe/Hungary/Szabolcs-Szatmár Bereg County/*	Europe/Hungary/Szabolcs-Szatmár-Bereg County/*
 Europe/Hungary/Szabolcs-Szatmár-Bereg/*	Europe/Hungary/Szabolcs-Szatmár-Bereg County/*
 Europe/Hungary/Veszprem/*	Europe/Hungary/Veszprém County/*
+
+# Iceland
 Europe/Iceland/Reykjavik/	Europe/Iceland/Capital Region/Reykjavik
+
+# India
 Asia/India/Aasam/Cachar	Asia/India/Aasam/Cachar (Aasam)
 Asia/India/Adajan/	Asia/India/Gujarat/Adajan
 Asia/India/Ahmedabad/	Asia/India/Gujarat/Ahmedabad
@@ -10115,6 +10260,8 @@ Asia/India/West Bengal/Nadia	Asia/India/West Bengal/Nadia (West Bengal)
 Asia/India/West Bengal/South 24 Paraganas	Asia/India/West Bengal/South 24 Parganas
 Asia/India/West Bengal/West Medinipur	Asia/India/West Bengal/Paschim Medinipur
 Asia/India/Western Uttar Pradesh/	Asia/India/Uttar Pradesh/Western Uttar Pradesh
+
+# Indonesia
 Asia/Indonesia/Bangka Belitung Islands/*	Asia/Indonesia/Kepulauan Bangka Belitung/*
 Asia/Indonesia/Bangka Belitung/Belitung	Asia/Indonesia/Kepulauan Bangka Belitung/Bangka Belitung
 Asia/Indonesia/Banten/Tangerang	Asia/Indonesia/Banten/Tangerang (Banten)
@@ -10176,6 +10323,8 @@ Asia/Indonesia/West Java/Tangerang	Asia/Indonesia/West Java/Tangerang (West Java
 Asia/Indonesia/West Sumatra/*	Asia/Indonesia/Sumatera Barat/*
 Asia/Indonesia/Yogjakarta/*	Asia/Indonesia/Yogyakarta/*
 Asia/Indonesia/Yogyakarta/Gunung Kidul	Asia/Indonesia/Yogyakarta/Gunung Kidul (Yogyakarta)
+
+# Iran
 Asia/Iran/Alboraz Province/*	Asia/Iran/Alborz Province/*
 Asia/Iran/Alborz/*	Asia/Iran/Alborz Province/*
 Asia/Iran/Babol/	Asia/Iran/Māzandarān/Babol
@@ -10193,6 +10342,8 @@ Asia/Iran/Rasht/	Asia/Iran/Gilan/Rasht
 Asia/Iran/Sari/	Asia/Iran/Māzandarān/Sari
 Asia/Iran/Tabriz/	Asia/Iran/East Azerbaijan Province/Tabriz
 Asia/Iran/Zahedan/	Asia/Iran/Sistan and Baluchestan/Zahedan
+
+# Iraq
 Asia/Iraq/Al-Najaf/*	Asia/Iraq/Al-Najaf-Al-Ashraf/*
 Asia/Iraq/Erbil/	Asia/Iraq/Iraqi Kurdistan/Erbil (Iraqi Kurdistan)
 Asia/Iraq/Iraqi Kurdistan/Erbil	Asia/Iraq/Iraqi Kurdistan/Erbil (Iraqi Kurdistan)
@@ -10200,12 +10351,16 @@ Asia/Iraq/Kurdistan Region/Erbil	Asia/Iraq/Kurdistan Region/Erbil (Kurdistan Reg
 Asia/Iraq/Kurdistan Region/Iraq	Asia/Iraq/Kurdistan Region/
 Asia/Iraq/Kurdistan/*	Asia/Iraq/Iraqi Kurdistan/*
 Asia/Iraq/Thi-Qar Province/*	Asia/Iraq/Dhi Qar Province/*
+
+# Ireland
 Europe/Ireland/Constituency of Clare/*	Europe/Ireland/Clare/*
 Europe/Ireland/Constituency of Limerick City/*	Europe/Ireland/Limerick/*
 Europe/Ireland/Constituency of Limerick County/*	Europe/Ireland/Limerick/*
 Europe/Ireland/Constituency of Tipperary/*	Europe/Ireland/Tipperary/*
 Europe/Ireland/Limerick City/	Europe/Ireland/Limerick/Limerick City
 Europe/Ireland/Limerick/Limerick County	Europe/Ireland/Limerick/
+
+# Israel
 Asia/Israel/*/Beni Brak	Asia/Israel/Tel Aviv District/Bnei Brak
 Asia/Israel/*/Modi'In Ilit	Asia/Israel/Judea and Samaria/Modi'in Illit
 Asia/Israel/*/Moi'In Ilit	Asia/Israel/Judea and Samaria/Modi'in Illit
@@ -10314,6 +10469,8 @@ Europe/Israel/Herzliya/	Asia/Israel/Tel Aviv District/Herzelia
 Israel/Asia/Asia/	Asia/Israel/Israel/
 Israel/Asia/Central/	Asia/Israel/Central District IL/
 Israel/Asia/Southern/	Asia/Israel/South District/
+
+# Italy
 Euorpe/Italy/Umbria/	Europe/Italy/Umbria/
 Europe/Italia/*/*	Europe/Italy/*/*
 Europe/Italy/*/Verona	Europe/Italy/*/Verona IT
@@ -10432,13 +10589,19 @@ Europe/Italy/Veneto/Treviso	Europe/Italy/Veneto/Treviso (Veneto)
 Europe/Italy/Veneto/Treviso IT	Europe/Italy/Veneto/Treviso (Veneto)
 Europe/Spain/Catalunya/Viterbo (Italia)	Europe/Italy/Lazio/Viterbo IT
 Italy/Apulia/Bari/	Europe/Italy/Apulia/Bari
+
+# Jamaica
 North America/Jamaica/Caribbean/*	North America/Jamaica/Jamaica/*
 South America/Jamaica/Caribbean/	North America/Jamaica/Jamaica/
+
+# Japan
 Asia/Japan/Kyushu/Nagasaki	Asia/Japan/Nagasaki/
 Asia/Japan/Kyusyu/*	Asia/Japan/Kyushu/*
 Asia/Japan/Oska/*	Asia/Japan/Osaka/*
 Asia/Japan/Shizuoka/East	Asia/Japan/Shizuoka/East JP
 Asia/Japan/Shizuoka/West	Asia/Japan/Shizuoka/West JP
+
+# Kazakhstan
 Asia/Kazakhstan/Aktobe City/	Asia/Kazakhstan/Aktobe Region/Aktobe City
 Asia/Kazakhstan/Almaty Region/*	Asia/Kazakhstan/Almaty/*
 Asia/Kazakhstan/Almaty/Tengizchevroil	Asia/Kazakhstan/Almaty/
@@ -10461,6 +10624,8 @@ Asia/Kazakhstan/Zhambyl Region/	Asia/Kazakhstan/Jambyl Region/
 Asia/Kazakhstan/Zhambyl Region/Taraz	Asia/Kazakhstan/Jambyl Region/Taraz
 Asia/Kazakhstan/Zhambyl/*	Asia/Kazakhstan/Jambyl Region/*
 Asia/Kazkahstan/*/*	Asia/Kazakhstan/*/*
+
+# Kenya
 Africa/Kenya/Bomet/Buret	Africa/Kenya/Bomet/Buret (Bomet)
 Africa/Kenya/Buisa/*	Africa/Kenya/Busia KE/*
 Africa/Kenya/Busia/*	Africa/Kenya/Busia KE/*
@@ -10499,6 +10664,8 @@ Africa/Kenya/Trans Nzoia/*	Africa/Kenya/Trans-Nzoia/*
 Africa/Kenya/Transzoia/*	Africa/Kenya/Trans-Nzoia/*
 Africa/Kenya/Unknown/	Africa/Kenya/Kenya/
 Africa/Kenya/Wakiso/	Africa/Kenya/Kenya/
+
+# Kosovo
 Europe/Kosovo/Fushe Kosove/	Europe/Kosovo/Pristina/Fushe Kosove
 Europe/Kosovo/Gjilan/Kamenice	Europe/Kosovo/Gjilan/Kamenice XK
 Europe/Kosovo/Istog/	Europe/Kosovo/Pristina/Istog
@@ -10520,12 +10687,18 @@ Europe/Serbia/Gracanica/	Europe/Kosovo/Pristina/Gracanica
 Europe/Serbia/Kosovska Mitrovica/*	Europe/Kosovo/Mitrovica/*
 Europe/Serbia/Lipljan/	Europe/Kosovo/Pristina/Lipljan
 Europe/Serbia/Strpce/	Europe/Kosovo/Ferizaj/Strpce
+
+# Kuwait
 Asia/Kuwait/Al-Asima/*	Asia/Kuwait/Al Asimah/*
 Asia/Kuwait/Dasman/	Asia/Kuwait/Kuwait/Dasman
 Asia/Kuwait/Hawali/	Asia/Kuwait/Kuwait/Hawali
 Asia/Kuwait/Hawally/*	Asia/Kuwait/Hawalli/*
 Asia/Kuwait/Kuwait City/	Asia/Kuwait/Al Asimah/Kuwait City
+
+# Laos
 Asia/Laos/Vientiane Capital/	Asia/Laos/Vientiane/Vientiane Capital
+
+# Latvia
 Europe/Latvia/Adazu Novads/	Europe/Latvia/Vidzeme/Adazu Novads
 Europe/Latvia/Aizkraukles Novads/	Europe/Latvia/Zemgale/Aizkraukles Novads
 Europe/Latvia/Aluksnes Novads/	Europe/Latvia/Vidzeme/Aluksnes Novads
@@ -10566,6 +10739,8 @@ Europe/Latvia/Valkas Novads/	Europe/Latvia/Vidzeme/Valkas Novads
 Europe/Latvia/Valmieras Novads/	Europe/Latvia/Vidzeme/Valmieras Novads
 Europe/Latvia/Ventspils Novads/	Europe/Latvia/Courland/Ventspils Novads
 Europe/Latvia/Ventspils/*	Europe/Latvia/Ventspils Novads/*
+
+# Lebanon
 Asia/Lebanon/Aley/Mount Lebanon	Asia/Lebanon/Aley/Mount Lebanon (Aley)
 Asia/Lebanon/Baabda/Mount Lebanon	Asia/Lebanon/Baabda/Mount Lebanon (Baabda)
 Asia/Lebanon/Baalbeck/	Asia/Lebanon/Baalbeck Hermel/Baalbeck
@@ -10591,12 +10766,20 @@ Asia/Lebanon/South/*	Asia/Lebanon/South Governorate/*
 Asia/Lebanon/Tripoli/*	Asia/Lebanon/North Governorate/Tripoli (North Governorate)
 Asia/Lebanon/Zahle/*	Asia/Lebanon/Beqaa Governorate/Zahle
 Asia/Lebanon/Zgharta/North Lebanon	Asia/Lebanon/Zgharta/North Lebanon (Zgharta)
+
+# Lesotho
 Africa/Lesotho/Mohales' Hoek/*	Africa/Lesotho/Mohale's Hoek/*
 Africa/Lesotho/Qachas' Nek/*	Africa/Lesotho/Qacha's Nek/*
+
+# Liberia
 Africa/Liberia/Maryland/	Africa/Liberia/Maryland LR/
+
+# Liechtenstein
 Europe/Liechtenstein/Fuerstentum Liechtenstein/*	Europe/Liechtenstein/Liechtenstein/*
 Europe/Liechtenstein/Nendeln/	Europe/Liechtenstein/Eschen/Nendeln
 Europe/Switzerland/Fuerstentum Liechtenstein/*	Europe/Liechtenstein/Liechtenstein/*
+
+# Lithuania
 Europe/Lithuania/Alytaus Apskr./*	Europe/Lithuania/Alytaus Apskritis/*
 Europe/Lithuania/Alytaus Apskr/*	Europe/Lithuania/Alytaus Apskritis/*
 Europe/Lithuania/Alytaus/*	Europe/Lithuania/Alytaus Apskritis/*
@@ -10682,7 +10865,11 @@ Europe/Lithuania/Visagino/	Europe/Lithuania/Utena Apskritis/Visaginas
 Europe/Lithuania/Zarasų R./	Europe/Lithuania/Utena Apskritis/Zarasų rajono savivaldybė
 Europe/Lithuania/Šiaulių Apskr./*	Europe/Lithuania/Siauliu Apskritis/*
 Europe/Lithuania/Širvintų R./	Europe/Lithuania/Vilnius/Širvintų rajono savivaldybė
+
+# Luxembourg
 Europe/Luxembourg/Strassen/*	Europe/Luxembourg/Strassen LU/*
+
+# Madagascar
 Africa/Madagascar/Analamanga/Fenoarivo	Africa/Madagascar/Analanjirofo/Fenoarivo
 Africa/Madagascar/Antananarivo/	Africa/Madagascar/Analamanga/Antananarivo
 Africa/Madagascar/Antananarivo/Analamanga	Africa/Madagascar/Analamanga/
@@ -10699,6 +10886,8 @@ Africa/Madagascar/Toamasina/Analanjirofo	Africa/Madagascar/Analanjirofo/
 Africa/Madagascar/Toamasina/Atsinanana	Africa/Madagascar/Atsinanana/
 Africa/Madagascar/Toliara/Atsimo-Andrefana	Africa/Madagascar/Atsimo-Andrefana/
 Africa/Madagascar/Toliara/Menabe	Africa/Madagascar/Menabe/
+
+# Malawi
 Africa/Malawi/Blantyre/	Africa/Malawi/Southern Region MW/Blantyre
 Africa/Malawi/Bwaila/	Africa/Malawi/Central Region MW/Lilongwe
 Africa/Malawi/Central Region MW/Central	Africa/Malawi/Central Region MW/Central MW
@@ -10722,6 +10911,8 @@ Africa/Malawi/Queens/	Africa/Malawi/Southern Region MW/Blantyre
 Africa/Malawi/Southern Region/*	Africa/Malawi/Southern Region MW/*
 Africa/Malawi/Southern/*	Africa/Malawi/Southern Region MW/*
 Africa/Malawi/Zomba/	Africa/Malawi/Southern Region MW/Zomba
+
+# Malaysia
 Aisa/Malaysia/*/*	Asia/Malaysia/*/*
 Asia/Malaysia/Asia/Malaysia	Asia/Malaysia/Malaysia/
 Asia/Malaysia/Bukit Bintang/	Asia/Malaysia/Kuala Lumpur/Bukit Bintang
@@ -10738,6 +10929,8 @@ Asia/Malaysia/Salak/	Asia/Malaysia/Kuala Lumpur/Salak
 Asia/Malaysia/Wp Kuala Lumpur/*	Asia/Malaysia/Kuala Lumpur/*
 Asia/Malaysia/Wp Labuan/*	Asia/Malaysia/Labuan/*
 Asia/Malaysia/Wp Putrajaya/*	Asia/Malaysia/Putrajaya/*
+
+# Maldives
 Asia/Maldives/Aa. Himandhoo/	Asia/Maldives/Alif Alif Atoll/Himandhoo
 Asia/Maldives/Aa.Himandhoo/	Asia/Maldives/Alif Alif Atoll/Himandhoo
 Asia/Maldives/Aa.Mathiveri/	Asia/Maldives/Mathiveri/
@@ -10778,6 +10971,8 @@ Asia/Maldives/Th. Veymandoo/	Asia/Maldives/Thaa Atoll/Veymandoo
 Asia/Maldives/V. Felidhoo/	Asia/Maldives/Vaavu Atoll/Felidhoo
 Asia/Maldives/V. Fulidhoo/	Asia/Maldives/Vaavu Atoll/Fulidhoo
 Asia/Maldives/Villimale'/	Asia/Maldives/Vilimalé/
+
+# Mauritius
 */Mauritius/Flacq/Cite Lóiseau	*/Mauritius/Flacq/Cite L'oiseau
 */Mauritius/Flacq/Lécroignard	*/Mauritius/Flacq/Ecroignard
 Africa/Mauritius/Black River/Albion	Africa/Mauritius/Black River/Albion MU
@@ -10789,6 +10984,8 @@ Africa/Mauritius/Plaine-Wilhems/Henrietta	Africa/Mauritius/Plaine-Wilhems/Henrie
 Africa/Mauritius/Plaine-Wilhems/St Paul	Africa/Mauritius/Plaine-Wilhems/St Paul MU
 Africa/Mauritius/Plaines Wilhems/*	Africa/Mauritius/Plaine-Wilhems/*
 Africa/Mauritius/Port-Louis/*	Africa/Mauritius/Port Louis/*
+
+# Mexico
 Mexico/Baja California/Tijuana/	North America/Mexico/Baja California/Tijuana
 North America/Mexico/Aguascalientes/Jesus Maria	North America/Mexico/Aguascalientes/Jesus Maria MX
 North America/Mexico/Aguascallientes/*	North America/Mexico/Aguascalientes/*
@@ -10856,14 +11053,20 @@ North America/Mexico/Zacatecas/Rio Grande	North America/Mexico/Zacatecas/Rio Gra
 North America/Mexico/Zacatecas/Villa Hidalgo	North America/Mexico/Zacatecas/Villa Hidalgo (Zacatecas)
 North America/México/*/*	North America/Mexico/*/*
 South America/Mexico/*/*	North America/Mexico/*/*
+
+# Moldova
 Europe/Moldova/Rabnita/	Europe/Moldova/Rezina/Rabnita
 Europe/Republic of Moldova//	Europe/Moldova//
 Europe/Republic of Moldova/Chisinau/*	Europe/Moldova/Chisinau/*
 Europe/Republic of Moldova/Republic of Moldova/*	Europe/Moldova/Moldova/*
+
+# Montenegro
 Europe/Montenegro/Central Region/Podgorica	Europe/Montenegro/Podgorica/
 Europe/Montenegro/Heceg Novi/	Europe/Montenegro/Herceg Novi/
 Europe/Montenegro/Northern Region/Pljevlja	Europe/Montenegro/Pljevlja/
 Europe/Montenegro/Western Region/Niksic	Europe/Montenegro/Niksic/
+
+# Morocco
 */Morocoo/*/*	*/Morocco/*/*
 Afirica/Morocoo/Ouarzazate/	Africa/Morocco/Ouarzazate/
 Africa/Morocco/Ain Aouda/	Africa/Morocco/Rabat/Ain Aouda
@@ -10880,6 +11083,8 @@ Africa/Morocco/My Youssef/	Africa/Morocco/Morocco/
 Africa/Morocco/Sale/*	Africa/Morocco/Salé/*
 Africa/Morocco/Tanger/	Africa/Morocco/Tanger-Tetouan-Al Hoceima/
 Africa/Morocco/Tangier/	Africa/Morocco/Tanger-Tetouan-Al Hoceima/Tangier
+
+# Mozambique
 Africa/Mosambik/*/*	Africa/Mozambique/*/*
 Africa/Mosambik/Munich/*	Africa/Mozambique/Mozambique/*
 Africa/Mozambique/Beira/	Africa/Mozambique/Sofala/Beira
@@ -10894,16 +11099,22 @@ Africa/Mozambique/Maputo/Maputo Cidade	Africa/Mozambique/Maputo/Maputo City
 Africa/Mozambique/Marracuene/	Africa/Mozambique/Maputo/Marracuene
 Africa/Mozambique/Quelimane/	Africa/Mozambique/Zambezia/Quelimane
 Africa/Mozambique/Ressano Garcia/	Africa/Mozambique/Maputo/Ressano Garcia
+
+# Myanmar
 Asia/Myanmar/Kalay/	Asia/Myanmar/Sagaing/Kalay
 Asia/Myanmar/Kengtung/	Asia/Myanmar/Shan/Kengtung
 Asia/Myanmar/Lashio/	Asia/Myanmar/Shan/Lashio
 Asia/Myanmar/Myeik/	Asia/Myanmar/Thanintharyi/Myeik
 Asia/Myanmar/Naypyidaw/*	Asia/Myanmar/Naypyitaw/*
+
+# Namibia
 Africa/Namibia/Karas/*	Africa/Namibia/ǁKaras/*
 Africa/Namibia/Kharas/*	Africa/Namibia/ǁKaras/*
 Africa/Namibia/Oshakati/	Africa/Namibia/Oshana/Oshakati
 Africa/Namibia/Otjozodjupa/*	Africa/Namibia/Otjozondjupa/*
 Africa/Namibia/Rundu/	Africa/Namibia/Kavango East/Rundu
+
+# Nepal
 Asia/Nepal/Bagmati/Lalitpur	Asia/Nepal/Bagmati/Lalitpur NP
 Asia/Nepal/Banke/	Asia/Nepal/Lumbini/Banke
 Asia/Nepal/Bara/*	Asia/Nepal/Bara NP/*
@@ -10928,6 +11139,8 @@ Asia/Nepal/Province1/*	Asia/Nepal/Province 1/*
 Asia/Nepal/Rupandehi/	Asia/Nepal/Lumbini/Rupandehi
 Asia/Nepal/Sunsari/	Asia/Nepal/Province 1/Sunsari
 Asia/Nepal/Udayapur/	Asia/Nepal/Province 1/Udayapur
+
+# Netherlands
 Europe/Belgium/Brummen/	Europe/Netherlands/Gelderland/Brummen
 Europe/Belgium/Mepel/*	Europe/Netherlands/Drenthe/Meppel
 Europe/Belgium/Raalte/	Europe/Netherlands/Overijssel/Raalte
@@ -11016,6 +11229,8 @@ Europe/Poland/Zuid-Holland/*	Europe/Netherlands/South Holland/*
 Europe/The Netherlands/Etten-Leur/	Europe/Netherlands/North Brabant/Etten-Leur
 Europe/The Netherlands/Graauw/	Europe/Netherlands/Zeeland/Graauw
 South America/St Eustatius//	Europe/Netherlands/St Eustatius/St Eustatius
+
+# New Zealand
 Oceania/New Zealand/Canterbury/West Coast	Oceania/New Zealand/Canterbury/West Coast NZ
 Oceania/New Zealand/Capital and Coast/	Oceania/New Zealand/Wellington/Capital and Coast
 Oceania/New Zealand/Capital and Coast/*	Oceania/New Zealand/Capital And Coast/*
@@ -11029,7 +11244,11 @@ Oceania/New Zealand/Tairawhiti/	Oceania/New Zealand/Manawatu-Whanganui/Tairawhit
 Oceania/New Zealand/Waitemata/	Oceania/New Zealand/Auckland/Waitemata
 Oceania/New Zealand/West Coast/	Oceania/New Zealand/Canterbury/West Coast NZ
 Oceania/New Zealand/Whanganui/	Oceania/New Zealand/Manawatu-Whanganui/Whanganui
+
+# Niger
 Africa/Niger/Dosso/Gaya	Africa/Niger/Dosso/Gaya NE
+
+# Nigeria
 Africa/Nigeria/Akwa Ibom/*	Africa/Nigeria/Akwa-Ibom/*
 Africa/Nigeria/Akwa-Ibom State/*	Africa/Nigeria/Akwa-Ibom/*
 Africa/Nigeria/Bayelsa/*	Africa/Nigeria/Bayelsa State/*
@@ -11059,6 +11278,8 @@ Africa/Nigeria/Oyo/*	Africa/Nigeria/Oyo State/*
 Africa/Nigeria/Ragos/*	Africa/Nigeria/Lagos/*
 Africa/Nigeria/Rivers State/*	Africa/Nigeria/Rivers/*
 Africa/Niogeria/*/*	Africa/Nigeria/*/*
+
+# North Macedonia
 Europe/Macedonia/*/*	Europe/North Macedonia/*/*
 Europe/North Macedonia/Berovo/	Europe/North Macedonia/Eastern Region MK/Berovo
 Europe/North Macedonia/Bitola/	Europe/North Macedonia/Pelagonia/Bitola
@@ -11079,6 +11300,8 @@ Europe/North Macedonia/Tetoc/*	Europe/North Macedonia/Tetovo/*
 Europe/North Macedonia/Veles/	Europe/North Macedonia/Vardar/Veles
 North Macedonia/Kavadarci/Kavadarci/	Europe/North Macedonia/Kavadarci/Kavadarci
 North Macedonia/Kochani/Kochani/	Europe/North Macedonia/Eastern Region MK/Kochani
+
+# Norway
 Europe/Norway/Bergen/	Europe/Norway/Vestland/Bergen NO
 Europe/Norway/Buskerud/	Europe/Norway/Viken/Buskerud
 Europe/Norway/Moreogromsdal/*	Europe/Norway/More Og Romsdal/*
@@ -11089,6 +11312,8 @@ Europe/Norway/Tromsogfinnmark/*	Europe/Norway/Troms Og Finnmark/*
 Europe/Norway/Trøndelag/*	Europe/Norway/Trondelag/*
 Europe/Norway/Vestfold – Telemark/*	Europe/Norway/Vestfold Og Telemark/*
 Europe/Norway/Vestland/Bergen	Europe/Norway/Vestland/Bergen NO
+
+# Oman
 Asia/Oman/Al Buraimi/*	Asia/Oman/Buraimi/*
 Asia/Oman/Alwusta/*	Asia/Oman/Al Wusta/*
 Asia/Oman/Buraymi/Buraymi	Asia/Oman/Buraimi/Buraimi
@@ -11101,6 +11326,8 @@ Asia/Oman/North Sharqiya/*	Asia/Oman/North Sharqiyah/*
 Asia/Sultanate of Oman/*/*	Asia/Oman/*/*
 Asia/Sultanate of Oman/Dakheliya/*	Asia/Oman/Dakhiliyah/*
 Asia/Sultanate of Oman/Dhahira/*	Asia/Oman/Dhahirah/*
+
+# Pakistan
 Asia/Pakistan/Ajk/*	Asia/Pakistan/Azad Kashmir/*
 Asia/Pakistan/Alhore/*	Asia/Pakistan/Punjab PK/Lahore
 Asia/Pakistan/Bhakkar/	Asia/Pakistan/Punjab PK/Bhakkar
@@ -11147,7 +11374,11 @@ Asia/Pakistan/Swabi/	Asia/Pakistan/Khyber Pakhtunkhwa/Swabi
 Asia/Pakistan/Swat/	Asia/Pakistan/Khyber Pakhtunkhwa/Swat
 Asia/Pakistan/Unknown/	Asia/Pakistan/Pakistan/
 Asia/Pakistan/Vehari./	Asia/Pakistan/Punjab PK/Vehari
+
+# Palau
 Oceania/Palau/Pw/	Oceania/Palau/Palau/
+
+# Palestine
 Asia/Israel/Elkana/*	Asia/Palestine/West Bank/Elkana
 Asia/Israel/Jerusalem/Maale Edomim	Asia/Palestine/West Bank/Maale-Edumim
 Asia/Israel/Judea and Samaria/Ariel	Asia/Palestine/West Bank/Ariel
@@ -11188,6 +11419,8 @@ Asia/West Bank/Ramallah/	Asia/Palestine/Ramallah and al-Bireh Governorate/Ramall
 Asia/West Bank/Salfit/	Asia/Palestine/West Bank/Salfit
 Asia/West Bank/Tubas/*	Asia/Palestine/Tubas/*
 Asia/West Bank/Tulkarem/	Asia/Palestine/West Bank/Tulkarem
+
+# Panama
 */Panama/*/*	North America/Panama/*/*
 North America/Panama/*/Aguadulce	North America/Panama/Cocle/Aguadulce PA
 North America/Panama/*/Arraijan	North America/Panama/Panama Oeste/Arraiján
@@ -11293,6 +11526,8 @@ North America/Panama/Unspecified/	North America/Panama/Panama Center/
 North America/Panama/Veraguas/Las Palmas	North America/Panama/Veraguas/Las Palmas PA
 North America/Panama/Veraguas/Montijo	North America/Panama/Veraguas/Montijo PA
 North America/Panama/Veraguas/San Francisco PA	North America/Panama/Panama Center/San Francisco PA
+
+# Paraguay
 South America/Paraguay/Aregua/	South America/Paraguay/Central Paraguay/Aregua
 South America/Paraguay/Areguá/	South America/Paraguay/Central Paraguay/Aregua
 South America/Paraguay/Asunción/*	South America/Paraguay/Asuncion/*
@@ -11359,6 +11594,8 @@ South America/Paraguay/Villeta/	South America/Paraguay/Central Paraguay/Villeta 
 South America/Paraguay/Ypane/	South America/Paraguay/Central Paraguay/Ypane
 South America/Paraguay/Ypané/	South America/Paraguay/Central Paraguay/Ypané
 South America/Paraguay/Ñemby/	South America/Paraguay/Central Paraguay/Ñemby
+
+# Peru
 South America/Peru/Amazona/*	South America/Peru/Amazonas PE/*
 South America/Peru/Amazonas PE/San Nicolas	South America/Peru/Amazonas PE/San Nicolas PE
 South America/Peru/Amazonas/*	South America/Peru/Amazonas PE/*
@@ -11374,6 +11611,8 @@ South America/Peru/Lima/Jesús María	South America/Peru/Lima/Jesus Maria PE
 South America/Peru/Lima/Lima	South America/Peru/Lima/Lima PE
 South America/Peru/Lima/San Isidro	South America/Peru/Lima/San Isidro PE
 South America/Peru/Metropolitan Municipality of Lima/*	South America/Peru/Lima/*
+
+# Philippines
 Asia/Philippines/11/*	Asia/Philippines/Davao Region/*
 Asia/Philippines/3/*	Asia/Philippines/Central Luzon/*
 Asia/Philippines/4-A/*	Asia/Philippines/Calabarzon/*
@@ -11400,6 +11639,8 @@ Asia/Philippines/Region Xi (Davao Region)/*	Asia/Philippines/Davao Region/*
 Asia/Philippines/Taguig City/	Asia/Philippines/Manila/Taguig City
 Asia/Philippines/Tanay/Rizal, Calabarzon	Asia/Philippines/Calabarzon/Tanay
 Asia/Philippines/Zamboanga/*	Asia/Philippines/Zamboanga Peninsula/*
+
+# Poland
 Europe/Austria/Chalupki/	Europe/Poland/Slaskie/Chałupki
 Europe/Belgium/Myczkowce/	Europe/Poland/Podkarpackie/Myczkowce
 Europe/Poland/*/Przemysl	Europe/Poland/Podkarpackie/Przemysl
@@ -12132,6 +12373,8 @@ Europe/Poland/Łódzkie/Zuki	Europe/Poland/Łódzkie/
 Europe/Poland/Łódzkie/Łódź	Europe/Poland/Łódzkie/Lodz
 Europe/Poland/Śląskie/*	Europe/Poland/Slaskie/*
 Europe/Poland/Świętokrzyskie/*	Europe/Poland/Swietokrzyskie/*
+
+# Portugal
 Europe/Portugal/Barreiro/	Europe/Portugal/Setúbal/Barreiro
 Europe/Portugal/Beja/Santa Clara de Louredo	Europe/Portugal/Alentejo/Santa Clara de Louredo
 Europe/Portugal/Caldas Da Rainha/	Europe/Portugal/Leiria/Caldas Da Rainha
@@ -12153,7 +12396,11 @@ Europe/Portugal/Setúbal/Montijo	Europe/Portugal/Setúbal/Montijo PT
 Europe/Portugal/Sintra/	Europe/Portugal/Lisbon/Sintra
 Europe/Portugal/Sobral de Monte Agrac*/	Europe/Portugal/Lisbon/Sobral de Monte Agraço
 Europe/Portugal/Sobral de Monte Agrac?O/*	Europe/Portugal/Sobral de Monte AgracO/*
+
+# Qatar
 Asia/Qatar/Ad Dawhah/*	Asia/Qatar/Ad-Dawhah/*
+
+# Republic of the Congo
 */Republic of Congo/*/*	*/Republic of the Congo/*/*
 Africa/Congo/*/*	Africa/Republic of the Congo/*/*
 Africa/Republic of the Congo/Bacongo/	Africa/Republic of the Congo/Brazzaville/Bacongo
@@ -12166,6 +12413,8 @@ Africa/Republic of the Congo/Moungali/	Africa/Republic of the Congo/Brazzaville/
 Africa/Republic of the Congo/Ouenze/	Africa/Republic of the Congo/Brazzaville/Ouenze
 Africa/Republic of the Congo/Potopoto/	Africa/Republic of the Congo/Brazzaville/Poto-Poto
 Africa/Republic of the Congo/Talangai/	Africa/Republic of the Congo/Brazzaville/Talangai
+
+# Romania
 Europe/Romaina/*/*	Europe/Romania/*/*
 Europe/Romania/Breaza/	Europe/Romania/Prahova/Breaza
 Europe/Romania/Calaras/*	Europe/Romania/Calarasi/*
@@ -12185,6 +12434,8 @@ Europe/Romania/Suceava/Iasi	Europe/Romania/Iasi/Iasi
 Europe/Romania/Targu Mures/	Europe/Romania/Mures/Targu Mures
 Europe/Romania/Teloroman/*	Europe/Romania/Teleorman/*
 Europe/Romania/Unknown/	Europe/Romania/Romania/
+
+# Russia
 Europe/Russia/Adygea/Krasnoye	Europe/Russia/Adygea/Krasnoye (Adygea)
 Europe/Russia/Adygea/Maykop	Europe/Russia/Adygea/Maykop (Adygea)
 Europe/Russia/Altai K/*	Europe/Russia/Altai Krai/*
@@ -12388,6 +12639,8 @@ Europe/Russia/Yaroslavl/Pokrovskoye	Europe/Russia/Yaroslavl/Pokrovskoye (Yarosla
 Europe/Russia/Yaroslavl/Rostov	Europe/Russia/Yaroslavl/Rostov (Yaroslavl)
 Europe/Russia/Zabaykalsky Krai/Novotroitsk	Europe/Russia/Zabaykalsky Krai/Novotroitsk (Zabaykalsky Krai)
 Europe/Russia/Zabaykalsky/*	Europe/Russia/Zabaykalsky Krai/*
+
+# Rwanda
 Africa/Rwanda/Bugesera/	Africa/Rwanda/Eastern Province RW/Bugesera
 Africa/Rwanda/Burera/	Africa/Rwanda/Northern Province RW/Burera
 Africa/Rwanda/Gakenke/	Africa/Rwanda/Northern Province RW/Gakenke
@@ -12401,11 +12654,17 @@ Africa/Rwanda/Nyaruguru/	Africa/Rwanda/Southern Province RW/Nyaruguru
 Africa/Rwanda/Rulindo/	Africa/Rwanda/Northern Province RW/Rulindo
 Africa/Rwanda/Rusume Border/	Africa/Rwanda/Eastern Province RW/Rusume Border
 Africa/Rwanda/Rwamagana/	Africa/Rwanda/Eastern Province RW/Rwamagana
+
+# Saint Barthélemy
 North America/Saint Barthelemy/*/*	North America/Saint Barthélemy/*/*
 North America/Saint Barthélemy/Saint Barthelemy/*	North America/Saint Barthélemy/Saint Barthélemy/*
 North America/Saint Barthélemy/Saint Martin/	North America/Saint Barthélemy/Saint Barthélemy/
+
+# Saint Kitts and Nevis
 North America/Saint Kitts and Nevis/Caribbean/*	North America/Saint Kitts and Nevis/Saint Kitts and Nevis/*
 South America/Saint Kitts and Nevis/Caribbean/	North America/Saint Kitts and Nevis/Saint Kitts and Nevis/
+
+# Saint Lucia
 North America/Saint Lucia/Caribbean/*	North America/Saint Lucia/Saint Lucia/*
 North America/St. Lucia/*/*	North America/Saint Lucia/*/*
 South America/Saint Lucia//	North America/Saint Lucia/Saint Lucia/
@@ -12413,14 +12672,20 @@ South America/Saint Lucia/Caribbean/	North America/Saint Lucia/Saint Lucia/
 South America/Saint Lucia/Saint Lucia/	North America/Saint Lucia/Saint Lucia/
 South America/St Lucia//	North America/Saint Lucia/Saint Lucia/
 South America/St Lucia/St Lucia/	North America/Saint Lucia/Saint Lucia/
+
+# Saint Vincent and the Grenadines
 North America/Saint Vincent and the Grenadines/Caribbean/*	North America/Saint Vincent and the Grenadines/Saint Vincent and the Grenadines/*
 South America/Saint Vincent and the Grenadines//	North America/Saint Vincent and the Grenadines/Saint Vincent and the Grenadines/
 South America/Saint Vincent and the Grenadines/Caribbean/	North America/Saint Vincent and the Grenadines/Saint Vincent and the Grenadines/
 South America/Saint Vincent and the Grenadines/Saint Vincent and the Grenadines/	North America/Saint Vincent and the Grenadines/Saint Vincent and the Grenadines/
+
+# Saudi Arabia
 Asia/Saudi Arabia/Eastern Province/*	Asia/Saudi Arabia/Eastern Province SA/*
 Asia/Saudi Arabia/Eastern Region/*	Asia/Saudi Arabia/Eastern Province SA/*
 Asia/Saudi Arabia/Jeddah/	Asia/Saudi Arabia/Mecca/Jeddah
 Asia/Saudi Arabia/Qatif/	Asia/Saudi Arabia/Eastern Province SA/Qatif
+
+# Senegal
 Africa/Senegal/Dakar/Iressef Diamniadio	Africa/Senegal/Dakar/Diamniadio
 Africa/Senegal/Ds Khombole/	Africa/Senegal/Thies/Khombole
 Africa/Senegal/Ds Mbour/	Africa/Senegal/Thies/Mbour
@@ -12436,6 +12701,8 @@ Africa/Senegal/Saint-Louis/*	Africa/Senegal/St-Louis/*
 Africa/Senegal/Senegal/Ngor	Africa/Senegal/Dakar/Ngor
 Africa/Senegal/St Louis/*	Africa/Senegal/St-Louis/*
 Africa/Senegal/Thies/Ds Mbour	Africa/Senegal/Thies/Mbour
+
+# Serbia
 Europe/Kosovo/Presheve/	Europe/Serbia/Central Serbia/Presheve
 Europe/Serbia/Aleksinac/	Europe/Serbia/Central Serbia/Aleksinac
 Europe/Serbia/Bac/	Europe/Serbia/South Bačka District/Bac
@@ -12491,9 +12758,15 @@ Europe/Serbia/Zlatibor District/Uzice	Europe/Serbia/Zlatibor District/Uzice RS
 Europe/Serbia/Zrenjanin/	Europe/Serbia/Central Banat District/Zrenjanin
 Europe/Serbiapozarevac//	Europe/Serbia/Braničevo District/Pozarevac
 Europe/Serbiapozarevac/Serbiapozarevac/	Europe/Serbia/Braničevo District/Pozarevac
+
+# Seychelles
 Africa/Seychelles/Anse Aux Pins/*	Africa/Seychelles/Anse Au Pins/*
 Africa/Seychelles/Baie Ste Anne Praslin/*	Africa/Seychelles/Baie St Anne Praslin/*
+
+# Sierra Leone
 Africa/Sierra Leone/Freetown/	Africa/Sierra Leone/Western Area/Freetown
+
+# Slovakia
 Chminianska Nova Ves///	Europe/Slovakia/Prešov/Chminianska Nova Ves
 Europe/Austria/Upper Austria/Ziarnadhronom	Europe/Slovakia/Banska Bystrica/Ziar nad Hronom
 Europe/Austria/Ziar nad Hronom/	Europe/Slovakia/Banska Bystrica/Ziar nad Hronom
@@ -13264,6 +13537,8 @@ Europe/Slovakia/Zuberec/	Europe/Slovakia/Zilina/Zuberec
 Europe/Slovakia/Zubrohlava/	Europe/Slovakia/Zilina/Zubrohlava
 Europe/Slovakia/Zvolen/	Europe/Slovakia/Banska Bystrica/Zvolen
 Europe/Slovakia/Šaľa Region/	Europe/Slovakia/Nitra/Sala
+
+# Slovenia
 Europe/Belgium/Maribar/	Europe/Slovenia/Maribor/
 Europe/Belgium/Miklavz Na Dravskem Polju/	Europe/Slovenia/Miklavž na Dravskem Polju/
 Europe/Belgium/Miklavz/	Europe/Slovenia/Miklavž na Dravskem Polju/
@@ -13272,10 +13547,14 @@ Europe/Belgium/Slovenska Bistrica/	Europe/Slovenia/Slovenska Bistrica/
 Europe/Belgium/Velenje/	Europe/Slovenia/Velenje/
 Europe/Slovenia/Unk/	Europe/Slovenia/Slovenia/
 Europe/Slovenia/Zacasna - Xxxx/	Europe/Slovenia/Slovenia/
+
+# Somalia
 Africa/Somalia/Banaadir/*	Africa/Somalia/Benadir/*
 Africa/Somalia/Marodi-Jex/*	Africa/Somalia/Maroodi Jeex/*
 Africa/Somalia/Mogadishu/*	Africa/Somalia/Benadir/Mogadishu
 Africa/Somalia/Mudug/	Africa/Somalia/Puntland/Mudug
+
+# South Africa
 Africa/South Africa/Cape Town/	Africa/South Africa/Western Cape Province/Cape Town
 Africa/South Africa/Cape Town/City of Cape Town	Africa/South Africa/Western Cape Province/Cape Town
 Africa/South Africa/City of Cape Town/	Africa/South Africa/Western Cape Province/City of Cape Town
@@ -13337,12 +13616,16 @@ Africa/South Africa/Western Cape/Northern	Africa/South Africa/Northern Cape/
 Africa/South Africa/Western Cape/Siyathemba	Africa/South Africa/Northern Cape/Siyathemba
 Africa/South Africa/Western Cape/Southern	Africa/South Africa/Western Cape Province/
 Africa/South Africa/Western Cape/Western	Africa/South Africa/Western Cape Province/
+
+# South Korea
 Asia/Korea/Youngin-Si/*	Asia/South Korea/Youngin-Si/*
 Asia/South Korea/Chungcheongnam-do/	Asia/South Korea/Chungcheongnam/Chungcheongnam
 Asia/South Korea/Gwanju/*	Asia/South Korea/Gwangju/*
 Asia/South Korea/Gyeonggi-do/	Asia/South Korea/Gyeonggi Province/Gyeonggi
 Asia/South Korea/Jeonbuk/*	Asia/South Korea/North Jeolla/*
 Asia/South Korea/Uijeongbu/	Asia/South Korea/Gyeonggi Province/Uijeongbu
+
+# Spain
 Africa/Canary Islands//	Europe/Spain/Canary Islands/
 Africa/Canary Islands/Canary Islands/*	Europe/Spain/Canary Islands/*
 Africa/Canary Islands/Gran Canaria/	Europe/Spain/Canary Islands/Gran Canaria
@@ -13606,6 +13889,8 @@ Europe/Spain/Toledo/*	Europe/Spain/Toledo ES/*
 Europe/Spain/Tossa de Mar/	Europe/Spain/Catalunya/Tossa de Mar
 Europe/Spain/Valence/	Europe/Spain/Comunitat Valenciana/
 Europe/Spain/Valencian Community/*	Europe/Spain/Comunitat Valenciana/*
+
+# Sri Lanka
 Asia/Sri Lanka/Ahungalla/	Asia/Sri Lanka/Southern Province LK/Ahungalla
 Asia/Sri Lanka/Ambalangoda/	Asia/Sri Lanka/Southern Province LK/Ambalangoda
 Asia/Sri Lanka/Ampara/	Asia/Sri Lanka/Eastern Province LK/Ampara
@@ -13735,10 +14020,14 @@ Asia/Srilanka/Malabe/	Asia/Sri Lanka/Western Province/Malabe
 Asia/Srilanka/Nugegoda/	Asia/Sri Lanka/Western Province/Nugegoda
 Asia/Srilanka/Piliyandala/	Asia/Sri Lanka/Western Province/Piliyandala
 Asia/Srilanka/Sri Jayawardenepura Kotte/	Asia/Sri Lanka/Western Province/Sri Jayawardenepura Kotte
+
+# Sudan
 Africa/Sudan/East Africa/	Africa/Sudan/Sudan/
 Africa/Sudan/Khartoum/	Africa/Sudan/Central Sudan/Khartoum
 Africa/Sudan/Portsudan/	Africa/Sudan/Red Sea State/Port Sudan
 Africa/Sudan/Western Nile/	Africa/Sudan/Sudan/
+
+# Sweden
 Europe/Sweden/Gavleborg County/*	Europe/Sweden/Gavleborgs Lan/*
 Europe/Sweden/Goteborg/	Europe/Sweden/Vastra Gotaland/Goteborg
 Europe/Sweden/Jonkopings Lan/*	Europe/Sweden/Jonkoping/*
@@ -13762,6 +14051,8 @@ Europe/Sweden/Västerbotten/	Europe/Sweden/Vasterbotten/
 Europe/Sweden/Västernorrland/*	Europe/Sweden/Vasternorrland/*
 Europe/Sweden/Västra Götaland/*	Europe/Sweden/Vastra Gotaland/*
 Europe/Sweden/Östergötland/*	Europe/Sweden/Ostergotland/*
+
+# Switzerland
 */Switzerland/Basel Land/*	Europe/Switzerland/Basel-Land/*
 */Switzerland/Basel Stadt/*	Europe/Switzerland/Basel-Stadt/*
 */Switzerland/Genève/*	Europe/Switzerland/Geneva/*
@@ -13913,6 +14204,8 @@ Europe/Switzerland/Zürich/Zurich	Europe/Switzerland/Zürich/Zürich
 Europe/Switzerland/Z√ºrich/*	Europe/Switzerland/Zürich/*
 Europe/Swizterland/*/*	Europe/Switzerland/*/*
 Switzerland/Basel-Landschaft/*/*	Europe/Switzerland/Basel-Land/*
+
+# Syria
 Asia/Syria/Aleppo/Ariha	Asia/Syria/Aleppo/Ariha (Aleppo)
 Asia/Syria/Aleppo/Harim	Asia/Syria/Aleppo/Harim (Aleppo)
 Asia/Syria/Aleppo/Jisr-Ash-Shugur	Asia/Syria/Aleppo/Jisr-Ash-Shugur (Aleppo)
@@ -13920,6 +14213,8 @@ Asia/Syria/Allepo/*	Asia/Syria/Aleppo/*
 Asia/Syria/Idleb/Ariha	Asia/Syria/Idleb/Ariha (Idleb)
 Asia/Syria/Idleb/Harim	Asia/Syria/Idleb/Harim (Idleb)
 Asia/Syria/Idleb/Jisr-Ash-Shugur	Asia/Syria/Idleb/Jisr-Ash-Shugur (Idleb)
+
+# Taiwan
 Asia/Taiwan/Kaohsiung Medical University Chung-Ho Memorial Hospital/	Asia/Taiwan/Taiwan/Kaohsiung
 Asia/Taiwan/Kaohsiung/	Asia/Taiwan/Taiwan/Kaohsiung
 Asia/Taiwan/Keelung City/*	Asia/Taiwan/Keelung/*
@@ -13927,7 +14222,11 @@ Asia/Taiwan/Pingtung/	Asia/Taiwan/Pingtung County/
 Asia/Taiwan/Tainan City/*	Asia/Taiwan/Tainan/*
 Asia/Taiwan/Taipei/	Asia/Taiwan/Taiwan/Taipei
 Asia/Taiwan/Taoyuan/	Asia/Taiwan/Taiwan/Taoyuan
+
+# Tanzania
 Africa/Tanzania/Mwanza/*	Africa/Tanzania/Mwanza TZ/*
+
+# Thailand
 Asia/Thailand/Angthong/*	Asia/Thailand/Ang Thong/*
 Asia/Thailand/Chiangmai/*	Asia/Thailand/Chiang Mai/*
 Asia/Thailand/Chiangrai/*	Asia/Thailand/Chiang Rai/*
@@ -13958,16 +14257,22 @@ Asia/Thailand/Sisaket/*	Asia/Thailand/Si Sa Ket/*
 Asia/Thailand/Suratthani/*	Asia/Thailand/Surat Thani/*
 Asia/Thailand/Ubon Ratchathani/*	Asia/Thailand/Ubonratchathani/*
 Asia/Thailand/Udonthani/*	Asia/Thailand/Udon Thani/*
+
+# Togo
 Africa/Togo/Lome-Golfe/*	Africa/Togo/Golfe/Lome
 Africa/Togo/Lome/*	Africa/Togo/Golfe/Lome
 Africa/Togo/Lomé/	Africa/Togo/Golfe/Lome
 Africa/Togo/Plateau/*	Africa/Togo/Plateaux/*
 Africa/Togo/Tchaoudjo/	Africa/Togo/Centrale Region TG/Tchaoudjo
 Africa/Togo/West Africa/*	Africa/Togo/Togo/*
+
+# Trinidad and Tobago
 North America/Trinidad and Tobago/*/*	South America/Trinidad and Tobago/*/*
 South America/Trinidad and Tobago/Caribbean/	South America/Trinidad and Tobago/Trinidad and Tobago/
 South America/Trinidad/*/*	South America/Trinidad and Tobago/*/*
 South America/Trinidad//	South America/Trinidad and Tobago/Trinidad and Tobago/
+
+# Tunisia
 Africa/Tunisia/Bizert Nord/*	Africa/Tunisia/Bizerte/*
 Africa/Tunisia/Bizerte/Cobbala	Africa/Tunisia/Bizerte/
 Africa/Tunisia/Bni Khaled/	Africa/Tunisia/Nabeul/Bni Khaled
@@ -13986,10 +14291,14 @@ Africa/Tunisia/Tunis/Ben Arous	Africa/Tunisia/Ben Arous/Ben Arous
 Africa/Tunisia/Tunis/Marsa	Africa/Tunisia/Tunis/La Marsa
 Africa/Tunisia/Tunks/	Africa/Tunisia/Tunisia/
 Africa/Tunisia/Zaghouane/*	Africa/Tunisia/Zaghouen/*
+
+# Turkey
 */Turkey/*/*	Europe/Turkey/*/*
 Europe/Turkey/Ctf/	Europe/Turkey//
 Europe/Turkey/Europe/*	Europe/Turkey/Turkey/*
 Europe/Turkey/Europe/Kayseri	Europe/Turkey/Kayseri/
+
+# USA
 */USA/North America/Oregon,Benton County	North America/USA/Oregon/Benton County OR
 */USA/North America/Oregon,Clackamas County	North America/USA/Oregon/Clackamas County
 */USA/North America/Oregon,Clatsop County	North America/USA/Oregon/Clatsop County OR
@@ -44506,6 +44815,8 @@ USA/California/Riverside/	North America/USA/California/Riverside County
 USA/California/San Diego/	North America/USA/California/San Diego County
 USA/Montana//	North America/USA/Montana/
 USA/Montana/Montana/	North America/USA/Montana/
+
+# Uganda
 Africa/Uganda/Busia/*	Africa/Uganda/Busia UG/*
 Africa/Uganda/Central Region/*	Africa/Uganda/Central Region UG/*
 Africa/Uganda/Central/*	Africa/Uganda/Central Uganda/*
@@ -44524,6 +44835,8 @@ Africa/Uganda/Northern/*	Africa/Uganda/Northern Region UG/*
 Africa/Uganda/Soroti/	Africa/Uganda/Eastern Region UG/Soroti
 Africa/Uganda/Tororo/	Africa/Uganda/Eastern Region UG/Tororo
 Africa/Uganda/Wakiso/	Africa/Uganda/Central Uganda/Wakiso
+
+# Ukraine
 Europe/Crimea/*/*	Europe/Ukraine/Crimea/*
 Europe/Crimea/Alushta/	Europe/Ukraine/Crimea/Alushta
 Europe/Crimea/Novofedorovka/	Europe/Ukraine/Crimea/Novofedorovka
@@ -44559,9 +44872,15 @@ Europe/Ukraine/Zakarpattia Region/*	Europe/Ukraine/Zakarpattia/*
 Europe/Ukraine/Zaporizhzhia Region/*	Europe/Ukraine/Zaporizhzhia/*
 Europe/Ukraine/Zaporizhzhia/	Europe/Ukraine/Zaporizhia Oblast/Zaporizhzhia
 Europe/Ukraine/Zaporizhzhya Region/*	Europe/Ukraine/Zaporizhzhia/*
+
+# Union of the Comoros
 Africa/Comoros/*/*	Africa/Union of the Comoros/*/*
+
+# United Arab Emirates
 Asia/United Arab Emirates/Abu Dhabi Emirate/*	Asia/United Arab Emirates/Abu Dhabi/*
 Asia/United Arab Emirates/Sharja/*	Asia/United Arab Emirates/Sharjah/*
+
+# United Kingdom
 */Anguilla/Caribbean/	Europe/United Kingdom/Anguilla/
 Europe/Belgium/Leicester/	Europe/United Kingdom/England/Leicester GB
 Europe/England//	Europe/United Kingdom/England/
@@ -44607,6 +44926,8 @@ South America/Montserrat/Caribbean/	Europe/United Kingdom/Montserrat/
 South America/Turks and Caicos Islands//	Europe/United Kingdom/Turks and Caicos Islands/
 South America/Turks and Caicos Islands/Caribbean/	Europe/United Kingdom/Turks and Caicos Islands/
 South America/Turks and Caicos Islands/Turks and Caicos Islands/*	Europe/United Kingdom/Turks and Caicos Islands/*
+
+# Uruguay
 South America/Uruguay/Bella Union/	South America/Uruguay/Artigas/Bella Union
 South America/Uruguay/Cerro Largo/Rio Branco	South America/Uruguay/Cerro Largo/Rio Branco UY
 South America/Uruguay/Chuy/	South America/Uruguay/Rocha/Chuy
@@ -44616,16 +44937,22 @@ South America/Uruguay/Rio Negro/*	South America/Uruguay/Departamento Rio Negro/*
 South America/Uruguay/San Jose/*	South America/Uruguay/Departamento San Jose/*
 South America/Uruguay/Tenta y Tres/*	South America/Uruguay/Treinta y Tres/*
 South America/Uruguay/Treinta Y Tres/*	South America/Uruguay/Treinta y Tres/*
+
+# Uzbekistan
 Asia/Uzbekistan/Kashkadarya Region/*	Asia/Uzbekistan/Qashqadaryo Region/*
 Asia/Uzbekistan/Tashkent City/*	Asia/Uzbekistan/Tashkent/*
 Asia/Uzbekistan/Tashkent Region/*	Asia/Uzbekistan/Tashkent/*
 Asia/Uzbekistan/Tashkent/Tashkent Region	Asia/Uzbekistan/Tashkent/Tashkent City
+
+# Venezuela
 South America/Venezuela/Amazonas/*	South America/Venezuela/Amazonas VE/*
 South America/Venezuela/Anzoategui/*	South America/Venezuela/Anzoátegui/*
 South America/Venezuela/Bolivar/*	South America/Venezuela/Bolivar VE/*
 South America/Venezuela/Dtt Capital/*	South America/Venezuela/Distrito Capital/*
 South America/Venezuela/Dtto Capital/*	South America/Venezuela/Distrito Capital/*
 South America/Venezuela/Sucre/*	South America/Venezuela/Sucre VE/*
+
+# Vietnam
 Asia/Viet Nam/*/*	Asia/Vietnam/*/*
 Asia/Vietnam/Angiang/*	Asia/Vietnam/An Giang/*
 Asia/Vietnam/Ba Ria Vung Tau/*	Asia/Vietnam/Ba Ria-Vung Tau/*
@@ -44661,6 +44988,8 @@ Asia/Vietnam/Thanhhoa/	Asia/Vietnam/Thanh Hoa/
 Asia/Vietnam/Tra Vinh/*	Asia/Vietnam/Travinh/*
 Asia/Vietnam/Vinh Phuc/*	Asia/Vietnam/Vinhphuc/*
 Asia/Vietnam/Vinhlong/*	Asia/Vietnam/Vinh Long/*
+
+# Zambia
 Africa/Zambia/Central/*	Africa/Zambia/Central Zambia/*
 Africa/Zambia/Chikankata/	Africa/Zambia/Southern Zambia/Chikankata
 Africa/Zambia/Choma/	Africa/Zambia/Southern Zambia/Choma
@@ -44697,6 +45026,8 @@ Africa/Zambia/Southern Zambia/Pemba	Africa/Zambia/Southern Zambia/Pemba ZM
 Africa/Zambia/Southern/*	Africa/Zambia/Southern Zambia/*
 Africa/Zambia/Western Province/*	Africa/Zambia/Western Zambia/*
 Africa/Zambia/Western/*	Africa/Zambia/Western Zambia/*
+
+# Zimbabwe
 Africa/Zimbabwe/Hre/*	Africa/Zimbabwe/Harare/*
 Africa/Zimbabwe/Mash. East/*	Africa/Zimbabwe/Mashonaland East Province/*
 Africa/Zimbabwe/Mashonalandwest/*	Africa/Zimbabwe/Mashonaland West Province/*
