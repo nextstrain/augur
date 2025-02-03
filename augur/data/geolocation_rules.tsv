@@ -1,5 +1,4 @@
 # General geolocation rules for renaming locations without hierarchical constraints
-*/*/*/24 de Diciembre	*/*/*/Parque Real
 */*/*/Agualva cacem	*/*/*/Agualva
 */*/*/Barcelona H	*/*/*/Barcelona
 */*/*/Brak Informacji	*/*/*/
@@ -16,7 +15,6 @@
 */*/*/Ilembe	*/*/*/iLembe
 */*/*/Imperial	*/*/*/Imperial County
 */*/*/Mañanitas	*/*/*/Las Mañanitas
-*/*/*/Milwaukee	*/*/*/Milwaukee County
 */*/*/Mina da Agua	*/*/*/Amadora
 */*/*/Outagamie Coun	*/*/*/Outagamie County
 */*/*/Qurayat	*/*/*/Qurayyat
@@ -50,8 +48,6 @@
 */*/Barisal/*	*/*/Barishal/*
 */*/Basel-Landschaft/*	*/*/Basel-Land/*
 */*/Bat-Yam/*	*/*/Bat Yam/*
-*/*/Bc/*	*/*/Baja California/*
-*/*/Bcs/*	*/*/Baja California Sur/*
 */*/Bourgogne-Franche-Comté/*	*/*/Bourgogne-France-Comté/*
 */*/Bucuresti/*	*/*/Bucharest/*
 */*/Buraymi/*	*/*/Buraimi/*
@@ -62,22 +58,15 @@
 */*/Ciudad Autonoma de Buenos Aires/*	*/*/Buenos Aires/*
 */*/Constituency Unknown/*	*/*//*
 */*/Dakarhuman/*	*/*/Dakar/*
-*/*/Ec/*	*/*/Eastern Cape/*
 */*/Edomex/*	*/*/Estado de Mexico/*
-*/*/Fs/*	*/*/Free State/*
 */*/Gavleborg/*	*/*/Gavleborgs Lan/*
 */*/Ghent/*	*/*/Gent/*
 */*/Goias/*	*/*/Goiás/*
-*/*/Gp/*	*/*/Gauteng/*
 */*/Grand-Est/*	*/*/Grand Est/*
 */*/Hauts-de-France/*	*/*/Hauts de France/*
 */*/Kongo-Central/*	*/*/Kongo Central/*
-*/*/Kzn/*	*/*/KwaZulu-Natal/*
 */*/Liege/*	*/*/Liège/*
-*/*/Lp/*	*/*/Limpopo/*
 */*/Luzern/*	*/*/Lucerne/*
-*/*/Ncr/*	*/*/National Capital Region/*
-*/*/Nw/*	*/*/North-West/*
 */*/Panama West/*	*/*/Panama Oeste/*
 */*/Pays-de-la-Loire/*	*/*/Pays de la Loire/*
 */*/Quangning/*	*/*/Quangninh/*
@@ -87,7 +76,6 @@
 */*/State of Mexico/*	*/*/Estado de Mexico/*
 */*/United States/*	*/*/USA/*
 */*/Washingtondc/*	*/*/Washington DC/*
-*/*/Wc/*	*/*/Western Cape Province/*
 */*/Zurich/*	*/*/Zürich/*
 */*/Île-de-France/*	*/*/Ile de France/*
 */*/Ústí nad Labem/*	*/*/Usti nad Labem/*
