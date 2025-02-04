@@ -9493,11 +9493,6 @@ Europe/France/Île-de-France/Moussy-le-Neuf	Europe/France/Ile de France/Moussy L
 Europe/France/Île-de-France/Pecq	Europe/France/Ile de France/Le Pecq
 Europe/France/Île-de-France/Villeneuve St Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
 Europe/France/Île-de-France/Villeneuve-St-Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
-Oceania/New Caledonia//	Europe/France/New Caledonia/
-Oceania/New Caledonia/New Caledonia/	Europe/France/New Caledonia/
-Oceania/New Caledonia/Noumea/	Europe/France/New Caledonia/Noumea
-Oceania/New Caledonia/Nounea/	Europe/France/New Caledonia/Nounea
-Oceania/New Caledonia/Poindimie/	Europe/France/New Caledonia/Poindimie
 Oceania/Wallis and Futuna Islands/Wallis/	Europe/France/Wallis and Futuna Islands/Wallis
 Oceania/Wallis and Futuna//	Europe/France/Wallis and Futuna/
 Oceania/Wallis and Futuna/Wallis/	Europe/France/Wallis and Futuna/Wallis
@@ -11207,6 +11202,12 @@ Europe/Poland/Zuid-Holland/*	Europe/Netherlands/South Holland/*
 Europe/The Netherlands/Etten-Leur/	Europe/Netherlands/North Brabant/Etten-Leur
 Europe/The Netherlands/Graauw/	Europe/Netherlands/Zeeland/Graauw
 South America/St Eustatius//	Europe/Netherlands/St Eustatius/St Eustatius
+
+# New Caledonia (French collective)
+Oceania/New Caledonia//	Oceania/New Caledonia/New Caledonia/
+Oceania/New Caledonia/Noumea/	Oceania/New Caledonia/New Caledonia/Noumea
+Oceania/New Caledonia/Nounea/	Oceania/New Caledonia/New Caledonia/Nounea
+Oceania/New Caledonia/Poindimie/	Oceania/New Caledonia/New Caledonia/Poindimie
 
 # New Zealand
 Oceania/New Zealand/Canterbury/West Coast	Oceania/New Zealand/Canterbury/West Coast NZ
