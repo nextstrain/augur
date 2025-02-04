@@ -7978,6 +7978,32 @@ North America/Canada/Ontario/Ottawa	North America/Canada/Ontario/Ottawa CA
 North America/Canada/Province Of Quebec/*	North America/Canada/Quebec/*
 North America/Canada/Toronto/	North America/Canada/Ontario/Toronto
 
+# Canary Islands (Spanish region)
+Africa/Canary Islands//	Africa/Canary Islands/Canary Islands/
+Africa/Canary Islands/Canary Islands/Las Palmas	Africa/Canary Islands/Canary Islands/Las Palmas de Gran Canaria
+Africa/Canary Islands/Gran Canaria/	Africa/Canary Islands/Canary Islands/Gran Canaria
+Africa/Canary Islands/Las Palmas de Gran Canaria/	Africa/Canary Islands/Canary Islands/Las Palmas de Gran Canaria
+Africa/Canary Islands/Las Palmas de Gran Canaria/Agaete	Africa/Canary Islands/Canary Islands/Agaete
+Africa/Canary Islands/Las Palmas de Gran Canaria/Arucas	Africa/Canary Islands/Canary Islands/Arucas
+Africa/Canary Islands/Las Palmas de Gran Canaria/Galdar	Africa/Canary Islands/Canary Islands/Galdar
+Africa/Canary Islands/Las Palmas de Gran Canaria/La Aldea de San Nicolas	Africa/Canary Islands/Canary Islands/La Aldea de San Nicolas
+Africa/Canary Islands/Las Palmas de Gran Canaria/Lanzarote	Africa/Canary Islands/Canary Islands/Lanzarote
+Africa/Canary Islands/Las Palmas de Gran Canaria/Moya	Africa/Canary Islands/Canary Islands/Moya
+Africa/Canary Islands/Las Palmas de Gran Canaria/Santa Brigida	Africa/Canary Islands/Canary Islands/Santa Brigida
+Africa/Canary Islands/Las Palmas de Gran Canaria/Santa Maria de Guia de Gran Canaria	Africa/Canary Islands/Canary Islands/Santa Maria de Guia de Gran Canaria
+Africa/Canary Islands/Las Palmas de Gran Canaria/Teror	Africa/Canary Islands/Canary Islands/Teror
+Africa/Canary Islands/Las Palmas de Gran Canaria/Valleseco	Africa/Canary Islands/Canary Islands/Valleseco
+Africa/Canary Islands/Las Palmas/	Africa/Canary Islands/Canary Islands/Las Palmas de Gran Canaria
+Europe/Canary Islands//	Africa/Canary Islands/Canary Islands/
+Europe/Canary Islands/Canary Islands/	Africa/Canary Islands/Canary Islands/
+Europe/Canary Islands/Gran Canaria/	Africa/Canary Islands/Canary Islands/Gran Canaria
+Europe/Canary Islands/Las Palmas de Gran Canaria/	Africa/Canary Islands/Canary Islands/Las Palmas de Gran Canaria
+Europe/Canary Islands/Las Palmas de Gran Canaria/*	Africa/Canary Islands/Canary Islands/*
+Europe/Canary Islands/Las Palmas/	Africa/Canary Islands/Canary Islands/Las Palmas de Gran Canaria
+Europe/Spain/Canaray Islands/*	Africa/Canary Islands/Canary Islands/*
+Europe/Spain/Canarias/*	Africa/Canary Islands/Canary Islands/*
+Europe/Spain/Islas Canarias/*	Africa/Canary Islands/Canary Islands/*
+
 # Chile
 South America/Chile/Aisen/*	South America/Chile/Aysén/*
 South America/Chile/Antofagasta./*	South America/Chile/Antofagasta/*
@@ -13617,29 +13643,6 @@ Asia/South Korea/Jeonbuk/*	Asia/South Korea/North Jeolla/*
 Asia/South Korea/Uijeongbu/	Asia/South Korea/Gyeonggi Province/Uijeongbu
 
 # Spain
-Africa/Canary Islands//	Europe/Spain/Canary Islands/
-Africa/Canary Islands/Canary Islands/*	Europe/Spain/Canary Islands/*
-Africa/Canary Islands/Gran Canaria/	Europe/Spain/Canary Islands/Gran Canaria
-Africa/Canary Islands/Las Palmas de Gran Canaria/	Europe/Spain/Canary Islands/Las Palmas de Gran Canaria
-Africa/Canary Islands/Las Palmas de Gran Canaria/Agaete	Europe/Spain/Canary Islands/Agaete
-Africa/Canary Islands/Las Palmas de Gran Canaria/Arucas	Europe/Spain/Canary Islands/Arucas
-Africa/Canary Islands/Las Palmas de Gran Canaria/Galdar	Europe/Spain/Canary Islands/Galdar
-Africa/Canary Islands/Las Palmas de Gran Canaria/La Aldea de San Nicolas	Europe/Spain/Canary Islands/La Aldea de San Nicolas
-Africa/Canary Islands/Las Palmas de Gran Canaria/Lanzarote	Europe/Spain/Canary Islands/Lanzarote
-Africa/Canary Islands/Las Palmas de Gran Canaria/Moya	Europe/Spain/Canary Islands/Moya
-Africa/Canary Islands/Las Palmas de Gran Canaria/Santa Brigida	Europe/Spain/Canary Islands/Santa Brigida
-Africa/Canary Islands/Las Palmas de Gran Canaria/Santa Maria de Guia de Gran Canaria	Europe/Spain/Canary Islands/Santa Maria de Guia de Gran Canaria
-Africa/Canary Islands/Las Palmas de Gran Canaria/Teror	Europe/Spain/Canary Islands/Teror
-Africa/Canary Islands/Las Palmas de Gran Canaria/Valleseco	Europe/Spain/Canary Islands/Valleseco
-Africa/Canary Islands/Las Palmas/	Europe/Spain/Canary Islands/Las Palmas de Gran Canaria
-Africa/Canary Islands/Madrid/*	Europe/Spain/Madrid/*
-Europe/Canary Islands//	Europe/Spain/Canary Islands/
-Europe/Canary Islands/Canary Islands/	Europe/Spain/Canary Islands/
-Europe/Canary Islands/Gran Canaria/	Europe/Spain/Canary Islands/Gran Canaria
-Europe/Canary Islands/Las Palmas de Gran Canaria/	Europe/Spain/Canary Islands/Las Palmas de Gran Canaria
-Europe/Canary Islands/Las Palmas de Gran Canaria/*	Europe/Spain/Canary Islands/*
-Europe/Canary Islands/Las Palmas/	Europe/Spain/Canary Islands/Las Palmas de Gran Canaria
-Europe/Canary Islands/Madrid/Madrid ES	Europe/Spain/Canary Islands/
 Europe/Spain/Albacete/	Europe/Spain/Castilla la Mancha/Albacete
 Europe/Spain/Alicante/	Europe/Spain/Comunitat Valenciana/Alicante
 Europe/Spain/Andalucia/*	Europe/Spain/Andalusia/*
@@ -13684,9 +13687,6 @@ Europe/Spain/Basque Country/Spain	Europe/Spain/Basque Country/
 Europe/Spain/Basque Country/Tolosa	Europe/Spain/Basque Country/Tolosa ES
 Europe/Spain/Basque Country/Vitoria	Europe/Spain/Basque Country/Vitoria-Gasteiz
 Europe/Spain/Cadiz/Rota	Europe/Spain/Andalusia/Rota
-Europe/Spain/Canaray Islands/*	Europe/Spain/Canary Islands/*
-Europe/Spain/Canarias/*	Europe/Spain/Canary Islands/*
-Europe/Spain/Canary Islands/Las Palmas	Europe/Spain/Canary Islands/Las Palmas de Gran Canaria
 Europe/Spain/Cantabria/Escobedo	Europe/Spain/Cantabria/Escobedo ES
 Europe/Spain/Cantabria/Gama	Europe/Spain/Cantabria/Gama ES
 Europe/Spain/Cantabria/Penacastillo	Europe/Spain/Cantabria/Peñacastillo
@@ -13853,7 +13853,6 @@ Europe/Spain/Galicia/Santiago de Compostelapobra do Caramiñal	Europe/Spain/Gali
 Europe/Spain/Illes Balears/*	Europe/Spain/Balear Islands/*
 Europe/Spain/Illes Balears/Marrachi	Europe/Spain/Balear Islands/Marratxí
 Europe/Spain/Islas Baleares/*	Europe/Spain/Balear Islands/*
-Europe/Spain/Islas Canarias/*	Europe/Spain/Canary Islands/*
 Europe/Spain/La Rioja ES/Aragon	Europe/Spain/La Rioja ES/
 Europe/Spain/La Rioja ES/Cardenas	Europe/Spain/La Rioja ES/Cardenas ES
 Europe/Spain/La Rioja ES/Navarra	Europe/Spain/La Rioja ES/
