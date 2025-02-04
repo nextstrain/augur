@@ -9132,12 +9132,6 @@ Europe/Finland/Vaasa/	Europe/Finland/Ostrobothnia/Vaasa
 
 # France
 */France/*/*	Europe/France/*/*
-*/Guadeloupe/Fort de France/	Europe/France/Martinique/Fort-de-France
-*/Martinique/Lamentin/	Europe/France/Martinique/Le Lamentin
-*/Martinique/Saint Pierre/	Europe/France/Martinique/Saint Pierre (Martinique)
-*/Martinique/Schoelcher/	Europe/France/Martinique/Schoelcher
-*/Martinique/Trinité/	Europe/France/Martinique/Trinité
-Africa/Martinique/Fort-de-France/	Europe/France/Martinique/Fort-de-France
 Africa/Mayotte//	Europe/France/Mayotte/
 Africa/Mayotte/Mamoudzou/	Europe/France/Mayotte/Mamoudzou
 Africa/Mayotte/Mayotte/	Europe/France/Mayotte/
@@ -9391,7 +9385,6 @@ Europe/France/Ile de France/Saint Denis	Europe/France/Ile de France/Saint-Denis 
 Europe/France/Ile de France/Saint Mande	Europe/France/Ile de France/Saint Mandé
 Europe/France/Ile de France/Saint-Denis	Europe/France/Ile de France/Saint-Denis FR
 Europe/France/Ile de France/Saint-Ouen-Laumone	Europe/France/Ile de France/Saint Ouen l'Aumone
-Europe/France/Ile de France/Schoelcher	Europe/France/Martinique/Schoelcher
 Europe/France/Ile de France/Villejuif Cedex	Europe/France/Ile de France/Villejuif
 Europe/France/Ile de France/Villeneuve Saint Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
 Europe/France/Ile de France/Villeneuve St Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
@@ -9404,8 +9397,6 @@ Europe/France/Lorraine/*	Europe/France/Grand Est/*
 Europe/France/Lot-Et-Garonne/	Europe/France/Nouvelle-Aquitaine/Lot-Et-Garonne
 Europe/France/Lot/	Europe/France/Occitanie/Lot FR
 Europe/France/Marseille/	Europe/France/Provence-Alpes-Côte d'Azur/Marseille
-Europe/France/Martinique/Lamentin	Europe/France/Martinique/Le Lamentin
-Europe/France/Martinique/Saint Pierre	Europe/France/Martinique/Saint Pierre (Martinique)
 Europe/France/Meurthe Et Moselle/	Europe/France/Grand Est/Meurthe Et Moselle
 Europe/France/Meurthe-Et-Moselle/*	Europe/France/Grand Est/*
 Europe/France/Meuse/	Europe/France/Grand Est/Meuse
@@ -9506,14 +9497,6 @@ Europe/France/Île-de-France/Moussy-le-Neuf	Europe/France/Ile de France/Moussy L
 Europe/France/Île-de-France/Pecq	Europe/France/Ile de France/Le Pecq
 Europe/France/Île-de-France/Villeneuve St Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
 Europe/France/Île-de-France/Villeneuve-St-Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
-North America/Martinique//	Europe/France/Martinique/
-North America/Martinique/Fort de France/	Europe/France/Martinique/Fort-de-France
-North America/Martinique/Fort de/	Europe/France/Martinique/Fort-de-France
-North America/Martinique/Fort-de-France/	Europe/France/Martinique/Fort-de-France
-North America/Martinique/Le Francois/	Europe/France/Martinique/Le Francois
-North America/Martinique/Le Lorrain/	Europe/France/Martinique/Le Lorrain
-North America/Martinique/Martinique/	Europe/France/Martinique/
-North America/Martinique/Trinite/	Europe/France/Martinique/La Trinité
 Oceania/New Caledonia//	Europe/France/New Caledonia/
 Oceania/New Caledonia/New Caledonia/	Europe/France/New Caledonia/
 Oceania/New Caledonia/Noumea/	Europe/France/New Caledonia/Noumea
@@ -10948,6 +10931,24 @@ Asia/Maldives/Th. Veymandoo/	Asia/Maldives/Thaa Atoll/Veymandoo
 Asia/Maldives/V. Felidhoo/	Asia/Maldives/Vaavu Atoll/Felidhoo
 Asia/Maldives/V. Fulidhoo/	Asia/Maldives/Vaavu Atoll/Fulidhoo
 Asia/Maldives/Villimale'/	Asia/Maldives/Vilimalé/
+
+# Martinique (French region)
+*/Guadeloupe/Fort de France/	North America/Martinique/Martinique/Fort-de-France
+*/Martinique/Lamentin/	North America/Martinique/Martinique/Le Lamentin
+*/Martinique/Saint Pierre/	North America/Martinique/Martinique/Saint Pierre (Martinique)
+*/Martinique/Schoelcher/	North America/Martinique/Martinique/Schoelcher
+*/Martinique/Trinité/	North America/Martinique/Martinique/Trinité
+Africa/Martinique/Fort-de-France/	North America/Martinique/Martinique/Fort-de-France
+Europe/France/Ile de France/Schoelcher	North America/Martinique/Martinique/Schoelcher
+Europe/France/Martinique/Lamentin	North America/Martinique/Martinique/Le Lamentin
+Europe/France/Martinique/Saint Pierre	North America/Martinique/Martinique/Saint Pierre (Martinique)
+North America/Martinique//	North America/Martinique/Martinique/
+North America/Martinique/Fort de France/	North America/Martinique/Martinique/Fort-de-France
+North America/Martinique/Fort de/	North America/Martinique/Martinique/Fort-de-France
+North America/Martinique/Fort-de-France/	North America/Martinique/Martinique/Fort-de-France
+North America/Martinique/Le Francois/	North America/Martinique/Martinique/Le Francois
+North America/Martinique/Le Lorrain/	North America/Martinique/Martinique/Le Lorrain
+North America/Martinique/Trinite/	North America/Martinique/Martinique/La Trinité
 
 # Mauritius
 */Mauritius/Flacq/Cite Lóiseau	*/Mauritius/Flacq/Cite L'oiseau
