@@ -9137,23 +9137,11 @@ Europe/Finland/Vaasa/	Europe/Finland/Ostrobothnia/Vaasa
 */Martinique/Saint Pierre/	Europe/France/Martinique/Saint Pierre (Martinique)
 */Martinique/Schoelcher/	Europe/France/Martinique/Schoelcher
 */Martinique/Trinité/	Europe/France/Martinique/Trinité
-*/Reunion/Saint-Paul/	Europe/France/Réunion/Saint-Paul
-Africa/La Reunion/Saint-Benoit/	Europe/France/Réunion/Saint-Benoit
-Africa/La Reunion/Saint-Denis/	Europe/France/Réunion/Saint-Denis de la Réunion
 Africa/Martinique/Fort-de-France/	Europe/France/Martinique/Fort-de-France
 Africa/Mayotte//	Europe/France/Mayotte/
 Africa/Mayotte/Mamoudzou/	Europe/France/Mayotte/Mamoudzou
 Africa/Mayotte/Mayotte/	Europe/France/Mayotte/
 Africa/Mayotte/Mayotte/Mamoudzou	Europe/France/Mayotte/Mamoudzou
-Africa/Reunion//	Europe/France/Réunion/
-Africa/Reunion/Le Port/	Europe/France/Réunion/Le Port
-Africa/Reunion/Saint Joseph/	Europe/France/Réunion/Saint-Joseph
-Africa/Reunion/Saint-Benoit/	Europe/France/Réunion/Saint-Benoit
-Africa/Reunion/Saint-Denis/	Europe/France/Réunion/Saint-Denis de la Réunion
-Africa/Reunion/Saint-Louis/	Europe/France/Réunion/Saint-Louis
-Africa/Reunion/Saint-Pierre/	Europe/France/Réunion/Saint-Pierre FR
-Africa/Reunion/Sainte-Clotilde/	Europe/France/Réunion/Sainte-Clotilde
-Africa/Réunion/Saint-Denis/	Europe/France/Réunion/Saint-Denis de la Réunion
 Europe/Belgium/Flines-Les-Morta/	Europe/France/Hauts de France/Flines-lès-Mortagne
 Europe/Belgium/Flines-lès-Mortagne/*	Europe/France/Hauts de France/Flines-lès-Mortagne
 Europe/Belgium/Saint-Saulve/*	Europe/France/Hauts de France/Saint-Saulve
@@ -9504,7 +9492,6 @@ Europe/France/Provence-Alpes-Côte d'Azur/St-Vallier-de-Thiey	Europe/France/Prov
 Europe/France/Provence-Alpes-Côte-D'Azur/*	Europe/France/Provence-Alpes-Côte d'Azur/*
 Europe/France/Provence-Alpes-Côte-D’Azur/*	Europe/France/Provence-Alpes-Côte d'Azur/*
 Europe/France/Pyrenees-Orientales/	Europe/France/Occitanie/Pyrenees-Orientales
-Europe/France/Réunion/Saint-Pierre	Europe/France/Réunion/Saint-Pierre FR
 Europe/France/Seine Saint Denis/	Europe/France/Ile de France/Seine Saint Denis
 Europe/France/Seine-Saint-Denis/*	Europe/France/Ile de France/*
 Europe/France/Strasbourg/	Europe/France/Grand Est/Strasbourg (Grand Est)
@@ -12403,6 +12390,21 @@ Africa/Republic of the Congo/Moungali/	Africa/Republic of the Congo/Brazzaville/
 Africa/Republic of the Congo/Ouenze/	Africa/Republic of the Congo/Brazzaville/Ouenze
 Africa/Republic of the Congo/Potopoto/	Africa/Republic of the Congo/Brazzaville/Poto-Poto
 Africa/Republic of the Congo/Talangai/	Africa/Republic of the Congo/Brazzaville/Talangai
+
+# Réunion (French region)
+*/Reunion/Saint-Paul/	Europe/Réunion/Réunion/Saint-Paul
+Africa/La Reunion/Saint-Benoit/	Africa/Réunion/Réunion/Saint-Benoit
+Africa/La Reunion/Saint-Denis/	Africa/Réunion/Réunion/Saint-Denis de la Réunion
+Africa/Reunion//	Africa/Réunion/Réunion/
+Africa/Reunion/Le Port/	Africa/Réunion/Réunion/Le Port
+Africa/Reunion/Saint Joseph/	Africa/Réunion/Réunion/Saint-Joseph
+Africa/Reunion/Saint-Benoit/	Africa/Réunion/Réunion/Saint-Benoit
+Africa/Reunion/Saint-Denis/	Africa/Réunion/Réunion/Saint-Denis de la Réunion
+Africa/Reunion/Saint-Louis/	Africa/Réunion/Réunion/Saint-Louis
+Africa/Reunion/Saint-Pierre/	Africa/Réunion/Réunion/Saint-Pierre FR
+Africa/Reunion/Sainte-Clotilde/	Africa/Réunion/Réunion/Sainte-Clotilde
+Africa/Réunion/Saint-Denis/	Africa/Réunion/Réunion/Saint-Denis de la Réunion
+Europe/France/Réunion/Saint-Pierre	Africa/Réunion/Réunion/Saint-Pierre FR
 
 # Romania
 Europe/Romaina/*/*	Europe/Romania/*/*
