@@ -11224,7 +11224,6 @@ Europe/Netherlans/Noord Brabant/*	Europe/Netherlands/North Brabant/*
 Europe/Poland/Zuid-Holland/*	Europe/Netherlands/South Holland/*
 Europe/The Netherlands/Etten-Leur/	Europe/Netherlands/North Brabant/Etten-Leur
 Europe/The Netherlands/Graauw/	Europe/Netherlands/Zeeland/Graauw
-South America/St Eustatius//	Europe/Netherlands/St Eustatius/St Eustatius
 
 # New Caledonia (French collective)
 Oceania/New Caledonia//	Oceania/New Caledonia/New Caledonia/
@@ -12782,6 +12781,9 @@ Africa/Seychelles/Baie Ste Anne Praslin/*	Africa/Seychelles/Baie St Anne Praslin
 
 # Sierra Leone
 Africa/Sierra Leone/Freetown/	Africa/Sierra Leone/Western Area/Freetown
+
+# Sint Eustatius (Dutch municipality)
+South America/St Eustatius//	North America/Sint Eustatius/Sint Eustatius/
 
 # Slovakia
 Chminianska Nova Ves///	Europe/Slovakia/Prešov/Chminianska Nova Ves
