@@ -9132,19 +9132,12 @@ Europe/Finland/Vaasa/	Europe/Finland/Ostrobothnia/Vaasa
 
 # France
 */France/*/*	Europe/France/*/*
-*/French Guiana/C.S. St Georges Uf 4910/	Europe/France/French Guiana/St Georges (French Guiana)
-*/French Guiana/Cs Apatou/	Europe/France/French Guiana/Apatou
-*/French Guiana/Cs Cacao/	Europe/France/French Guiana/Cacao
-*/French Guiana/Cs Maripasoula Uf 4810/	Europe/France/French Guiana/Maripasoula
-*/French Guiana/Maripasoula/	Europe/France/French Guiana/Maripasoula
-*/French Guiana/Montsinery/	Europe/France/French Guiana/Montsinéry-Tonnegrande
 */Guadeloupe/Fort de France/	Europe/France/Martinique/Fort-de-France
 */Martinique/Lamentin/	Europe/France/Martinique/Le Lamentin
 */Martinique/Saint Pierre/	Europe/France/Martinique/Saint Pierre (Martinique)
 */Martinique/Schoelcher/	Europe/France/Martinique/Schoelcher
 */Martinique/Trinité/	Europe/France/Martinique/Trinité
 */Reunion/Saint-Paul/	Europe/France/Réunion/Saint-Paul
-Africa/Guyane/Cayenne/	Europe/France/French Guiana/Cayenne (French Guiana)
 Africa/La Reunion/Saint-Benoit/	Europe/France/Réunion/Saint-Benoit
 Africa/La Reunion/Saint-Denis/	Europe/France/Réunion/Saint-Denis de la Réunion
 Africa/Martinique/Fort-de-France/	Europe/France/Martinique/Fort-de-France
@@ -9343,10 +9336,6 @@ Europe/France/Champagne Ardenne/*	Europe/France/Grand Est/*
 Europe/France/Champagne-Ardenne/*	Europe/France/Grand Est/*
 Europe/France/Corse/Porto Vecchio	Europe/France/Corse/Porto-Vecchio
 Europe/France/Côte D'Azur/*	Europe/France/Provence-Alpes-Côte d'Azur/*
-Europe/France/French Guiana/Chalon sur Saone	Europe/France/French Guiana/Chalon sur Saone (French Guiana)
-Europe/France/French Guiana/Kourou	Europe/France/French Guiana/Kourou (French Guiana)
-Europe/France/French Guiana/Saint Georges	Europe/France/French Guiana/Saint Georges FR
-Europe/France/French Guiana/St Georges	Europe/France/French Guiana/St Georges (French Guiana)
 Europe/France/Ge/*	Europe/France/Grand Est/*
 Europe/France/Gers/	Europe/France/Occitanie/Gers
 Europe/France/Gironde/	Europe/France/Nouvelle-Aquitaine/Gironde
@@ -9366,7 +9355,6 @@ Europe/France/Grand Est/St-Louis	Europe/France/Grand Est/St-Louis FR
 Europe/France/Grand Est/Strasbourg	Europe/France/Grand Est/Strasbourg (Grand Est)
 Europe/France/Grand-Est/*	Europe/France/Grand Est/*
 Europe/France/Grenoble/	Europe/France/Auvergne-Rhône-Alpes/Grenoble
-Europe/France/Guyane/*	Europe/France/French Guiana/*
 Europe/France/Haut-De-France/*	Europe/France/Hauts de France/*
 Europe/France/Haut-Rhin/*	Europe/France/Grand Est/*
 Europe/France/Haute Garonne/*	Europe/France/Occitanie/*
@@ -9531,7 +9519,6 @@ Europe/France/Île-de-France/Moussy-le-Neuf	Europe/France/Ile de France/Moussy L
 Europe/France/Île-de-France/Pecq	Europe/France/Ile de France/Le Pecq
 Europe/France/Île-de-France/Villeneuve St Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
 Europe/France/Île-de-France/Villeneuve-St-Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
-North America/French Guiana/Cayenne/	Europe/France/French Guiana/Cayenne (French Guiana)
 North America/Martinique//	Europe/France/Martinique/
 North America/Martinique/Fort de France/	Europe/France/Martinique/Fort-de-France
 North America/Martinique/Fort de/	Europe/France/Martinique/Fort-de-France
@@ -9548,49 +9535,64 @@ Oceania/New Caledonia/Poindimie/	Europe/France/New Caledonia/Poindimie
 Oceania/Wallis and Futuna Islands/Wallis/	Europe/France/Wallis and Futuna Islands/Wallis
 Oceania/Wallis and Futuna//	Europe/France/Wallis and Futuna/
 Oceania/Wallis and Futuna/Wallis/	Europe/France/Wallis and Futuna/Wallis
-South America/French Guiana//	Europe/France/French Guiana/
-South America/French Guiana/Apatou/	Europe/France/French Guiana/Apatou
-South America/French Guiana/Awala Yalimapo/	Europe/France/French Guiana/Awala-Yalimapo
-South America/French Guiana/Bellac/	Europe/France/French Guiana/Bellac
-South America/French Guiana/Boisseuil/	Europe/France/French Guiana/Boisseuil
-South America/French Guiana/Cacao/	Europe/France/French Guiana/Cacao
-South America/French Guiana/Camopi/	Europe/France/French Guiana/Camopi
-South America/French Guiana/Cayenne/	Europe/France/French Guiana/Cayenne (French Guiana)
-South America/French Guiana/Chalon sur Saone/	Europe/France/French Guiana/Chalon sur Saone (French Guiana)
-South America/French Guiana/French Guiana/*	Europe/France/French Guiana/*
-South America/French Guiana/Grand Santi/	Europe/France/French Guiana/Grand Santi
-South America/French Guiana/Iracoubo/	Europe/France/French Guiana/Iracoubo
-South America/French Guiana/Javouhey/	Europe/France/French Guiana/Javouhey
-South America/French Guiana/Joseph Melvin/	Europe/France/French Guiana/
-South America/French Guiana/Kourou/	Europe/France/French Guiana/Kourou (French Guiana)
-South America/French Guiana/Macouria Tonate/	Europe/France/French Guiana/Macouria Tonate
-South America/French Guiana/Macouria-Tonate/	Europe/France/French Guiana/Macouria-Tonate
-South America/French Guiana/Macouria/	Europe/France/French Guiana/Macouria
-South America/French Guiana/Mana/	Europe/France/French Guiana/Mana FR
-South America/French Guiana/Matoury/	Europe/France/French Guiana/Matoury
-South America/French Guiana/Montsinery Tonnegrande/	Europe/France/French Guiana/Montsinery Tonnegrande
-South America/French Guiana/Montsinery-Tonnegran/	Europe/France/French Guiana/Montsinery-Tonnegran
-South America/French Guiana/Montsinery-Tonnegrande/	Europe/France/French Guiana/Montsinery-Tonnegrande
-South America/French Guiana/Papaichton/	Europe/France/French Guiana/Papaichton
-South America/French Guiana/Papaïchton/	Europe/France/French Guiana/Papaichton
-South America/French Guiana/Regina/	Europe/France/French Guiana/Regina
-South America/French Guiana/Remire Montjoly/	Europe/France/French Guiana/Remire-Montjoly
-South America/French Guiana/Remire-Montjoly/	Europe/France/French Guiana/Remire-Montjoly
-South America/French Guiana/Roura/	Europe/France/French Guiana/Roura
-South America/French Guiana/Rémire Montjoly/	Europe/France/French Guiana/Rémire Montjoly
-South America/French Guiana/Rémire-Montjoly/	Europe/France/French Guiana/Remire-Montjoly
-South America/French Guiana/Saint Georges/	Europe/France/French Guiana/Saint Georges FR
-South America/French Guiana/Saint Laurent Du Maroni/	Europe/France/French Guiana/Saint Laurent Du Maroni
-South America/French Guiana/Saint-Laurent Du Maroni/	Europe/France/French Guiana/St Laurent Du Maroni
-South America/French Guiana/Sinnamary/	Europe/France/French Guiana/Sinnamary
-South America/French Guiana/St Georges/	Europe/France/French Guiana/St Georges (French Guiana)
-South America/French Guiana/St Laurent Du Maroni/	Europe/France/French Guiana/St Laurent Du Maroni
-South America/French Guiana/Surinam/	Europe/France/French Guiana/Surinam
-South America/Guyane Francaise/Cayenne/	Europe/France/French Guiana/Cayenne (French Guiana)
-South America/Guyane Francaise/Guyane Francaise/	Europe/France/French Guiana/
-South America/Guyane//	Europe/France/French Guiana/
-South America/Guyane/Cayenne/	Europe/France/French Guiana/Cayenne (French Guiana)
-South America/Guyane/Guyane/	Europe/France/French Guiana/
+
+# French Guiana
+*/French Guiana/*/*	South America/French Guiana/*/*
+*/French Guiana/C.S. St Georges Uf 4910/	South America/French Guiana/French Guiana/St Georges (French Guiana)
+*/French Guiana/Cs Apatou/	South America/French Guiana/French Guiana/Apatou
+*/French Guiana/Cs Cacao/	South America/French Guiana/French Guiana/Cacao
+*/French Guiana/Cs Maripasoula Uf 4810/	South America/French Guiana/French Guiana/Maripasoula
+*/French Guiana/Maripasoula/	South America/French Guiana/French Guiana/Maripasoula
+*/French Guiana/Montsinery/	South America/French Guiana/French Guiana/Montsinéry-Tonnegrande
+Africa/Guyane/Cayenne/	South America/French Guiana/French Guiana/Cayenne (French Guiana)
+Europe/France/French Guiana/Chalon sur Saone	South America/French Guiana/French Guiana/Chalon sur Saone (French Guiana)
+Europe/France/French Guiana/Kourou	South America/French Guiana/French Guiana/Kourou (French Guiana)
+Europe/France/French Guiana/Saint Georges	South America/French Guiana/French Guiana/Saint Georges FR
+Europe/France/French Guiana/St Georges	South America/French Guiana/French Guiana/St Georges (French Guiana)
+Europe/France/Guyane/*	South America/French Guiana/French Guiana/*
+North America/French Guiana/Cayenne/	South America/French Guiana/French Guiana/Cayenne (French Guiana)
+South America/French Guiana//	South America/French Guiana/French Guiana/
+South America/French Guiana/Apatou/	South America/French Guiana/French Guiana/Apatou
+South America/French Guiana/Awala Yalimapo/	South America/French Guiana/French Guiana/Awala-Yalimapo
+South America/French Guiana/Bellac/	South America/French Guiana/French Guiana/Bellac
+South America/French Guiana/Boisseuil/	South America/French Guiana/French Guiana/Boisseuil
+South America/French Guiana/Cacao/	South America/French Guiana/French Guiana/Cacao
+South America/French Guiana/Camopi/	South America/French Guiana/French Guiana/Camopi
+South America/French Guiana/Cayenne/	South America/French Guiana/French Guiana/Cayenne (French Guiana)
+South America/French Guiana/Chalon sur Saone/	South America/French Guiana/French Guiana/Chalon sur Saone (French Guiana)
+South America/French Guiana/Grand Santi/	South America/French Guiana/French Guiana/Grand Santi
+South America/French Guiana/Iracoubo/	South America/French Guiana/French Guiana/Iracoubo
+South America/French Guiana/Javouhey/	South America/French Guiana/French Guiana/Javouhey
+South America/French Guiana/Joseph Melvin/	South America/French Guiana/French Guiana/
+South America/French Guiana/Kourou/	South America/French Guiana/French Guiana/Kourou (French Guiana)
+South America/French Guiana/Macouria Tonate/	South America/French Guiana/French Guiana/Macouria Tonate
+South America/French Guiana/Macouria-Tonate/	South America/French Guiana/French Guiana/Macouria-Tonate
+South America/French Guiana/Macouria/	South America/French Guiana/French Guiana/Macouria
+South America/French Guiana/Mana/	South America/French Guiana/French Guiana/Mana FR
+South America/French Guiana/Matoury/	South America/French Guiana/French Guiana/Matoury
+South America/French Guiana/Montsinery Tonnegrande/	South America/French Guiana/French Guiana/Montsinery Tonnegrande
+South America/French Guiana/Montsinery-Tonnegran/	South America/French Guiana/French Guiana/Montsinery-Tonnegran
+South America/French Guiana/Montsinery-Tonnegrande/	South America/French Guiana/French Guiana/Montsinery-Tonnegrande
+South America/French Guiana/Papaichton/	South America/French Guiana/French Guiana/Papaichton
+South America/French Guiana/Papaïchton/	South America/French Guiana/French Guiana/Papaichton
+South America/French Guiana/Regina/	South America/French Guiana/French Guiana/Regina
+South America/French Guiana/Remire Montjoly/	South America/French Guiana/French Guiana/Remire-Montjoly
+South America/French Guiana/Remire-Montjoly/	South America/French Guiana/French Guiana/Remire-Montjoly
+South America/French Guiana/Roura/	South America/French Guiana/French Guiana/Roura
+South America/French Guiana/Rémire Montjoly/	South America/French Guiana/French Guiana/Rémire Montjoly
+South America/French Guiana/Rémire-Montjoly/	South America/French Guiana/French Guiana/Remire-Montjoly
+South America/French Guiana/Saint Georges/	South America/French Guiana/French Guiana/Saint Georges FR
+South America/French Guiana/Saint Laurent Du Maroni/	South America/French Guiana/French Guiana/Saint Laurent Du Maroni
+South America/French Guiana/Saint-Laurent Du Maroni/	South America/French Guiana/French Guiana/St Laurent Du Maroni
+South America/French Guiana/Sinnamary/	South America/French Guiana/French Guiana/Sinnamary
+South America/French Guiana/St Georges/	South America/French Guiana/French Guiana/St Georges (French Guiana)
+South America/French Guiana/St Laurent Du Maroni/	South America/French Guiana/French Guiana/St Laurent Du Maroni
+South America/French Guiana/Surinam/	South America/French Guiana/French Guiana/Surinam
+South America/Guyane Francaise/Cayenne/	South America/French Guiana/French Guiana/Cayenne (French Guiana)
+South America/Guyane Francaise/Guyane Francaise/	South America/French Guiana/French Guiana/
+South America/Guyane//	South America/French Guiana/French Guiana/
+South America/Guyane/Cayenne/	South America/French Guiana/French Guiana/Cayenne (French Guiana)
+South America/Guyane/Guyane/	South America/French Guiana/French Guiana/
 
 # French Polynesia
 Oceania/French Polynesia/Tahiti/*	Oceania/French Polynesia/Windward Islands/*
