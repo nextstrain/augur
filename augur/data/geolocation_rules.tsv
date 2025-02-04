@@ -122,6 +122,12 @@ Africa/Angola/Luanda/C Sequele	Africa/Angola/Luanda/Cacuaco
 Africa/Angola/Luanda/Dande	Africa/Angola/Luanda/Dande (Luanda)
 Africa/Angola/Luanda/Viana	Africa/Angola/Luanda/Viana AO
 
+# Anguilla (British territory)
+*/Anguilla/Caribbean/	North America/Anguilla/Anguilla/
+North America/Anguilla//	North America/Anguilla/Anguilla/
+South America/Anguilla//	North America/Anguilla/Anguilla/
+South America/Anguilla/Anguilla/	North America/Anguilla/Anguilla/
+
 # Antigua and Barbuda
 South America/Antigua and Barbuda//	North America/Antigua and Barbuda/Antigua and Barbuda/
 South America/Antigua and Barbuda/Antigua and Barbuda/*	North America/Antigua and Barbuda/Antigua and Barbuda/*
@@ -44873,7 +44879,6 @@ Asia/United Arab Emirates/Abu Dhabi Emirate/*	Asia/United Arab Emirates/Abu Dhab
 Asia/United Arab Emirates/Sharja/*	Asia/United Arab Emirates/Sharjah/*
 
 # United Kingdom
-*/Anguilla/Caribbean/	Europe/United Kingdom/Anguilla/
 Europe/Belgium/Leicester/	Europe/United Kingdom/England/Leicester GB
 Europe/England//	Europe/United Kingdom/England/
 Europe/England/England/*	Europe/United Kingdom/England/*
@@ -44896,8 +44901,6 @@ Europe/United Kingdom/Null/	Europe/United Kingdom/United Kingdom/
 Europe/United Kingdom/Oxford/*	Europe/United Kingdom/England/Oxford GB
 Europe/United Kingdom/Scotland/Fraserburg	Europe/United Kingdom/Scotland/Fraserburgh
 Europe/United Kingdom/Suffolk/	Europe/United Kingdom/England/Suffolk
-North America/Anguilla//	Europe/United Kingdom/Anguilla/
-North America/Anguilla/Anguilla/*	Europe/United Kingdom/Anguilla/*
 North America/British Virgin Islands/*/*	Europe/United Kingdom/British Virgin Islands/*
 North America/Caribbean/British Virgin Islands/	Europe/United Kingdom/British Virgin Islands/
 North America/Caribbean/Cayman Islands/	Europe/United Kingdom/Cayman Islands/
@@ -44908,8 +44911,6 @@ North America/Montserrat/Montserrat/*	Europe/United Kingdom/Montserrat/*
 North America/Turks and Caicos Islands//	Europe/United Kingdom/Turks and Caicos Islands/
 North America/Turks and Caicos Islands/Caribbean/	Europe/United Kingdom/Turks and Caicos Islands/
 North America/Turks and Caicos Islands/Turks and Caicos Islands/	Europe/United Kingdom/Turks and Caicos Islands/
-South America/Anguilla//	Europe/United Kingdom/Anguilla/
-South America/Anguilla/Anguilla/	Europe/United Kingdom/Anguilla/
 South America/British Virgin Islands//	Europe/United Kingdom/British Virgin Islands/
 South America/British Virgin Islands/British Virgin Islands/	Europe/United Kingdom/British Virgin Islands/
 South America/British Virgin Islands/Caribbean/	Europe/United Kingdom/British Virgin Islands/
