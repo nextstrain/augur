@@ -9493,9 +9493,6 @@ Europe/France/Île-de-France/Moussy-le-Neuf	Europe/France/Ile de France/Moussy L
 Europe/France/Île-de-France/Pecq	Europe/France/Ile de France/Le Pecq
 Europe/France/Île-de-France/Villeneuve St Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
 Europe/France/Île-de-France/Villeneuve-St-Georges	Europe/France/Ile de France/Villeneuve-Saint-Georges
-Oceania/Wallis and Futuna Islands/Wallis/	Europe/France/Wallis and Futuna Islands/Wallis
-Oceania/Wallis and Futuna//	Europe/France/Wallis and Futuna/
-Oceania/Wallis and Futuna/Wallis/	Europe/France/Wallis and Futuna/Wallis
 
 # French Guiana
 */French Guiana/*/*	South America/French Guiana/*/*
@@ -44982,6 +44979,11 @@ Asia/Vietnam/Thanhhoa/	Asia/Vietnam/Thanh Hoa/
 Asia/Vietnam/Tra Vinh/*	Asia/Vietnam/Travinh/*
 Asia/Vietnam/Vinh Phuc/*	Asia/Vietnam/Vinhphuc/*
 Asia/Vietnam/Vinhlong/*	Asia/Vietnam/Vinh Long/*
+
+# Wallis and Futuna (French collective)
+Oceania/Wallis and Futuna//	Oceania/Wallis and Futuna/Wallis and Futuna/
+Oceania/Wallis and Futuna/Wallis/	Oceania/Wallis and Futuna/Wallis and Futuna/Wallis
+Oceania/Wallis and Futuna Islands/Wallis/	Oceania/Wallis and Futuna/Wallis and Futuna/Wallis
 
 # Zambia
 Africa/Zambia/Central/*	Africa/Zambia/Central Zambia/*
