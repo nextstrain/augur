@@ -9132,10 +9132,6 @@ Europe/Finland/Vaasa/	Europe/Finland/Ostrobothnia/Vaasa
 
 # France
 */France/*/*	Europe/France/*/*
-Africa/Mayotte//	Europe/France/Mayotte/
-Africa/Mayotte/Mamoudzou/	Europe/France/Mayotte/Mamoudzou
-Africa/Mayotte/Mayotte/	Europe/France/Mayotte/
-Africa/Mayotte/Mayotte/Mamoudzou	Europe/France/Mayotte/Mamoudzou
 Europe/Belgium/Flines-Les-Morta/	Europe/France/Hauts de France/Flines-lès-Mortagne
 Europe/Belgium/Flines-lès-Mortagne/*	Europe/France/Hauts de France/Flines-lès-Mortagne
 Europe/Belgium/Saint-Saulve/*	Europe/France/Hauts de France/Saint-Saulve
@@ -10962,6 +10958,10 @@ Africa/Mauritius/Plaine-Wilhems/Henrietta	Africa/Mauritius/Plaine-Wilhems/Henrie
 Africa/Mauritius/Plaine-Wilhems/St Paul	Africa/Mauritius/Plaine-Wilhems/St Paul MU
 Africa/Mauritius/Plaines Wilhems/*	Africa/Mauritius/Plaine-Wilhems/*
 Africa/Mauritius/Port-Louis/*	Africa/Mauritius/Port Louis/*
+
+# Mayotte (Frech region)
+Africa/Mayotte//	Africa/Mayotte/Mayotte/
+Africa/Mayotte/Mamoudzou/	Africa/Mayotte/Mayotte/Mamoudzoug
 
 # Mexico
 Mexico/Baja California/Tijuana/	North America/Mexico/Baja California/Tijuana
