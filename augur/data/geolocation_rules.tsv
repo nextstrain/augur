@@ -9748,13 +9748,13 @@ North America/Grenada/Caribbean/*	North America/Grenada/Grenada/*
 South America/Grenada/*/*	North America/Grenada/*/*
 South America/Grenada/Caribbean/	North America/Grenada/Grenada/
 
-# Guadeloupe
+# Guadeloupe (French region)
 Europe/France/Guadeloupe/*	North America/Guadeloupe/Guadeloupe/*
 Europe/Guadeloupe/*/*	North America/Guadeloupe/*/*
-North America/Guadeloupe/Pointe-À-Pitre/*	North America/Guadeloupe/Pointe-A-Pitre/*
-North America/Guadeloupe/Saint-Francois/*	North America/Guadeloupe/Saint-François/*
-North America/Guadeloupe/Trois-Rivieres/*	North America/Guadeloupe/Trois-Rivières/*
-North America/Martinique/Pointe-A-Pitre/*	North America/Guadeloupe/Pointe-A-Pitre/*
+North America/Guadeloupe/Pointe-À-Pitre/*	North America/Guadeloupe/Guadeloupe/Pointe-A-Pitre
+North America/Guadeloupe/Saint-Francois/*	North America/Guadeloupe/Guadeloupe/Saint-François
+North America/Guadeloupe/Trois-Rivieres/*	North America/Guadeloupe/Guadeloupe/Trois-Rivières
+North America/Martinique/Pointe-A-Pitre/*	North America/Guadeloupe/Guadeloupe/Pointe-A-Pitre
 
 # Guatemala
 */Guatemala/*/*	North America/Guatemala/*/*
