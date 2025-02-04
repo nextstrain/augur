@@ -8017,6 +8017,10 @@ Europe/Spain/Canaray Islands/*	Africa/Canary Islands/Canary Islands/*
 Europe/Spain/Canarias/*	Africa/Canary Islands/Canary Islands/*
 Europe/Spain/Islas Canarias/*	Africa/Canary Islands/Canary Islands/*
 
+# Cayman Islands (British territory)
+North America/Caribbean/Cayman Islands/	North America/Cayman Islands/Cayman Islands/
+North America/Cayman Islands/*/*	North America/Cayman Islands/Cayman Islands/*
+
 # Chile
 South America/Chile/Aisen/*	South America/Chile/Aysén/*
 South America/Chile/Antofagasta./*	South America/Chile/Antofagasta/*
@@ -44908,8 +44912,6 @@ Europe/United Kingdom/Null/	Europe/United Kingdom/United Kingdom/
 Europe/United Kingdom/Oxford/*	Europe/United Kingdom/England/Oxford GB
 Europe/United Kingdom/Scotland/Fraserburg	Europe/United Kingdom/Scotland/Fraserburgh
 Europe/United Kingdom/Suffolk/	Europe/United Kingdom/England/Suffolk
-North America/Caribbean/Cayman Islands/	Europe/United Kingdom/Cayman Islands/
-North America/Cayman Islands/*/*	Europe/United Kingdom/Cayman Islands/*
 North America/Montserrat//	Europe/United Kingdom/Montserrat/
 North America/Montserrat/Caribbean/*	Europe/United Kingdom/Montserrat/*
 North America/Montserrat/Montserrat/*	Europe/United Kingdom/Montserrat/*
