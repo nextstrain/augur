@@ -11079,6 +11079,12 @@ Europe/Montenegro/Heceg Novi/	Europe/Montenegro/Herceg Novi/
 Europe/Montenegro/Northern Region/Pljevlja	Europe/Montenegro/Pljevlja/
 Europe/Montenegro/Western Region/Niksic	Europe/Montenegro/Niksic/
 
+# Montserrat (British territory)
+North America/Montserrat//	North America/Montserrat/Montserrat/
+North America/Montserrat/Caribbean/*	North America/Montserrat/Montserrat/*
+South America/Monsterrat/Caribbean/	North America/Montserrat/Montserrat/
+South America/Montserrat/Caribbean/	North America/Montserrat/Montserrat/
+
 # Morocco
 */Morocoo/*/*	*/Morocco/*/*
 Afirica/Morocoo/Ouarzazate/	Africa/Morocco/Ouarzazate/
@@ -44912,14 +44918,9 @@ Europe/United Kingdom/Null/	Europe/United Kingdom/United Kingdom/
 Europe/United Kingdom/Oxford/*	Europe/United Kingdom/England/Oxford GB
 Europe/United Kingdom/Scotland/Fraserburg	Europe/United Kingdom/Scotland/Fraserburgh
 Europe/United Kingdom/Suffolk/	Europe/United Kingdom/England/Suffolk
-North America/Montserrat//	Europe/United Kingdom/Montserrat/
-North America/Montserrat/Caribbean/*	Europe/United Kingdom/Montserrat/*
-North America/Montserrat/Montserrat/*	Europe/United Kingdom/Montserrat/*
 North America/Turks and Caicos Islands//	Europe/United Kingdom/Turks and Caicos Islands/
 North America/Turks and Caicos Islands/Caribbean/	Europe/United Kingdom/Turks and Caicos Islands/
 North America/Turks and Caicos Islands/Turks and Caicos Islands/	Europe/United Kingdom/Turks and Caicos Islands/
-South America/Monsterrat/Caribbean/	Europe/United Kingdom/Montserrat/
-South America/Montserrat/Caribbean/	Europe/United Kingdom/Montserrat/
 South America/Turks and Caicos Islands//	Europe/United Kingdom/Turks and Caicos Islands/
 South America/Turks and Caicos Islands/Caribbean/	Europe/United Kingdom/Turks and Caicos Islands/
 South America/Turks and Caicos Islands/Turks and Caicos Islands/*	Europe/United Kingdom/Turks and Caicos Islands/*
