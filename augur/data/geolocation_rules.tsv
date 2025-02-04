@@ -7926,6 +7926,13 @@ South America/Santa Catarina/Seara/	South America/Brazil/Santa Catarina/Seara
 South America/Santa Catarina/Videira/	South America/Brazil/Santa Catarina/Videira
 South America/Sergipe/Estancia/	South America/Brazil/Sergipe/Estancia
 
+# British Virgin Islands
+North America/British Virgin Islands/*/*	North America/British Virgin Islands/British Virgin Islands/*
+North America/Caribbean/British Virgin Islands/	North America/British Virgin Islands/British Virgin Islands/
+South America/British Virgin Islands//	North America/British Virgin Islands/British Virgin Islands/
+South America/British Virgin Islands/British Virgin Islands/	North America/British Virgin Islands/British Virgin Islands/
+South America/British Virgin Islands/Caribbean/	North America/British Virgin Islands/British Virgin Islands/
+
 # Bulgaria
 Europe/Bulgaria/Kyrdjali/	Europe/Bulgaria/Kardzhali/
 Europe/Bulgaria/Kyrdzhali/*	Europe/Bulgaria/Kardzhali/*
@@ -44901,8 +44908,6 @@ Europe/United Kingdom/Null/	Europe/United Kingdom/United Kingdom/
 Europe/United Kingdom/Oxford/*	Europe/United Kingdom/England/Oxford GB
 Europe/United Kingdom/Scotland/Fraserburg	Europe/United Kingdom/Scotland/Fraserburgh
 Europe/United Kingdom/Suffolk/	Europe/United Kingdom/England/Suffolk
-North America/British Virgin Islands/*/*	Europe/United Kingdom/British Virgin Islands/*
-North America/Caribbean/British Virgin Islands/	Europe/United Kingdom/British Virgin Islands/
 North America/Caribbean/Cayman Islands/	Europe/United Kingdom/Cayman Islands/
 North America/Cayman Islands/*/*	Europe/United Kingdom/Cayman Islands/*
 North America/Montserrat//	Europe/United Kingdom/Montserrat/
@@ -44911,9 +44916,6 @@ North America/Montserrat/Montserrat/*	Europe/United Kingdom/Montserrat/*
 North America/Turks and Caicos Islands//	Europe/United Kingdom/Turks and Caicos Islands/
 North America/Turks and Caicos Islands/Caribbean/	Europe/United Kingdom/Turks and Caicos Islands/
 North America/Turks and Caicos Islands/Turks and Caicos Islands/	Europe/United Kingdom/Turks and Caicos Islands/
-South America/British Virgin Islands//	Europe/United Kingdom/British Virgin Islands/
-South America/British Virgin Islands/British Virgin Islands/	Europe/United Kingdom/British Virgin Islands/
-South America/British Virgin Islands/Caribbean/	Europe/United Kingdom/British Virgin Islands/
 South America/Monsterrat/Caribbean/	Europe/United Kingdom/Montserrat/
 South America/Montserrat/Caribbean/	Europe/United Kingdom/Montserrat/
 South America/Turks and Caicos Islands//	Europe/United Kingdom/Turks and Caicos Islands/
