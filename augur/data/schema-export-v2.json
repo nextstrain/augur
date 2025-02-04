@@ -250,6 +250,12 @@
                                 "value": {
                                     "type": ["string", "number", "boolean"]
                                 },
+                                "url": {
+                                    "description": "URL for the property value.",
+                                    "$comment": "If a url is specified, then the value is rendered as a link in the on-click panel.",
+                                    "type": "string",
+                                    "pattern": "^https?://.+$"
+                                },
                                 "confidence": {
                                     "description": "Confidence of the trait date",
                                     "$comment": "Should we use different keys for the two structures here?",
