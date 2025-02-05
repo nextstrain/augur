@@ -11338,6 +11338,11 @@ Europe/North Macedonia/Veles/	Europe/North Macedonia/Vardar/Veles
 North Macedonia/Kavadarci/Kavadarci/	Europe/North Macedonia/Kavadarci/Kavadarci
 North Macedonia/Kochani/Kochani/	Europe/North Macedonia/Eastern Region MK/Kochani
 
+# Northern Mariana Islands (American territory)
+North America/USA/Mp/*	Oceania/Northern Mariana Islands/Northern Mariana Islands/*
+Oceania/Northern Mariana Islands//	Oceania/Northern Mariana Islands/Northern Mariana Islands/
+Oceania/USA/Northern Mariana Islands/*	Oceania/Northern Mariana Islands/Northern Mariana Islands/*
+
 # Norway
 Europe/Norway/Bergen/	Europe/Norway/Vestland/Bergen NO
 Europe/Norway/Buskerud/	Europe/Norway/Viken/Buskerud
@@ -30025,7 +30030,6 @@ North America/USA/Montana/Wye	North America/USA/Montana/Missoula County
 North America/USA/Montana/Wyola	North America/USA/Montana/Big Horn County MT
 North America/USA/Montana/Yaak	North America/USA/Montana/Lincoln County MT
 North America/USA/Montana/Zortman	North America/USA/Montana/Phillips County MT
-North America/USA/Mp/*	North America/USA/Northern Mariana Islands/*
 North America/USA/Ms/*	North America/USA/Mississippi/*
 North America/USA/Mt/*	North America/USA/Montana/*
 North America/USA/Myrtle Beach/South Carolina	North America/USA/South Carolina/Horry County SC
@@ -44833,8 +44837,6 @@ North America/USA/Wyoming/Wright	North America/USA/Wyoming/Campbell County WY
 North America/USA/Wyoming/Y-O Ranch	North America/USA/Wyoming/Platte County WY
 North America/USA/Wyoming/Yoder	North America/USA/Wyoming/Goshen County
 North America/USA/Xx/	North America/USA/USA/
-Oceania/Northern Mariana Islands//	North America/USA/Northern Mariana Islands/
-Oceania/USA/Northern Mariana Islands/*	North America/USA/Northern Mariana Islands/*
 USA/California/Riverside/	North America/USA/California/Riverside County
 USA/California/San Diego/	North America/USA/California/San Diego County
 USA/Montana//	North America/USA/Montana/
