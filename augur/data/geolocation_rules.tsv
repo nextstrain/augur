@@ -389,7 +389,6 @@ Europe/Austria/Lower Austria/Hennersdorf, Enzersdorf An Der Fischa, Götzendorf 
 Europe/Austria/Lower Austria/Krems An Der Dou	Europe/Austria/Lower Austria/Krems an der Donau
 Europe/Austria/Lower Austria/Sankt Polten-Land	Europe/Austria/Lower Austria/Sankt Pölten-Land
 Europe/Austria/Lower Austria/Sankt Pölten Stadt	Europe/Austria/Lower Austria/Sankt Pölten-Stadt
-Europe/Austria/Lower Austria/Sankt Pölten-Land	Europe/Austria/Lower Austria/Sankt Pölten-Land
 Europe/Austria/Lower Austria/Schöu An Der Triesting	Europe/Austria/Lower Austria/Schönau an der Triesting
 Europe/Austria/Lower Austria/Schöu An Der Triesting, Bad Vöslau, Kottingbrunn, Leobersdorf, Berndorf, Enzesfeld-Lindabrunn, Pottenstein, Furth An Der Triesting, Weissenbach An Der Triesting, Hernstein, Hirtenberg	Europe/Austria/Lower Austria/Baden
 Europe/Austria/Lower Austria/Solleu	Europe/Austria/Lower Austria/Sollenau
@@ -8091,7 +8090,6 @@ South America/Chile/Los Rios CL/Futaleufu	South America/Chile/Los Rios CL/Futale
 South America/Chile/Los Rios CL/Futrono	South America/Chile/Los Rios CL/Futrono (Los Rios CL)
 South America/Chile/Los Rios CL/La Union	South America/Chile/Los Rios CL/La Union CL
 South America/Chile/Los Rios CL/La Union (Los Rios CL)	South America/Chile/Los Rios CL/La Union CL
-South America/Chile/Los Rios CL/La Union CL	South America/Chile/Los Rios CL/La Union CL
 South America/Chile/Los Rios CL/Llanquihue	South America/Chile/Los Rios CL/Llanquihue (Los Rios CL)
 South America/Chile/Los Rios CL/Los Lagos	South America/Chile/Los Rios CL/Los Lagos (Los Rios CL)
 South America/Chile/Los Rios CL/Osorno	South America/Chile/Los Rios CL/Osorno (Los Rios CL)
@@ -8100,7 +8098,6 @@ South America/Chile/Los Rios CL/Puerto Montt	South America/Chile/Los Rios CL/Pue
 South America/Chile/Los Rios CL/Rio Bueno	South America/Chile/Los Rios CL/Rio Bueno (Los Rios CL)
 South America/Chile/Los Rios CL/Valdivia	South America/Chile/Los Rios CL/Valdivia CL
 South America/Chile/Los Rios CL/Valdivia (Los Rios CL)	South America/Chile/Los Rios CL/Valdivia CL
-South America/Chile/Los Rios CL/Valdivia CL	South America/Chile/Los Rios CL/Valdivia CL
 South America/Chile/Los Rios/*	South America/Chile/Los Rios CL/*
 South America/Chile/Los Rios/Los Lagos	South America/Chile/Los Rios CL/Los Lagos (Los Rios CL)
 South America/Chile/Los Ríos/*	South America/Chile/Los Rios CL/*
@@ -8977,23 +8974,15 @@ Africa/Côte D'Ivoire/Boauké/	Africa/Côte d'Ivoire/Bouaké/
 Africa/Côte D'Ivoire/Brobo/	Africa/Côte d'Ivoire/Bouaké/Brobo
 Africa/Côte D’Ivoire/*/*	Africa/Côte d'Ivoire/*/*
 Africa/Côte d'Ivoire/Bas-Sassandra District/San Pedro	Africa/Côte d'Ivoire/Bas-Sassandra District/San Pedro CI
-Africa/Côte d'Ivoire/Beoumi/*	Africa/Côte d'Ivoire/Beoumi/*
 Africa/Côte d'Ivoire/Boauké/*	Africa/Côte d'Ivoire/Bouaké/*
-Africa/Côte d'Ivoire/Bouafle/*	Africa/Côte d'Ivoire/Bouafle/*
 Africa/Côte d'Ivoire/Bouake/*	Africa/Côte d'Ivoire/Bouaké/*
-Africa/Côte d'Ivoire/Bouaké/*	Africa/Côte d'Ivoire/Bouaké/*
 Africa/Côte d'Ivoire/Cote D'Ivoire/*	Africa/Côte d'Ivoire/Côte d'Ivoire/*
-Africa/Côte d'Ivoire/Ferkessedougou/*	Africa/Côte d'Ivoire/Ferkessedougou/*
 Africa/Côte d'Ivoire/Ghana CI/*	Africa/Côte d'Ivoire/Côte d'Ivoire/*
 Africa/Côte d'Ivoire/Ghana/*	Africa/Côte d'Ivoire/Côte d'Ivoire/*
-Africa/Côte d'Ivoire/Guiglo/*	Africa/Côte d'Ivoire/Guiglo/*
-Africa/Côte d'Ivoire/Katiola/*	Africa/Côte d'Ivoire/Katiola/*
-Africa/Côte d'Ivoire/Niakara/*	Africa/Côte d'Ivoire/Niakara/*
 Africa/Côte d'Ivoire/San Pedro/	Africa/Côte d'Ivoire/Bas-Sassandra District/San Pedro CI
 Africa/Côte d'Ivoire/Seguela/*	Africa/Côte d'Ivoire/Séguéla/*
 Africa/Côte d'Ivoire/Treicheville/	Africa/Côte d'Ivoire/Abidjan/Treichville
 Africa/Côte d'Ivoire/Treichville/*	Africa/Côte d'Ivoire/Treicheville/*
-Africa/Côte d'Ivoire/Yamoussoukro/*	Africa/Côte d'Ivoire/Yamoussoukro/*
 Africa/Ivory Coast/*/*	Africa/Côte d'Ivoire/*/*
 
 # Democratic Republic of the Congo
@@ -11972,7 +11961,6 @@ Europe/Poland/Podlaskie/Augustowski	Europe/Poland/Podlaskie/Augustow
 Europe/Poland/Podlaskie/Bialobrzegi	Europe/Poland/Podlaskie/Bialobrzegi (Podlaskie)
 Europe/Poland/Podlaskie/Bialostocki	Europe/Poland/Podlaskie/Białystok
 Europe/Poland/Podlaskie/Bialystok	Europe/Poland/Podlaskie/Białystok
-Europe/Poland/Podlaskie/Bielsk Podlaski	Europe/Poland/Podlaskie/Bielsk Podlaski
 Europe/Poland/Podlaskie/Grabowiec	Europe/Poland/Podlaskie/Grabowiec (Podlaskie)
 Europe/Poland/Podlaskie/Hajnowski	Europe/Poland/Podlaskie/Hajnowka
 Europe/Poland/Podlaskie/Kowale	Europe/Poland/Podlaskie/Kowale (Podlaskie)
@@ -12467,7 +12455,6 @@ North America/Puerto Rico/Naguabo/	North America/Puerto Rico/Puerto Rico/
 North America/Puerto Rico/Ponce/	North America/Puerto Rico/Puerto Rico/Ponce
 North America/Puerto Rico/Pr/*	North America/Puerto Rico/Puerto Rico/*
 North America/Puerto Rico/Pr/Hatillo	North America/Puerto Rico/Puerto Rico/Hatillo County
-North America/Puerto Rico/Puerto Rico/*	North America/Puerto Rico/Puerto Rico/*
 North America/Puerto Rico/Rincon/	North America/Puerto Rico/Puerto Rico/Rincon
 North America/Puerto Rico/Riogrande/	North America/Puerto Rico/Puerto Rico/
 North America/Puerto Rico/San German/	North America/Puerto Rico/Puerto Rico/San German
