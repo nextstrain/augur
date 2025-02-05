@@ -14629,11 +14629,6 @@ South America/Turks and Caicos Islands/Turks and Caicos Islands/*	North America/
 */USA/North America/Oregon,Union County	North America/USA/Oregon/Union County OR
 */USA/North America/Oregon,Wallowa County	North America/USA/Oregon/Wallowa County
 */United States/*/*	*/USA/*/*
-*/Virgin Islands/St. Thomas/	North America/USA/Virgin Islands/St. Thomas
-North America/U.S. Virgin Islands//	North America/USA/Virgin Islands/
-North America/U.S. Virgin Islands/St. Croix/	North America/USA/Virgin Islands/St. Croix
-North America/U.S. Virgin Islands/St. Thomas/	North America/USA/Virgin Islands/St. Thomas
-North America/U.S. Virgin Islands/U.S. Virgin Islands/	North America/USA/Virgin Islands/
 North America/USA Alabama//	North America/USA/Alabama/
 North America/USA Alabama/USA Alabama/	North America/USA/Alabama/
 North America/USA Florida//	North America/USA/Florida/
@@ -41724,10 +41719,8 @@ North America/USA/Texas/Zuehl	North America/USA/Texas/Guadalupe County TX
 North America/USA/Tn/*	North America/USA/Tennessee/*
 North America/USA/Tx/*	North America/USA/Texas/*
 North America/USA/Tyler/*	North America/USA/USA/*
-North America/USA/U.S. Virgin Islands/*	North America/USA/Virgin Islands/*
 North America/USA/Unknown County/	North America/USA/USA/
 North America/USA/Unknown/*	North America/USA/USA/*
-North America/USA/Us Virgin Islands/*	North America/USA/Virgin Islands/*
 North America/USA/Ut/*	North America/USA/Utah/*
 North America/USA/Utah/Alpine	North America/USA/Utah/Utah County
 North America/USA/Utah/Alta	North America/USA/Utah/Salt Lake County
@@ -42115,9 +42108,6 @@ North America/USA/Vermont/Wilder	North America/USA/Vermont/Windsor County
 North America/USA/Vermont/Wilmington	North America/USA/Vermont/Wilmington VT
 North America/USA/Vermont/Winooski	North America/USA/Vermont/Chittenden County
 North America/USA/Vermont/Woodstock	North America/USA/Vermont/Woodstock VT
-North America/USA/Vi/*	North America/USA/Virgin Islands/*
-North America/USA/Virgin Islands Of The U.S./*	North America/USA/Virgin Islands/*
-North America/USA/Virgin Islands of the U.S./*	North America/USA/Virgin Islands/*
 North America/USA/Virgina/*	North America/USA/Virginia/*
 North America/USA/Virginia/Abingdon	North America/USA/Virginia/Washington County VA
 North America/USA/Virginia/Accomac	North America/USA/Virginia/Accomack County
@@ -44843,6 +44833,18 @@ USA/California/Riverside/	North America/USA/California/Riverside County
 USA/California/San Diego/	North America/USA/California/San Diego County
 USA/Montana//	North America/USA/Montana/
 USA/Montana/Montana/	North America/USA/Montana/
+
+# US Virgin Islands
+*/Virgin Islands/St. Thomas/	North America/US Virgin Islands/US Virgin Islands/St. Thomas
+North America/U.S. Virgin Islands//	North America/US Virgin Islands/US Virgin Islands/
+North America/U.S. Virgin Islands/St. Croix/	North America/US Virgin Islands/US Virgin Islands/St. Croix
+North America/U.S. Virgin Islands/St. Thomas/	North America/US Virgin Islands/US Virgin Islands/St. Thomas
+North America/U.S. Virgin Islands/U.S. Virgin Islands/	North America/US Virgin Islands/US Virgin Islands/
+North America/USA/U.S. Virgin Islands/*	North America/US Virgin Islands/US Virgin Islands/*
+North America/USA/Us Virgin Islands/*	North America/US Virgin Islands/US Virgin Islands/*
+North America/USA/Vi/*	North America/US Virgin Islands/US Virgin Islands/*
+North America/USA/Virgin Islands Of The U.S./*	North America/US Virgin Islands/US Virgin Islands/*
+North America/USA/Virgin Islands of the U.S./*	North America/US Virgin Islands/US Virgin Islands/*
 
 # Uganda
 Africa/Uganda/Busia/*	Africa/Uganda/Busia UG/*
