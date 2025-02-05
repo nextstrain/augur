@@ -12439,6 +12439,277 @@ Europe/Portugal/Sintra/	Europe/Portugal/Lisbon/Sintra
 Europe/Portugal/Sobral de Monte Agrac*/	Europe/Portugal/Lisbon/Sobral de Monte Agraço
 Europe/Portugal/Sobral de Monte Agrac?O/*	Europe/Portugal/Sobral de Monte AgracO/*
 
+# Puerto Rico (American territory)
+North America/Puerto Rico//	North America/Puerto Rico/Puerto Rico/
+North America/Puerto Rico/Aguas Buenas/	North America/Puerto Rico/Puerto Rico/Aguas Buenas County
+North America/Puerto Rico/Arecibo/	North America/Puerto Rico/Puerto Rico/
+North America/Puerto Rico/Bayamon/	North America/Puerto Rico/Puerto Rico/Bayamon
+North America/Puerto Rico/Caguas/	North America/Puerto Rico/Puerto Rico/Caguas
+North America/Puerto Rico/Camuy/	North America/Puerto Rico/Puerto Rico/
+North America/Puerto Rico/Canovanas/	North America/Puerto Rico/Puerto Rico/Canovanas
+North America/Puerto Rico/Carolina/	North America/Puerto Rico/Puerto Rico/Carolina
+North America/Puerto Rico/Cayey/	North America/Puerto Rico/Puerto Rico/Cayey County
+North America/Puerto Rico/Ciales/	North America/Puerto Rico/Puerto Rico/
+North America/Puerto Rico/Cidra/	North America/Puerto Rico/Puerto Rico/Cidra County
+North America/Puerto Rico/Coamo/	North America/Puerto Rico/Puerto Rico/Coamo County
+North America/Puerto Rico/Dorado/	North America/Puerto Rico/Puerto Rico/Dorado County
+North America/Puerto Rico/Fajardo/	North America/Puerto Rico/Puerto Rico/
+North America/Puerto Rico/Florida/	North America/Puerto Rico/Puerto Rico/Florida PR
+North America/Puerto Rico/Guaynabo Municipio/	North America/Puerto Rico/Puerto Rico/Guaynabo Municipio
+North America/Puerto Rico/Guaynabo/	North America/Puerto Rico/Puerto Rico/Guaynabo
+North America/Puerto Rico/Gurabo/	North America/Puerto Rico/Puerto Rico/Gurabo County
+North America/Puerto Rico/Humacao/	North America/Puerto Rico/Puerto Rico/Humacao
+North America/Puerto Rico/Las Piedras/	North America/Puerto Rico/Puerto Rico/Las Piedras County
+North America/Puerto Rico/Manati/	North America/Puerto Rico/Puerto Rico/Manati
+North America/Puerto Rico/Mayaguez/	North America/Puerto Rico/Puerto Rico/Mayaguez
+North America/Puerto Rico/Moca/	North America/Puerto Rico/Puerto Rico/
+North America/Puerto Rico/Naguabo/	North America/Puerto Rico/Puerto Rico/
+North America/Puerto Rico/Ponce/	North America/Puerto Rico/Puerto Rico/Ponce
+North America/Puerto Rico/Pr/*	North America/Puerto Rico/Puerto Rico/*
+North America/Puerto Rico/Pr/Hatillo	North America/Puerto Rico/Puerto Rico/Hatillo County
+North America/Puerto Rico/Puerto Rico/*	North America/Puerto Rico/Puerto Rico/*
+North America/Puerto Rico/Rincon/	North America/Puerto Rico/Puerto Rico/Rincon
+North America/Puerto Rico/Riogrande/	North America/Puerto Rico/Puerto Rico/
+North America/Puerto Rico/San German/	North America/Puerto Rico/Puerto Rico/San German
+North America/Puerto Rico/San Juan/	North America/Puerto Rico/Puerto Rico/San Juan PR
+North America/Puerto Rico/San Lorenzo/	North America/Puerto Rico/Puerto Rico/San Lorenzo PR
+North America/Puerto Rico/Sanjuan/	North America/Puerto Rico/Puerto Rico/
+North America/Puerto Rico/Toa Alta/	North America/Puerto Rico/Puerto Rico/Toa Alta County
+North America/Puerto Rico/Toa Baja/	North America/Puerto Rico/Puerto Rico/Toa Baja
+North America/Puerto Rico/Trujillo Alto/	North America/Puerto Rico/Puerto Rico/Trujillo Alto
+North America/Puerto Rico/Vega Alta/	North America/Puerto Rico/Puerto Rico/Vega Alta County
+North America/Puerto Rico/Vega Baja/	North America/Puerto Rico/Puerto Rico/Vega Baja
+North America/Puerto Rico/Yauco/	North America/Puerto Rico/Puerto Rico/Yauco
+North America/USA/Pr/*	North America/Puerto Rico/Puerto Rico/*
+North America/USA/Puerto Rico/Aceitunas	North America/Puerto Rico/Puerto Rico/Moca County
+North America/USA/Puerto Rico/Adjuntas	North America/Puerto Rico/Puerto Rico/Adjuntas County
+North America/USA/Puerto Rico/Aguada	North America/Puerto Rico/Puerto Rico/Aguada County
+North America/USA/Puerto Rico/Aguadilla	North America/Puerto Rico/Puerto Rico/Aguadilla County
+North America/USA/Puerto Rico/Aguas Buenas	North America/Puerto Rico/Puerto Rico/Aguas Buenas County
+North America/USA/Puerto Rico/Aguas Claras	North America/Puerto Rico/Puerto Rico/Ceiba County
+North America/USA/Puerto Rico/Aguilita	North America/Puerto Rico/Puerto Rico/Juana Díaz County
+North America/USA/Puerto Rico/Aibonito	North America/Puerto Rico/Puerto Rico/Aibonito County
+North America/USA/Puerto Rico/Alianza	North America/Puerto Rico/Puerto Rico/Camuy County
+North America/USA/Puerto Rico/Animas	North America/Puerto Rico/Puerto Rico/Arecibo County
+North America/USA/Puerto Rico/Anon Raices	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Antón Ruíz	North America/Puerto Rico/Puerto Rico/Humacao County
+North America/USA/Puerto Rico/Arroyo	North America/Puerto Rico/Puerto Rico/Arroyo County
+North America/USA/Puerto Rico/Añasco	North America/Puerto Rico/Puerto Rico/Añasco County
+North America/USA/Puerto Rico/Bairoa La Veinticinco	North America/Puerto Rico/Puerto Rico/Caguas
+North America/USA/Puerto Rico/Bajadero	North America/Puerto Rico/Puerto Rico/Arecibo County
+North America/USA/Puerto Rico/Bajandas	North America/Puerto Rico/Puerto Rico/Humacao County
+North America/USA/Puerto Rico/Barahona	North America/Puerto Rico/Puerto Rico/Morovis County
+North America/USA/Puerto Rico/Barceloneta	North America/Puerto Rico/Puerto Rico/Barceloneta County
+North America/USA/Puerto Rico/Barranquitas	North America/Puerto Rico/Puerto Rico/Barranquitas County
+North America/USA/Puerto Rico/Bartolo	North America/Puerto Rico/Puerto Rico/Río Grande County
+North America/USA/Puerto Rico/Benítez	North America/Puerto Rico/Puerto Rico/Canóvanas County
+North America/USA/Puerto Rico/Betances	North America/Puerto Rico/Puerto Rico/Cabo Rojo County
+North America/USA/Puerto Rico/Boquerón	North America/Puerto Rico/Puerto Rico/Cabo Rojo County
+North America/USA/Puerto Rico/Breñas	North America/Puerto Rico/Puerto Rico/Vega Alta County
+North America/USA/Puerto Rico/Buena Vista	North America/Puerto Rico/Puerto Rico/Arroyo County
+North America/USA/Puerto Rico/Búfalo	North America/Puerto Rico/Puerto Rico/Barceloneta County
+North America/USA/Puerto Rico/Cabo Rojo	North America/Puerto Rico/Puerto Rico/Cabo Rojo County
+North America/USA/Puerto Rico/Cabán	North America/Puerto Rico/Puerto Rico/Aguadilla County
+North America/USA/Puerto Rico/Cacao	North America/Puerto Rico/Puerto Rico/Quebradillas County
+North America/USA/Puerto Rico/Calzada	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Campanilla	North America/Puerto Rico/Puerto Rico/Toa Baja
+North America/USA/Puerto Rico/Campo Rico	North America/Puerto Rico/Puerto Rico/Canóvanas County
+North America/USA/Puerto Rico/Camuy	North America/Puerto Rico/Puerto Rico/Camuy County
+North America/USA/Puerto Rico/Candelaria	North America/Puerto Rico/Puerto Rico/Toa Baja
+North America/USA/Puerto Rico/Candelaria Arenas	North America/Puerto Rico/Puerto Rico/Toa Baja
+North America/USA/Puerto Rico/Candelero Abajo	North America/Puerto Rico/Puerto Rico/Humacao County
+North America/USA/Puerto Rico/Candelero Arriba	North America/Puerto Rico/Puerto Rico/Humacao County
+North America/USA/Puerto Rico/Canóvanas	North America/Puerto Rico/Puerto Rico/Canóvanas County
+North America/USA/Puerto Rico/Capitanejo	North America/Puerto Rico/Puerto Rico/Juana Díaz County
+North America/USA/Puerto Rico/Carrizales	North America/Puerto Rico/Puerto Rico/Hatillo County
+North America/USA/Puerto Rico/Cayey	North America/Puerto Rico/Puerto Rico/Cayey County
+North America/USA/Puerto Rico/Cayuco	North America/Puerto Rico/Puerto Rico/Utuado County
+North America/USA/Puerto Rico/Ceiba	North America/Puerto Rico/Puerto Rico/Ceiba County
+North America/USA/Puerto Rico/Celada	North America/Puerto Rico/Puerto Rico/Gurabo County
+North America/USA/Puerto Rico/Central Aguirre	North America/Puerto Rico/Puerto Rico/Salinas County
+North America/USA/Puerto Rico/Cerrillos Hoyos	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Ciales	North America/Puerto Rico/Puerto Rico/Ciales County
+North America/USA/Puerto Rico/Cidra	North America/Puerto Rico/Puerto Rico/Cidra County
+North America/USA/Puerto Rico/Coamo	North America/Puerto Rico/Puerto Rico/Coamo County
+North America/USA/Puerto Rico/Coco	North America/Puerto Rico/Puerto Rico/Salinas County
+North America/USA/Puerto Rico/Comerío	North America/Puerto Rico/Puerto Rico/Comerío County
+North America/USA/Puerto Rico/Comunas	North America/Puerto Rico/Puerto Rico/Yabucoa County
+North America/USA/Puerto Rico/Coquí	North America/Puerto Rico/Puerto Rico/Salinas County
+North America/USA/Puerto Rico/Corazón	North America/Puerto Rico/Puerto Rico/Guayama County
+North America/USA/Puerto Rico/Corcovado	North America/Puerto Rico/Puerto Rico/Hatillo County
+North America/USA/Puerto Rico/Corozal	North America/Puerto Rico/Puerto Rico/Corozal County
+North America/USA/Puerto Rico/Corral Viejo	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Coto Laurel	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Coto Norte	North America/Puerto Rico/Puerto Rico/Manatí County
+North America/USA/Puerto Rico/Culebra	North America/Puerto Rico/Puerto Rico/Culebra County
+North America/USA/Puerto Rico/Daguao	North America/Puerto Rico/Puerto Rico/Naguabo County
+North America/USA/Puerto Rico/Dorado	North America/Puerto Rico/Puerto Rico/Dorado County
+North America/USA/Puerto Rico/Duque	North America/Puerto Rico/Puerto Rico/Naguabo County
+North America/USA/Puerto Rico/El Combate	North America/Puerto Rico/Puerto Rico/Cabo Rojo County
+North America/USA/Puerto Rico/El Mangó	North America/Puerto Rico/Puerto Rico/Juncos County
+North America/USA/Puerto Rico/El Negro	North America/Puerto Rico/Puerto Rico/Yabucoa County
+North America/USA/Puerto Rico/El Ojo	North America/Puerto Rico/Puerto Rico/Santa Isabel County
+North America/USA/Puerto Rico/El Paraiso	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/El Tumbao	North America/Puerto Rico/Puerto Rico/Guánica County
+North America/USA/Puerto Rico/Emajagua	North America/Puerto Rico/Puerto Rico/Maunabo County
+North America/USA/Puerto Rico/Esperanza	North America/Puerto Rico/Puerto Rico/Vieques County
+North America/USA/Puerto Rico/Espino	North America/Puerto Rico/Puerto Rico/Añasco County
+North America/USA/Puerto Rico/Florida	North America/Puerto Rico/Puerto Rico/Florida PR
+North America/USA/Puerto Rico/Fránquez	North America/Puerto Rico/Puerto Rico/Morovis County
+North America/USA/Puerto Rico/Fuig	North America/Puerto Rico/Puerto Rico/Guánica County
+North America/USA/Puerto Rico/G. L. García	North America/Puerto Rico/Puerto Rico/Cayey County
+North America/USA/Puerto Rico/Galateo	North America/Puerto Rico/Puerto Rico/Toa Alta County
+North America/USA/Puerto Rico/Garrochales	North America/Puerto Rico/Puerto Rico/Barceloneta County
+North America/USA/Puerto Rico/Guayabal	North America/Puerto Rico/Puerto Rico/Juana Díaz County
+North America/USA/Puerto Rico/Guayanilla	North America/Puerto Rico/Puerto Rico/Guayanilla County
+North America/USA/Puerto Rico/Gurabo	North America/Puerto Rico/Puerto Rico/Gurabo County
+North America/USA/Puerto Rico/Guánica	North America/Puerto Rico/Puerto Rico/Guánica County
+North America/USA/Puerto Rico/H. Rivera Colón	North America/Puerto Rico/Puerto Rico/Toa Alta County
+North America/USA/Puerto Rico/Hacienda San José	North America/Puerto Rico/Puerto Rico/Caguas
+North America/USA/Puerto Rico/Hatillo	North America/Puerto Rico/Puerto Rico/Hatillo County
+North America/USA/Puerto Rico/Hato Arriba	North America/Puerto Rico/Puerto Rico/San Sebastián County
+North America/USA/Puerto Rico/Hato Candal	North America/Puerto Rico/Puerto Rico/Río Grande County
+North America/USA/Puerto Rico/Hormigueros	North America/Puerto Rico/Puerto Rico/Hormigueros County
+North America/USA/Puerto Rico/Imbéry	North America/Puerto Rico/Puerto Rico/Barceloneta County
+North America/USA/Puerto Rico/Indios	North America/Puerto Rico/Puerto Rico/Guayanilla County
+North America/USA/Puerto Rico/Ingenio	North America/Puerto Rico/Puerto Rico/Toa Baja
+North America/USA/Puerto Rico/Isabela	North America/Puerto Rico/Puerto Rico/Isabela County
+North America/USA/Puerto Rico/Jagual	North America/Puerto Rico/Puerto Rico/San Lorenzo County
+North America/USA/Puerto Rico/Jauca	North America/Puerto Rico/Puerto Rico/Santa Isabel County
+North America/USA/Puerto Rico/Jayuya	North America/Puerto Rico/Puerto Rico/Jayuya County
+North America/USA/Puerto Rico/Jobos	North America/Puerto Rico/Puerto Rico/Guayama County
+North America/USA/Puerto Rico/Juana Díaz	North America/Puerto Rico/Puerto Rico/Juana Díaz County
+North America/USA/Puerto Rico/Juncal	North America/Puerto Rico/Puerto Rico/San Sebastián County
+North America/USA/Puerto Rico/Juncos	North America/Puerto Rico/Puerto Rico/Juncos County
+North America/USA/Puerto Rico/La Alianza	North America/Puerto Rico/Puerto Rico/Arecibo County
+North America/USA/Puerto Rico/La Dolores	North America/Puerto Rico/Puerto Rico/Río Grande County
+North America/USA/Puerto Rico/La Fermina	North America/Puerto Rico/Puerto Rico/Humacao County
+North America/USA/Puerto Rico/La Liga	North America/Puerto Rico/Puerto Rico/Caguas
+North America/USA/Puerto Rico/La Luisa	North America/Puerto Rico/Puerto Rico/Manatí County
+North America/USA/Puerto Rico/La Parguera	North America/Puerto Rico/Puerto Rico/Lajas County
+North America/USA/Puerto Rico/La Playa	North America/Puerto Rico/Puerto Rico/Añasco County
+North America/USA/Puerto Rico/La Plena	North America/Puerto Rico/Puerto Rico/Salinas County
+North America/USA/Puerto Rico/La Yuca	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Lajas	North America/Puerto Rico/Puerto Rico/Lajas County
+North America/USA/Puerto Rico/Lamboglia	North America/Puerto Rico/Puerto Rico/Patillas County
+North America/USA/Puerto Rico/Lares	North America/Puerto Rico/Puerto Rico/Lares County
+North America/USA/Puerto Rico/Las Carolinas	North America/Puerto Rico/Puerto Rico/Caguas
+North America/USA/Puerto Rico/Las Croabas	North America/Puerto Rico/Puerto Rico/Fajardo County
+North America/USA/Puerto Rico/Las Marías	North America/Puerto Rico/Puerto Rico/Añasco County
+North America/USA/Puerto Rico/Las Ochenta	North America/Puerto Rico/Puerto Rico/Salinas County
+North America/USA/Puerto Rico/Las Ollas	North America/Puerto Rico/Puerto Rico/Santa Isabel County
+North America/USA/Puerto Rico/Las Piedras	North America/Puerto Rico/Puerto Rico/Las Piedras County
+North America/USA/Puerto Rico/Levittown	North America/Puerto Rico/Puerto Rico/Toa Baja
+North America/USA/Puerto Rico/Liborio Negrón Torres	North America/Puerto Rico/Puerto Rico/Sabana Grande County
+North America/USA/Puerto Rico/Lluveras	North America/Puerto Rico/Puerto Rico/Sabana Grande County
+North America/USA/Puerto Rico/Lomas	North America/Puerto Rico/Puerto Rico/Canóvanas County
+North America/USA/Puerto Rico/Los Llanos	North America/Puerto Rico/Puerto Rico/Coamo County
+North America/USA/Puerto Rico/Los Panes	North America/Puerto Rico/Puerto Rico/Caguas
+North America/USA/Puerto Rico/Los Prados	North America/Puerto Rico/Puerto Rico/Caguas
+North America/USA/Puerto Rico/Loíza	North America/Puerto Rico/Puerto Rico/Loíza County
+North America/USA/Puerto Rico/Luis Lloréns Torres	North America/Puerto Rico/Puerto Rico/Juana Díaz County
+North America/USA/Puerto Rico/Luis M. Cintrón	North America/Puerto Rico/Puerto Rico/Fajardo County
+North America/USA/Puerto Rico/Luquillo	North America/Puerto Rico/Puerto Rico/Luquillo County
+North America/USA/Puerto Rico/Luyando	North America/Puerto Rico/Puerto Rico/Aguada County
+North America/USA/Puerto Rico/Magas Arriba	North America/Puerto Rico/Puerto Rico/Guayanilla County
+North America/USA/Puerto Rico/Maguayo	North America/Puerto Rico/Puerto Rico/Lajas County
+North America/USA/Puerto Rico/Manatí	North America/Puerto Rico/Puerto Rico/Manatí County
+North America/USA/Puerto Rico/Mariano Colón	North America/Puerto Rico/Puerto Rico/Coamo County
+North America/USA/Puerto Rico/Maricao	North America/Puerto Rico/Puerto Rico/Maricao County
+North America/USA/Puerto Rico/Martorell	North America/Puerto Rico/Puerto Rico/Yabucoa County
+North America/USA/Puerto Rico/Marueño	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/María Antonia	North America/Puerto Rico/Puerto Rico/Guánica County
+North America/USA/Puerto Rico/Maunabo	North America/Puerto Rico/Puerto Rico/Maunabo County
+North America/USA/Puerto Rico/Miranda	North America/Puerto Rico/Puerto Rico/Vega Baja County
+North America/USA/Puerto Rico/Moca	North America/Puerto Rico/Puerto Rico/Moca County
+North America/USA/Puerto Rico/Monserrate	North America/Puerto Rico/Puerto Rico/Vega Baja County
+North America/USA/Puerto Rico/Monte Grande	North America/Puerto Rico/Puerto Rico/Cabo Rojo County
+North America/USA/Puerto Rico/Mora	North America/Puerto Rico/Puerto Rico/Isabela County
+North America/USA/Puerto Rico/Morovis	North America/Puerto Rico/Puerto Rico/Morovis County
+North America/USA/Puerto Rico/Mucarabones	North America/Puerto Rico/Puerto Rico/Toa Alta County
+North America/USA/Puerto Rico/Naguabo	North America/Puerto Rico/Puerto Rico/Naguabo County
+North America/USA/Puerto Rico/Naranjito	North America/Puerto Rico/Puerto Rico/Naranjito County
+North America/USA/Puerto Rico/Olimpo	North America/Puerto Rico/Puerto Rico/Guayama County
+North America/USA/Puerto Rico/Orocovis	North America/Puerto Rico/Puerto Rico/Orocovis County
+North America/USA/Puerto Rico/Pajonal	North America/Puerto Rico/Puerto Rico/Florida County
+North America/USA/Puerto Rico/Palmarejo	North America/Puerto Rico/Puerto Rico/Lajas County
+North America/USA/Puerto Rico/Palmas	North America/Puerto Rico/Puerto Rico/Arroyo County
+North America/USA/Puerto Rico/Palmas del Mar	North America/Puerto Rico/Puerto Rico/Humacao County
+North America/USA/Puerto Rico/Palmer	North America/Puerto Rico/Puerto Rico/Río Grande County
+North America/USA/Puerto Rico/Palo Seco	North America/Puerto Rico/Puerto Rico/Maunabo County
+North America/USA/Puerto Rico/Palomas	North America/Puerto Rico/Puerto Rico/Yauco County
+North America/USA/Puerto Rico/Parcelas La Milagrosa	North America/Puerto Rico/Puerto Rico/Cidra County
+North America/USA/Puerto Rico/Parcelas Mandry	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Parcelas Nuevas	North America/Puerto Rico/Puerto Rico/Cidra County
+North America/USA/Puerto Rico/Parcelas Peñuelas	North America/Puerto Rico/Puerto Rico/Santa Isabel County
+North America/USA/Puerto Rico/Parcelas Viejas Borinquen	North America/Puerto Rico/Puerto Rico/Caguas
+North America/USA/Puerto Rico/Parcelas de Navarro	North America/Puerto Rico/Puerto Rico/Gurabo County
+North America/USA/Puerto Rico/Pastos	North America/Puerto Rico/Puerto Rico/Aibonito County
+North America/USA/Puerto Rico/Patillas	North America/Puerto Rico/Puerto Rico/Patillas County
+North America/USA/Puerto Rico/Penuelas	North America/Puerto Rico/Puerto Rico/Penuelas PR
+North America/USA/Puerto Rico/Peña Pobre	North America/Puerto Rico/Puerto Rico/Naguabo County
+North America/USA/Puerto Rico/Peñuelas	North America/Puerto Rico/Puerto Rico/Peñuelas County
+North America/USA/Puerto Rico/Piedra Aguza	North America/Puerto Rico/Puerto Rico/Juana Díaz County
+North America/USA/Puerto Rico/Piedra Gorda	North America/Puerto Rico/Puerto Rico/Camuy County
+North America/USA/Puerto Rico/Playa Fortuna	North America/Puerto Rico/Puerto Rico/Luquillo County
+North America/USA/Puerto Rico/Playita	North America/Puerto Rico/Puerto Rico/Yabucoa County
+North America/USA/Puerto Rico/Playita Cortada	North America/Puerto Rico/Puerto Rico/Santa Isabel County
+North America/USA/Puerto Rico/Pole Ojea	North America/Puerto Rico/Puerto Rico/Cabo Rojo County
+North America/USA/Puerto Rico/Potala Pastillo	North America/Puerto Rico/Puerto Rico/Juana Díaz County
+North America/USA/Puerto Rico/Pueblito del Carmen	North America/Puerto Rico/Puerto Rico/Guayama County
+North America/USA/Puerto Rico/Pueblito del Río	North America/Puerto Rico/Puerto Rico/Las Piedras County
+North America/USA/Puerto Rico/Puerto Real	North America/Puerto Rico/Puerto Rico/Cabo Rojo County
+North America/USA/Puerto Rico/Punta Santiago	North America/Puerto Rico/Puerto Rico/Humacao County
+North America/USA/Puerto Rico/Pájaros	North America/Puerto Rico/Puerto Rico/Toa Alta County
+North America/USA/Puerto Rico/Quebrada	North America/Puerto Rico/Puerto Rico/Camuy County
+North America/USA/Puerto Rico/Quebrada del Agua	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Quebradillas	North America/Puerto Rico/Puerto Rico/Quebradillas County
+North America/USA/Puerto Rico/Rafael Capó	North America/Puerto Rico/Puerto Rico/Hatillo County
+North America/USA/Puerto Rico/Rafael González	North America/Puerto Rico/Puerto Rico/Hatillo County
+North America/USA/Puerto Rico/Rafael Hernández	North America/Puerto Rico/Puerto Rico/Aguadilla County
+North America/USA/Puerto Rico/Ramos	North America/Puerto Rico/Puerto Rico/Luquillo County
+North America/USA/Puerto Rico/Rincón	North America/Puerto Rico/Puerto Rico/Rincón County
+North America/USA/Puerto Rico/Rio Grande	North America/Puerto Rico/Puerto Rico/Rio Grande PR
+North America/USA/Puerto Rico/Rodríguez Hevia	North America/Puerto Rico/Puerto Rico/Cidra County
+North America/USA/Puerto Rico/Rosa Sánchez	North America/Puerto Rico/Puerto Rico/Yabucoa County
+North America/USA/Puerto Rico/Río Blanco	North America/Puerto Rico/Puerto Rico/Naguabo County
+North America/USA/Puerto Rico/Río Cañas Abajo	North America/Puerto Rico/Puerto Rico/Juana Díaz County
+North America/USA/Puerto Rico/Río Grande	North America/Puerto Rico/Puerto Rico/Río Grande County
+North America/USA/Puerto Rico/Río Lajas	North America/Puerto Rico/Puerto Rico/Dorado County
+North America/USA/Puerto Rico/Sabana	North America/Puerto Rico/Puerto Rico/Vega Baja County
+North America/USA/Puerto Rico/Sabana Eneas	North America/Puerto Rico/Puerto Rico/San Germán County
+North America/USA/Puerto Rico/Sabana Grande	North America/Puerto Rico/Puerto Rico/Sabana Grande County
+North America/USA/Puerto Rico/Sabana Hoyos	North America/Puerto Rico/Puerto Rico/Arecibo County
+North America/USA/Puerto Rico/Sabana Seca	North America/Puerto Rico/Puerto Rico/Toa Baja
+North America/USA/Puerto Rico/Salinas	North America/Puerto Rico/Puerto Rico/Salinas County
+North America/USA/Puerto Rico/San Germán	North America/Puerto Rico/Puerto Rico/San Germán County
+North America/USA/Puerto Rico/San Isidro	North America/Puerto Rico/Puerto Rico/Canóvanas County
+North America/USA/Puerto Rico/San José	North America/Puerto Rico/Puerto Rico/Toa Baja
+North America/USA/Puerto Rico/San Juan	North America/Puerto Rico/Puerto Rico/San Juan PR
+North America/USA/Puerto Rico/San Lorenzo	North America/Puerto Rico/Puerto Rico/San Lorenzo County
+North America/USA/Puerto Rico/San Sebastián	North America/Puerto Rico/Puerto Rico/San Sebastián County
+North America/USA/Puerto Rico/Santa Bárbara	North America/Puerto Rico/Puerto Rico/Canóvanas County
+North America/USA/Puerto Rico/Santa Clara	North America/Puerto Rico/Puerto Rico/Aguas Buenas County
+North America/USA/Puerto Rico/Santa Isabel	North America/Puerto Rico/Puerto Rico/Santa Isabel County
+North America/USA/Puerto Rico/Santo Domingo	North America/Puerto Rico/Puerto Rico/Peñuelas County
+North America/USA/Puerto Rico/Stella	North America/Puerto Rico/Puerto Rico/Rincón County
+North America/USA/Puerto Rico/Suárez	North America/Puerto Rico/Puerto Rico/Loíza County
+North America/USA/Puerto Rico/Tallaboa	North America/Puerto Rico/Puerto Rico/Peñuelas County
+North America/USA/Puerto Rico/Tallaboa Alta	North America/Puerto Rico/Puerto Rico/Peñuelas County
+North America/USA/Puerto Rico/Tibes	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Tiburones	North America/Puerto Rico/Puerto Rico/Barceloneta County
+North America/USA/Puerto Rico/Tierras Nuevas Poniente	North America/Puerto Rico/Puerto Rico/Manatí County
+North America/USA/Puerto Rico/Toa Alta	North America/Puerto Rico/Puerto Rico/Toa Alta County
+North America/USA/Puerto Rico/Toa Baja	North America/Puerto Rico/Puerto Rico/Toa Baja
+North America/USA/Puerto Rico/Utuado	North America/Puerto Rico/Puerto Rico/Utuado County
+North America/USA/Puerto Rico/Vayas	North America/Puerto Rico/Puerto Rico/Ponce
+North America/USA/Puerto Rico/Vega Alta	North America/Puerto Rico/Puerto Rico/Vega Alta County
+North America/USA/Puerto Rico/Vieques	North America/Puerto Rico/Puerto Rico/Vieques County
+North America/USA/Puerto Rico/Villalba	North America/Puerto Rico/Puerto Rico/Villalba County
+North America/USA/Puerto Rico/Vázquez	North America/Puerto Rico/Puerto Rico/Salinas County
+North America/USA/Puerto Rico/Yabucoa	North America/Puerto Rico/Puerto Rico/Yabucoa County
+North America/USA/Puerto Rico/Yaurel	North America/Puerto Rico/Puerto Rico/Arroyo County
+
 # Qatar
 Asia/Qatar/Ad Dawhah/*	Asia/Qatar/Ad-Dawhah/*
 
@@ -14359,46 +14630,6 @@ South America/Turks and Caicos Islands/Turks and Caicos Islands/*	North America/
 */USA/North America/Oregon,Wallowa County	North America/USA/Oregon/Wallowa County
 */United States/*/*	*/USA/*/*
 */Virgin Islands/St. Thomas/	North America/USA/Virgin Islands/St. Thomas
-North America/Puerto Rico//	North America/USA/Puerto Rico/
-North America/Puerto Rico/Aguas Buenas/	North America/USA/Puerto Rico/Aguas Buenas County
-North America/Puerto Rico/Arecibo/	North America/USA/Puerto Rico/
-North America/Puerto Rico/Bayamon/	North America/USA/Puerto Rico/Bayamon
-North America/Puerto Rico/Caguas/	North America/USA/Puerto Rico/Caguas
-North America/Puerto Rico/Camuy/	North America/USA/Puerto Rico/
-North America/Puerto Rico/Canovanas/	North America/USA/Puerto Rico/Canovanas
-North America/Puerto Rico/Carolina/	North America/USA/Puerto Rico/Carolina
-North America/Puerto Rico/Cayey/	North America/USA/Puerto Rico/Cayey County
-North America/Puerto Rico/Ciales/	North America/USA/Puerto Rico/
-North America/Puerto Rico/Cidra/	North America/USA/Puerto Rico/Cidra County
-North America/Puerto Rico/Coamo/	North America/USA/Puerto Rico/Coamo County
-North America/Puerto Rico/Dorado/	North America/USA/Puerto Rico/Dorado County
-North America/Puerto Rico/Fajardo/	North America/USA/Puerto Rico/
-North America/Puerto Rico/Florida/	North America/USA/Puerto Rico/Florida PR
-North America/Puerto Rico/Guaynabo Municipio/	North America/USA/Puerto Rico/Guaynabo Municipio
-North America/Puerto Rico/Guaynabo/	North America/USA/Puerto Rico/Guaynabo
-North America/Puerto Rico/Gurabo/	North America/USA/Puerto Rico/Gurabo County
-North America/Puerto Rico/Humacao/	North America/USA/Puerto Rico/Humacao
-North America/Puerto Rico/Las Piedras/	North America/USA/Puerto Rico/Las Piedras County
-North America/Puerto Rico/Manati/	North America/USA/Puerto Rico/Manati
-North America/Puerto Rico/Mayaguez/	North America/USA/Puerto Rico/Mayaguez
-North America/Puerto Rico/Moca/	North America/USA/Puerto Rico/
-North America/Puerto Rico/Naguabo/	North America/USA/Puerto Rico/
-North America/Puerto Rico/Ponce/	North America/USA/Puerto Rico/Ponce
-North America/Puerto Rico/Pr/*	North America/USA/Puerto Rico/*
-North America/Puerto Rico/Pr/Hatillo	North America/USA/Puerto Rico/Hatillo County
-North America/Puerto Rico/Puerto Rico/*	North America/USA/Puerto Rico/*
-North America/Puerto Rico/Rincon/	North America/USA/Puerto Rico/Rincon
-North America/Puerto Rico/Riogrande/	North America/USA/Puerto Rico/
-North America/Puerto Rico/San German/	North America/USA/Puerto Rico/San German
-North America/Puerto Rico/San Juan/	North America/USA/Puerto Rico/San Juan PR
-North America/Puerto Rico/San Lorenzo/	North America/USA/Puerto Rico/San Lorenzo PR
-North America/Puerto Rico/Sanjuan/	North America/USA/Puerto Rico/
-North America/Puerto Rico/Toa Alta/	North America/USA/Puerto Rico/Toa Alta County
-North America/Puerto Rico/Toa Baja/	North America/USA/Puerto Rico/Toa Baja
-North America/Puerto Rico/Trujillo Alto/	North America/USA/Puerto Rico/Trujillo Alto
-North America/Puerto Rico/Vega Alta/	North America/USA/Puerto Rico/Vega Alta County
-North America/Puerto Rico/Vega Baja/	North America/USA/Puerto Rico/Vega Baja
-North America/Puerto Rico/Yauco/	North America/USA/Puerto Rico/Yauco
 North America/U.S. Virgin Islands//	North America/USA/Virgin Islands/
 North America/U.S. Virgin Islands/St. Croix/	North America/USA/Virgin Islands/St. Croix
 North America/U.S. Virgin Islands/St. Thomas/	North America/USA/Virgin Islands/St. Thomas
@@ -38211,235 +38442,6 @@ North America/USA/Pennsylvania/Youngwood	North America/USA/Pennsylvania/Westmore
 North America/USA/Pennsylvania/Yukon	North America/USA/Pennsylvania/Westmoreland County PA
 North America/USA/Pennsylvania/Zelienople	North America/USA/Pennsylvania/Butler County PA
 North America/USA/Pennsylvania/Zion	North America/USA/Pennsylvania/Centre County
-North America/USA/Pr/*	North America/USA/Puerto Rico/*
-North America/USA/Puerto Rico/Aceitunas	North America/USA/Puerto Rico/Moca County
-North America/USA/Puerto Rico/Adjuntas	North America/USA/Puerto Rico/Adjuntas County
-North America/USA/Puerto Rico/Aguada	North America/USA/Puerto Rico/Aguada County
-North America/USA/Puerto Rico/Aguadilla	North America/USA/Puerto Rico/Aguadilla County
-North America/USA/Puerto Rico/Aguas Buenas	North America/USA/Puerto Rico/Aguas Buenas County
-North America/USA/Puerto Rico/Aguas Claras	North America/USA/Puerto Rico/Ceiba County
-North America/USA/Puerto Rico/Aguilita	North America/USA/Puerto Rico/Juana Díaz County
-North America/USA/Puerto Rico/Aibonito	North America/USA/Puerto Rico/Aibonito County
-North America/USA/Puerto Rico/Alianza	North America/USA/Puerto Rico/Camuy County
-North America/USA/Puerto Rico/Animas	North America/USA/Puerto Rico/Arecibo County
-North America/USA/Puerto Rico/Anon Raices	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Antón Ruíz	North America/USA/Puerto Rico/Humacao County
-North America/USA/Puerto Rico/Arroyo	North America/USA/Puerto Rico/Arroyo County
-North America/USA/Puerto Rico/Añasco	North America/USA/Puerto Rico/Añasco County
-North America/USA/Puerto Rico/Bairoa La Veinticinco	North America/USA/Puerto Rico/Caguas
-North America/USA/Puerto Rico/Bajadero	North America/USA/Puerto Rico/Arecibo County
-North America/USA/Puerto Rico/Bajandas	North America/USA/Puerto Rico/Humacao County
-North America/USA/Puerto Rico/Barahona	North America/USA/Puerto Rico/Morovis County
-North America/USA/Puerto Rico/Barceloneta	North America/USA/Puerto Rico/Barceloneta County
-North America/USA/Puerto Rico/Barranquitas	North America/USA/Puerto Rico/Barranquitas County
-North America/USA/Puerto Rico/Bartolo	North America/USA/Puerto Rico/Río Grande County
-North America/USA/Puerto Rico/Benítez	North America/USA/Puerto Rico/Canóvanas County
-North America/USA/Puerto Rico/Betances	North America/USA/Puerto Rico/Cabo Rojo County
-North America/USA/Puerto Rico/Boquerón	North America/USA/Puerto Rico/Cabo Rojo County
-North America/USA/Puerto Rico/Breñas	North America/USA/Puerto Rico/Vega Alta County
-North America/USA/Puerto Rico/Buena Vista	North America/USA/Puerto Rico/Arroyo County
-North America/USA/Puerto Rico/Búfalo	North America/USA/Puerto Rico/Barceloneta County
-North America/USA/Puerto Rico/Cabo Rojo	North America/USA/Puerto Rico/Cabo Rojo County
-North America/USA/Puerto Rico/Cabán	North America/USA/Puerto Rico/Aguadilla County
-North America/USA/Puerto Rico/Cacao	North America/USA/Puerto Rico/Quebradillas County
-North America/USA/Puerto Rico/Calzada	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Campanilla	North America/USA/Puerto Rico/Toa Baja
-North America/USA/Puerto Rico/Campo Rico	North America/USA/Puerto Rico/Canóvanas County
-North America/USA/Puerto Rico/Camuy	North America/USA/Puerto Rico/Camuy County
-North America/USA/Puerto Rico/Candelaria	North America/USA/Puerto Rico/Toa Baja
-North America/USA/Puerto Rico/Candelaria Arenas	North America/USA/Puerto Rico/Toa Baja
-North America/USA/Puerto Rico/Candelero Abajo	North America/USA/Puerto Rico/Humacao County
-North America/USA/Puerto Rico/Candelero Arriba	North America/USA/Puerto Rico/Humacao County
-North America/USA/Puerto Rico/Canóvanas	North America/USA/Puerto Rico/Canóvanas County
-North America/USA/Puerto Rico/Capitanejo	North America/USA/Puerto Rico/Juana Díaz County
-North America/USA/Puerto Rico/Carrizales	North America/USA/Puerto Rico/Hatillo County
-North America/USA/Puerto Rico/Cayey	North America/USA/Puerto Rico/Cayey County
-North America/USA/Puerto Rico/Cayuco	North America/USA/Puerto Rico/Utuado County
-North America/USA/Puerto Rico/Ceiba	North America/USA/Puerto Rico/Ceiba County
-North America/USA/Puerto Rico/Celada	North America/USA/Puerto Rico/Gurabo County
-North America/USA/Puerto Rico/Central Aguirre	North America/USA/Puerto Rico/Salinas County
-North America/USA/Puerto Rico/Cerrillos Hoyos	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Ciales	North America/USA/Puerto Rico/Ciales County
-North America/USA/Puerto Rico/Cidra	North America/USA/Puerto Rico/Cidra County
-North America/USA/Puerto Rico/Coamo	North America/USA/Puerto Rico/Coamo County
-North America/USA/Puerto Rico/Coco	North America/USA/Puerto Rico/Salinas County
-North America/USA/Puerto Rico/Comerío	North America/USA/Puerto Rico/Comerío County
-North America/USA/Puerto Rico/Comunas	North America/USA/Puerto Rico/Yabucoa County
-North America/USA/Puerto Rico/Coquí	North America/USA/Puerto Rico/Salinas County
-North America/USA/Puerto Rico/Corazón	North America/USA/Puerto Rico/Guayama County
-North America/USA/Puerto Rico/Corcovado	North America/USA/Puerto Rico/Hatillo County
-North America/USA/Puerto Rico/Corozal	North America/USA/Puerto Rico/Corozal County
-North America/USA/Puerto Rico/Corral Viejo	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Coto Laurel	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Coto Norte	North America/USA/Puerto Rico/Manatí County
-North America/USA/Puerto Rico/Culebra	North America/USA/Puerto Rico/Culebra County
-North America/USA/Puerto Rico/Daguao	North America/USA/Puerto Rico/Naguabo County
-North America/USA/Puerto Rico/Dorado	North America/USA/Puerto Rico/Dorado County
-North America/USA/Puerto Rico/Duque	North America/USA/Puerto Rico/Naguabo County
-North America/USA/Puerto Rico/El Combate	North America/USA/Puerto Rico/Cabo Rojo County
-North America/USA/Puerto Rico/El Mangó	North America/USA/Puerto Rico/Juncos County
-North America/USA/Puerto Rico/El Negro	North America/USA/Puerto Rico/Yabucoa County
-North America/USA/Puerto Rico/El Ojo	North America/USA/Puerto Rico/Santa Isabel County
-North America/USA/Puerto Rico/El Paraiso	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/El Tumbao	North America/USA/Puerto Rico/Guánica County
-North America/USA/Puerto Rico/Emajagua	North America/USA/Puerto Rico/Maunabo County
-North America/USA/Puerto Rico/Esperanza	North America/USA/Puerto Rico/Vieques County
-North America/USA/Puerto Rico/Espino	North America/USA/Puerto Rico/Añasco County
-North America/USA/Puerto Rico/Florida	North America/USA/Puerto Rico/Florida PR
-North America/USA/Puerto Rico/Fránquez	North America/USA/Puerto Rico/Morovis County
-North America/USA/Puerto Rico/Fuig	North America/USA/Puerto Rico/Guánica County
-North America/USA/Puerto Rico/G. L. García	North America/USA/Puerto Rico/Cayey County
-North America/USA/Puerto Rico/Galateo	North America/USA/Puerto Rico/Toa Alta County
-North America/USA/Puerto Rico/Garrochales	North America/USA/Puerto Rico/Barceloneta County
-North America/USA/Puerto Rico/Guayabal	North America/USA/Puerto Rico/Juana Díaz County
-North America/USA/Puerto Rico/Guayanilla	North America/USA/Puerto Rico/Guayanilla County
-North America/USA/Puerto Rico/Gurabo	North America/USA/Puerto Rico/Gurabo County
-North America/USA/Puerto Rico/Guánica	North America/USA/Puerto Rico/Guánica County
-North America/USA/Puerto Rico/H. Rivera Colón	North America/USA/Puerto Rico/Toa Alta County
-North America/USA/Puerto Rico/Hacienda San José	North America/USA/Puerto Rico/Caguas
-North America/USA/Puerto Rico/Hatillo	North America/USA/Puerto Rico/Hatillo County
-North America/USA/Puerto Rico/Hato Arriba	North America/USA/Puerto Rico/San Sebastián County
-North America/USA/Puerto Rico/Hato Candal	North America/USA/Puerto Rico/Río Grande County
-North America/USA/Puerto Rico/Hormigueros	North America/USA/Puerto Rico/Hormigueros County
-North America/USA/Puerto Rico/Imbéry	North America/USA/Puerto Rico/Barceloneta County
-North America/USA/Puerto Rico/Indios	North America/USA/Puerto Rico/Guayanilla County
-North America/USA/Puerto Rico/Ingenio	North America/USA/Puerto Rico/Toa Baja
-North America/USA/Puerto Rico/Isabela	North America/USA/Puerto Rico/Isabela County
-North America/USA/Puerto Rico/Jagual	North America/USA/Puerto Rico/San Lorenzo County
-North America/USA/Puerto Rico/Jauca	North America/USA/Puerto Rico/Santa Isabel County
-North America/USA/Puerto Rico/Jayuya	North America/USA/Puerto Rico/Jayuya County
-North America/USA/Puerto Rico/Jobos	North America/USA/Puerto Rico/Guayama County
-North America/USA/Puerto Rico/Juana Díaz	North America/USA/Puerto Rico/Juana Díaz County
-North America/USA/Puerto Rico/Juncal	North America/USA/Puerto Rico/San Sebastián County
-North America/USA/Puerto Rico/Juncos	North America/USA/Puerto Rico/Juncos County
-North America/USA/Puerto Rico/La Alianza	North America/USA/Puerto Rico/Arecibo County
-North America/USA/Puerto Rico/La Dolores	North America/USA/Puerto Rico/Río Grande County
-North America/USA/Puerto Rico/La Fermina	North America/USA/Puerto Rico/Humacao County
-North America/USA/Puerto Rico/La Liga	North America/USA/Puerto Rico/Caguas
-North America/USA/Puerto Rico/La Luisa	North America/USA/Puerto Rico/Manatí County
-North America/USA/Puerto Rico/La Parguera	North America/USA/Puerto Rico/Lajas County
-North America/USA/Puerto Rico/La Playa	North America/USA/Puerto Rico/Añasco County
-North America/USA/Puerto Rico/La Plena	North America/USA/Puerto Rico/Salinas County
-North America/USA/Puerto Rico/La Yuca	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Lajas	North America/USA/Puerto Rico/Lajas County
-North America/USA/Puerto Rico/Lamboglia	North America/USA/Puerto Rico/Patillas County
-North America/USA/Puerto Rico/Lares	North America/USA/Puerto Rico/Lares County
-North America/USA/Puerto Rico/Las Carolinas	North America/USA/Puerto Rico/Caguas
-North America/USA/Puerto Rico/Las Croabas	North America/USA/Puerto Rico/Fajardo County
-North America/USA/Puerto Rico/Las Marías	North America/USA/Puerto Rico/Añasco County
-North America/USA/Puerto Rico/Las Ochenta	North America/USA/Puerto Rico/Salinas County
-North America/USA/Puerto Rico/Las Ollas	North America/USA/Puerto Rico/Santa Isabel County
-North America/USA/Puerto Rico/Las Piedras	North America/USA/Puerto Rico/Las Piedras County
-North America/USA/Puerto Rico/Levittown	North America/USA/Puerto Rico/Toa Baja
-North America/USA/Puerto Rico/Liborio Negrón Torres	North America/USA/Puerto Rico/Sabana Grande County
-North America/USA/Puerto Rico/Lluveras	North America/USA/Puerto Rico/Sabana Grande County
-North America/USA/Puerto Rico/Lomas	North America/USA/Puerto Rico/Canóvanas County
-North America/USA/Puerto Rico/Los Llanos	North America/USA/Puerto Rico/Coamo County
-North America/USA/Puerto Rico/Los Panes	North America/USA/Puerto Rico/Caguas
-North America/USA/Puerto Rico/Los Prados	North America/USA/Puerto Rico/Caguas
-North America/USA/Puerto Rico/Loíza	North America/USA/Puerto Rico/Loíza County
-North America/USA/Puerto Rico/Luis Lloréns Torres	North America/USA/Puerto Rico/Juana Díaz County
-North America/USA/Puerto Rico/Luis M. Cintrón	North America/USA/Puerto Rico/Fajardo County
-North America/USA/Puerto Rico/Luquillo	North America/USA/Puerto Rico/Luquillo County
-North America/USA/Puerto Rico/Luyando	North America/USA/Puerto Rico/Aguada County
-North America/USA/Puerto Rico/Magas Arriba	North America/USA/Puerto Rico/Guayanilla County
-North America/USA/Puerto Rico/Maguayo	North America/USA/Puerto Rico/Lajas County
-North America/USA/Puerto Rico/Manatí	North America/USA/Puerto Rico/Manatí County
-North America/USA/Puerto Rico/Mariano Colón	North America/USA/Puerto Rico/Coamo County
-North America/USA/Puerto Rico/Maricao	North America/USA/Puerto Rico/Maricao County
-North America/USA/Puerto Rico/Martorell	North America/USA/Puerto Rico/Yabucoa County
-North America/USA/Puerto Rico/Marueño	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/María Antonia	North America/USA/Puerto Rico/Guánica County
-North America/USA/Puerto Rico/Maunabo	North America/USA/Puerto Rico/Maunabo County
-North America/USA/Puerto Rico/Miranda	North America/USA/Puerto Rico/Vega Baja County
-North America/USA/Puerto Rico/Moca	North America/USA/Puerto Rico/Moca County
-North America/USA/Puerto Rico/Monserrate	North America/USA/Puerto Rico/Vega Baja County
-North America/USA/Puerto Rico/Monte Grande	North America/USA/Puerto Rico/Cabo Rojo County
-North America/USA/Puerto Rico/Mora	North America/USA/Puerto Rico/Isabela County
-North America/USA/Puerto Rico/Morovis	North America/USA/Puerto Rico/Morovis County
-North America/USA/Puerto Rico/Mucarabones	North America/USA/Puerto Rico/Toa Alta County
-North America/USA/Puerto Rico/Naguabo	North America/USA/Puerto Rico/Naguabo County
-North America/USA/Puerto Rico/Naranjito	North America/USA/Puerto Rico/Naranjito County
-North America/USA/Puerto Rico/Olimpo	North America/USA/Puerto Rico/Guayama County
-North America/USA/Puerto Rico/Orocovis	North America/USA/Puerto Rico/Orocovis County
-North America/USA/Puerto Rico/Pajonal	North America/USA/Puerto Rico/Florida County
-North America/USA/Puerto Rico/Palmarejo	North America/USA/Puerto Rico/Lajas County
-North America/USA/Puerto Rico/Palmas	North America/USA/Puerto Rico/Arroyo County
-North America/USA/Puerto Rico/Palmas del Mar	North America/USA/Puerto Rico/Humacao County
-North America/USA/Puerto Rico/Palmer	North America/USA/Puerto Rico/Río Grande County
-North America/USA/Puerto Rico/Palo Seco	North America/USA/Puerto Rico/Maunabo County
-North America/USA/Puerto Rico/Palomas	North America/USA/Puerto Rico/Yauco County
-North America/USA/Puerto Rico/Parcelas La Milagrosa	North America/USA/Puerto Rico/Cidra County
-North America/USA/Puerto Rico/Parcelas Mandry	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Parcelas Nuevas	North America/USA/Puerto Rico/Cidra County
-North America/USA/Puerto Rico/Parcelas Peñuelas	North America/USA/Puerto Rico/Santa Isabel County
-North America/USA/Puerto Rico/Parcelas Viejas Borinquen	North America/USA/Puerto Rico/Caguas
-North America/USA/Puerto Rico/Parcelas de Navarro	North America/USA/Puerto Rico/Gurabo County
-North America/USA/Puerto Rico/Pastos	North America/USA/Puerto Rico/Aibonito County
-North America/USA/Puerto Rico/Patillas	North America/USA/Puerto Rico/Patillas County
-North America/USA/Puerto Rico/Penuelas	North America/USA/Puerto Rico/Penuelas PR
-North America/USA/Puerto Rico/Peña Pobre	North America/USA/Puerto Rico/Naguabo County
-North America/USA/Puerto Rico/Peñuelas	North America/USA/Puerto Rico/Peñuelas County
-North America/USA/Puerto Rico/Piedra Aguza	North America/USA/Puerto Rico/Juana Díaz County
-North America/USA/Puerto Rico/Piedra Gorda	North America/USA/Puerto Rico/Camuy County
-North America/USA/Puerto Rico/Playa Fortuna	North America/USA/Puerto Rico/Luquillo County
-North America/USA/Puerto Rico/Playita	North America/USA/Puerto Rico/Yabucoa County
-North America/USA/Puerto Rico/Playita Cortada	North America/USA/Puerto Rico/Santa Isabel County
-North America/USA/Puerto Rico/Pole Ojea	North America/USA/Puerto Rico/Cabo Rojo County
-North America/USA/Puerto Rico/Potala Pastillo	North America/USA/Puerto Rico/Juana Díaz County
-North America/USA/Puerto Rico/Pueblito del Carmen	North America/USA/Puerto Rico/Guayama County
-North America/USA/Puerto Rico/Pueblito del Río	North America/USA/Puerto Rico/Las Piedras County
-North America/USA/Puerto Rico/Puerto Real	North America/USA/Puerto Rico/Cabo Rojo County
-North America/USA/Puerto Rico/Punta Santiago	North America/USA/Puerto Rico/Humacao County
-North America/USA/Puerto Rico/Pájaros	North America/USA/Puerto Rico/Toa Alta County
-North America/USA/Puerto Rico/Quebrada	North America/USA/Puerto Rico/Camuy County
-North America/USA/Puerto Rico/Quebrada del Agua	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Quebradillas	North America/USA/Puerto Rico/Quebradillas County
-North America/USA/Puerto Rico/Rafael Capó	North America/USA/Puerto Rico/Hatillo County
-North America/USA/Puerto Rico/Rafael González	North America/USA/Puerto Rico/Hatillo County
-North America/USA/Puerto Rico/Rafael Hernández	North America/USA/Puerto Rico/Aguadilla County
-North America/USA/Puerto Rico/Ramos	North America/USA/Puerto Rico/Luquillo County
-North America/USA/Puerto Rico/Rincón	North America/USA/Puerto Rico/Rincón County
-North America/USA/Puerto Rico/Rio Grande	North America/USA/Puerto Rico/Rio Grande PR
-North America/USA/Puerto Rico/Rodríguez Hevia	North America/USA/Puerto Rico/Cidra County
-North America/USA/Puerto Rico/Rosa Sánchez	North America/USA/Puerto Rico/Yabucoa County
-North America/USA/Puerto Rico/Río Blanco	North America/USA/Puerto Rico/Naguabo County
-North America/USA/Puerto Rico/Río Cañas Abajo	North America/USA/Puerto Rico/Juana Díaz County
-North America/USA/Puerto Rico/Río Grande	North America/USA/Puerto Rico/Río Grande County
-North America/USA/Puerto Rico/Río Lajas	North America/USA/Puerto Rico/Dorado County
-North America/USA/Puerto Rico/Sabana	North America/USA/Puerto Rico/Vega Baja County
-North America/USA/Puerto Rico/Sabana Eneas	North America/USA/Puerto Rico/San Germán County
-North America/USA/Puerto Rico/Sabana Grande	North America/USA/Puerto Rico/Sabana Grande County
-North America/USA/Puerto Rico/Sabana Hoyos	North America/USA/Puerto Rico/Arecibo County
-North America/USA/Puerto Rico/Sabana Seca	North America/USA/Puerto Rico/Toa Baja
-North America/USA/Puerto Rico/Salinas	North America/USA/Puerto Rico/Salinas County
-North America/USA/Puerto Rico/San Germán	North America/USA/Puerto Rico/San Germán County
-North America/USA/Puerto Rico/San Isidro	North America/USA/Puerto Rico/Canóvanas County
-North America/USA/Puerto Rico/San José	North America/USA/Puerto Rico/Toa Baja
-North America/USA/Puerto Rico/San Juan	North America/USA/Puerto Rico/San Juan PR
-North America/USA/Puerto Rico/San Lorenzo	North America/USA/Puerto Rico/San Lorenzo County
-North America/USA/Puerto Rico/San Sebastián	North America/USA/Puerto Rico/San Sebastián County
-North America/USA/Puerto Rico/Santa Bárbara	North America/USA/Puerto Rico/Canóvanas County
-North America/USA/Puerto Rico/Santa Clara	North America/USA/Puerto Rico/Aguas Buenas County
-North America/USA/Puerto Rico/Santa Isabel	North America/USA/Puerto Rico/Santa Isabel County
-North America/USA/Puerto Rico/Santo Domingo	North America/USA/Puerto Rico/Peñuelas County
-North America/USA/Puerto Rico/Stella	North America/USA/Puerto Rico/Rincón County
-North America/USA/Puerto Rico/Suárez	North America/USA/Puerto Rico/Loíza County
-North America/USA/Puerto Rico/Tallaboa	North America/USA/Puerto Rico/Peñuelas County
-North America/USA/Puerto Rico/Tallaboa Alta	North America/USA/Puerto Rico/Peñuelas County
-North America/USA/Puerto Rico/Tibes	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Tiburones	North America/USA/Puerto Rico/Barceloneta County
-North America/USA/Puerto Rico/Tierras Nuevas Poniente	North America/USA/Puerto Rico/Manatí County
-North America/USA/Puerto Rico/Toa Alta	North America/USA/Puerto Rico/Toa Alta County
-North America/USA/Puerto Rico/Toa Baja	North America/USA/Puerto Rico/Toa Baja
-North America/USA/Puerto Rico/Utuado	North America/USA/Puerto Rico/Utuado County
-North America/USA/Puerto Rico/Vayas	North America/USA/Puerto Rico/Ponce
-North America/USA/Puerto Rico/Vega Alta	North America/USA/Puerto Rico/Vega Alta County
-North America/USA/Puerto Rico/Vieques	North America/USA/Puerto Rico/Vieques County
-North America/USA/Puerto Rico/Villalba	North America/USA/Puerto Rico/Villalba County
-North America/USA/Puerto Rico/Vázquez	North America/USA/Puerto Rico/Salinas County
-North America/USA/Puerto Rico/Yabucoa	North America/USA/Puerto Rico/Yabucoa County
-North America/USA/Puerto Rico/Yaurel	North America/USA/Puerto Rico/Arroyo County
 North America/USA/Pw/*	North America/USA/Palau/*
 North America/USA/Rhode Island/Albion	North America/USA/Rhode Island/Albion RI
 North America/USA/Rhode Island/Ashaway	North America/USA/Rhode Island/Washington County RI
