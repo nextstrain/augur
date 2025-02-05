@@ -9774,6 +9774,15 @@ North America/Guadeloupe/Saint-Francois/*	North America/Guadeloupe/Guadeloupe/Sa
 North America/Guadeloupe/Trois-Rivieres/*	North America/Guadeloupe/Guadeloupe/Trois-Rivières
 North America/Martinique/Pointe-A-Pitre/*	North America/Guadeloupe/Guadeloupe/Pointe-A-Pitre
 
+# Guam (American territory)
+Asia/Guam/Yigo/	Oceania/Guam/Guam/Yigo
+North America/Guam//	Oceania/Guam/Guam/
+North America/Guam/Guam/*	Oceania/Guam/Guam/*
+North America/USA/Gu/*	Oceania/Guam/Guam/*
+Oceania/Guam//	Oceania/Guam/Guam/
+Oceania/Guam/Yigo/	Oceania/Guam/Guam/Yigo
+Oceania/USA/Guam/	Oceania/Guam/Guam/
+
 # Guatemala
 */Guatemala/*/*	North America/Guatemala/*/*
 North America/Guatemala/Alta Verapaz/Coban	North America/Guatemala/Alta Verapaz/Cobán
@@ -14345,9 +14354,6 @@ South America/Turks and Caicos Islands/Turks and Caicos Islands/*	North America/
 */USA/North America/Oregon,Wallowa County	North America/USA/Oregon/Wallowa County
 */United States/*/*	*/USA/*/*
 */Virgin Islands/St. Thomas/	North America/USA/Virgin Islands/St. Thomas
-Asia/Guam/Yigo/	North America/USA/Guam/Yigo
-North America/Guam//	North America/USA/Guam/
-North America/Guam/Guam/*	North America/USA/Guam/*
 North America/Puerto Rico//	North America/USA/Puerto Rico/
 North America/Puerto Rico/Aguas Buenas/	North America/USA/Puerto Rico/Aguas Buenas County
 North America/Puerto Rico/Arecibo/	North America/USA/Puerto Rico/
@@ -20321,7 +20327,6 @@ North America/USA/Georgia/Yatesville	North America/USA/Georgia/Upson County
 North America/USA/Georgia/Yonah	North America/USA/Georgia/White County GA
 North America/USA/Georgia/Young Harris	North America/USA/Georgia/Towns County
 North America/USA/Georgia/Zebulon	North America/USA/Georgia/Pike County GA
-North America/USA/Gu/*	North America/USA/Guam/*
 North America/USA/Hawaii/Ahuimanu	North America/USA/Hawaii/Honolulu County
 North America/USA/Hawaii/Aiea	North America/USA/Hawaii/Honolulu County
 North America/USA/Hawaii/Ainaloa	North America/USA/Hawaii/Hawaii County
@@ -44828,11 +44833,7 @@ North America/USA/Wyoming/Wright	North America/USA/Wyoming/Campbell County WY
 North America/USA/Wyoming/Y-O Ranch	North America/USA/Wyoming/Platte County WY
 North America/USA/Wyoming/Yoder	North America/USA/Wyoming/Goshen County
 North America/USA/Xx/	North America/USA/USA/
-Oceania/Guam//	North America/USA/Guam/
-Oceania/Guam/Guam/*	North America/USA/Guam/*
-Oceania/Guam/Yigo/	North America/USA/Guam/Yigo
 Oceania/Northern Mariana Islands//	North America/USA/Northern Mariana Islands/
-Oceania/USA/Guam/	North America/USA/Guam/
 Oceania/USA/Northern Mariana Islands/*	North America/USA/Northern Mariana Islands/*
 USA/California/Riverside/	North America/USA/California/Riverside County
 USA/California/San Diego/	North America/USA/California/San Diego County
