@@ -107,6 +107,10 @@ Africa/Algeria/Eddis/	Africa/Algeria/M'Sila Province/Eddis
 Africa/Algeria/Setif/*	Africa/Algeria/Sétif/*
 Europe/Algeria/Eddis/	Africa/Algeria/M'Sila Province/Eddis
 
+# American Samoa
+North America/USA/As/*	Oceania/American Samoa/American Samoa/*
+Oceania/American Samoa//	Oceania/American Samoa/American Samoa/
+
 # Andorra
 Europe/Andorre/*/*	Europe/Andorra/*/*
 Europe/Andorre/Andorre/*	Europe/Andorra/Andorra/*
@@ -16450,7 +16454,6 @@ North America/USA/Arkansas/Yarborough Landing	North America/USA/Arkansas/Little 
 North America/USA/Arkansas/Yellville	North America/USA/Arkansas/Marion County AR
 North America/USA/Arkansas/Zinc	North America/USA/Arkansas/Boone County AR
 North America/USA/Arkasas/*	North America/USA/Arkansas/*
-North America/USA/As/*	North America/USA/American Samoa/*
 North America/USA/Atlanta/*	North America/USA/Georgia/Fulton County GA
 North America/USA/Az/*	North America/USA/Arizona/*
 North America/USA/Boiling Springs/South Carolina	North America/USA/South Carolina/Spartanburg County
@@ -44825,8 +44828,6 @@ North America/USA/Wyoming/Wright	North America/USA/Wyoming/Campbell County WY
 North America/USA/Wyoming/Y-O Ranch	North America/USA/Wyoming/Platte County WY
 North America/USA/Wyoming/Yoder	North America/USA/Wyoming/Goshen County
 North America/USA/Xx/	North America/USA/USA/
-Oceania/American Samoa//	North America/USA/American Samoa/
-Oceania/American Samoa/American Samoa/	North America/USA/American Samoa/
 Oceania/Guam//	North America/USA/Guam/
 Oceania/Guam/Guam/*	North America/USA/Guam/*
 Oceania/Guam/Yigo/	North America/USA/Guam/Yigo
