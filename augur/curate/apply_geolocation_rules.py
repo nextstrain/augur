@@ -9,6 +9,10 @@ from augur.utils import first_line
 from augur.version import __version__
 
 
+class NoGeolocationRulesProvidedError(AugurError):
+    pass
+
+
 class CyclicGeolocationRulesError(AugurError):
     pass
 
@@ -227,6 +231,12 @@ def register_parser(parent_subparsers):
 
 
 def run(args, records):
+
+    if args.no_default_rules and not args.geolocation_rules:
+        raise NoGeolocationRulesProvidedError(
+            "No geolocation rules were provided! Either remove the `--no-default-rules` flag to use Augur's default " +
+            "geolocation rules or provide custom rules via `--geolocation-rules`.")
+
     location_fields = [args.region_field, args.country_field, args.division_field, args.location_field]
 
     default_rules = {}
