@@ -2,9 +2,11 @@
 Applies user curated geolocation rules to the geolocation fields.
 """
 from collections import defaultdict
+from augur.data import as_file
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.utils import first_line
+from augur.version import __version__
 
 
 class CyclicGeolocationRulesError(AugurError):
@@ -187,7 +189,10 @@ def transform_geolocations(geolocation_rules, geolocation, case_sensitive):
 
             transformed_values = new_values
 
-    return transformed_values
+    return {
+        "transformed_values": transformed_values,
+        "rules_applied": rules_applied
+    }
 
 
 def register_parser(parent_subparsers):
@@ -203,14 +208,16 @@ def register_parser(parent_subparsers):
         help="Field that contains divisions in NDJSON records.")
     parser.add_argument("--location-field", default="location",
         help="Field that contains location in NDJSON records.")
-    parser.add_argument("--geolocation-rules", metavar="TSV", required=True,
+    parser.add_argument("--geolocation-rules", metavar="TSV",
         help="TSV file of geolocation rules with the format: " +
              "'<raw_geolocation><tab><annotated_geolocation>' where the raw and annotated geolocations " +
              "are formatted as '<region>/<country>/<division>/<location>'. " +
              "If creating a general rule, then the raw field value can be substituted with '*'." +
              "Lines starting with '#' will be ignored as comments." +
              "Trailing '#' will be ignored as comments. " +
-             "Note that the raw geolocation matching is case-insensitive unless the `--case-sensitive` flag is provided.")
+             "Note that the raw geolocation matching is case-insensitive unless the `--case-sensitive` flag is provided. " +
+             "The rules defined in the provided file will have precedence over the default rules in " +
+             f"<https://github.com/nextstrain/augur/blob/{__version__}/augur/data/geolocation_rules.tsv>.")
     parser.add_argument("--case-sensitive", action="store_true",
         help="Use case-sensitive matching of raw geolocation fields to geolocation rules.")
 
@@ -220,16 +227,28 @@ def register_parser(parent_subparsers):
 def run(args, records):
     location_fields = [args.region_field, args.country_field, args.division_field, args.location_field]
 
-    geolocation_rules = load_geolocation_rules(args.geolocation_rules, args.case_sensitive)
+    with as_file("geolocation_rules.tsv") as default_rules_file:
+        default_rules = load_geolocation_rules(default_rules_file, args.case_sensitive)
+
+    custom_rules = {}
+    if args.geolocation_rules:
+        custom_rules = load_geolocation_rules(args.geolocation_rules, args.case_sensitive)
 
     for record in records:
-
+        # First try to apply the custom rules provided by the user
         annotated_values = transform_geolocations(
-            geolocation_rules,
+            custom_rules,
             [record.get(field, '') for field in location_fields],
             args.case_sensitive)
 
+        # If no custom rules are applied, then try to apply the default rules
+        if annotated_values["rules_applied"] == 0 and default_rules:
+            annotated_values = transform_geolocations(
+                default_rules,
+                [record.get(field, '') for field in location_fields],
+                args.case_sensitive)
+
         for index, field in enumerate(location_fields):
-            record[field] = annotated_values[index]
+            record[field] = annotated_values["transformed_values"][index]
 
         yield record
