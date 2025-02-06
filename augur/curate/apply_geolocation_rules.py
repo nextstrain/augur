@@ -220,6 +220,8 @@ def register_parser(parent_subparsers):
              f"<https://github.com/nextstrain/augur/blob/{__version__}/augur/data/geolocation_rules.tsv>.")
     parser.add_argument("--case-sensitive", action="store_true",
         help="Use case-sensitive matching of raw geolocation fields to geolocation rules.")
+    parser.add_argument("--no-default-rules", action="store_true",
+        help="Do not use Augur's default geolocation rules.")
 
     return parser
 
@@ -227,8 +229,10 @@ def register_parser(parent_subparsers):
 def run(args, records):
     location_fields = [args.region_field, args.country_field, args.division_field, args.location_field]
 
-    with as_file("geolocation_rules.tsv") as default_rules_file:
-        default_rules = load_geolocation_rules(default_rules_file, args.case_sensitive)
+    default_rules = {}
+    if args.no_default_rules != True:
+        with as_file("geolocation_rules.tsv") as default_rules_file:
+            default_rules = load_geolocation_rules(default_rules_file, args.case_sensitive)
 
     custom_rules = {}
     if args.geolocation_rules:
