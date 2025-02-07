@@ -5,8 +5,10 @@
 ### Bug Fixes
 
 * schema: document node property values support `url`. This feature has been supported in Auspice since v2.25.0. [#1743][] (@joverlee521)
+* augur.io.read_metadata: Ensure that the index column's dtype is always "string" so that numeric ids don't get converted to numeric dtypes. [#1746][] (@joverlee521)
 
 [#1743]: https://github.com/nextstrain/augur/pull/1743
+[#1746]: https://github.com/nextstrain/augur/pull/1746
 
 ## 28.0.0 (30 January 2025)
 
