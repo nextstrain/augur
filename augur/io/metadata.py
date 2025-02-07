@@ -136,7 +136,7 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id
 
     if isinstance(dtype, dict):
         # Avoid reading numerical IDs as integers.
-        dtype["index_col"] = "string"
+        dtype[index_col] = "string"
 
         # Avoid reading year-only dates as integers.
         dtype[METADATA_DATE_COLUMN] = "string"
