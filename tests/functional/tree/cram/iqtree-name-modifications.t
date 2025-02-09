@@ -1,0 +1,40 @@
+Setup
+
+  $ source "$TESTDIR"/_setup.sh
+
+BACKGROUND: IQ tree modifies strain names to remove certain characters. We
+attempt to prevent this within augur tree (by replacing them on the way into
+IQ-TREE and switching them back on the way out). Beyond this certain characters
+can't be written by Bio.Phylo as newick strain names (without escaping).
+
+# Start with a trivial test
+
+  $ echo -e ">AAA\nATGC\n>BBB\nATGC\n>CCC\nATGC\n" > trivial.mfa
+
+  $ ${AUGUR} tree \
+  >  --method iqtree \
+  >  --alignment trivial.mfa \
+  >  --output trivial.new 1>/dev/null
+
+Test single quotes, which were the errors behind <https://github.com/nextstrain/augur/issues/1084>,
+<https://github.com/nextstrain/avian-flu/issues/122> 
+
+  $ echo -e ">Coted'Ivoire/IPCI-DVE-GR1901/2022\nATGC" > single-quotes.mfa
+  $ echo -e ">A/Geoffroy'sCat/WA/24-037410-004-original/2024\nATGC" >> single-quotes.mfa
+  $ echo -e ">need-three-taxa\nATGC" >> single-quotes.mfa
+
+  $ ${AUGUR} tree \
+  >  --method iqtree \
+  >  --alignment single-quotes.mfa \
+  >  --output single-quotes.new 1>/dev/null
+
+
+Test some other observed strain names to ensure they're not modified
+  $ echo -e ">A/PETFOOD/USA:OR/24-037325-011/2024\nATGC" > reported.mfa
+  $ echo -e ">[name>$!%]:1234\nATGC" >> reported.mfa
+  $ echo -e ">simple\nATGC" >> reported.mfa
+
+  $ ${AUGUR} tree \
+  >  --method iqtree \
+  >  --alignment reported.mfa \
+  >  --output reported.new 1>/dev/null
