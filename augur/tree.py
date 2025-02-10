@@ -242,9 +242,9 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     # Note: See <https://github.com/nextstrain/augur/pull/1085> for an alternate
     # approach to escaping using a local-specific non-word regex.
     prefix = "DELIM"
-    invalid_newick_chars = ["'"]
+    invalid_newick_chars = ["'", "\\"] # "\\" is a single backslash
     invalid_replaceable_chars = ['(', ')', '{', '}', '[', ']', '<', '>',
-                                 '/', "\\", '|', '*', ':', '%', '+', '!', ';', # "\\" is a single backslash
+                                 '/', '|', '*', ':', '%', '+', '!', ';',
                                  '&', '@', ',', '$', '=', '^', '~', '?', '#',
                                  '"', '`', ' ',
                                 ]
