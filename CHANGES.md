@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 28.0.1 (10 February 2025)
+
 ### Bug Fixes
 
 * schema: document node property values support `url`. This feature has been supported in Auspice since v2.25.0. [#1743][] (@joverlee521)
