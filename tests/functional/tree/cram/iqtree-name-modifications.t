@@ -49,6 +49,20 @@ Test some other observed strain names to ensure they're not modified
   >  --alignment reported.mfa \
   >  --output reported.new 1>/dev/null
 
+Strain names with spaces are modified
+
+  $ echo -e ">space afterwards\nATGC" > spaces.mfa
+  $ echo -e ">name\nATGC" >> spaces.mfa
+  $ echo -e ">simple\nATGC" >> spaces.mfa
+
+  $ ${AUGUR} tree \
+  >  --method iqtree \
+  >  --alignment spaces.mfa \
+  >  --output spaces.new 1>/dev/null
+
+  $ grep 'afterwards' spaces.new
+  [1]
+
 
 Backslashes are problematic, but only some of the time. For instance (and assuming we replaced the
 character for the IQ-TREE building) the first three of these strains work and the others are

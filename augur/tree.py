@@ -1,5 +1,7 @@
 """
 Build a tree using a variety of methods.
+
+IQ-TREE specific: Strain names with spaces are modified to remove all characters after (and including) the first space.
 """
 
 import os
@@ -246,7 +248,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     invalid_replaceable_chars = ['(', ')', '{', '}', '[', ']', '<', '>',
                                  '/', '|', '*', ':', '%', '+', '!', ';',
                                  '&', '@', ',', '$', '=', '^', '~', '?', '#',
-                                 '"', '`', ' ',
+                                 '"', '`',
                                 ]
     escape_dict = {c:f'_{prefix}-{hex(ord(c))}_' for c in invalid_replaceable_chars}
     reverse_escape_dict = {v:k for k,v in escape_dict.items()}
@@ -260,6 +262,9 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         for line in ifile:
             if line.startswith(">"):
                 strain_name = line.lstrip('>').rstrip('\n')
+                # Modify the strain name to remove anything after a space (0x20)
+                # This preserves the behaviour of augur v28 but makes it explicit.
+                strain_name = strain_name.split(' ')[0]
                 input_sequence_names.add(strain_name)
                 for c,v in escape_dict.items():
                     strain_name = strain_name.replace(c,v)
