@@ -6,13 +6,11 @@ import os, json, sys
 import pandas as pd
 from collections import defaultdict, OrderedDict
 from io import RawIOBase
-from textwrap import dedent
 from .__version__ import __version__
 
 from augur.data import as_file
 from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.sequences import read_single_sequence
-from augur.io.print import print_err
 
 from augur.types import ValidationMode
 from augur.errors import AugurError
@@ -764,13 +762,6 @@ VALID_NUCLEOTIDES = { # http://reverse-complement.com/ambiguity.html
     "A", "G", "C", "T", "U", "N", "R", "Y", "S", "W", "K", "M", "B", "V", "D", "H", "-",
     "a", "g", "c", "t", "u", "n", "r", "y", "s", "w", "k", "m", "b", "v", "d", "h", "-"
 }
-
-
-def read_strains(*files, comment_char="#"):
-    print_err(dedent("""
-        DEPRECATION WARNING: augur.utils.read_strains is no longer maintained and will be removed in the future.
-        Please use augur.io.read_strains instead."""))
-    return set(read_entries(*files, comment_char=comment_char))
 
 
 def read_entries(*files, comment_char="#"):
