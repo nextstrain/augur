@@ -242,7 +242,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     # Note: See <https://github.com/nextstrain/augur/pull/1085> for an alternate
     # approach to escaping using a local-specific non-word regex.
     prefix = "DELIM"
-    
+    invalid_newick_chars = ["'"]
     invalid_replaceable_chars = ['(', ')', '{', '}', '[', ']', '<', '>',
                                  '/', "\\", '|', '*', ':', '%', '+', '!', ';', # "\\" is a single backslash
                                  '&', '@', ',', '$', '=', '^', '~', '?', '#',
@@ -266,6 +266,22 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
                 ofile.write(f">{strain_name}\n")
             else:
                 ofile.write(line)
+
+    invalid_newick_names = [strain_name for strain_name in input_sequence_names if any([char in strain_name for char in invalid_newick_chars])]
+    if len(invalid_newick_names):
+        if clean_up and os.path.isfile(tmp_aln_file):
+            os.remove(tmp_aln_file)
+        raise AugurError(dedent(f"""\
+            Certain strain names have characters which cannot be written in newick format (by Bio.Python, at least).
+            You should ensure these strain names are changed as early as possible in your analysis. The following
+            names are unescaped and surrounded by double quotes.
+            
+            Invalid strain names:
+              - {f"{chr(10)}{' '*14}- ".join(['"' + str(name) + '"' for name in invalid_newick_names])}
+
+            Invalid characters: {', '.join(['"' + str(char) + '"' for char in invalid_newick_chars])}
+            """))
+
 
     # Check tree builder arguments for conflicts with hardcoded defaults.
     check_conflicting_args(tree_builder_args, (

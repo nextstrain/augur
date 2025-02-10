@@ -27,7 +27,17 @@ Test single quotes, which were the errors behind <https://github.com/nextstrain/
   >  --method iqtree \
   >  --alignment single-quotes.mfa \
   >  --output single-quotes.new 1>/dev/null
-
+  ERROR: Certain strain names have characters which cannot be written in newick format (by Bio.Python, at least).
+  You should ensure these strain names are changed as early as possible in your analysis. The following
+  names are unescaped and surrounded by double quotes.
+  
+  Invalid strain names:
+    - .+ (re)
+    - .+ (re)
+  
+  Invalid characters: .* (re)
+  
+  [2]
 
 Test some other observed strain names to ensure they're not modified
   $ echo -e ">A/PETFOOD/USA:OR/24-037325-011/2024\nATGC" > reported.mfa
