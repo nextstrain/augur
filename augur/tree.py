@@ -239,11 +239,16 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     ])
     # create a dictionary for characters that IQ-tree changes.
     # we remove those prior to tree-building and reinstantiate later
-    def random_string(n):
-        from string import ascii_uppercase as letters
-        return "".join([letters[i] for i in np.random.randint(len(letters), size=n)])
+    # Note: See <https://github.com/nextstrain/augur/pull/1085> for an alternate
+    # approach to escaping using a local-specific non-word regex.
     prefix = "DELIM"
-    escape_dict = {c:f'_{prefix}-{random_string(20)}_' for c in '/|()*'}
+    
+    invalid_replaceable_chars = ['(', ')', '{', '}', '[', ']', '<', '>',
+                                 '/', "\\", '|', '*', ':', '%', '+', '!', ';', # "\\" is a single backslash
+                                 '&', '@', ',', '$', '=', '^', '~', '?', '#',
+                                 '"', '`', ' ',
+                                ]
+    escape_dict = {c:f'_{prefix}-{hex(ord(c))}_' for c in invalid_replaceable_chars}
     reverse_escape_dict = {v:k for k,v in escape_dict.items()}
 
 
@@ -253,13 +258,14 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     input_sequence_names = set()
     with open_file(tmp_aln_file, 'w') as ofile, open_file(aln_file) as ifile:
         for line in ifile:
-            tmp_line = line
             if line.startswith(">"):
-                input_sequence_names.add(tmp_line.lstrip('>').rstrip('\n'))
+                strain_name = line.lstrip('>').rstrip('\n')
+                input_sequence_names.add(strain_name)
                 for c,v in escape_dict.items():
-                    tmp_line = tmp_line.replace(c,v)
-
-            ofile.write(tmp_line)
+                    strain_name = strain_name.replace(c,v)
+                ofile.write(f">{strain_name}\n")
+            else:
+                ofile.write(line)
 
     # Check tree builder arguments for conflicts with hardcoded defaults.
     check_conflicting_args(tree_builder_args, (
