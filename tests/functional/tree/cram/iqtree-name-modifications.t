@@ -84,3 +84,21 @@ similar to single quotes.
   Invalid characters: .* (re)
   
   [2]
+
+This test generates random ASCII names. It's disabled for CI as it's both
+stochastic and slow but you can easily toggle it back on (by uncommenting the
+function call) if you want to better test strain name handling in `augur tree`
+
+  $ random_ascii_names() {
+  >   python3 "$TESTDIR"/generate-fasta.py > random_${1}.mfa
+  >  
+  >   ${AUGUR} tree \
+  >    --method iqtree \
+  >    --alignment random_${1}.mfa \
+  >    --output random_${1}.new > /dev/null
+  > }
+
+  $ for iteration in $(seq 1 100); do
+  >    # random_ascii_names $iteration
+  >    :
+  > done
