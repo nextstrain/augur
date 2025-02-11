@@ -2,6 +2,15 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* Updated default latitudes and longitudes for geography traits that includes location name changes. See the pull request for more details. [#1744][] (@joverlee521)
+
+### Features
+
+* Added standard geolocation rules in "augur/data/geolocation_rules.tsv" that can be used with `augur curate apply-geolocation-rules`. [#1744][] (@joverlee521)
+
+[#1744]: https://github.com/nextstrain/augur/pull/1744
 
 ## 28.0.1 (10 February 2025)
 

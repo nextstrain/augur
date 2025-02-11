@@ -19,8 +19,10 @@ region	west asia	34.000094	48.732280
 country	Afghanistan	33.7680065	66.2385139
 country	Albania	41.000028	19.9999619
 country	Algeria	28.0000272	2.9999825
+country	American Samoa	-14.289304	-170.692511
 country	Andorra	42.5407167	1.5732033
 country	Angola	-11.8775768	17.5691241
+country	Anguilla	18.21445329034252	-63.05253050784242
 country	Antigua and Barbuda	17.2234721	-61.9554608
 country	Argentina	-37.052315	-64.869142
 country	Armenia	40.7696272	44.6736646
@@ -43,6 +45,7 @@ country	Bonaire	12.167	-68.29096143734236
 country	Bosnia and Herzegovina	43.9159	17.6791
 country	Botswana	-23.1681782	24.5928742
 country	Brazil	-10.3333332	-53.1999999
+country	British Virgin Islands	18.4024395	-64.5661642
 country	Brunei	4.5353	114.7277
 country	Bulgaria	42.782450	25.193668
 country	Burkina Faso	12.78998	-1.683734
@@ -51,6 +54,7 @@ country	Cabo Verde	16.0000552	-24.0083947
 country	Cambodia	13.0	105.0
 country	Cameroon	4.6125522	13.1535811
 country	Canada	61.0666922	-107.991707
+country	Canary Islands	28.2916	-16.6291
 country	Cayman Islands	19.703182249999998	-79.9174627243246
 country	Central African Republic	7.0323598	19.9981227
 country	Chad	15.6134137	19.0156172
@@ -79,6 +83,7 @@ country	Ethiopia	9.1450	40.4897
 country	Fiji	-18.1239696	179.0122737
 country	Finland	61.751734	26.186437
 country	France	46.2276	2.2137
+country	French Guiana	4.0039882	-52.999998
 country	French Polynesia	-16.03442485	-146.0490931059517
 country	Gabon	-0.8999695	11.6899699
 country	Gambia	13.5	-15.5
@@ -133,25 +138,30 @@ country	Maldives	4.7064352	73.3287853
 country	Mali	16.3700359	-2.2900239
 country	Malta	35.8885993	14.4476911
 country	Marshall Islands	6.9518742	170.9985095
+country	Martinique	14.6367927	-61.01582685063731
 country	Mauritania	20.2540382	-9.2399263
 country	Mauritius	-20.2759451	57.5703566
+country	Mayotte	-12.8253862	45.148626111147614
 country	Mexico	19.4325301	-99.1332101
 country	Micronesia	7.0	155.25
 country	Moldova	47.2879608	28.5670941
 country	Monaco	43.73844905	7.424224092532953
 country	Mongolia	47.504782	102.997672
 country	Montenegro	42.9868853	19.5180992
+country	Montserrat	16.73603205085212	-62.19174679903016
 country	Morocco	32.549785	-5.480765
 country	Mozambique	-19.302233	34.9144977
 country	Myanmar	20.600856	96.287616
 country	Namibia	-23.2335499	17.3231107
 country	Nepal	28.0	84.0
 country	Netherlands	52.1326	5.2913
+country	New Caledonia	-21.3019905	165.4880773
 country	New Zealand	-41.500083	172.8344077
 country	Nicaragua	12.6090157	-85.2936911
 country	Niger	18.061703	10.145544
 country	Nigeria	10.0	8.0
 country	North Macedonia	41.6171214	21.7168387
+country	Northern Mariana Islands	14.149020499999999	145.21345248318923
 country	Norway	61.3109	8.73701
 country	Oman	20.565641	56.861042
 country	Pakistan	30.0	70.0
@@ -167,6 +177,7 @@ country	Portugal	39.54046	-8.174701
 country	Puerto Rico	18.2247706	-66.4858295
 country	Qatar	25.230573	51.183951
 country	Republic of the Congo	-0.516362	15.877811
+country	Réunion	-21.130737949999997	55.536480112992315
 country	Romania	45.9432	24.9668
 country	Russia	64.6863136	97.7453061
 country	Rwanda	-1.9646631	30.0644358
@@ -182,6 +193,7 @@ country	Serbia	43.745902	20.848918
 country	Seychelles	-4.6574977	55.4540146
 country	Sierra Leone	8.6400349	-11.8400269
 country	Singapore	1.344189	103.867546
+country	Sint Eustatius	17.4865252	-62.9653116
 country	Sint Maarten	18.038916377498968	-63.059102766267536
 country	Slovakia	48.66667	19.5
 country	Slovenia	45.8133113	14.4808369
@@ -208,6 +220,7 @@ country	Trinidad	10.447801502473043	-61.23664353857157
 country	Trinidad and Tobago	10.8677845	-60.9821067
 country	Tunisia	33.654143	9.065134
 country	Turkey	39.046746	36.767068
+country	Turks and Caicos Islands	21.7214683	-71.6201783
 country	Uganda	1.861287	32.55149
 country	Ukraine	49.4871968	31.2718321
 country	Union of the Comoros	-12.2045176	44.2832964
@@ -215,10 +228,12 @@ country	United Arab Emirates	23.546651	54.065059
 country	United Kingdom	54.242833	-2.088739
 country	Uruguay	-33.0	-56.0
 country	USA	38.916963	-98.891372
+country	US Virgin Islands	18.3358	-64.8963
 country	Uzbekistan	41.32373	63.9528098
 country	Vanuatu	-16.5255069	168.1069154
 country	Venezuela	7.838891	-65.916409
 country	Vietnam	16.16667	107.83333
+country	Wallis and Futuna	-13.289402	-176.204224
 country	Yemen	16.3471243	47.8915271
 country	Zambia	-14.5186239	27.5599164
 country	Zimbabwe	-18.4554963	29.7468414
@@ -2695,7 +2710,7 @@ division	Split	43.514220	16.461441
 division	Split-Dalmatia County	43.07361015	16.027989049469006
 division	Srem District	44.919434949999996	19.970689942688402
 division	Sri Lanka	7.75	80.75
-division	St Eustatius	17.4865252	-62.9653116
+division	Sint Eustatius	17.4865252	-62.9653116
 division	St Jans Molenbeek	50.8545959	4.338636
 division	St-Joris-Weert	50.8006875	4.6517014
 division	St-Louis	16.0326	-16.4818
@@ -3028,7 +3043,7 @@ division	Vilnius County	54.82269205	25.249534001679514
 division	Vinh Long	10.1069	105.9867653657871
 division	Vinhphuc	21.348702	105.548594
 division	Vinnytsia	49.2320162	28.467975
-division	Virgin Islands	18.3358	-64.8963
+division	US Virgin Islands	18.3358	-64.8963
 division	Virginia	37.926868	-78.024902
 division	Virovitica-Podravina County	45.7732751	17.5789161
 division	Virton	49.5605149	5.5196466
@@ -3063,7 +3078,6 @@ division	Wakayama	34.234617	135.1782181
 division	Wake Island	19.28988935	166.64921739111432
 division	Wales	52.306085	-3.621944
 division	Wallis and Futuna	-13.289402	-176.204224
-division	Wallis and Futuna Islands	-13.289402	-176.204224
 division	Wallonia	50.154533099999995	5.3991821671645575
 division	Wangdue	27.5	90.133333
 division	Waremme	50.692236	5.260861
@@ -3197,4 +3211,3 @@ division	Zulia	10.0437564	-72.2191181
 division	Zvolen	48.5782517	19.1247135
 division	ǁKaras	-26.8752094	17.7634818
 division	Сhukotka Region	66.95859821487666	171.89260087191087
-
