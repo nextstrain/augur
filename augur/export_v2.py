@@ -1,5 +1,6 @@
 """
-Export version 2 JSON schema for visualization with Auspice
+Export JSON files suitable for visualization with Auspice.
+The JSON schema is available at <https://nextstrain.org/schemas/dataset/v2>
 """
 import os
 from pathlib import Path
@@ -937,7 +938,10 @@ def node_data_prop_is_normal_trait(name):
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("v2", help=__doc__)
+    parser = register_arguments(parser)
+    return parser
 
+def register_arguments(parser):
     required = parser.add_argument_group(
         title="REQUIRED"
     )
