@@ -6,13 +6,11 @@ import os, json, sys
 import pandas as pd
 from collections import defaultdict, OrderedDict
 from io import RawIOBase
-from textwrap import dedent
 from .__version__ import __version__
 
 from augur.data import as_file
 from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.sequences import read_single_sequence
-from augur.io.print import print_err
 
 from augur.types import ValidationMode
 from augur.errors import AugurError
@@ -205,7 +203,7 @@ def _read_nuc_annotation_from_gff(record, reference):
     types. Note that 'source' isn't really a GFF feature type, but is used
     widely in the Nextstrain ecosystem. If there are multiple we check that the
     coordinates agree.
-    
+
     Parameters
     ----------
     record : :py:class:`Bio.SeqRecord.SeqRecord`
@@ -246,7 +244,7 @@ def _read_nuc_annotation_from_gff(record, reference):
     if len(nuc.values())>1:
         coords = [(name, int(feat.location.start), int(feat.location.end)) for name,feat in nuc.items()]
         if not all(el[1]==coords[0][1] and el[2]==coords[0][2] for el in coords):
-            raise AugurError(f"Reference {reference!r} contained contradictory coordinates for the seqid/genome. We parsed the following coordinates: " + 
+            raise AugurError(f"Reference {reference!r} contained contradictory coordinates for the seqid/genome. We parsed the following coordinates: " +
                              ', '.join([f"{el[0]}: [{el[1]+1}, {el[2]}]" for el in coords]) # +1 on the first coord to shift to one-based GFF representation
                              )
 
@@ -358,7 +356,7 @@ def _read_nuc_annotation_from_genbank(record, reference):
     according to <https://www.ncbi.nlm.nih.gov/Sitemap/samplerecord.html>.)
 
     See <https://www.insdc.org/submitting-standards/feature-table/> for more.
-    
+
     Parameters
     ----------
     record : :py:class:`Bio.SeqRecord.SeqRecord` reference: string
@@ -389,7 +387,7 @@ def _read_genbank(reference, feature_names):
     Read a GenBank file. We only read GenBank feature keys 'CDS' or 'source'.
     We create a "feature name" via:
     - for 'source' features use 'nuc'
-    - for 'CDS' features use the locus_tag or the gene. If neither, then silently ignore. 
+    - for 'CDS' features use the locus_tag or the gene. If neither, then silently ignore.
 
     Parameters
     ----------
@@ -764,13 +762,6 @@ VALID_NUCLEOTIDES = { # http://reverse-complement.com/ambiguity.html
     "A", "G", "C", "T", "U", "N", "R", "Y", "S", "W", "K", "M", "B", "V", "D", "H", "-",
     "a", "g", "c", "t", "u", "n", "r", "y", "s", "w", "k", "m", "b", "v", "d", "h", "-"
 }
-
-
-def read_strains(*files, comment_char="#"):
-    print_err(dedent("""
-        DEPRECATION WARNING: augur.utils.read_strains is no longer maintained and will be removed in the future.
-        Please use augur.io.read_strains instead."""))
-    return set(read_entries(*files, comment_char=comment_char))
 
 
 def read_entries(*files, comment_char="#"):
