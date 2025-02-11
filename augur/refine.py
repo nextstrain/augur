@@ -96,7 +96,17 @@ def collect_node_data(T, attributes):
         }
     return data
 
-def root_outside_of_treetime(T, root, is_timetree):
+class InvalidUseOfRemoveOutgroup(AugurError):
+    """
+    Raised when --remove-outgroup is used with an invalid --root option.
+    """
+    def __init__(self, root):
+        self.root = root
+    def __str__(self):
+        return f"--remove-outgroup is not valid with {self.root!r} rooting - you must supply a single strain (outgroup) to root the tree"
+
+
+def root_outside_of_treetime(T, root, is_timetree, remove_outgroup):
     """
     If the requested root(ing approach) is possible to do without TreeTime then this function
     modifies `T` in place, and returns `None`. If the rooting approach requires TreeTime then
@@ -105,6 +115,8 @@ def root_outside_of_treetime(T, root, is_timetree):
     treetime_reroot = None
     assert isinstance(root, list), "Internal augur refine error (requested root should be a list)"
     if root[0] in ['best', 'least-squares', 'oldest', 'min_dev'] and len(root)==1:
+        if remove_outgroup:
+            raise InvalidUseOfRemoveOutgroup(root[0])
         if is_timetree:
             treetime_reroot = root[0]
         else:
@@ -114,6 +126,8 @@ def root_outside_of_treetime(T, root, is_timetree):
             else:
                 raise AugurError(f"The rooting option {root[0]!r} is only available when inferring a timetree. Please specify an explicit outgroup or 'mid_point'.")
     elif root[0]=="mid_point" and len(root)==1:
+        if remove_outgroup:
+            raise InvalidUseOfRemoveOutgroup(root[0])
         T.root_at_midpoint()
     else:
         try:
@@ -130,6 +144,19 @@ def root_outside_of_treetime(T, root, is_timetree):
             else:
                 # raising a ValueError from the original ValueError will print the original message as well
                 raise ValueError("Rooting with the provided strain name(s) failed for an unknown reason") from err
+
+        if remove_outgroup:
+            if len(root)>1:
+                # run this check after attempting to root so that (more likely) errors such as misspelling
+                # (e.g. "midpoint") are already caught & we know the rooting was successful
+                raise InvalidUseOfRemoveOutgroup('multiple strains')
+            try:
+                outgroup = [node for node in T.root.clades if node.name==root[0]][0]
+            except IndexError:
+                raise IndexError(f"Internal error: outgroup {root[0]!r} was not a child of the tree root node")
+            T.prune(outgroup)
+            T.root.branch_length = 0.0
+
     return treetime_reroot
 
 def register_parser(parent_subparsers):
@@ -155,6 +182,8 @@ def register_parser(parent_subparsers):
                                 "Run treetime -h for definitions of rooting methods.")
     parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
                                 "Overrides anything specified by --root.")
+    parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'"
+                                "This is only valid when a single strain name has been supplied as the root.")
     parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
                                 "rates and/or rerooting. "
                                 "Use --no-covariance to turn off.")
@@ -243,7 +272,7 @@ def run(args):
     # Parse rooting command line arguments and, for all rooting requests which are possible to do
     # outside of treetime we do them now (and ensure treetime doesn't subsequently reroot)
     # Note: if we have `--keep-root` we ignore `--root` completely
-    treetime_reroot = None if args.keep_root else root_outside_of_treetime(T, args.root, args.timetree)
+    treetime_reroot = None if args.keep_root else root_outside_of_treetime(T, args.root, args.timetree, args.remove_outgroup)
 
     if args.timetree:
         # load meta data and covert dates to numeric
