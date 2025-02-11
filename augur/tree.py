@@ -281,8 +281,8 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
                 defline = re.split(r'(\s+)', line[1:], maxsplit=1)
                 id = defline[0]  
                 defline[0] = unsafe_chars.sub(escaper, id.encode("utf-8")).decode("utf-8")       
-                line = ">" + ' '.join(defline)
-            ofile.write(line)
+                tmp_line = ">" + ' '.join(defline)
+            ofile.write(tmp_line)
 
     # Check tree builder arguments for conflicts with hardcoded defaults.
     check_conflicting_args(tree_builder_args, (
