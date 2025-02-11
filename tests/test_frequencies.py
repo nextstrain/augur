@@ -107,8 +107,8 @@ def test_get_pivots_by_months_with_realistic_start_end_dates():
     pivots = get_pivots(
         observations=[],
         pivot_interval=3,
-        start_date=numeric_date("2017-01-06"),
-        end_date=numeric_date("2023-01-06"),
+        start_date=numeric_date("2017-01-06", fmt="%Y-%m-%d"),
+        end_date=numeric_date("2023-01-06", fmt="%Y-%m-%d"),
         pivot_interval_units="months"
     )
     assert len(pivots) == 25
@@ -126,8 +126,8 @@ def test_get_pivots_by_weeks():
     pivots = get_pivots(
         observations=[],
         pivot_interval=1,
-        start_date=numeric_date("2022-01-06"),
-        end_date=numeric_date("2023-01-06"),
+        start_date=numeric_date("2022-01-06", fmt="%Y-%m-%d"),
+        end_date=numeric_date("2023-01-06", fmt="%Y-%m-%d"),
         pivot_interval_units="weeks"
     )
     assert len(pivots) == 53
