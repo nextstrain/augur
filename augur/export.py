@@ -3,7 +3,7 @@ Export JSON files suitable for visualization with Auspice.
 The JSON schema is available at <https://nextstrain.org/schemas/dataset/v2>
 """
 from .argparse_ import add_command_subparsers
-from . import export_v1, export_v2
+from . import export_v2
 from textwrap import dedent
 import sys
 
@@ -12,7 +12,7 @@ def register_parser(parent_subparsers):
 
     # For historical reasons add subparsers for v1 and v2 subcommands:
     subparsers = parser.add_subparsers()
-    add_command_subparsers(subparsers, [export_v2, export_v1])
+    add_command_subparsers(subparsers, [export_v2])
 
     # Add parsers for the (subcommand-less) "augur export", which is a synonym for "augur export v2"
     export_v2.register_arguments(parser)
@@ -26,8 +26,7 @@ def register_parser(parent_subparsers):
     def error_middleware(message):
         if len(sys.argv)==2 and sys.argv[1]=='export':
             print(dedent("""\
-                NOTE: "augur export" is now a synonym for "augur export v2".
-                "augur export v1" is deprecated but still valid.
+                NOTE: "augur export" is now a synonym for "augur export v2"
                 """), file=sys.stderr)
             parser.print_help()
             sys.exit(2)
