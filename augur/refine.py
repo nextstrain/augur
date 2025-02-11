@@ -4,6 +4,7 @@ Refine an initial tree using sequence metadata.
 import numpy as np
 import sys
 from Bio import Phylo
+from textwrap import dedent
 from .argparse_ import ExtendOverwriteDefault
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
@@ -95,6 +96,41 @@ def collect_node_data(T, attributes):
         }
     return data
 
+def root_outside_of_treetime(T, root, is_timetree):
+    """
+    If the requested root(ing approach) is possible to do without TreeTime then this function
+    modifies `T` in place, and returns `None`. If the rooting approach requires TreeTime then
+    we return a string to be supplied to TreeTime as its root/reroot arguments.
+    """
+    treetime_reroot = None
+    assert isinstance(root, list), "Internal augur refine error (requested root should be a list)"
+    if root[0] in ['best', 'least-squares', 'oldest', 'min_dev'] and len(root)==1:
+        if is_timetree:
+            treetime_reroot = root[0]
+        else:
+            if root[0]=='best': # CLI default, so print a warning rather than an error
+                print("Warning: To root without inferring a timetree, you must specify an explicit outgroup.")
+                print("\tProceeding without re-rooting. To suppress this message, use '--keep-root'.\n")
+            else:
+                raise TypeError("The rooting option '%s' is only available when inferring a timetree. Please specify an explicit outgroup."%root)
+    elif root[0]=="mid_point" and len(root)==1:
+        T.root_at_midpoint()
+    else:
+        try:
+            T.root_with_outgroup(root)
+        except ValueError as err:
+            tip_names = T.get_terminals()
+            missing_names = [name for name in root if name not in tip_names]
+            if len(missing_names):
+                raise AugurError(dedent(f"""\
+                    Rooting with the provided strain name(s) failed.
+                    This is probably because the following names supplied to '--root' were not found in the tree:
+                      - {f'{chr(10)}{" "*22}- '.join([repr(name) for name in missing_names])}
+                    """))
+            else:
+                # raising a ValueError from the original ValueError will print the original message as well
+                raise ValueError("Rooting with the provided strain name(s) failed for an unknown reason") from err
+    return treetime_reroot
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("refine", help=__doc__)
@@ -114,7 +150,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
     parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
     parser.add_argument('--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
-    parser.add_argument('--root', nargs="+", action=ExtendOverwriteDefault, default='best', help="rooting mechanism ('best', least-squares', 'min_dev', 'oldest', 'mid_point') "
+    parser.add_argument('--root', nargs="+", action=ExtendOverwriteDefault, default=['best'], help="rooting mechanism ('best', least-squares', 'min_dev', 'oldest', 'mid_point') "
                                 "OR node to root by OR two nodes indicating a monophyletic group to root by. "
                                 "Run treetime -h for definitions of rooting methods.")
     parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
@@ -204,10 +240,10 @@ def run(args):
     else:
         tree_fname = '.'.join(args.tree.split('.')[:-1]) + '_tt.nwk'
 
-    if args.root and len(args.root) == 1: #if anything but a list of seqs, don't send as a list
-        args.root = args.root[0]
-    if args.keep_root:  # This flag overrides anything specified by 'root'
-        args.root = None
+    # Parse rooting command line arguments and, for all rooting requests which are possible to do
+    # outside of treetime we do them now (and ensure treetime doesn't subsequently reroot)
+    # Note: if we have `--keep-root` we ignore `--root` completely
+    treetime_reroot = None if args.keep_root else root_outside_of_treetime(T, args.root, args.timetree)
 
     if args.timetree:
         # load meta data and covert dates to numeric
@@ -248,13 +284,8 @@ def run(args):
         else:
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'never'
 
-        if args.root == 'mid_point':
-            # root at midpoint and disable downstream rerooting in TreeTime
-            T.root_at_midpoint()
-            args.root = None
-
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
-                    reroot=args.root, # or 'best', # We now have a default in param spec - this just adds confusion.
+                    reroot=treetime_reroot,
                     Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
                     use_marginal = time_inference_mode, use_fft=args.use_fft,
                     branch_length_inference = args.branch_length_inference or 'auto',
@@ -292,20 +323,6 @@ def run(args):
     else:
         from treetime import TreeAnc
         # instantiate treetime for the sole reason to name internal nodes
-        if args.root:
-            if args.root == 'best':
-                print("Warning: To root without inferring a timetree, you must specify an explicit outgroup.")
-                print("\tProceeding without re-rooting. To suppress this message, use '--keep-root'.\n")
-            elif args.root in ['least-squares', 'oldest', 'min_dev']:
-                raise TypeError("The rooting option '%s' is only available when inferring a timetree. Please specify an explicit outgroup."%args.root)
-            elif args.root=="mid_point":
-                T.root_at_midpoint()
-            else:
-                try:
-                    T.root_with_outgroup(args.root)
-                except ValueError as err:
-                    raise ValueError(f"HINT: This error may be because your specified root with name '{args.root}' was not found in your alignment file") from err
-
         tt = TreeAnc(tree=T, aln=aln, ref=ref, gtr='JC69', verbose=args.verbosity, rng_seed=args.seed)
 
     node_data['nodes'] = collect_node_data(T, attributes)
