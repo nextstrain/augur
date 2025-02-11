@@ -6,6 +6,7 @@ import os
 import shlex
 import shutil
 import sys
+import re
 import time
 import uuid
 import Bio
@@ -246,7 +247,27 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     reverse_escape_dict = {v:k for k,v in escape_dict.items()}
 
 
-    # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
+    # IQ-TREE uses the POSIX isalnum() function, which is dependent on the
+    # current locale.  We achieve parity with that by using Python's re.LOCALE
+    # flag with a byte (instead of str) pattern that uses \w.
+    #
+    # See IQ-TREE function renameBool: https://github.com/iqtree/iqtree2/blob/3bbc304263cb2f85574a9163e8f2e5c5b597a147/utils/tools.cpp#L585
+    # Note that this considers [/|] unsafe as well, even though IQ-TREE accepts them as-is
+
+    unsafe_chars = re.compile(rb'[^\w.-]', re.LOCALE)
+
+    def escaper(match) -> bytes:
+        char = match[0].decode("utf-8")
+        string = match.string.decode("utf-8")
+        # chars not in escape_dict might not be properly handled in treetime
+        if char not in escape_dict:
+            print(f"WARNING: Potentially offending character {char!r} detected in taxon name {string!r}.  "
+            f"We recommend replacing offending characters with '_' in the alignment file to avoid issues downstream.")
+            escape_dict[char] = f'_{prefix}-{random_string(20)}_'
+            reverse_escape_dict[escape_dict[char]] = char
+        
+        return escape_dict[char].encode("utf-8")
+
     tmp_aln_file = str(Path(aln_file).with_name(Path(aln_file).stem + "-delim.fasta"))
     log_file = str(Path(tmp_aln_file).with_suffix(".iqtree.log"))
     num_seqs = 0
@@ -255,24 +276,13 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             tmp_line = line
             if line.startswith(">"):
                 num_seqs += 1
-                pos = 1
-                for l in line[1:]:
-                    #check if l is a character that IQ-tree changes
-                    # See IQtree function renameBool https://github.com/iqtree/iqtree2/blob/3bbc304263cb2f85574a9163e8f2e5c5b597a147/utils/tools.cpp#L585
-                    if l.isalnum()==False and l !='_' and l != '-' and l != '.' and l.isspace()== False:
-                        if l not in escape_dict: #characters outside of escape dictionary might not be properly handled in treetime 
-                            print("WARNING: Potentially offending character: \'%s\' detected in taxon name: %s" 
-                                "We recommend replacing offending characters with '_' in the alignment file to avoid issues downstream."
-                                % (l, format(line))
-                            )
-                            escape_dict[l] = f'_{prefix}-{random_string(20)}_'
-                            reverse_escape_dict[escape_dict[l]] = l
-                        tmp_line = tmp_line[:pos] + escape_dict[l] + line[(i+1):]  # replace offending characters
-                        pos = pos + len(escape_dict[l])
-                    else:
-                        pos += 1
-
-            ofile.write(tmp_line)
+                # Escape unsafe chars only in the id part of the defline;
+                # # IQ-TREE doesn't care about the rest of the defline (the description part).
+                defline = re.split(r'(\s+)', line[1:], maxsplit=1)
+                id = defline[0]  
+                defline[0] = unsafe_chars.sub(escaper, id.encode("utf-8")).decode("utf-8")       
+                line = ">" + ' '.join(defline)
+            ofile.write(line)
 
     # Check tree builder arguments for conflicts with hardcoded defaults.
     check_conflicting_args(tree_builder_args, (
