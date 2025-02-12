@@ -1,5 +1,5 @@
 """
-Applies titlecase to string fields in a metadata record
+Applies titlecase to specified string fields
 """
 import re
 from typing import Optional, Set, Union

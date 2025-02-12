@@ -1,6 +1,6 @@
 """
-Abbreviates a full list of authors to be '<first author> et al.' of the NDJSON
-record from stdin and outputs modified records to stdout.
+Abbreviates a full list of authors to be '<first author> et al.'
+Expects NDJSON records from stdin and outputs modified records to stdout.
 
 Note: This is a "best effort" approach and can potentially mangle the author name.
 """

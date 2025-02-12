@@ -7,11 +7,12 @@ import argparse
 from augur.argparse_ import ExtendOverwriteDefault
 from augur.io.print import print_err
 from augur.errors import AugurError
+from augur.utils import first_line
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("rename",
     parents = [parent_subparsers.shared_parser],
-    help = __doc__)
+    help = first_line(__doc__))
 
     required = parser.add_argument_group(title="REQUIRED")
     required.add_argument("--field-map", nargs="+", action=ExtendOverwriteDefault, required=True,

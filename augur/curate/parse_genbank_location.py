@@ -1,6 +1,5 @@
 """
-Parses GenBank's 'location' field of the NDJSON record to 3 separate
-fields: 'country', 'division', and 'location'.
+Parses GenBank's location field into 3 separate fields: 'country', 'division', and 'location'.
 
 Checks that a record is from GenBank by verifying that the 'database'
 field has a value of "GenBank" or "RefSeq".
