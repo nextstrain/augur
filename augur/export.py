@@ -2,39 +2,9 @@
 Export JSON files suitable for visualization with Auspice.
 The JSON schema is available at <https://nextstrain.org/schemas/dataset/v2>
 """
-from .argparse_ import add_command_subparsers
-from . import export_v2
-from textwrap import dedent
-import sys
-
-def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("export", help=__doc__)
-
-    # For historical reasons add subparsers for v1 and v2 subcommands:
-    subparsers = parser.add_subparsers()
-    add_command_subparsers(subparsers, [export_v2])
-
-    # Add parsers for the (subcommand-less) "augur export", which is a synonym for "augur export v2"
-    export_v2.register_arguments(parser)
-
-    # In augur v28 and earlier, running "augur export" without any extra
-    # arguments returned a help-like text instructing us to use a subparser (v1
-    # or v2). Now that "augur export" is a synonym for "augur export v2" improve
-    # the UX when simply running "augur export" to indicate this change (rather than
-    # an error due to the absence of required args)
-    error_handler = parser.error
-    def error_middleware(message):
-        if len(sys.argv)==2 and sys.argv[1]=='export':
-            print(dedent("""\
-                NOTE: "augur export" is now a synonym for "augur export v2"
-                """), file=sys.stderr)
-            parser.print_help()
-            sys.exit(2)
-        # In all other cases defer to the actual error handler
-        error_handler(message)
-    parser.error = error_middleware
-
-    return parser
-
-def run(args):
-    export_v2.run(args)
+# FIXME: re-exporting these from export.py to avoid rewiring top-level augur
+# command and show a useful diff. I think it'd make more sense to just remove
+# this file and rename export_v2.py to export.py (though this may not show up as
+# a rename in the squashed PR diff, but renaming in a commit should preserve
+# history)
+from .export_v2 import register_parser, run

@@ -937,11 +937,17 @@ def node_data_prop_is_normal_trait(name):
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("v2", help=__doc__)
+    # FIXME: this is in export_v2.py but it is used by export.py
+    parser = parent_subparsers.add_parser("export", help=__doc__)
     parser = register_arguments(parser)
     return parser
 
 def register_arguments(parser):
+    # Allow "v2" as positional argument as a no-op for backwards compatibility.
+    parser.add_argument('version', nargs='?', choices=['v2'], help="Specify version.")
+    # FIXME: when `augur export` is run without any other arguments, output this:
+    # > NOTE: "augur export" is now a synonym for "augur export v2"
+
     required = parser.add_argument_group(
         title="REQUIRED"
     )
