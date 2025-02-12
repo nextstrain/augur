@@ -71,11 +71,26 @@ def _parse_color_options(options: Any) -> list[dict]:
         colorings.append({"key": key, **info})
     return colorings
 
+def _rename_display_keys(display: dict) -> dict:
+    defaults = {**display}
+    v1_v2_keys = [
+        # [ <old key>, <new key> ]
+        ["geoResolution", "geo_resolution"],
+        ["colorBy", "color_by"],
+        ["distanceMeasure", "distance_measure"],
+        ["mapTriplicate", "map_triplicate"]
+    ]
+    for [v1_key, v2_key] in [x for x in v1_v2_keys if x[0] in defaults]:
+        deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
+        defaults[v2_key] = defaults[v1_key]
+        del defaults[v1_key]
+    return defaults
+
 
 DEPRECATIONS = [
     {"old_name": 'vaccine_choices', "new_name": None}, # removed from config
     {"old_name": "updated", "new_name": None}, # removed from config
-    {"old_name": "defaults", "new_name": "display_defaults", "modify": None},
+    {"old_name": "defaults", "new_name": "display_defaults", "modify": _rename_display_keys},
     {"old_name": "maintainer", "new_name": "maintainers", "modify": lambda m: [{"name": m[0], "url": m[1]}]},
     {"old_name": "geo", "new_name": "geo_resolutions", "modify": lambda values: [{"key": v} for v in values]},
     {"old_name": "color_options", "new_name": "colorings", "modify": _parse_color_options},

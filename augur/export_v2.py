@@ -968,24 +968,6 @@ def register_parser(parent_subparsers):
     return parser
 
 
-def set_display_defaults(data_json, config):
-    defaults = config.get('display_defaults', {})
-
-    v1_v2_keys = [ # each item: [0] v2 key name. [1] deprecated v1 key name
-        ["geo_resolution", "geoResolution"],
-        ["color_by", "colorBy"],
-        ["distance_measure", "distanceMeasure"],
-        ["map_triplicate", "mapTriplicate"]
-    ]
-
-    for [v2_key, v1_key] in [x for x in v1_v2_keys if x[1] in defaults]:
-        deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
-        defaults[v2_key] = defaults[v1_key]
-        del defaults[v1_key]
-
-    if defaults:
-        data_json['meta']["display_defaults"] = defaults
-
 def set_maintainers(data_json, config, cmd_line_maintainers):
     # Command-line args overwrite the config file
     # They may or may not all have URLs
@@ -1209,7 +1191,8 @@ def run(args):
 
     # set metadata data structures
     set_title(data_json, config, args.title)
-    set_display_defaults(data_json, config)
+    if 'display_defaults' in config:
+        data_json['meta']["display_defaults"] = config['display_defaults']
     set_maintainers(data_json, config, args.maintainers)
     set_build_url(data_json, config, args.build_url)
     set_build_avatar(data_json, config)
