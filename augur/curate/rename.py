@@ -30,7 +30,7 @@ def register_parser(parent_subparsers):
 
 def parse_field_map(field_map_arg: List[str]) -> List[Tuple[str,str]]:
     seen_new = set() # keep track of the new field names
-    
+
     field_map = []
     for field in field_map_arg:
         fields = [n.strip() for n in field.split('=')]

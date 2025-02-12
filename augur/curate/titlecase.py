@@ -13,7 +13,7 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("titlecase",
     parents = [parent_subparsers.shared_parser],
     help = __doc__)
-    
+
     required = parser.add_argument_group(title="REQUIRED")
     required.add_argument("--titlecase-fields", nargs="*", action=ExtendOverwriteDefault,
         help="List of fields to convert to titlecase.", required=True)
@@ -98,7 +98,7 @@ def run(args, records):
                 continue
 
             titlecased_string = titlecase(record[field], articles, abbreviations)
-        
+
             failure_message = f"Failed to titlecase {field!r}:{record.get(field)!r} in record {record_id!r} because the value is a {type(record.get(field)).__name__!r} and is not a string."
             if titlecased_string is None:
                 if failure_reporting is DataErrorMethod.ERROR_FIRST:
@@ -112,7 +112,7 @@ def run(args, records):
                 failures.append((record_id, field, record.get(field)))
             else:
                 record[field] = titlecased_string
-    
+
         yield record
 
     if failure_reporting is not DataErrorMethod.SILENT and failures:

@@ -12,4 +12,3 @@ def register_parser(parent_subparsers):
 
 def run(args, records):
     yield from records
-
