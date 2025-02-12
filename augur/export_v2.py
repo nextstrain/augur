@@ -17,8 +17,9 @@ from .errors import AugurError
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
-from .utils import read_node_data, write_json, json_size, read_config, read_lat_longs, read_colors
+from .utils import read_node_data, write_json, json_size, read_lat_longs, read_colors
 from .util_support.warnings import configure_warnings, warn, deprecated, deprecationWarningsEmitted
+from .util_support.auspice_config import read_auspice_config
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
 from .version import __version__
 
@@ -190,29 +191,6 @@ def get_config_colorings_as_dict(config):
     config_colorings = {}
     if config.get("colorings"):
         config_colorings = {v.get("key"):v for v in config["colorings"]}
-    elif config.get("color_options"):
-        deprecated("[config file] 'color_options' has been replaced with 'colorings' & the structure has changed.")
-        # parse v1-style colorings & convert to v2-style
-        for key, info in config.get("color_options").items():
-            # note: if both legentTitle & menuItem are present then we use the latter. See https://github.com/nextstrain/auspice/issues/730
-            if "menuItem" in info:
-                deprecated("[config file] coloring '{}': 'menuItem' has been replaced with 'title'. Using 'menuItem' as 'title'.".format(key))
-                info["title"] = info["menuItem"]
-                del info["menuItem"]
-            if "legendTitle" in info:
-                if info["title"]: # this can only have been set via menuItem ^^^
-                    deprecated("[config file] coloring '{}': 'legendTitle' has been replaced with 'title' & is unused since 'menuItem' is present.".format(key))
-                else:
-                    deprecated("[config file] coloring '{}': 'legendTitle' has been replaced with 'title'. Using 'legendTitle' as 'title'.".format(key))
-                    info["title"] = info["legendTitle"]
-                del info["legendTitle"]
-            if "key" in info:
-                del info["key"]
-            if info.get("type") == "discrete":
-                deprecated("[config file] coloring '{}': type 'discrete' is no longer valid. Please use either 'ordinal', 'categorical' or 'boolean'. "
-                    "This has been automatically changed to 'categorical'.".format(key))
-                info["type"] = "categorical"
-            config_colorings[key] = info
     return config_colorings
 
 
@@ -467,9 +445,6 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
             print("WARNING: [config file] 'geo_resolutions' is not in an acceptible format. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
             print("\t It is being ignored - this run will have no geo_resolutions.\n")
             return False
-    elif config.get("geo"):
-        traits = [{"key": x} for x in config.get("geo")]
-        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions'. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
     else:
         return False
 
@@ -994,16 +969,7 @@ def register_parser(parent_subparsers):
 
 
 def set_display_defaults(data_json, config):
-    # Note: these cannot be provided via command line args
-    if config.get("display_defaults"):
-        defaults = config["display_defaults"]
-        if config.get("defaults"):
-            deprecated("[config file] both 'defaults' (deprecated) and 'display_defaults' provided. Ignoring the former.")
-    elif config.get("defaults"):
-        deprecated("[config file] 'defaults' has been replaced with 'display_defaults'")
-        defaults = config["defaults"]
-    else:
-        return
+    defaults = config.get('display_defaults', {})
 
     v1_v2_keys = [ # each item: [0] v2 key name. [1] deprecated v1 key name
         ["geo_resolution", "geoResolution"],
@@ -1034,8 +1000,6 @@ def set_maintainers(data_json, config, cmd_line_maintainers):
                 tmp_dict['url'] = url
             maintainers.append(tmp_dict)
         data_json['meta']['maintainers'] = maintainers
-    elif config.get("maintainer"): # v1-type specification
-        data_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
     elif config.get("maintainers"): # see schema for details
         data_json['meta']['maintainers'] = config['maintainers']
     else:
@@ -1162,7 +1126,7 @@ def parse_node_data_and_metadata(T, node_data, metadata):
 def get_config(args):
     if not args.auspice_config:
         return {}
-    config = read_config(args.auspice_config)
+    config = read_auspice_config(args.auspice_config)
     if args.validation_mode is not ValidationMode.SKIP:
         try:
             print("Validating config file {} against the JSON schema".format(args.auspice_config))
@@ -1170,11 +1134,6 @@ def get_config(args):
         except ValidateError:
             print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
             validation_failure(args.validation_mode)
-    # Print a warning about the inclusion of "vaccine_choices" which are _unused_ by `export v2`
-    # (They are in the schema as this allows v1-compat configs to be used)
-    if config.get("vaccine_choices"):
-        warning("The config JSON can no longer specify the `vaccine_choices`, they must be specified through a node-data JSON. This info will be unused.")
-        del config["vaccine_choices"]
     return config
 
 
