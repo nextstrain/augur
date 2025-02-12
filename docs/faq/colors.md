@@ -2,7 +2,7 @@
 
 Auspice uses a number of default color schemes to color the tree using meta data or values that the augur pipeline computed. In some cases these defaults are not suitable for particular type of data, and you'd like to use your own color schemes.
 
-To specify a mapping between discrete trait values and colors, you can pass a tab-delimited file to `augur export`/`augur export v1`/`augur export v2` using `--colors`.
+To specify a mapping between discrete trait values and colors, you can pass a tab-delimited file to `augur export v2` using `--colors`.
 
 > _Note that it's not currently possible to specify color schemes for nucleotides, amino acids, or continuous data._
 

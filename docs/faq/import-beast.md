@@ -55,9 +55,9 @@ posterior           273         0
 ```
 augur import beast --mcc data/MERS_CoV_mcc.tree --output-tree results/mers.new
     --output-node-data results/beast_data.json
-augur export v1 --tree results/mers.new --node-data results/beast_data.json
+augur export v2 --tree results/mers.new --node-data results/beast_data.json
     --auspice-config config/auspice_config.json
-    --output-tree auspice/mers_tree.json --output-meta auspice/mers_meta.json
+    --output auspice/mers.json
 ```
 
 ```
