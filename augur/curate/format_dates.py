@@ -13,6 +13,7 @@ from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
+from augur.utils import first_line
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
 
 
@@ -29,7 +30,7 @@ BUILTIN_DATE_FORMATS = [
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("format-dates",
         parents=[parent_subparsers.shared_parser],
-        help=__doc__)
+        help=first_line(__doc__))
 
     required = parser.add_argument_group(title="REQUIRED")
     required.add_argument("--date-fields", nargs="+", action=ExtendOverwriteDefault,

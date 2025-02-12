@@ -1,7 +1,6 @@
 """
-Verifies strain name pattern in the 'strain' field of the NDJSON
-record. Adds a 'strain' field to the record if it does not already
-exist.
+Verifies strain name pattern in the 'strain' field.
+Adds a 'strain' field to the record if it does not already exist.
 """
 
 import argparse

@@ -11,8 +11,13 @@
 
 * Added standard geolocation rules in "augur/data/geolocation_rules.tsv" that can be used with `augur curate apply-geolocation-rules`. [#1744][] (@joverlee521)
 
+### Bug fixes
+
+* Fixed the error that occurred when running `augur curate --help`. [#1755][] (@joverlee521)
+
 [#1744]: https://github.com/nextstrain/augur/pull/1744
 [#1745]: https://github.com/nextstrain/augur/pull/1745
+[#1755]: https://github.com/nextstrain/augur/pull/1755
 
 ## 28.0.1 (10 February 2025)
 
