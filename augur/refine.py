@@ -112,7 +112,7 @@ def root_outside_of_treetime(T, root, is_timetree):
                 print("Warning: To root without inferring a timetree, you must specify an explicit outgroup.")
                 print("\tProceeding without re-rooting. To suppress this message, use '--keep-root'.\n")
             else:
-                raise TypeError("The rooting option '%s' is only available when inferring a timetree. Please specify an explicit outgroup."%root)
+                raise AugurError(f"The rooting option {root[0]!r} is only available when inferring a timetree. Please specify an explicit outgroup or 'mid_point'.")
     elif root[0]=="mid_point" and len(root)==1:
         T.root_at_midpoint()
     else:
