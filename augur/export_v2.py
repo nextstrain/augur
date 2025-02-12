@@ -1,5 +1,6 @@
 """
-Export version 2 JSON schema for visualization with Auspice
+Export version 2 JSON schema for visualization with Auspice.
+The JSON schema is available at <https://nextstrain.org/schemas/dataset/v2>
 """
 import os
 from pathlib import Path
