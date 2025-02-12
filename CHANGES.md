@@ -6,6 +6,7 @@
 
 * Updated default latitudes and longitudes for geography traits that includes location name changes. See the pull request for more details. [#1744][] (@joverlee521)
 * curate apply-geolocation-rules: Augur's standard geolocation rules are used by default and rules provided via `--geolocation-rules` are considered custom rules that have precedence over the default rules. The `--no-default-rules` flag can be used to ignore the default rules. See the pull request for more details. [#1745][] (@joverlee521)
+* export v1 has been removed (deprecated in v22.2.0, July 2023). `augur export v2` was introduced in Augur version 6.0.0. Migrate by following the [official guide](https://docs.nextstrain.org/projects/augur/page/releases/migrating-v5-v6.html).
 
 ### Features
 
