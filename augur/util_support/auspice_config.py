@@ -72,9 +72,25 @@ def _parse_color_options(options: dict) -> list[dict]:
         colorings.append({"key": key, **info})
     return colorings
 
+def _rename_display_keys(display: dict) -> dict:
+    defaults = {**display}
+    v1_v2_keys = [
+        # [ <old key>, <new key> ]
+        ["geoResolution", "geo_resolution"],
+        ["colorBy", "color_by"],
+        ["distanceMeasure", "distance_measure"],
+        ["mapTriplicate", "map_triplicate"]
+    ]
+    for [v1_key, v2_key] in [x for x in v1_v2_keys if x[0] in defaults]:
+        deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
+        defaults[v2_key] = defaults[v1_key]
+        del defaults[v1_key]
+    return defaults
+
+
 TOP_LEVEL_DEPRECATED_KEYS = [
     # [ <old key>, <new key>, <modify func>] #
-    ["defaults", "display_defaults", None],
+    ["defaults", "display_defaults", _rename_display_keys],
     ["maintainer", "maintainers", lambda m: [{"name": m[0], "url": m[1]}]],
     ["geo", "geo_resolutions", lambda values: [{"key": v} for v in values]],
     ["color_options", "colorings", _parse_color_options]
