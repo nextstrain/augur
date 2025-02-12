@@ -9,6 +9,7 @@
 
 ### Features
 
+* refine: Added a `--remove-outgroup` flag which can be used when rooting a tree on a single taxon. Rooting and removal of outgroup will be performed before any temporal inference, if applicable. [#1744][] (@jameshadfield)
 * Added standard geolocation rules in "augur/data/geolocation_rules.tsv" that can be used with `augur curate apply-geolocation-rules`. [#1744][] (@joverlee521)
 
 [#1744]: https://github.com/nextstrain/augur/pull/1744
@@ -23,6 +24,7 @@
 
 [#1743]: https://github.com/nextstrain/augur/pull/1743
 [#1746]: https://github.com/nextstrain/augur/pull/1746
+[#1751]: https://github.com/nextstrain/augur/pull/1751
 
 ## 28.0.0 (30 January 2025)
 
