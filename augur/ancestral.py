@@ -324,6 +324,10 @@ def register_parser(parent_subparsers):
                            "Currently only supported for FASTA-input. Specify the file name via a "
                            "template like 'aa_sequences_%%GENE.fasta' where %%GENE will be replaced "
                            "by the gene name.")
+    amino_acid_options_group.add_argument(
+        '--use-nextclade-gff-parsing', action="store_true", default=False,
+        help="Read GFF annotations the way Nextclade does, using CDSes (including compound) and same qualifiers for gene names."
+    )
 
     output_group = parser.add_argument_group(
         "outputs",
@@ -350,8 +354,9 @@ def validate_arguments(args, is_vcf):
     This checking shouldn't be used by downstream code to assume arguments exist, however by checking for
     invalid combinations up-front we can exit quickly.
     """
-    aa_arguments = (args.annotation, args.genes, args.translations)
-    if any(aa_arguments) and not all(aa_arguments):
+    mandatory_aa_arguments = (args.annotation, args.genes, args.translations)
+    all_aa_arguments = (*mandatory_aa_arguments, args.use_nextclade_gff_parsing)
+    if any(all_aa_arguments) and not all(mandatory_aa_arguments):
         raise AugurError("For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.")
 
     if args.output_sequences and args.output_vcf:
@@ -437,7 +442,7 @@ def run(args):
 
         from .utils import load_features
         ## load features; only requested features if genes given
-        features = load_features(args.annotation, genes)
+        features = load_features(args.annotation, genes, args.use_nextclade_gff_parsing)
         # Ensure the already-created nuc annotation coordinates match those parsed from the reference file
         if (features['nuc'].location.start+1 != anc_seqs['annotations']['nuc']['start'] or
             features['nuc'].location.end != anc_seqs['annotations']['nuc']['end']):

@@ -1,12 +1,15 @@
 import argparse
 import Bio
 import Bio.Phylo
+import Bio.SeqRecord
 import numpy as np
 import os, json, sys
 import pandas as pd
+from Bio.SeqFeature import SimpleLocation, CompoundLocation, SeqFeature, FeatureLocation
 from collections import defaultdict, OrderedDict
 from io import RawIOBase
 from textwrap import dedent
+from typing import Dict
 from .__version__ import __version__
 
 from augur.data import as_file
@@ -167,7 +170,7 @@ class AugurJSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-def load_features(reference, feature_names=None):
+def load_features(reference, feature_names=None, use_nextclade_gff_parsing=False):
     """
     Parse a GFF/GenBank reference file. See the docstrings for _read_gff and
     _read_genbank for details.
@@ -178,6 +181,8 @@ def load_features(reference, feature_names=None):
         File path to GFF or GenBank (.gb) reference
     feature_names : None or set or list (optional)
         Restrict the genes we read to those in the set/list
+    use_nextclade_gff_parsing : bool (optional)
+        If True, parse GFF file the way Nextclade does
 
     Returns
     -------
@@ -195,6 +200,8 @@ def load_features(reference, feature_names=None):
         raise AugurError(f"reference sequence file {reference!r} not found")
 
     if '.gff' in reference.lower():
+        if use_nextclade_gff_parsing:
+            return _read_gff_like_nextclade(reference, feature_names)
         return _read_gff(reference, feature_names)
     else:
         return _read_genbank(reference, feature_names)
@@ -229,7 +236,6 @@ def _read_nuc_annotation_from_gff(record, reference):
     if len(sequence_regions)>1:
         raise AugurError(f"Reference {reference!r} contains multiple ##sequence-region pragma lines. Augur can only handle GFF files with a single one.")
     elif sequence_regions:
-        from Bio.SeqFeature import SeqFeature, FeatureLocation
         (name, start, stop) = sequence_regions[0]
         nuc['pragma'] = SeqFeature(
             FeatureLocation(start, stop, strand=1),
@@ -258,6 +264,114 @@ def _read_nuc_annotation_from_gff(record, reference):
         return nuc['source']
     else:
         raise AugurError(f"Reference {reference!r} didn't define any information we can use to create the 'nuc' annotation. You can use a line with a 'record' or 'source' GFF type or a ##sequence-region pragma.")
+
+
+def _load_gff_record(reference, valid_types=None) -> Bio.SeqRecord.SeqRecord:
+    """
+    Open a GFF file and return single record.
+    If there are multiple records, raise AugurError.
+    Optionally, limit the GFF types to parse.
+    """
+    from BCBio import GFF
+
+    limit_info = {'gff_type': valid_types} if valid_types else None
+
+    with open_file(reference) as in_handle:
+        # Note that `GFF.parse` doesn't always yield GFF records in the order
+        # one may expect, but since we raise AugurError if there are multiple
+        # this doesn't matter.
+        # TODO: Remove warning suppression after it's addressed upstream:
+        # <https://github.com/chapmanb/bcbb/issues/143>
+        import warnings
+
+        from Bio import BiopythonDeprecationWarning
+        warnings.simplefilter("ignore", BiopythonDeprecationWarning)
+        gff_entries = list(GFF.parse(in_handle, limit_info=limit_info))
+        warnings.simplefilter("default", BiopythonDeprecationWarning)
+
+    if len(gff_entries) == 0:
+        msg = f"Reference {reference!r} contains no valid data rows."
+        if valid_types:
+            msg += f" Valid GFF types (3rd column) are {', '.join(valid_types)}."
+        raise AugurError(msg)
+    if len(gff_entries) > 1:
+        raise AugurError(f"Reference {reference!r} contains multiple seqids (first column). Augur can only handle GFF files with a single seqid.")
+    return gff_entries[0]
+
+def _lookup_feature_name_like_nextclade(feature) -> str:
+    # Matching Nextclade conventions (NAME_ATTRS_CDS)
+    # https://github.com/nextstrain/nextclade/blob/59e757fd9c9f8d8edd16cf2063d77a859d4d3b96/packages/nextclade/src/io/gff3.rs#L35-L54
+    QUALIFIER_PRIORITY = [ "Name", "name", "Alias", "alias", "standard_name", "old-name", "Gene", "gene", "gene_name",
+        "locus_tag", "product", "gene_synonym", "gb-synonym", "acronym", "gb-acronym", "protein_id", "ID"]
+
+    for qualifier in QUALIFIER_PRIORITY:
+        if qualifier in feature.qualifiers:
+            return feature.qualifiers[qualifier][0]
+    raise AugurError(f"No valid feature name found for feature for feature {feature.id}")
+
+def _read_gff_like_nextclade(reference, feature_names) -> Dict[str, SeqFeature]:
+    """
+    Read a GFF file the way Nextclade does. That means:
+    - We only look at CDS features.
+    - CDS features with identical IDs are joined into a compound feature.
+    - The feature name is taken from qualifiers in the same priority order as in Nextclade.
+
+    Parameters
+    ----------
+    reference : string
+        File path to GFF reference
+    feature_names : None or set or list
+        Restrict the genes we read to those in the set/list
+
+    Returns
+    -------
+    features : dict
+        keys: feature names, values: :py:class:`Bio.SeqFeature.SeqFeature`
+        Note that feature names may not equivalent to GenBank feature keys
+
+    Raises
+    ------
+    AugurError
+        If the reference file contains no IDs or multiple different seqids
+        If a gene is found with the name 'nuc'
+    """
+    rec = _load_gff_record(reference)
+    features = {'nuc': _read_nuc_annotation_from_gff(rec, reference)}
+
+    cds_features: Dict[str, SeqFeature] = {}
+
+    def _flatten(feature):
+        if feature.type == "CDS":
+            if not feature.id:
+                # Hack to ensure we have some IDs for all features
+                # Technically, all features should have an ID, but Nextclade doesn't require it
+                feature.id = str(feature.qualifiers)
+            if feature.id in cds_features:
+                if isinstance(cds_features[feature.id].location, CompoundLocation):
+                    cds_features[feature.id].location.parts.append(feature.location)
+                else:
+                    cds_features[feature.id].location = CompoundLocation([cds_features[feature.id].location, feature.location])
+            else:
+                cds_features[feature.id] = feature
+        for sub_feature in getattr(feature, "sub_features", []):
+            _flatten(sub_feature)
+
+    for feature in rec.features:
+        _flatten(feature)
+    
+    for feature in cds_features.values():
+        feature_name = _lookup_feature_name_like_nextclade(feature)
+        if feature_name == 'nuc':
+            raise AugurError(f"Reference {reference!r} contains a gene with the name 'nuc'. This is not allowed.")
+        if feature_names is None or feature_name in feature_names:
+            features[feature_name] = feature
+    
+    if feature_names is not None:
+        for fe in feature_names:
+            if fe not in features:
+                print(f"Couldn't find gene {fe} in GFF")
+    
+    return features
 
 
 def _read_gff(reference, feature_names):
@@ -289,65 +403,47 @@ def _read_gff(reference, feature_names):
         If the reference file contains no IDs or multiple different seqids
         If a gene is found with the name 'nuc'
     """
-    from BCBio import GFF
     valid_types = ['gene', 'source', 'region']
-    features = {}
 
-    with open_file(reference) as in_handle:
-        # Note that `GFF.parse` doesn't always yield GFF records in the order
-        # one may expect, but since we raise AugurError if there are multiple
-        # this doesn't matter.
-        # TODO: Remove warning suppression after it's addressed upstream:
-        # <https://github.com/chapmanb/bcbb/issues/143>
-        import warnings
-        from Bio import BiopythonDeprecationWarning
-        warnings.simplefilter("ignore", BiopythonDeprecationWarning)
-        gff_entries = list(GFF.parse(in_handle, limit_info={'gff_type': valid_types}))
-        warnings.simplefilter("default", BiopythonDeprecationWarning)
+    rec = _load_gff_record(reference, valid_types=valid_types)
 
-        if len(gff_entries) == 0:
-            raise AugurError(f"Reference {reference!r} contains no valid data rows. Valid GFF types (3rd column) are {', '.join(valid_types)}.")
-        elif len(gff_entries) > 1:
-            raise AugurError(f"Reference {reference!r} contains multiple seqids (first column). Augur can only handle GFF files with a single seqid.")
-        else:
-            rec = gff_entries[0]
+    features = {'nuc': _read_nuc_annotation_from_gff(rec, reference)}
 
-        features['nuc'] = _read_nuc_annotation_from_gff(rec, reference)
-        features_skipped = 0
+    features_skipped = 0
 
-        for feat in rec.features:
-            if feat.type == "gene":
-                # Check for gene names stored in qualifiers commonly used by
-                # virus-specific gene maps first (e.g., 'gene',
-                # 'gene_name'). Then, check for qualifiers used by non-viral
-                # pathogens (e.g., 'locus_tag').
-                if "gene" in feat.qualifiers:
-                    fname = feat.qualifiers["gene"][0]
-                elif "gene_name" in feat.qualifiers:
-                    fname = feat.qualifiers["gene_name"][0]
-                elif "locus_tag" in feat.qualifiers:
-                    fname = feat.qualifiers["locus_tag"][0]
-                else:
-                    features_skipped+=1
-                    fname = None
+    for feat in rec.features:
+        if feat.type == "gene":
+            # Check for gene names stored in qualifiers commonly used by
+            # virus-specific gene maps first (e.g., 'gene',
+            # 'gene_name'). Then, check for qualifiers used by non-viral
+            # pathogens (e.g., 'locus_tag').
+            if "gene" in feat.qualifiers:
+                fname = feat.qualifiers["gene"][0]
+            elif "gene_name" in feat.qualifiers:
+                fname = feat.qualifiers["gene_name"][0]
+            elif "locus_tag" in feat.qualifiers:
+                fname = feat.qualifiers["locus_tag"][0]
+            else:
+                features_skipped+=1
+                fname = None
 
-                if fname == 'nuc':
-                    raise AugurError(f"Reference {reference!r} contains a gene with the name 'nuc'. This is not allowed.")
+            if fname == 'nuc':
+                raise AugurError(f"Reference {reference!r} contains a gene with the name 'nuc'. This is not allowed.")
 
-                if feature_names is not None and fname not in feature_names:
-                    # Skip (don't store) this feature
-                    continue
+            if feature_names is not None and fname not in feature_names:
+                # Skip (don't store) this feature
+                continue
 
-                if fname:
-                    features[fname] = feat
+            if fname:
+                features[fname] = feat
 
-        if feature_names is not None:
-            for fe in feature_names:
-                if fe not in features:
-                    print("Couldn't find gene {} in GFF or GenBank file".format(fe))
+    if feature_names is not None:
+        for fe in feature_names:
+            if fe not in features:
+                print("Couldn't find gene {} in GFF or GenBank file".format(fe))
 
-        if features_skipped:
-            print(f"WARNING: {features_skipped} GFF rows of type=gene skipped as they didn't have a gene, gene_name or locus_tag attribute.")
+    if features_skipped:
+        print(f"WARNING: {features_skipped} GFF rows of type=gene skipped as they didn't have a gene, gene_name or locus_tag attribute.")
 
     return features
 
@@ -852,8 +948,6 @@ def genome_features_to_auspice_annotation(features, ref_seq_name=None, assert_nu
         See schema-annotations.json for the schema this conforms to
 
     """
-    from Bio.SeqFeature import SimpleLocation, CompoundLocation
-
     if assert_nuc and 'nuc' not in features:
         raise AugurError("Genome features must include a feature for 'nuc'")
 
