@@ -3,7 +3,7 @@
     "$id": "https://nextstrain.org/schemas/auspice/config/v2",
     "type": "object",
     "title": "Auspice config file to be supplied to `augur export v2`",
-    "$comment": "This schema includes deprecated-but-handled-by-augur-export-v1 properties, but their schema definitions are somewhat incomplete",
+    "$comment": "This schema includes properties which were used in `augur export v1` as these are still handled by `augur export v2`. The should all be considered deprecated.",
     "additionalProperties": false,
     "required": [],
     "properties" : {
