@@ -437,6 +437,8 @@ def _read_genbank(reference, feature_names):
 
     return features
 
+# NOTE `read_config` is only used by `export_v1.py` and should be removed when that
+# file is removed.
 def read_config(fname):
     if not (fname and os.path.isfile(fname)):
         print("ERROR: config file %s not found."%fname)
