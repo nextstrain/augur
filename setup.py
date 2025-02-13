@@ -59,7 +59,7 @@ setuptools.setup(
         "isodate ==0.6.*",
         "jsonschema >=4.18.0, ==4.*",
         "networkx >= 2.5, <4",
-        "numpy ==1.*",
+        "numpy >=1, <3",
         "packaging >=19.2",
         # Sync this with 'pandas-stubs' dev dependency
         "pandas >=1.4.0, <3",
