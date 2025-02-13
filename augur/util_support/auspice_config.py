@@ -87,6 +87,24 @@ def _rename_display_keys(display: dict) -> dict:
         del defaults[v1_key]
     return defaults
 
+def _update_deprecated_values(config):
+    if "metadata_columns" in config:
+        # Remove any occurrences of 'author' as it's a no-op - author information is always exported on
+        # nodes if it's available. Also remove "authors" as that was historically corrected to "author"
+        # during parsing.  Similarly for 'numdate' and 'num_date'.
+        config['metadata_columns'] = [n for n in config['metadata_columns']  if n not in ['author', 'authors', 'num_date', 'numdate']]
+
+    # The 'authors' coloring is now called 'author' (and remapped as such)
+    author  = [[idx, c] for [idx, c] in enumerate(config.get('colorings', [])) if c['key']=='author' ]
+    authors = [[idx, c] for [idx, c] in enumerate(config.get('colorings', [])) if c['key']=='authors']
+    if authors:
+        if author:
+            deprecated("[config file] coloring 'authors' has been renamed 'author', however a " +
+                       "coloring for 'author' already exists. 'authors' will be ignored")
+            config['colorings'] = [c for [idx, c] in enumerate(config['colorings']) if idx!=authors[0][0]]
+        else:
+            deprecated("[config file] renaming coloring 'authors' to 'author'")
+            config['colorings'][authors[0][0]]['key'] = "author"
 
 TOP_LEVEL_DEPRECATED_KEYS = [
     # [ <old key>, <new key>, <modify func>] #
@@ -106,5 +124,6 @@ def read_auspice_config(fname):
         _replace_deprecated(config, *keys)
     for key in TOP_LEVEL_UNUSED_KEYS:
         _remove_deprecated(config, key)
+    _update_deprecated_values(config)
 
     return config
