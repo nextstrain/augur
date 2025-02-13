@@ -26,8 +26,7 @@ We recognize the existing usage of this function, so it has been moved to
 
 ## `augur export v1`
 
-*Deprecated in version 22.2.0 (July 2023). Planned for [removal](https://github.com/nextstrain/augur/issues/1266)
-January 2024 or after.*
+*Deprecated in version 22.2.0 (July 2023). Removed in version TKTK (TKTK 2025)*
 
 `augur export v2` was introduced in Augur version 6.0.0. Migrate by following
 the [official guide](https://docs.nextstrain.org/projects/augur/page/releases/migrating-v5-v6.html).

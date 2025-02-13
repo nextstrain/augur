@@ -72,16 +72,13 @@ Consistancy and Style
 ~~~~~~~~~~~~~~~~~~~~~
 
 Check that your metadata is free from spelling mistakes and that values
-are consistant. Augur doesn't know that 'UK' and 'United Kingdom' or
+are consistent. Augur doesn't know that 'UK' and 'United Kingdom' or
 'cat' and 'feline' are the same!
 
-Previously, auspice 'prettified' traits by capitalizing them
+Note: Previously, auspice 'prettified' traits by capitalizing them
 automatically, and removing the underscores that separated two-word
-locations ('new_zealand' became 'New Zealand').
-
-Auspice will still do this if you are exporting 'V1' type JSON files
-(from augur v5 or augur v6 using ``export v1``), but will not do this if
-you are using ``export v2`` (:ref:`read more <prettifying-metadata-fields>`).
+locations ('new_zealand' became 'New Zealand'). With `augur export v2`
+this is no longer the case, see :ref:`read more <prettifying-metadata-fields>`.
 Instead, you should update your metadata files so that traits look the
 same as you'd like them to display in Auspice (change 'new_zealand' to
 'New Zealand' in your metadata, and in any additional latitude-longitude

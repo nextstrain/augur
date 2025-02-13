@@ -16,7 +16,7 @@ from augur.data import as_file
 from augur.io.file import open_file
 from augur.io.print import print_err
 from augur.io.json import shorten_as_json
-from .validate_export import verifyMainJSONIsInternallyConsistent, verifyMetaAndOrTreeJSONsAreInternallyConsistent
+from .validate_export import verifyMainJSONIsInternallyConsistent
 
 def fatal(message):
     print("FATAL ERROR: {}".format(message))
@@ -215,28 +215,6 @@ def export_v2(main_json, **kwargs):
         print("Validation of {!r} succeeded, but there were warnings you may want to resolve.".format(main_json))
 
 
-def export_v1(meta_json, tree_json, **kwargs):
-    meta_schema = load_json_schema("schema-export-v1-meta.json")
-    tree_schema = load_json_schema("schema-export-v1-tree.json")
-
-    if not meta_json.endswith("_meta.json"):
-        raise ValidateError("The metadata JSON pathname {} must end with '_meta.json'.".format(meta_json))
-
-    if not tree_json.endswith("_tree.json"):
-        raise ValidateError("The metadata JSON pathname {} must end with '_tree.json'.".format(tree_json))
-
-    meta = load_json(meta_json)
-    tree = load_json(tree_json)
-
-    validate(meta, meta_schema, meta_json)
-    validate(tree, tree_schema, tree_json)
-
-    if verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta, tree, ValidateError):
-        print("Validation of {!r} and {!r} succeeded.".format(meta_json, tree_json))
-    else:
-        print("Validation of {!r} and {!r} succeeded, but there were warnings you may want to resolve.".format(meta_json, tree_json))
-
-
 def get_unique_keys(list_of_dicts):
     """
     Returns a set of unique keys from a list of dicts
@@ -415,10 +393,6 @@ def register_parser(parent_subparsers):
 
     subparsers.add_parser("export-v2", help="validate JSON intended for auspice v2") \
         .add_argument('main_json', metavar='JSON', help="exported (main) v2 auspice JSON")
-
-    export_v1 = subparsers.add_parser("export-v1", help="validate tree+meta JSONs intended for auspice v1")
-    export_v1.add_argument('meta_json', metavar='META-JSON', help="exported (v1) meta JSON")
-    export_v1.add_argument('tree_json', metavar='TREE-JSON', help="exported (v1) tree JSON")
 
     subparsers.add_parser("auspice-config-v2", help="validate auspice config intended for `augur export v2`") \
         .add_argument('config_json', metavar='JSON', help="auspice config JSON")

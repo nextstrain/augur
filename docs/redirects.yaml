@@ -82,7 +82,11 @@
 
 - type: page
   from_url: /api/augur.export_v1.html
-  to_url: /api/developer/augur.export_v1.html
+  to_url: /releases/migrating-v5-v6.html
+
+- type: page
+  from_url: /api/developer/augur.export_v1.html
+  to_url: /releases/migrating-v5-v6.html
 
 - type: page
   from_url: /api/augur.export_v2.html
