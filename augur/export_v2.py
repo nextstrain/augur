@@ -19,7 +19,7 @@ from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimite
 from .types import ValidationMode
 from .utils import read_node_data, write_json, json_size, read_lat_longs, read_colors
 from .util_support.warnings import configure_warnings, warn, deprecated, deprecationWarningsEmitted
-from .util_support.auspice_config import read_auspice_config
+from .util_support.auspice_config import read_auspice_config, remove_unused_metadata_columns
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
 from .version import __version__
 
@@ -334,10 +334,6 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         return coloring
 
     def _add_coloring(colorings, key):
-        # handle deprecations
-        if key == "authors":
-            deprecated("[colorings] The 'authors' key is now called 'author'")
-            key = "author"
         # check if the key has already been added by another part of the color-creating logic
         if key not in {x['key'] for x in colorings}:
             colorings.append({"key": key})
@@ -376,6 +372,10 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
                 _add_coloring(colorings, x)
             # then add in command line colorings
             for x in command_line_colorings:
+                if x == "authors":
+                    # Note - this correction is also applied to the config JSON (during parsing)
+                    deprecated("[colorings] The 'authors' key is now called 'author'")
+                    x = "author"
                 _add_coloring(colorings, x)
         else:
             # if we have a config file, start with these (extra info, such as title&type, is added in later)
@@ -1122,7 +1122,7 @@ def get_config(args):
 def get_additional_metadata_columns(config, command_line_metadata_columns, metadata_names):
     # Command line args override what is set in the config file
     if command_line_metadata_columns:
-        potential_metadata_columns = command_line_metadata_columns
+        potential_metadata_columns = remove_unused_metadata_columns(command_line_metadata_columns)
     else:
         potential_metadata_columns = config.get("metadata_columns", [])
 
@@ -1133,11 +1133,10 @@ def get_additional_metadata_columns(config, command_line_metadata_columns, metad
                   "It will be ignored during export, please rename field if you would like to include as a metadata field.")
             continue
         # Match the column names corrected within parse_node_data_and_metadata
-        corrected_col = update_deprecated_names(col)
-        if corrected_col not in metadata_names:
+        if col not in metadata_names:
             warn(f"Requested metadata column {col!r} does not exist and will not be exported")
             continue
-        additional_metadata_columns.append(corrected_col)
+        additional_metadata_columns.append(col)
 
     return additional_metadata_columns
 

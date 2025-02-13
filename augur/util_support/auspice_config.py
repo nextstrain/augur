@@ -34,6 +34,9 @@ def _replace_deprecated(config: dict[str,Any], old_name: str, new_name: Union[No
     elif new_name is None:
         deprecated(f"[config file] key {old_name!r} is no longer used and has been dropped from your config")
         del config[old_name]
+    elif old_name == new_name: # indicates deprecations within an unchanged top-level key
+        assert modify is not None, "[internal error] modify must be a function"
+        config[new_name] = modify(config[old_name])
     elif new_name in config:
         deprecated(f"[config file] top level keys {new_name!r} and {old_name!r} were both present, " \
                    "however the latter is a deprecated version of the former and will be ignored.")
@@ -71,6 +74,19 @@ def _parse_color_options(options: Any) -> list[dict]:
         colorings.append({"key": key, **info})
     return colorings
 
+def _rename_deprecated_authors_coloring(colorings: list):
+    # The 'authors' coloring (plural) is now called 'author' (singular)
+    author  = next(iter([{'index': idx, 'coloring': c} for [idx, c] in enumerate(colorings) if c['key']=='author'] or [None]))
+    authors = next(iter([{'index': idx, 'coloring': c} for [idx, c] in enumerate(colorings) if c['key']=='authors'] or [None]))
+    if authors:
+        if author:
+            deprecated("[config file] ignoring deprecated 'authors' because a coloring for 'author' already exists")
+            colorings = [c for [idx, c] in enumerate(colorings) if idx!=authors['index']]
+        else:
+            deprecated("[config file] renaming coloring 'authors' to 'author'")
+            colorings[authors['index']]['key'] = "author"
+    return colorings
+
 def _rename_display_keys(display: dict) -> dict:
     defaults = {**display}
     v1_v2_keys = [
@@ -86,6 +102,12 @@ def _rename_display_keys(display: dict) -> dict:
         del defaults[v1_key]
     return defaults
 
+def remove_unused_metadata_columns(columns: list) -> list:
+    # 1. Remove any occurrences of 'author' and 'num_date' as it's a no-op - author
+    #    and numerical date information is always exported on nodes if it's available.
+    # 2. Remove "authors" as that was historically corrected to "author" during parsing,
+    #    and similarly for 'numdate'
+    return [n for n in columns if n not in ['author', 'authors', 'num_date', 'numdate']]
 
 DEPRECATIONS = [
     {"old_name": 'vaccine_choices', "new_name": None}, # removed from config
@@ -94,6 +116,8 @@ DEPRECATIONS = [
     {"old_name": "maintainer", "new_name": "maintainers", "modify": lambda m: [{"name": m[0], "url": m[1]}]},
     {"old_name": "geo", "new_name": "geo_resolutions", "modify": lambda values: [{"key": v} for v in values]},
     {"old_name": "color_options", "new_name": "colorings", "modify": _parse_color_options},
+    {"old_name": "colorings", "new_name": "colorings", "modify": _rename_deprecated_authors_coloring},
+    {"old_name": "metadata_columns", "new_name": "metadata_columns", "modify": remove_unused_metadata_columns},
 ]
 
 
