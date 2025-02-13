@@ -17,6 +17,7 @@ from augur.io.file import open_file
 from augur.io.print import print_err
 from augur.io.json import shorten_as_json
 from .validate_export import verifyMainJSONIsInternallyConsistent, verifyMetaAndOrTreeJSONsAreInternallyConsistent
+from .types import ValidationMode
 
 def fatal(message):
     print("FATAL ERROR: {}".format(message))
@@ -25,6 +26,16 @@ def fatal(message):
 class ValidateError(Exception):
     pass
 
+def validation_failure(mode: ValidationMode):
+    if mode is ValidationMode.ERROR:
+        sys.exit(2)
+    elif mode is ValidationMode.WARN:
+        print(f"Continuing due to --validation-mode={mode.value} even though there were validation errors.")
+    elif mode is ValidationMode.SKIP:
+        # Shouldn't be doing validation under skip, but if we're called anyway just do nothing.
+        return
+    else:
+        raise ValueError(f"unknown validation mode: {mode!r}")
 
 def load_json_schema(path, refs=None):
     '''

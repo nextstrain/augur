@@ -19,8 +19,8 @@ from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimite
 from .types import ValidationMode
 from .utils import read_node_data, write_json, json_size, read_lat_longs, read_colors
 from .util_support.warnings import configure_warnings, warn, deprecated, deprecationWarningsEmitted
-from .util_support.auspice_config import read_auspice_config, remove_unused_metadata_columns
-from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
+from .util_support.auspice_config import read_auspice_configs, remove_unused_metadata_columns
+from .validate import export_v2 as validate_v2, ValidateError, validation_failure
 from .version import __version__
 
 MINIFY_THRESHOLD_MB = 5
@@ -512,17 +512,6 @@ def validate_data_json(filename, validation_mode=ValidationMode.ERROR):
         print("------------------------")
         validation_failure(validation_mode)
 
-def validation_failure(mode: ValidationMode):
-    if mode is ValidationMode.ERROR:
-        sys.exit(2)
-    elif mode is ValidationMode.WARN:
-        print(f"Continuing due to --validation-mode={mode.value} even though there were validation errors.")
-    elif mode is ValidationMode.SKIP:
-        # Shouldn't be doing validation under skip, but if we're called anyway just do nothing.
-        return
-    else:
-        raise ValueError(f"unknown validation mode: {mode!r}")
-
 
 def set_panels(data_json, config, cmd_line_panels):
 
@@ -899,10 +888,11 @@ def register_parser(parent_subparsers):
     config = parser.add_argument_group(
         title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
-            You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
-            Supplying both is fine too, command line args will overrule what is set in the config file!"
+            Config JSON(s) allow customisation of all available options whereas individual command line arguments are more limited but great to get started. \
+            Supplying both is fine too, command line args will overrule what is set in the config file. \
+            Multiple JSONs will be merged together, and lists present in multiple configs will be merged by extending the original list."
     )
-    config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
+    config.add_argument('--auspice-config', metavar="JSON", nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice configuration file(s)")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", action=ExtendOverwriteDefault, nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
@@ -1105,19 +1095,6 @@ def parse_node_data_and_metadata(T, node_data, metadata):
 
     return (node_data, node_attrs, node_data_names, metadata_names, branch_attrs)
 
-def get_config(args):
-    if not args.auspice_config:
-        return {}
-    config = read_auspice_config(args.auspice_config)
-    if args.validation_mode is not ValidationMode.SKIP:
-        try:
-            print("Validating config file {} against the JSON schema".format(args.auspice_config))
-            validate_auspice_config_v2(args.auspice_config)
-        except ValidateError:
-            print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
-            validation_failure(args.validation_mode)
-    return config
-
 
 def get_additional_metadata_columns(config, command_line_metadata_columns, metadata_names):
     # Command line args override what is set in the config file
@@ -1185,7 +1162,7 @@ def run(args):
     T = Phylo.read(args.tree, 'newick')
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
             parse_node_data_and_metadata(T, node_data_file, metadata_file)
-    config = get_config(args)
+    config = read_auspice_configs(*args.auspice_config, validation_mode=args.validation_mode)
     additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
     # set metadata data structures

@@ -4,6 +4,8 @@ import json
 from ..io.file import open_file
 from ..errors import AugurError
 from .warnings import deprecated
+from ..types import ValidationMode
+from ..validate import auspice_config_v2 as validate_auspice_config_v2, ValidateError, validation_failure
 from collections import defaultdict
 from typing import Union, Any
 from collections.abc import Callable
@@ -121,11 +123,33 @@ DEPRECATIONS = [
 ]
 
 
-def read_auspice_config(fname):
-
+def read_single_auspice_config(fname: str, validation_mode: ValidationMode) -> dict[str, Any]:
     config = read_json(fname)
 
+    if validation_mode is not ValidationMode.SKIP:
+        try:
+            print(f"Validating config file {fname!r} against the JSON schema")
+            validate_auspice_config_v2(fname)
+        except ValidateError:
+            print(f"Validation of {fname!r} failed. Please check the formatting of this file & refer to the augur documentation for further help. ")
+            validation_failure(validation_mode)
+
     for data in DEPRECATIONS:
-        _replace_deprecated(config, **data)
+        _replace_deprecated(config, **data) # type: ignore[arg-type]
 
     return config
+
+def merge_configs(configs: list[dict[str, Any]], validation_mode: ValidationMode) -> dict[str, Any]:
+    raise AugurError("Multiple config file support TKTK")
+
+def read_auspice_configs(*fnames: str, validation_mode: ValidationMode) -> dict[str, Any]:
+    """
+    Parses zero, one or multiple files as auspice config JSONs and returns a (merged) config dict.
+    """
+    configs = [read_single_auspice_config(fname, validation_mode) for fname in fnames]
+
+    if len(configs)==0: # no config JSONs provided
+        return {}
+    elif len(configs)==1: # no merging necessary
+        return configs[0]
+    return merge_configs(configs, validation_mode)
