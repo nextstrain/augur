@@ -14,11 +14,14 @@
 
 ### Bug fixes
 
+* Certain strain names would be silently renamed by `augur tree [--method iqtree]`. We now avoid such renaming wherever possible and in cases where there are backslashes or single quotes we now raise a fatal error.
+Note that names with spaces in the FASTA header (description line) continue to be modified such that everything after the first space is not used in the resulting tree. [#1750][] (@jameshadfield)
 * Fixed the error that occurred when running `augur curate --help`. [#1755][] (@joverlee521)
 
 [#1744]: https://github.com/nextstrain/augur/pull/1744
 [#1745]: https://github.com/nextstrain/augur/pull/1745
 [#1755]: https://github.com/nextstrain/augur/pull/1755
+[#1750]: https://github.com/nextstrain/augur/pull/1750
 
 ## 28.0.1 (10 February 2025)
 

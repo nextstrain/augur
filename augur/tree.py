@@ -1,5 +1,7 @@
 """
 Build a tree using a variety of methods.
+
+IQ-TREE specific: Strain names with spaces are modified to remove all characters after (and including) the first space.
 """
 
 import os
@@ -14,13 +16,14 @@ from Bio import Phylo
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
+from textwrap import dedent
 
 from .errors import AugurError
 from .io.file import open_file
 from .io.sequences import read_sequences
 from .io.shell_command_runner import run_shell_command
 from .io.vcf import shquote
-from .utils import nthreads_value, load_mask_sites
+from .utils import nthreads_value, load_mask_sites, read_tree
 
 DEFAULT_ARGS = {
     "fasttree": "-nt -nosupport",
@@ -238,27 +241,52 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     ])
     # create a dictionary for characters that IQ-tree changes.
     # we remove those prior to tree-building and reinstantiate later
-    def random_string(n):
-        from string import ascii_uppercase as letters
-        return "".join([letters[i] for i in np.random.randint(len(letters), size=n)])
+    # Note: See <https://github.com/nextstrain/augur/pull/1085> for an alternate
+    # approach to escaping using a local-specific non-word regex.
     prefix = "DELIM"
-    escape_dict = {c:f'_{prefix}-{random_string(20)}_' for c in '/|()*'}
+    invalid_newick_chars = ["'", "\\"] # "\\" is a single backslash
+    invalid_replaceable_chars = ['(', ')', '{', '}', '[', ']', '<', '>',
+                                 '/', '|', '*', ':', '%', '+', '!', ';',
+                                 '&', '@', ',', '$', '=', '^', '~', '?', '#',
+                                 '"', '`',
+                                ]
+    escape_dict = {c:f'_{prefix}-{hex(ord(c))}_' for c in invalid_replaceable_chars}
     reverse_escape_dict = {v:k for k,v in escape_dict.items()}
 
 
     # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
     tmp_aln_file = str(Path(aln_file).with_name(Path(aln_file).stem + "-delim.fasta"))
     log_file = str(Path(tmp_aln_file).with_suffix(".iqtree.log"))
-    num_seqs = 0
+    input_sequence_names = set()
     with open_file(tmp_aln_file, 'w') as ofile, open_file(aln_file) as ifile:
         for line in ifile:
-            tmp_line = line
             if line.startswith(">"):
-                num_seqs += 1
+                strain_name = line.lstrip('>').rstrip('\n')
+                # Modify the strain name to remove anything after a space (0x20)
+                # This preserves the behaviour of augur v28 but makes it explicit.
+                strain_name = strain_name.split(' ')[0]
+                input_sequence_names.add(strain_name)
                 for c,v in escape_dict.items():
-                    tmp_line = tmp_line.replace(c,v)
+                    strain_name = strain_name.replace(c,v)
+                ofile.write(f">{strain_name}\n")
+            else:
+                ofile.write(line)
 
-            ofile.write(tmp_line)
+    invalid_newick_names = [strain_name for strain_name in input_sequence_names if any([char in strain_name for char in invalid_newick_chars])]
+    if len(invalid_newick_names):
+        if clean_up and os.path.isfile(tmp_aln_file):
+            os.remove(tmp_aln_file)
+        raise AugurError(dedent(f"""\
+            Certain strain names have characters which cannot be written in newick format (by Bio.Python, at least).
+            You should ensure these strain names are changed as early as possible in your analysis. The following
+            names are unescaped and surrounded by double quotes.
+            
+            Invalid strain names:
+              - {f"{chr(10)}{' '*14}- ".join(['"' + str(name) + '"' for name in invalid_newick_names])}
+
+            Invalid characters: {', '.join(['"' + str(char) + '"' for char in invalid_newick_chars])}
+            """))
+
 
     # Check tree builder arguments for conflicts with hardcoded defaults.
     check_conflicting_args(tree_builder_args, (
@@ -314,7 +342,8 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         if os.path.isfile(log_file):
             print("Please see the log file for more details: {}".format(log_file))
         T=None
-    return T
+
+    return (T, input_sequence_names)
 
 
 def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
@@ -455,6 +484,7 @@ def run(args):
     # check alignment type, set flags, read in if VCF
     is_vcf = False
     ref = None
+    input_sequence_names = None
     if any([args.alignment.lower().endswith(x) for x in ['.vcf', '.vcf.gz']]):
         # Prepare a multiple sequence alignment from the given variants VCF and
         # reference FASTA.
@@ -502,7 +532,7 @@ def run(args):
         if args.method=='raxml':
             T = build_raxml(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
         elif args.method=='iqtree':
-            T = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
+            (T, input_sequence_names) = build_iqtree(fasta, tree_fname, args.substitution_model, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
         elif args.method=='fasttree':
             T = build_fasttree(fasta, tree_fname, nthreads=args.nthreads, tree_builder_args=tree_builder_args)
     except ConflictingArgumentsException as error:
@@ -516,3 +546,30 @@ def run(args):
         tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
     else:
         return 1
+
+
+    # Finally, double check that the strain names in the tree are exactly the same as the strain names
+    # in the input alignment. The tree builder may have changed them, or we may have changed them ourselves
+    # in anticipation of the tree builder & then attempted to change them back.
+    # NOTE: We read the tree file just written to cover the case where `Phylo.write` changes the name
+    # NOTE: This check is only implemented for certain code paths - feel free to expand its coverage!
+    output_tree_names = {str(tip.name) for tip in read_tree(tree_fname).get_terminals()}
+    if input_sequence_names and len(input_sequence_names ^ output_tree_names)!=0:
+        # sorting names means we'll (often) be able to visually match them up in the output as the order isn't preserved between
+        # alignment and tree. However if the name modification was in the first character(s) then this won't work.
+        # Note: we use `str()` not `repr()` to avoid escapes - we want to show the name exactly as it is.
+        aln_only = ['"'+str(name)+'"' for name in sorted(list(input_sequence_names - output_tree_names))]
+        tree_only = ['"'+str(name)+'"' for name in sorted(list(output_tree_names - input_sequence_names))]
+        raise AugurError(dedent(f"""\
+            Different names in input alignment and output tree (newick). It is highly likely this is due
+            to character replacement by the underlying tree builder or within `augur tree` itself. In the short
+            term you can change the names of your input (alignment) data, however please also consider submitting
+            a bug report to <https://github.com/nextstrain/augur/issues>. The following names are unescaped and
+            surrounded by double quotes.
+
+            Names unique to alignment:
+             - {f"{chr(10)}{' '*12} - ".join(aln_only)}
+
+            Names unique to tree:
+             - {f"{chr(10)}{' '*12} - ".join(tree_only)}
+            """))
