@@ -116,9 +116,11 @@ TOP_LEVEL_DEPRECATED_KEYS = [
 
 TOP_LEVEL_UNUSED_KEYS = ['vaccine_choices', 'updated']
 
-def read_auspice_config(fname):
+def read_single_auspice_config(fname):
 
     config = _read_json(fname)
+
+    # TODO XXX Validate HERE
 
     for keys in TOP_LEVEL_DEPRECATED_KEYS:
         _replace_deprecated(config, *keys)
@@ -126,4 +128,50 @@ def read_auspice_config(fname):
         _remove_deprecated(config, key)
     _update_deprecated_values(config)
 
+
+    import pprint; pprint.pp(config)
     return config
+
+
+def merge_arrays(base: dict, overlay: dict, key : string, identity_func: Callable) -> dict:
+    """
+    Arrays (e.g. maintainers, colorings, filters) are merged by extending the base array unless
+    elements are already present in which case the latter occurance replaces the former.
+
+    For instance, if the base config has a coloring of `{'key': 'country', 'title': 'Country'}` and
+    the overlay config has `{'key': 'country', 'title': 'Geographic Country'}` then the latter
+    replaces the former. The matching of such elements is via `identity_func`.
+
+    TODO: should we allow base entries to be deleted somehow?
+    """
+
+    if key not in overlay:
+        return base
+    if key not in base:
+        return {**base, key: overlay[key]}
+
+    values = [*base[key]]
+    for el in overlay[key]:
+        for (idx, v) in enumerate(values):
+            if identity_func(el, v):
+                values[idx] = el # replace element from base config with overlay config
+                break
+        else:
+            values.append(el)
+
+    return {**base, key: values}
+
+
+
+
+def read_auspice_configs(*fnames):
+    configs = [read_single_auspice_config(fname) for fname in fnames]
+
+    if len(configs)==1: # no merging necessary
+        return configs[0]
+
+    merged = configs[0]
+    for overlay in configs[1:]:
+        merged = merge_arrays(merged, overlay, 'colorings', lambda x,y: x.get('key')==y.get('key'))
+
+    return merged
