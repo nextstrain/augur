@@ -29,6 +29,11 @@
                 "build_url" : {
                     "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/build_url"
                 },
+                "build_avatar": {
+                    "description": "The custom avatar image URL allows users to include a group-specific logo, even if it is hosted outside of GitHub.",
+                    "$comment": "Auspice displays this at the top of the page as part of a byline",
+                    "type": "string"
+                },
                 "description" : {
                     "description": "Auspice displays this currently in the footer.",
                     "$comment": "Generally a description of the phylogeny and/or acknowledgements in Markdown format.",
