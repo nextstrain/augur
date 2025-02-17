@@ -147,6 +147,11 @@
           "$comment": "Auspice displays this at the top of the page as part of a byline",
           "type": "string"
         },
+        "build_avatar": {
+            "description": "The custom avatar image URL allows users to include a group-specific logo, even if it is hosted outside of GitHub.",
+            "$comment": "Auspice displays this at the top of the page as part of a byline",
+            "type": "string"
+        },
         "filters": {
           "description": "These appear as filters in the footer of Auspice (which populates the displayed values based upon the tree)",
           "$comment": "These values must be present as keys on a tree node -> trait",
