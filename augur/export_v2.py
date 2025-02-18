@@ -1079,6 +1079,11 @@ def set_build_url(data_json, config, cmd_line_build_url):
     elif config.get("build_url"):
         data_json['meta']['build_url'] = config.get("build_url")
 
+def set_build_avatar(data_json, config):
+    # build_avatar is not necessary. No cmd line args handling
+    if config.get("build_avatar"):
+        data_json['meta']['build_avatar'] = config.get("build_avatar")
+
 def set_description(data_json, cmd_line_description_file):
     """
     Read Markdown file provided by *cmd_line_description_file* and set
@@ -1271,6 +1276,7 @@ def run(args):
     set_display_defaults(data_json, config)
     set_maintainers(data_json, config, args.maintainers)
     set_build_url(data_json, config, args.build_url)
+    set_build_avatar(data_json, config)
     set_annotations(data_json, node_data)
     if args.description:
         set_description(data_json, args.description)
