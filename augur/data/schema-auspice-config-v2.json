@@ -148,7 +148,7 @@
           "type": "string"
         },
         "build_avatar": {
-            "description": "The custom avatar image URL allows users to include a group-specific logo, even if it is hosted outside of GitHub.",
+            "description": "The custom avatar image URL allows users to include a logo, even if it is hosted outside of GitHub.",
             "$comment": "Auspice displays this at the top of the page as part of a byline",
             "type": "string"
         },

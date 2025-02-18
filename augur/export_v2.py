@@ -104,7 +104,7 @@ def orderKeys(data):
     od = CustomOrderedDict(data)
     od.set_order("version", "meta", "tree")
     if "meta" in od:
-        od["meta"].set_order("title", "updated", "build_url", "data_provenance", "maintainers")
+        od["meta"].set_order("title", "updated", "build_url", "build_avatar", "data_provenance", "maintainers")
         for coloring in od['meta'].get('colorings', []):
             coloring.set_order("key", "title", "type", "scale", "legend")
     def order_nodes(node):
