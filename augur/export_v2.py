@@ -859,6 +859,13 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
         if is_valid(raw_data.get("num_date", None)): # it's ok not to have temporal information
             node["node_attrs"]["num_date"] = {"value": format_number(raw_data["num_date"])}
             node["node_attrs"]["num_date"].update(attr_confidence(node["name"], raw_data, "num_date"))
+            # For tips, transfer information about whether the date was inferred or known
+            # and if it was inferred then store the underlying (ambiguous) date string
+            if len(node.get('children', []))==0 and 'date_inferred' in raw_data:
+                node["node_attrs"]["num_date"]["inferred"] = raw_data['date_inferred']
+                if raw_data['date_inferred'] and raw_data.get('raw_date', False):
+                    node["node_attrs"]["num_date"]["raw_value"] = raw_data['raw_date']
+
 
     def _transfer_url_accession(node, raw_data):
         for prop in ["url", "accession"]:
@@ -918,6 +925,7 @@ def node_data_prop_is_normal_trait(name):
         'clock_length',
         'mutation_length',
         'date',
+        'date_inferred',
         'muts',
         'aa_muts',
         'sequence',
