@@ -2,8 +2,8 @@ from pathlib    import Path
 import setuptools
 import sys
 
-py_min_version = (3, 8)  # minimal supported python version
-since_augur_version = (23, 0)  # py_min_version is required since this augur version
+py_min_version = (3, 9)  # minimal supported python version
+since_augur_version = (27, 0)  # py_min_version is required since this augur version
 
 if sys.version_info < py_min_version:
     error = """
