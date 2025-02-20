@@ -3,8 +3,8 @@ augur.dates package
 
 .. automodule:: augur.dates
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------
