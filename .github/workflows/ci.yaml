@@ -346,6 +346,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v5
+        with:
+          # This should match the python version in .readthedocs.yml
+          python-version: '3.11'
 
       - uses: actions/checkout@v4
 

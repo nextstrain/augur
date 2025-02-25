@@ -3,8 +3,8 @@ augur.curate package
 
 .. automodule:: augur.curate
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

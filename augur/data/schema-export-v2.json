@@ -172,6 +172,14 @@
                                         {"type": "number"},
                                         {"type": "number"}
                                     ]
+                                },
+                                "inferred": {
+                                    "type": "boolean",
+                                    "description": "[terminal nodes only] was the 'value' inferred or known?"
+                                },
+                                "raw_value": {
+                                    "type": "string",
+                                    "description": "[terminal nodes only, and only if inferred=true] the known (ambiguous) date string"
                                 }
                             }
                         },

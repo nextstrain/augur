@@ -16,7 +16,7 @@ Users who have both 'name' and 'strain' fields in their data, and want to favor 
 
 ## `augur.utils.read_strains`
 
-*Deprecated in version 24.0.0 (January 2024). Planned for removal March 2024 or after.*
+*Deprecated in version 24.0.0 (January 2024). Removed in version 29.0.0 (February 2025).*
 
 This is part of a [larger effort](https://github.com/nextstrain/augur/issues/1011)
 to formalize Augur's Python API.
