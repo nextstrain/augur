@@ -6,6 +6,7 @@
 
 * Updated default latitudes and longitudes for geography traits that includes location name changes. See the pull request for more details. [#1744][] (@joverlee521)
 * curate apply-geolocation-rules: Augur's standard geolocation rules are used by default and rules provided via `--geolocation-rules` are considered custom rules that have precedence over the default rules. The `--no-default-rules` flag can be used to ignore the default rules. See the pull request for more details. [#1745][] (@joverlee521)
+* `augur.utils.read_strains` has been removed as it's been deprecated since January 2024. The same function is available through the public API as `augur.io.read_strains`. [#1749][] (@joverlee521)
 
 ### Features
 
@@ -20,8 +21,9 @@ Note that names with spaces in the FASTA header (description line) continue to b
 
 [#1744]: https://github.com/nextstrain/augur/pull/1744
 [#1745]: https://github.com/nextstrain/augur/pull/1745
-[#1755]: https://github.com/nextstrain/augur/pull/1755
+[#1749]: https://github.com/nextstrain/augur/pull/1749
 [#1750]: https://github.com/nextstrain/augur/pull/1750
+[#1755]: https://github.com/nextstrain/augur/pull/1755
 
 ## 28.0.1 (10 February 2025)
 
