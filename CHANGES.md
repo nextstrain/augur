@@ -12,6 +12,7 @@
 
 * refine: Added a `--remove-outgroup` flag which can be used when rooting a tree on a single taxon. Rooting and removal of outgroup will be performed before any temporal inference, if applicable. [#1744][] (@jameshadfield)
 * Added standard geolocation rules in "augur/data/geolocation_rules.tsv" that can be used with `augur curate apply-geolocation-rules`. [#1744][] (@joverlee521)
+* [refine, export] Ambiguous dates (e.g. those with "XX" in the date string) are now exported in the Auspice JSON, and all tips now have an additional  "inferred" boolean property. These changes only apply to temporal trees. [#1760][] (@jameshadfield)
 
 ### Bug fixes
 
@@ -24,6 +25,7 @@ Note that names with spaces in the FASTA header (description line) continue to b
 [#1749]: https://github.com/nextstrain/augur/pull/1749
 [#1750]: https://github.com/nextstrain/augur/pull/1750
 [#1755]: https://github.com/nextstrain/augur/pull/1755
+[#1760]: https://github.com/nextstrain/augur/pull/1760
 
 ## 28.0.1 (10 February 2025)
 
