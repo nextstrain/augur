@@ -3,8 +3,8 @@ augur package
 
 .. automodule:: augur
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

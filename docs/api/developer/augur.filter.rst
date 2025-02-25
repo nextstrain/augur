@@ -3,8 +3,8 @@ augur.filter package
 
 .. automodule:: augur.filter
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------
