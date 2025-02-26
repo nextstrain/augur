@@ -7,10 +7,11 @@
 * Updated default latitudes and longitudes for geography traits that includes location name changes. See the pull request for more details. [#1744][] (@joverlee521)
 * curate apply-geolocation-rules: Augur's standard geolocation rules are used by default and rules provided via `--geolocation-rules` are considered custom rules that have precedence over the default rules. The `--no-default-rules` flag can be used to ignore the default rules. See the pull request for more details. [#1745][] (@joverlee521)
 * `augur.utils.read_strains` has been removed as it's been deprecated since January 2024. The same function is available through the public API as `augur.io.read_strains`. [#1749][] (@joverlee521)
+* Bumped minimum Python version to 3.9 as support for 3.8 was dropped in Augur v27.0.0. [#1763][] (@joverlee521)
 
 ### Features
 
-* refine: Added a `--remove-outgroup` flag which can be used when rooting a tree on a single taxon. Rooting and removal of outgroup will be performed before any temporal inference, if applicable. [#1744][] (@jameshadfield)
+* refine: Added a `--remove-outgroup` flag which can be used when rooting a tree on a single taxon. Rooting and removal of outgroup will be performed before any temporal inference, if applicable. [#1751][] (@jameshadfield)
 * Added standard geolocation rules in "augur/data/geolocation_rules.tsv" that can be used with `augur curate apply-geolocation-rules`. [#1744][] (@joverlee521)
 * [refine, export] Ambiguous dates (e.g. those with "XX" in the date string) are now exported in the Auspice JSON, and all tips now have an additional  "inferred" boolean property. These changes only apply to temporal trees. [#1760][] (@jameshadfield)
 
@@ -24,8 +25,10 @@ Note that names with spaces in the FASTA header (description line) continue to b
 [#1745]: https://github.com/nextstrain/augur/pull/1745
 [#1749]: https://github.com/nextstrain/augur/pull/1749
 [#1750]: https://github.com/nextstrain/augur/pull/1750
+[#1751]: https://github.com/nextstrain/augur/pull/1751
 [#1755]: https://github.com/nextstrain/augur/pull/1755
 [#1760]: https://github.com/nextstrain/augur/pull/1760
+[#1763]: https://github.com/nextstrain/augur/pull/1763
 
 ## 28.0.1 (10 February 2025)
 
