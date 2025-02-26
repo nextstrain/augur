@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 29.0.0 (26 February 2025)
+
 ### Major Changes
 
 * Updated default latitudes and longitudes for geography traits that includes location name changes. See the pull request for more details. [#1744][] (@joverlee521)
