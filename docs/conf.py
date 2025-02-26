@@ -162,9 +162,6 @@ linkcheck_ignore = [
      r'^http://www\.microbesonline\.org/fasttree/',
      r'^https://academic\.oup\.com/ve/article/4/1/vex042/4794731',
      r'https://www\.gnu\.org/software/bash/manual/bash\.html#ANSI_002dC-Quoting',
-     # Temporarily ignoring this URL since the new file does not exist
-     # until we do a new release of Augur with the added file.
-     r'^https://github.com/nextstrain/augur/blob/\d\d\.\d\.\d/augur/data/geolocation_rules.tsv'
 ]
 linkcheck_anchors_ignore_for_url = [
      # Github uses anchor-looking links for highlighting lines but
