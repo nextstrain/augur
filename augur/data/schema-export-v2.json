@@ -29,6 +29,9 @@
                 "build_url" : {
                     "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/build_url"
                 },
+                "build_avatar" : {
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/build_avatar"
+                },
                 "description" : {
                     "description": "Auspice displays this currently in the footer.",
                     "$comment": "Generally a description of the phylogeny and/or acknowledgements in Markdown format.",
