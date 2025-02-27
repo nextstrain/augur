@@ -15,3 +15,12 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev-deps:
+        dependency-type: "development"
+      prod-deps:
+        dependency-type: "production"
