@@ -778,7 +778,7 @@ class TreeModel(TiterModel):
         if len(self.train_titers)>1:
             self.make_treegraph()
         else:
-            raise InsufficientDataException("TreeModel: Not enough titers in training set, found {}".format(len(self.train_titers)))
+            raise InsufficientDataException("Unable to train tree model: Not enough titers in training set, found {}".format(len(self.train_titers)))
 
     def get_path_no_terminals(self, v1, v2):
         '''
@@ -956,7 +956,7 @@ class SubstitutionModel(TiterModel):
         if len(self.train_titers)>1:
             self.make_seqgraph()
         else:
-            raise InsufficientDataException("SubstitutionModel: Not enough titers in training set, found {}".format(len(self.train_titers)))
+            raise InsufficientDataException("Unable to train substitution model: Not enough titers in training set, found {}".format(len(self.train_titers)))
 
 
     def get_mutations(self, strain1, strain2):

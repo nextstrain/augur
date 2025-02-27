@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* titers: Improve error messages when titer models do not have enough data. (@huddlej)
 
 ## 29.0.0 (26 February 2025)
 
