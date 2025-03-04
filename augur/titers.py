@@ -55,8 +55,8 @@ class infer_substitution_model():
                       'potency':TM_subs.compile_potencies(),
                       'avidity':TM_subs.compile_virus_effects(),
                       'substitution':TM_subs.compile_substitution_effects()}
-        except InsufficientDataException:
-            print("Unable to train substitution model.", file=sys.stderr)
+        except InsufficientDataException as exception:
+            print(exception, file=sys.stderr)
             if args.allow_empty_model:
                 subs_model = {'titers':TM_subs.compile_titers(),
                           'potency':{},
@@ -111,8 +111,8 @@ class infer_tree_model():
                     for n in T.find_clades()
                 }
             }
-        except InsufficientDataException:
-            print("Unable to train tree model.", file=sys.stderr)
+        except InsufficientDataException as exception:
+            print(exception, file=sys.stderr)
             if args.allow_empty_model:
                 print("Writing empty model.", file=sys.stderr)
                 tree_model = {'titers':TM_tree.compile_titers(),
