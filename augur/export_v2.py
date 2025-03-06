@@ -18,7 +18,8 @@ from .errors import AugurError
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
-from .utils import read_node_data, write_json, json_size, read_config, read_lat_longs, read_colors
+from .utils import read_node_data, write_json, json_size, read_lat_longs, read_colors
+from .util_support.auspice_config import read_auspice_configs
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
 from .version import __version__
 
@@ -221,29 +222,6 @@ def get_config_colorings_as_dict(config):
     config_colorings = {}
     if config.get("colorings"):
         config_colorings = {v.get("key"):v for v in config["colorings"]}
-    elif config.get("color_options"):
-        deprecated("[config file] 'color_options' has been replaced with 'colorings' & the structure has changed.")
-        # parse v1-style colorings & convert to v2-style
-        for key, info in config.get("color_options").items():
-            # note: if both legentTitle & menuItem are present then we use the latter. See https://github.com/nextstrain/auspice/issues/730
-            if "menuItem" in info:
-                deprecated("[config file] coloring '{}': 'menuItem' has been replaced with 'title'. Using 'menuItem' as 'title'.".format(key))
-                info["title"] = info["menuItem"]
-                del info["menuItem"]
-            if "legendTitle" in info:
-                if info["title"]: # this can only have been set via menuItem ^^^
-                    deprecated("[config file] coloring '{}': 'legendTitle' has been replaced with 'title' & is unused since 'menuItem' is present.".format(key))
-                else:
-                    deprecated("[config file] coloring '{}': 'legendTitle' has been replaced with 'title'. Using 'legendTitle' as 'title'.".format(key))
-                    info["title"] = info["legendTitle"]
-                del info["legendTitle"]
-            if "key" in info:
-                del info["key"]
-            if info.get("type") == "discrete":
-                deprecated("[config file] coloring '{}': type 'discrete' is no longer valid. Please use either 'ordinal', 'categorical' or 'boolean'. "
-                    "This has been automatically changed to 'categorical'.".format(key))
-                info["type"] = "categorical"
-            config_colorings[key] = info
     return config_colorings
 
 
@@ -387,10 +365,6 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         return coloring
 
     def _add_coloring(colorings, key):
-        # handle deprecations
-        if key == "authors":
-            deprecated("[colorings] The 'authors' key is now called 'author'")
-            key = "author"
         # check if the key has already been added by another part of the color-creating logic
         if key not in {x['key'] for x in colorings}:
             colorings.append({"key": key})
@@ -429,6 +403,10 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
                 _add_coloring(colorings, x)
             # then add in command line colorings
             for x in command_line_colorings:
+                if x == "authors":
+                    # Note - this correction is also applied to the config JSON (during parsing)
+                    deprecated("[colorings] The 'authors' key is now called 'author'")
+                    x = "author"
                 _add_coloring(colorings, x)
         else:
             # if we have a config file, start with these (extra info, such as title&type, is added in later)
@@ -498,9 +476,6 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
             print("WARNING: [config file] 'geo_resolutions' is not in an acceptible format. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
             print("\t It is being ignored - this run will have no geo_resolutions.\n")
             return False
-    elif config.get("geo"):
-        traits = [{"key": x} for x in config.get("geo")]
-        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions'. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
     else:
         return False
 
@@ -955,10 +930,10 @@ def register_parser(parent_subparsers):
     config = parser.add_argument_group(
         title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
-            You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
+            You can supply one or more config JSONs (which have all available options) or command line arguments (which are more limited but great to get started). \
             Supplying both is fine too, command line args will overrule what is set in the config file!"
     )
-    config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
+    config.add_argument('--auspice-config', metavar="JSON", nargs='+', help="Auspice configuration file(s)")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", action=ExtendOverwriteDefault, nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
@@ -1024,33 +999,6 @@ def register_parser(parent_subparsers):
     return parser
 
 
-def set_display_defaults(data_json, config):
-    # Note: these cannot be provided via command line args
-    if config.get("display_defaults"):
-        defaults = config["display_defaults"]
-        if config.get("defaults"):
-            deprecated("[config file] both 'defaults' (deprecated) and 'display_defaults' provided. Ignoring the former.")
-    elif config.get("defaults"):
-        deprecated("[config file] 'defaults' has been replaced with 'display_defaults'")
-        defaults = config["defaults"]
-    else:
-        return
-
-    v1_v2_keys = [ # each item: [0] v2 key name. [1] deprecated v1 key name
-        ["geo_resolution", "geoResolution"],
-        ["color_by", "colorBy"],
-        ["distance_measure", "distanceMeasure"],
-        ["map_triplicate", "mapTriplicate"]
-    ]
-
-    for [v2_key, v1_key] in [x for x in v1_v2_keys if x[1] in defaults]:
-        deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
-        defaults[v2_key] = defaults[v1_key]
-        del defaults[v1_key]
-
-    if defaults:
-        data_json['meta']["display_defaults"] = defaults
-
 def set_maintainers(data_json, config, cmd_line_maintainers):
     # Command-line args overwrite the config file
     # They may or may not all have URLs
@@ -1065,8 +1013,6 @@ def set_maintainers(data_json, config, cmd_line_maintainers):
                 tmp_dict['url'] = url
             maintainers.append(tmp_dict)
         data_json['meta']['maintainers'] = maintainers
-    elif config.get("maintainer"): # v1-type specification
-        data_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
     elif config.get("maintainers"): # see schema for details
         data_json['meta']['maintainers'] = config['maintainers']
     else:
@@ -1188,7 +1134,7 @@ def parse_node_data_and_metadata(T, node_data, metadata):
 def get_config(args):
     if not args.auspice_config:
         return {}
-    config = read_config(args.auspice_config)
+    config = read_auspice_configs(*args.auspice_config)
     if args.validation_mode is not ValidationMode.SKIP:
         try:
             print("Validating config file {} against the JSON schema".format(args.auspice_config))
@@ -1196,19 +1142,18 @@ def get_config(args):
         except ValidateError:
             print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
             validation_failure(args.validation_mode)
-    # Print a warning about the inclusion of "vaccine_choices" which are _unused_ by `export v2`
-    # (They are in the schema as this allows v1-compat configs to be used)
-    if config.get("vaccine_choices"):
-        warning("The config JSON can no longer specify the `vaccine_choices`, they must be specified through a node-data JSON. This info will be unused.")
-        del config["vaccine_choices"]
     return config
 
 
 def get_additional_metadata_columns(config, command_line_metadata_columns, metadata_names):
     # Command line args override what is set in the config file
     if command_line_metadata_columns:
-        potential_metadata_columns = command_line_metadata_columns
+        # Remove any occurrences of 'author' as it's a no-op - author information is always exported on
+        # nodes if it's available. Also remove "authors" as that was historically corrected to "author"
+        # during parsing. Similarly for 'numdate' and 'num_date'
+        potential_metadata_columns = [n for n in command_line_metadata_columns if n not in ['author', 'authors', 'num_date', 'numdate']]
     else:
+        # Note: config parsing will remove 'author' and 'authors' values
         potential_metadata_columns = config.get("metadata_columns", [])
 
     additional_metadata_columns = []
@@ -1218,11 +1163,10 @@ def get_additional_metadata_columns(config, command_line_metadata_columns, metad
                   "It will be ignored during export, please rename field if you would like to include as a metadata field.")
             continue
         # Match the column names corrected within parse_node_data_and_metadata
-        corrected_col = update_deprecated_names(col)
-        if corrected_col not in metadata_names:
+        if col not in metadata_names:
             warn(f"Requested metadata column {col!r} does not exist and will not be exported")
             continue
-        additional_metadata_columns.append(corrected_col)
+        additional_metadata_columns.append(col)
 
     return additional_metadata_columns
 
@@ -1274,9 +1218,12 @@ def run(args):
     config = get_config(args)
     additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
+    print("additional_metadata_columns", additional_metadata_columns)
+
     # set metadata data structures
     set_title(data_json, config, args.title)
-    set_display_defaults(data_json, config)
+    if 'display_defaults' in config:
+        data_json['meta']["display_defaults"] = config['display_defaults']
     set_maintainers(data_json, config, args.maintainers)
     set_build_url(data_json, config, args.build_url)
     set_annotations(data_json, node_data)
