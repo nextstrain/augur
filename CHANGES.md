@@ -2,10 +2,15 @@
 
 ## __NEXT__
 
+### Features
+
+* filter, frequencies, refine: Added support in metadata for precise date ranges in `YYYY-MM-DD/YYYY-MM-DD` format. [#1304][] (@victorlin)
+
 ### Bug fixes
 
 * export v2: Improved the error message that is displayed when a deprecated coloring key is used. [#1882][] (@corneliusroemer)
 
+[#1304]: https://github.com/nextstrain/augur/issues/1304
 [#1882]: https://github.com/nextstrain/augur/issues/1882
 
 ## 32.1.0 (18 November 2025)
