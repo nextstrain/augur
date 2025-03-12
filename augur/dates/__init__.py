@@ -117,17 +117,14 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
-        try:
-            ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
-        except InvalidDate as error:
-            raise AugurError(str(error)) from error
+        ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         return [treetime.utils.numeric_date(d) for d in ambig_date]
     if '/' in value:
         # ISO interval
         try:
             start, end = aniso8601.parse_interval(value)
         except ValueError as e:
-            raise AugurError(f"Invalid date {value!r}: {e}") from e
+            raise InvalidDate(value, e) from e
 
         # ignore time parts - we don't use this info, and dropping it allows for comparisons
         if isinstance(start, datetime.datetime):
