@@ -49,10 +49,21 @@ spaces, or ``()[]{}|#><``.
 
 **Dates**
 
-Dates should be formated according as ``YYYY-MM-DD``. You can specify
-unknown dates or month by replacing the respected values by ``XX`` (ex:
-``2013-01-XX`` or ``2011-XX-XX``) and completely unknown dates can be
-shown with ``XXXX-XX-XX``.
+A variety of date formats are supported.
+
+Exact dates are supported in the following formats:
+
+1. `ISO 8601 format <https://en.wikipedia.org/wiki/ISO_8601#Calendar_dates>`__ of ``YYYY-MM-DD``
+   (e.g. ``2018-03-25``)
+2. TreeTime numeric format ``YYYY.F``, where ``F`` is the fraction of the year passed
+   (e.g. ``2018.23``)
+
+Ambiguity over a range of dates is supported in the following formats:
+
+1. ISO 8601 reduced precision format
+   (e.g.. ``2018``, ``2018-03``)
+2. Augur-style reduced precision format, i.e. ISO 8601 format with unknown parts explicitly masked by ``XX``
+   (e.g. ``2018-XX-XX``, ``2018-03-XX``)
 
 **Geography**
 
