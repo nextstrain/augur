@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Features
+
+* filter, frequencies, refine: Added support for precise date intervals in [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601#Time_intervals) for date values in metadata. [#1304][] (@victorlin)
+
+[#1304]: https://github.com/nextstrain/augur/issues/1304
+
 ### Bug fixes
 
 * titers: Improve error messages when titer models do not have enough data. [#1769][] (@huddlej)

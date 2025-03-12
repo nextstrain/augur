@@ -51,6 +51,7 @@ setuptools.setup(
     package_data = {'augur': ['data/*']},
     python_requires = '>={}'.format('.'.join(str(n) for n in py_min_version)),
     install_requires = [
+        "aniso8601 >=10.0.0, ==10.*",
         "bcbio-gff >=0.7.1, ==0.7.*",
         # TODO: Remove biopython >= 1.80 pin if it is added to bcbio-gff: https://github.com/chapmanb/bcbb/issues/142
         "biopython >=1.80, ==1.*",

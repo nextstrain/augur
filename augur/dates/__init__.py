@@ -1,3 +1,4 @@
+import aniso8601  # type: ignore[import-untyped]
 import argparse
 import datetime
 from textwrap import dedent
@@ -116,11 +117,27 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
-        try:
-            ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
-        except InvalidDate as error:
-            raise AugurError(str(error)) from error
+        ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         return [treetime.utils.numeric_date(d) for d in ambig_date]
+    if '/' in value:
+        # ISO interval
+        try:
+            start, end = aniso8601.parse_interval(value)
+        except ValueError as e:
+            raise InvalidDate(value, e) from e
+
+        # ignore time parts - we don't use this info, and dropping it allows for comparisons
+        if isinstance(start, datetime.datetime):
+            start = start.date()
+        if isinstance(end, datetime.datetime):
+            end = start.date()
+
+        # sort because aniso8601.parse_interval can return dates out of order
+        # https://bitbucket.org/nielsenb/aniso8601/src/a4f767de4429b246356b7a3bc98b24c68ce49477/aniso8601/interval.py#lines-236:240
+        if start > end:
+            start, end = end, start
+
+        return list(map(treetime.utils.numeric_date, (start, end)))
     try:
         return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
     except:

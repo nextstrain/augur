@@ -60,6 +60,53 @@ class TestDates:
             == pytest.approx(2000.138, abs=1e-3)
         )
 
+    def test_get_numerical_date_from_value_interval(self):
+        # Valid ISO dates form an interval.
+        assert dates.get_numerical_date_from_value("2019-01-02/2019-03-04") == [
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=1, day=2)), abs=1e-3),
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=3, day=4)), abs=1e-3),
+        ]
+
+        # Time parts are valid but ignored.
+        assert dates.get_numerical_date_from_value("2019-01-02T13:00:00Z/2019-03-04") == [
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=1, day=2)), abs=1e-3),
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=3, day=4)), abs=1e-3),
+        ]
+
+        # Shorthands are valid.
+        assert dates.get_numerical_date_from_value("2019-01-02/03-04") == [
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=1, day=2)), abs=1e-3),
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=3, day=4)), abs=1e-3),
+        ]
+
+        # A reduced precision date on the lower bound is valid.
+        assert dates.get_numerical_date_from_value("2019-01/2019-03-04") == [
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=1, day=1)), abs=1e-3),
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=3, day=4)), abs=1e-3),
+        ]
+
+        # A reduced precision date on the upper bound is not valid.
+        with pytest.raises(AugurError):
+            dates.get_numerical_date_from_value("2019-01-02/2019-03")
+        with pytest.raises(AugurError):
+            dates.get_numerical_date_from_value("2019-01/2019-03")
+
+        # Start and duration is valid.
+        assert dates.get_numerical_date_from_value("2019-01-02/P1M") == [
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=1, day=2)), abs=1e-3),
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=2, day=1)), abs=1e-3),
+        ]
+
+        # Duration and end is valid.
+        assert dates.get_numerical_date_from_value("P1M/2019-03-04") == [
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=2, day=2)), abs=1e-3),
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=3, day=4)), abs=1e-3),
+        ]
+
+        # Numerical dates are not valid.
+        with pytest.raises(AugurError):
+            dates.get_numerical_date_from_value("2019.0/2019-06-01")
+
     def test_is_date_ambiguous(self):
         """is_date_ambiguous should return true for ambiguous dates and false for valid dates."""
         # Test complete date strings with ambiguous values.
