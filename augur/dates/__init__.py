@@ -154,17 +154,11 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
 
     if RE_YEAR_MONTH_ONLY.match(value):
         # Note: this is already ISO 8601 so format (fmt) is ignored.
-        try:
-            start, end = AmbiguousDate(f"{value}-XX", fmt="%Y-%m-%d").range(min_max_year=min_max_year)
-        except InvalidDate as error:
-            raise AugurError(str(error)) from error
+        start, end = AmbiguousDate(f"{value}-XX", fmt="%Y-%m-%d").range(min_max_year=min_max_year)
         return (date_to_numeric(start), date_to_numeric(end))
 
     if RE_AUGUR_AMBIGUOUS_DATE.match(value):
-        try:
-            start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
-        except InvalidDate as error:
-            raise AugurError(str(error)) from error
+        start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         return (date_to_numeric(start), date_to_numeric(end))
 
     # Fallback: value is an exact date in the specified format (fmt).
