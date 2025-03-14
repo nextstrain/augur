@@ -34,11 +34,9 @@ def register_parser(parent_subparsers):
         parents=[parent_subparsers.shared_parser],
         help=first_line(__doc__))
 
-    required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--date-fields", nargs="+", action=ExtendOverwriteDefault,
-        help="List of date field names in the record that need to be standardized.")
-
     optional = parser.add_argument_group(title="OPTIONAL")
+    optional.add_argument("--date-fields", nargs="+", action=ExtendOverwriteDefault,
+        help="List of date field names in the record that need to be standardized.")
     optional.add_argument("--expected-date-formats", nargs="+", action=ExtendOverwriteDefault,
         help=dedent(f"""\
             Custom date formats for values in the provided date fields, defined by standard
@@ -196,6 +194,8 @@ def format_date(date_string, expected_formats):
 
 
 def run(args, records):
+    if not args.date_fields and not args.target_date_field:
+        raise AugurError("At least one of --date-fields or --target-date-field is required.")
     if args.target_date_field and not args.target_date_field_min and not args.target_date_field_max:
         raise AugurError("--target-date-field requires at least one of --target-date-field-min, --target-date-field-max.")
     if args.target_date_field_min and not args.target_date_field:
@@ -217,33 +217,34 @@ def run(args, records):
         record = record.copy()
         record_id = index
 
-        for field in args.date_fields:
-            date_string = record.get(field)
+        if args.date_fields:
+            for field in args.date_fields:
+                date_string = record.get(field)
 
-            if date_string is None:
-                raise AugurError(f"Expected date field {field!r} not found in record {record_id!r}.")
+                if date_string is None:
+                    raise AugurError(f"Expected date field {field!r} not found in record {record_id!r}.")
 
-            formatted_date_string = format_date(date_string, expected_date_formats)
-            if formatted_date_string is None:
-                # Mask failed date formatting before processing error methods
-                # to ensure failures are masked even when failures are "silent"
-                if args.mask_failure:
-                    record[field] = "XXXX-XX-XX"
+                formatted_date_string = format_date(date_string, expected_date_formats)
+                if formatted_date_string is None:
+                    # Mask failed date formatting before processing error methods
+                    # to ensure failures are masked even when failures are "silent"
+                    if args.mask_failure:
+                        record[field] = "XXXX-XX-XX"
 
-                if failure_reporting is DataErrorMethod.SILENT:
-                    continue
+                    if failure_reporting is DataErrorMethod.SILENT:
+                        continue
 
-                failure_message = f"Unable to format date string {date_string!r} in field {field!r} of record {record_id!r}."
-                if failure_reporting is DataErrorMethod.ERROR_FIRST:
-                    raise AugurError(failure_message + failure_suggestion)
+                    failure_message = f"Unable to format date string {date_string!r} in field {field!r} of record {record_id!r}."
+                    if failure_reporting is DataErrorMethod.ERROR_FIRST:
+                        raise AugurError(failure_message + failure_suggestion)
 
-                if failure_reporting is DataErrorMethod.WARN:
-                    print_err(f"WARNING: {failure_message}")
+                    if failure_reporting is DataErrorMethod.WARN:
+                        print_err(f"WARNING: {failure_message}")
 
-                # Keep track of failures for final summary
-                failures.append((record_id, field, date_string))
-            else:
-                record[field] = formatted_date_string
+                    # Keep track of failures for final summary
+                    failures.append((record_id, field, date_string))
+                else:
+                    record[field] = formatted_date_string
 
         # Apply bounds after formatting other fields so that any existing ambiguity is in a resolvable format
         if args.target_date_field:
