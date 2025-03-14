@@ -27,7 +27,7 @@ This is expected to fail with an error, so redirecting stdout since we don't car
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" \
   >     --failure-reporting "error_all" 1> /dev/null
-  ERROR: Unable to format dates for the following (record, field, date string):
+  ERROR: Unable to normalize format for the following (record, field, date string):
   (0, 'collectionDate', '2020-01')
   (0, 'releaseDate', '2020-01')
   Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y', '%Y-%m-%dT%H:%M:%SZ']. This can be updated with --expected-date-formats.
@@ -55,3 +55,43 @@ This is expected to return the masked date strings for failures.
   >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" \
   >     --failure-reporting "silent"
   {"record": 1, "date": "2020-XX-XX", "collectionDate": "XXXX-XX-XX", "releaseDate": "XXXX-XX-XX", "updateDate": "2020-07-18"}
+
+Test output with date out of range with "error_all" failure reporting and upper bound.
+
+  $ cat >records.ndjson <<~~
+  > {"record": 1, "date": "2021", "collectionDate": "2020-01-23"}
+  > {"record": 2, "date": "2022", "collectionDate": "2020-01-23"}
+  > ~~
+  $ cat records.ndjson \
+  >   | ${AUGUR} curate format-dates \
+  >     --date-fields "date" \
+  >     --expected-date-formats "%Y" \
+  >     --failure-reporting "error_all" \
+  >     --target-date-field date \
+  >     --target-date-field-max collectionDate 1> /dev/null
+  ERROR: Unable to apply bounds for the following (record, field, formatted date string, lower bound, upper bound):
+  (0, 'date', '2021-XX-XX', None, 2020.061475409836)
+  (1, 'date', '2022-XX-XX', None, 2020.061475409836)
+  Current bounds for incomplete dates in 'date' are defined by a maximum from 'collectionDate'. This can be updated with --target-date-field-max.
+  [2]
+
+Test output with both normalization and bounds failures with both errors reported.
+
+  $ cat >records.ndjson <<~~
+  > {"record": 1, "date": "BAD_DATE", "collectionDate": "2020-01-23"}
+  > {"record": 2, "date": "2022", "collectionDate": "2020-01-23"}
+  > ~~
+  $ cat records.ndjson \
+  >   | ${AUGUR} curate format-dates \
+  >     --date-fields "date" \
+  >     --expected-date-formats "%Y" \
+  >     --failure-reporting "error_all" \
+  >     --target-date-field date \
+  >     --target-date-field-max collectionDate 1> /dev/null
+  ERROR: Unable to normalize format for the following (record, field, date string):
+  (0, 'date', 'BAD_DATE')
+  Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y']. This can be updated with --expected-date-formats.
+  Unable to apply bounds for the following (record, field, formatted date string, lower bound, upper bound):
+  (1, 'date', '2022-XX-XX', None, 2020.061475409836)
+  Current bounds for incomplete dates in 'date' are defined by a maximum from 'collectionDate'. This can be updated with --target-date-field-max.
+  [2]

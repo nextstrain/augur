@@ -1,15 +1,30 @@
 """
-Format date fields to ISO 8601 dates (YYYY-MM-DD).
+Format date fields to ISO 8601-like formats.
 
-If the provided ``--expected-date-formats`` represent incomplete dates then
-the incomplete dates are masked with 'XX'. For example, providing
-``%Y`` will allow year only dates to be formatted as ``2023-XX-XX``.
+This command provides two main functionalities:
+
+1. Normalize date formats
+
+   When date fields are specified with ``--date-fields``, values are normalized
+   to complete or partial ISO 8601 date strings. Values matching only year or
+   year-month formats are masked with 'XX' for missing components (e.g., ``%Y``
+   → ``2023-XX-XX``). Use ``--expected-date-formats`` to provide custom date
+   formats for values in the provided date fields.
+
+2. Apply interval bounds
+
+   When a target date field is specified with ``--target-date-field``,
+   incomplete dates in that field will be formatted as ISO 8601 intervals using
+   lower and/or upper bounds from
+   ``--target-date-field-min``/``--target-date-field-max``.
 """
 import re
 from datetime import datetime
 from textwrap import dedent
+from treetime.utils import datestring_from_numeric
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from augur.dates import get_numerical_date_from_value
 from augur.errors import AugurError
 from augur.io.print import print_err, indented_list
 from augur.types import DataErrorMethod
@@ -54,6 +69,15 @@ def register_parser(parent_subparsers):
         action="store_false",
         help="Do not mask dates with 'XXXX-XX-XX' and return original date string if date formatting failed. " +
              f"(default: False{SKIP_AUTO_DEFAULT_IN_HELP})")
+    optional.add_argument("--target-date-field", metavar="NAME",
+        help=dedent("""\
+            Name of an existing date field to apply bounds to. Incomplete values
+            for this field will be formatted as an interval using bounds
+            provided by --target-date-field-min and/or --target-date-field-max."""))
+    optional.add_argument("--target-date-field-min", metavar="NAME",
+        help="Name of an existing date field to use as the lower bound for --target-date-field (i.e. minimum)")
+    optional.add_argument("--target-date-field-max", metavar="NAME",
+        help="Name of an existing date field to use as the upper bound for --target-date-field (i.e. maximum)")
 
     return parser
 
@@ -185,17 +209,51 @@ def format_date(date_string, expected_formats):
     return None
 
 
+def validate_arguments(args):
+    if args.target_date_field and not args.target_date_field_min and not args.target_date_field_max:
+        raise AugurError("--target-date-field requires at least one of --target-date-field-min, --target-date-field-max.")
+    if args.target_date_field_min and not args.target_date_field:
+        raise AugurError("--target-date-field-min requires --target-date-field.")
+    if args.target_date_field_max and not args.target_date_field:
+        raise AugurError("--target-date-field-max requires --target-date-field.")
+
+
 def run(args, records):
+    validate_arguments(args)
+
     expected_date_formats = BUILTIN_DATE_FORMATS
     if args.expected_date_formats:
         expected_date_formats.extend(args.expected_date_formats)
 
-    failures = []
     failure_reporting = args.failure_reporting
-    failure_suggestion = (
-        f"Current expected date formats are {expected_date_formats!r}. "
+
+    format_failures = []
+    format_failure_suggestion = (
+        f"Current expected date formats are {expected_date_formats!r}. " +
         "This can be updated with --expected-date-formats."
     )
+
+    bounds_failures = []
+    bounds_failure_suggestion = ...
+    if args.target_date_field_min and args.target_date_field_max:
+        bounds_failure_suggestion = (
+            f"Current bounds for incomplete dates in {args.target_date_field!r} "
+            f"are defined by a minimum from {args.target_date_field_min!r} "
+            f"and a maximum from {args.target_date_field_max!r}. "
+            "These can be updated with --target-date-field-min and --target-date-field-max."
+        )
+    elif args.target_date_field_min:
+        bounds_failure_suggestion = (
+            f"Current bounds for incomplete dates in {args.target_date_field!r} "
+            f"are defined by a minimum from {args.target_date_field_min!r}. "
+            "This can be updated with --target-date-field-min."
+        )
+    elif args.target_date_field_max:
+        bounds_failure_suggestion = (
+            f"Current bounds for incomplete dates in {args.target_date_field!r} "
+            f"are defined by a maximum from {args.target_date_field_max!r}. "
+            "This can be updated with --target-date-field-max."
+        )
 
     def normalize_format(record, record_id):
         record = record.copy()
@@ -220,15 +278,93 @@ def run(args, records):
                 if failure_reporting is DataErrorMethod.ERROR_FIRST:
                     raise AugurError(dedent(f"""\
                         {failure_message}
-                        {failure_suggestion}"""))
+                        {format_failure_suggestion}"""))
 
                 if failure_reporting is DataErrorMethod.WARN:
                     print_err(f"WARNING: {failure_message}")
 
                 # Keep track of failures for final summary
-                failures.append((record_id, field, date_string))
+                format_failures.append((record_id, field, date_string))
             else:
                 record[field] = formatted_date_string
+
+        return record
+
+    def apply_bounds(record, record_id):
+        record = record.copy()
+
+        original_date = get_numerical_date_from_value(record[args.target_date_field], fmt="%Y-%m-%d")
+
+        # Keep exact dates as-is
+        # Maybe worth adding a warning if the date is out of bounds?
+        if not isinstance(original_date, tuple):
+            return record
+
+        start, end = original_date
+        lower_bound, upper_bound = None, None
+
+        # Get bounds
+        if args.target_date_field_min:
+            lower_bound = get_numerical_date_from_value(record[args.target_date_field_min], fmt="%Y-%m-%d")
+            if isinstance(lower_bound, tuple):
+                lower_bound = lower_bound[0]
+        if args.target_date_field_max:
+            upper_bound = get_numerical_date_from_value(record[args.target_date_field_max], fmt="%Y-%m-%d")
+            if isinstance(upper_bound, tuple):
+                upper_bound = upper_bound[1]
+
+        # Error if the target date does not overlap with the bounds
+        target_out_of_bounds = False
+
+        # Check lower bound
+        if lower_bound and start < lower_bound and end < lower_bound:
+            failure_message = (
+                f"{args.target_date_field!r}={record[args.target_date_field]!r} "
+                f"is earlier than the lower bound of "
+                f"{args.target_date_field_min!r}={record[args.target_date_field_min]!r}"
+            )
+            if failure_reporting is DataErrorMethod.SILENT:
+                pass
+            elif failure_reporting is DataErrorMethod.ERROR_FIRST:
+                raise AugurError(failure_message)
+            elif failure_reporting is DataErrorMethod.WARN:
+                print_err(f"WARNING: {failure_message}")
+                bounds_failures.append((record_id, args.target_date_field, record[args.target_date_field], lower_bound, upper_bound))
+            elif failure_reporting is DataErrorMethod.ERROR_ALL:
+                bounds_failures.append((record_id, args.target_date_field, record[args.target_date_field], lower_bound, upper_bound))
+            target_out_of_bounds = True
+
+        # Check upper bound
+        if upper_bound and start > upper_bound and end > upper_bound:
+            failure_message = (
+                f"{args.target_date_field!r}={record[args.target_date_field]!r} "
+                f"is later than the upper bound of "
+                f"{args.target_date_field_max!r}={record[args.target_date_field_max]!r}"
+            )
+            if failure_reporting is DataErrorMethod.SILENT:
+                pass
+            elif failure_reporting is DataErrorMethod.ERROR_FIRST:
+                raise AugurError(failure_message)
+            elif failure_reporting is DataErrorMethod.WARN:
+                print_err(f"WARNING: {failure_message}")
+                bounds_failures.append((record_id, args.target_date_field, record[args.target_date_field], lower_bound, upper_bound))
+            elif failure_reporting is DataErrorMethod.ERROR_ALL:
+                bounds_failures.append((record_id, args.target_date_field, record[args.target_date_field], lower_bound, upper_bound))
+            target_out_of_bounds = True
+
+        # If the target date overlaps with the bounds, apply the bounds
+        if not target_out_of_bounds:
+            # The start should be no earlier than the lower bound
+            # and the end should be no later than the upper bound
+            if lower_bound:
+                start = max(start, lower_bound)
+            if upper_bound:
+                end = min(end, upper_bound)
+
+            # ISO 8601 interval in <start>/<end> format
+            record[args.target_date_field] = (
+                f"{datestring_from_numeric(start)}/{datestring_from_numeric(end)}"
+            )
 
         return record
 
@@ -236,17 +372,30 @@ def run(args, records):
         if args.date_fields:
             record = normalize_format(record, index)
 
+            if failure_reporting is DataErrorMethod.WARN and format_failures:
+                print_err(f"WARNING: {format_failure_suggestion}")
+
+        # Apply bounds after normalizing format so that any existing ambiguity is in a resolvable format
+        if args.target_date_field:
+            record = apply_bounds(record, index)
+
+            if failure_reporting is DataErrorMethod.WARN and bounds_failures:
+                print_err(f"WARNING: {bounds_failure_suggestion}")
+
         yield record
 
-    if failure_reporting is not DataErrorMethod.SILENT and failures:
-        if failure_reporting is DataErrorMethod.ERROR_ALL:
-            raise AugurError(dedent(f"""\
-                Unable to format dates for the following (record, field, date string):
-                {indented_list(map(repr, failures), "                ")}
-                {failure_suggestion}"""))
-
-        elif failure_reporting is DataErrorMethod.WARN:
-            print_err(f"WARNING: {failure_suggestion}")
-
-        else:
-            raise ValueError(f"Encountered unhandled failure reporting method: {failure_reporting!r}")
+    if failure_reporting is DataErrorMethod.ERROR_ALL and (format_failures or bounds_failures):
+        failure_message = ""
+        if format_failures:
+            failure_message += dedent(f"""\
+                Unable to normalize format for the following (record, field, date string):
+                {indented_list(map(repr, format_failures), "                ")}
+                {format_failure_suggestion}""")
+        if bounds_failures:
+            if failure_message:
+                failure_message += "\n"
+            failure_message += dedent(f"""\
+                Unable to apply bounds for the following (record, field, formatted date string, lower bound, upper bound):
+                {indented_list(map(repr, bounds_failures), "                ")}
+                {bounds_failure_suggestion}""")
+        raise AugurError(failure_message)
