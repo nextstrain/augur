@@ -32,11 +32,9 @@ def register_parser(parent_subparsers):
         parents=[parent_subparsers.shared_parser],
         help=first_line(__doc__))
 
-    required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--date-fields", metavar="NAME", nargs="+", action=ExtendOverwriteDefault,
-        help="List of date field names in the record that need to be standardized.")
-
     optional = parser.add_argument_group(title="OPTIONAL")
+    optional.add_argument("--date-fields", metavar="NAME", nargs="+", action=ExtendOverwriteDefault,
+        help="List of date field names in the record that need to be standardized.")
     optional.add_argument("--expected-date-formats", metavar="FORMAT", nargs="+", action=ExtendOverwriteDefault,
         help=dedent(f"""\
             Custom date formats for values in the provided date fields, defined by standard
@@ -198,9 +196,9 @@ def run(args, records):
         f"Current expected date formats are {expected_date_formats!r}. "
         "This can be updated with --expected-date-formats."
     )
-    for index, record in enumerate(records):
+
+    def normalize_format(record, record_id):
         record = record.copy()
-        record_id = index
 
         for field in args.date_fields:
             date_string = record.get(field)
@@ -231,6 +229,12 @@ def run(args, records):
                 failures.append((record_id, field, date_string))
             else:
                 record[field] = formatted_date_string
+
+        return record
+
+    for index, record in enumerate(records):
+        if args.date_fields:
+            record = normalize_format(record, index)
 
         yield record
 
