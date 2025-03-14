@@ -1,5 +1,5 @@
 """
-Format date fields to ISO 8601 dates (YYYY-MM-DD).
+Format date fields to ISO 8601 dates or intervals.
 
 If the provided ``--expected-date-formats`` represent incomplete dates then
 the incomplete dates are masked with 'XX'. For example, providing
@@ -8,8 +8,10 @@ the incomplete dates are masked with 'XX'. For example, providing
 import re
 from datetime import datetime
 from textwrap import dedent
+from treetime.utils import datestring_from_numeric
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from augur.dates import get_numerical_date_from_value
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
@@ -32,11 +34,9 @@ def register_parser(parent_subparsers):
         parents=[parent_subparsers.shared_parser],
         help=first_line(__doc__))
 
-    required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--date-fields", nargs="+", action=ExtendOverwriteDefault,
-        help="List of date field names in the record that need to be standardized.")
-
     optional = parser.add_argument_group(title="OPTIONAL")
+    optional.add_argument("--date-fields", nargs="+", action=ExtendOverwriteDefault,
+        help="List of date field names in the record that need to be standardized.")
     optional.add_argument("--expected-date-formats", nargs="+", action=ExtendOverwriteDefault,
         help=dedent(f"""\
             Custom date formats for values in the provided date fields, defined by standard
@@ -56,6 +56,10 @@ def register_parser(parent_subparsers):
         action="store_false",
         help="Do not mask dates with 'XXXX-XX-XX' and return original date string if date formatting failed. " +
              f"(default: False{SKIP_AUTO_DEFAULT_IN_HELP})")
+    optional.add_argument("--target-date-field", metavar="NAME",
+        help="Name of an existing date field to apply --target-date-field-max")
+    optional.add_argument("--target-date-field-max", metavar="NAME",
+        help="Name of an existing date field to use as the upper bound for --target-date-field (i.e. maximum)")
 
     return parser
 
@@ -188,6 +192,13 @@ def format_date(date_string, expected_formats):
 
 
 def run(args, records):
+    if not args.date_fields and not args.target_date_field:
+        raise AugurError("At least one of --date-fields or --target-date-field is required.")
+    if args.target_date_field and not args.target_date_field_max:
+        raise AugurError("--target-date-field requires --target-date-field-max.")
+    if args.target_date_field_max and not args.target_date_field:
+        raise AugurError("--target-date-field-max requires --target-date-field.")
+
     expected_date_formats = BUILTIN_DATE_FORMATS
     if args.expected_date_formats:
         expected_date_formats.extend(args.expected_date_formats)
@@ -202,33 +213,57 @@ def run(args, records):
         record = record.copy()
         record_id = index
 
-        for field in args.date_fields:
-            date_string = record.get(field)
+        if args.date_fields:
+            for field in args.date_fields:
+                date_string = record.get(field)
 
-            if date_string is None:
-                raise AugurError(f"Expected date field {field!r} not found in record {record_id!r}.")
+                if date_string is None:
+                    raise AugurError(f"Expected date field {field!r} not found in record {record_id!r}.")
 
-            formatted_date_string = format_date(date_string, expected_date_formats)
-            if formatted_date_string is None:
-                # Mask failed date formatting before processing error methods
-                # to ensure failures are masked even when failures are "silent"
-                if args.mask_failure:
-                    record[field] = "XXXX-XX-XX"
+                formatted_date_string = format_date(date_string, expected_date_formats)
+                if formatted_date_string is None:
+                    # Mask failed date formatting before processing error methods
+                    # to ensure failures are masked even when failures are "silent"
+                    if args.mask_failure:
+                        record[field] = "XXXX-XX-XX"
 
-                if failure_reporting is DataErrorMethod.SILENT:
-                    continue
+                    if failure_reporting is DataErrorMethod.SILENT:
+                        continue
 
-                failure_message = f"Unable to format date string {date_string!r} in field {field!r} of record {record_id!r}."
-                if failure_reporting is DataErrorMethod.ERROR_FIRST:
-                    raise AugurError(failure_message + failure_suggestion)
+                    failure_message = f"Unable to format date string {date_string!r} in field {field!r} of record {record_id!r}."
+                    if failure_reporting is DataErrorMethod.ERROR_FIRST:
+                        raise AugurError(failure_message + failure_suggestion)
 
-                if failure_reporting is DataErrorMethod.WARN:
-                    print_err(f"WARNING: {failure_message}")
+                    if failure_reporting is DataErrorMethod.WARN:
+                        print_err(f"WARNING: {failure_message}")
 
-                # Keep track of failures for final summary
-                failures.append((record_id, field, date_string))
-            else:
-                record[field] = formatted_date_string
+                    # Keep track of failures for final summary
+                    failures.append((record_id, field, date_string))
+                else:
+                    record[field] = formatted_date_string
+
+        # Apply bounds after formatting other fields so that any existing ambiguity can be resolved
+        if args.target_date_field:
+            original_date = get_numerical_date_from_value(record[args.target_date_field], fmt="%Y-%m-%d")
+            # Apply bounds for ambiguous dates with at least some information.
+            if isinstance(original_date, list) and record[args.target_date_field] != 'XXXX-XX-XX':
+                lower_bound, upper_bound = original_date
+
+                # Resolve any potential ambiguity on bounds
+                if args.target_date_field_max:
+                    target_max = get_numerical_date_from_value(record[args.target_date_field_max], fmt="%Y-%m-%d")
+                    if isinstance(target_max, list):
+                        target_max = target_max[1]
+
+                    # The upper bound should not be higher than target_max
+                    upper_bound = min(upper_bound, target_max)
+
+                # Convert bounds to ISO dates
+                lower_bound = datestring_from_numeric(lower_bound)
+                upper_bound = datestring_from_numeric(upper_bound)
+
+                # ISO 8601 interval in <start>/<end> format
+                record[args.target_date_field] = f"{lower_bound}/{upper_bound}"
 
         yield record
 
