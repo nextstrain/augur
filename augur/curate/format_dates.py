@@ -1,5 +1,5 @@
 """
-Format date fields to ISO 8601 dates (YYYY-MM-DD).
+Format date fields to ISO 8601 dates or intervals.
 
 If the provided ``--expected-date-formats`` represent incomplete dates then
 the incomplete dates are masked with 'XX'. For example, providing
@@ -8,8 +8,10 @@ the incomplete dates are masked with 'XX'. For example, providing
 import re
 from datetime import datetime
 from textwrap import dedent
+from treetime.utils import datestring_from_numeric
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from augur.dates import get_numerical_date_from_value
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.types import DataErrorMethod
@@ -56,6 +58,12 @@ def register_parser(parent_subparsers):
         action="store_false",
         help="Do not mask dates with 'XXXX-XX-XX' and return original date string if date formatting failed. " +
              f"(default: False{SKIP_AUTO_DEFAULT_IN_HELP})")
+    optional.add_argument("--target-date-field", metavar="NAME",
+        help="Name of an existing date field to apply --target-date-field-min/--target-date-field-max")
+    optional.add_argument("--target-date-field-min", metavar="NAME",
+        help="Name of an existing date field to use as the lower bound for --target-date-field (i.e. minimum)")
+    optional.add_argument("--target-date-field-max", metavar="NAME",
+        help="Name of an existing date field to use as the upper bound for --target-date-field (i.e. maximum)")
 
     return parser
 
@@ -188,6 +196,13 @@ def format_date(date_string, expected_formats):
 
 
 def run(args, records):
+    if args.target_date_field and not args.target_date_field_min and not args.target_date_field_max:
+        raise AugurError("--target-date-field requires at least one of --target-date-field-min, --target-date-field-max.")
+    if args.target_date_field_min and not args.target_date_field:
+        raise AugurError("--target-date-field-min requires --target-date-field.")
+    if args.target_date_field_max and not args.target_date_field:
+        raise AugurError("--target-date-field-max requires --target-date-field.")
+
     expected_date_formats = BUILTIN_DATE_FORMATS
     if args.expected_date_formats:
         expected_date_formats.extend(args.expected_date_formats)
@@ -229,6 +244,45 @@ def run(args, records):
                 failures.append((record_id, field, date_string))
             else:
                 record[field] = formatted_date_string
+
+        # Apply bounds after formatting other fields so that any existing ambiguity is in a resolvable format
+        if args.target_date_field:
+            original_date = get_numerical_date_from_value(record[args.target_date_field], fmt="%Y-%m-%d")
+
+            # Keep exact dates as-is
+            if not isinstance(original_date, list):
+                pass
+
+            else:
+                start, end = original_date
+                lower_bound, upper_bound = None, None
+
+                # Get bounds
+                if args.target_date_field_min:
+                    lower_bound = get_numerical_date_from_value(record[args.target_date_field_min], fmt="%Y-%m-%d")
+                    if isinstance(lower_bound, list):
+                        lower_bound = lower_bound[0]
+                if args.target_date_field_max:
+                    upper_bound = get_numerical_date_from_value(record[args.target_date_field_max], fmt="%Y-%m-%d")
+                    if isinstance(upper_bound, list):
+                        upper_bound = upper_bound[1]
+
+                # Error if the original date does not fall within bounds
+                # FIXME: use failure_reporting to batch errors together
+                if lower_bound and start < lower_bound and end < lower_bound:
+                    raise AugurError(f"{args.target_date_field}={record[args.target_date_field]!r} is earlier than the lower bound of {args.target_date_field_min}={record[args.target_date_field_min]!r}")
+                if upper_bound and start > upper_bound and end > upper_bound:
+                    raise AugurError(f"{args.target_date_field}={record[args.target_date_field]!r} is later than the upper bound of {args.target_date_field_max}={record[args.target_date_field_max]!r}")
+
+                # The start should be no earlier than the lower bound
+                # and the end should be no later than the upper bound
+                if lower_bound:
+                    start = max(start, lower_bound)
+                if upper_bound:
+                    end = min(end, upper_bound)
+
+                # ISO 8601 interval in <start>/<end> format
+                record[args.target_date_field] = f"{datestring_from_numeric(start)}/{datestring_from_numeric(end)}"
 
         yield record
 
