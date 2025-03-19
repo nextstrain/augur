@@ -4,7 +4,7 @@ from textwrap import dedent
 import isodate
 import pandas as pd
 import re
-import treetime.utils
+from treetime.utils import numeric_date as tt_numeric_date
 from augur.errors import AugurError
 from .errors import InvalidDate
 
@@ -15,6 +15,10 @@ SUPPORTED_DATE_HELP_TEXT = dedent("""\
     2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
     3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
 """)
+
+def date_to_numeric(date: datetime.date) -> float:
+    """Wrapper around treetime.utils.numeric_date that ensures a float is returned."""
+    return float(tt_numeric_date(date))
 
 def numeric_date(date):
     """
@@ -31,13 +35,13 @@ def numeric_date(date):
     2020.42
     >>> numeric_date("2020-06-04")
     2020.42486...
-    >>> import datetime, isodate, treetime
-    >>> numeric_date("1W") == treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration("P1W"))
+    >>> import datetime, isodate
+    >>> numeric_date("1W") == date_to_numeric(datetime.date.today() - isodate.parse_duration("P1W"))
     True
     """
     # date is a datetime.date
     if isinstance(date, datetime.date):
-        return treetime.utils.numeric_date(date)
+        return date_to_numeric(date)
 
     # date is numeric
     try:
@@ -47,7 +51,7 @@ def numeric_date(date):
 
     # date is in YYYY-MM-DD form
     try:
-        return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
+        return date_to_numeric(datetime.date(*map(int, date.split("-", 2))))
     except ValueError:
         pass
 
@@ -59,7 +63,7 @@ def numeric_date(date):
             duration_str = duration_str
         else:
             duration_str = 'P'+duration_str
-        return treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration(duration_str))
+        return date_to_numeric(datetime.date.today() - isodate.parse_duration(duration_str))
     except (ValueError, isodate.ISO8601Error):
         pass
 
@@ -120,9 +124,9 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
             ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         except InvalidDate as error:
             raise AugurError(str(error)) from error
-        return [treetime.utils.numeric_date(d) for d in ambig_date]
+        return [date_to_numeric(d) for d in ambig_date]
     try:
-        return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
+        return date_to_numeric(datetime.datetime.strptime(value, fmt))
     except:
         return None
 
