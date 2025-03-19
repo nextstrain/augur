@@ -5,6 +5,7 @@ import isodate
 import pandas as pd
 import re
 from treetime.utils import numeric_date as tt_numeric_date
+from typing import Dict, Tuple, Union
 from augur.errors import AugurError
 from .errors import InvalidDate
 
@@ -114,7 +115,7 @@ def is_date_ambiguous(date, ambiguous_by):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
-def get_numerical_date_from_value(value, fmt, min_max_year=None):
+def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float, Tuple[float, float], None]:
     value = str(value)
     if re.match(r'^-*\d+\.\d+$', value):
         # numeric date which can be negative
@@ -124,16 +125,22 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None):
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
     if 'XX' in value:
         try:
-            ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
+            start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         except InvalidDate as error:
             raise AugurError(str(error)) from error
-        return [date_to_numeric(d) for d in ambig_date]
+        return (date_to_numeric(start), date_to_numeric(end))
     try:
         return date_to_numeric(datetime.datetime.strptime(value, fmt))
     except:
         return None
 
-def get_numerical_dates(metadata:pd.DataFrame, fmt, name_col = None, date_col='date', min_max_year=None):
+def get_numerical_dates(
+    metadata: pd.DataFrame,
+    fmt,
+    name_col = None,
+    date_col = 'date',
+    min_max_year = None,
+) -> Dict[str, Union[float, Tuple[float, float], None]]:
     if not isinstance(metadata, pd.DataFrame):
         raise AugurError("Metadata should be a pandas.DataFrame.")
 
