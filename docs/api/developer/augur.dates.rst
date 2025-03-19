@@ -13,4 +13,5 @@ Submodules
    :maxdepth: 4
 
    augur.dates.ambiguous_date
+   augur.dates.argparse
    augur.dates.errors
