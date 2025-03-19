@@ -2,6 +2,7 @@ import calendar
 import datetime
 import functools
 import re
+from typing import Tuple
 
 from .errors import InvalidDate, InvalidYearBounds
 
@@ -47,7 +48,7 @@ class AmbiguousDate:
 
         self.assert_only_less_significant_uncertainty()
 
-    def range(self, min_max_year=None):
+    def range(self, min_max_year=None) -> Tuple[datetime.date, datetime.date]:
         """Return the range of possible dates defined by the ambiguous date.
 
         Impose an upper limit of today's date.
