@@ -98,4 +98,4 @@ class TestDates:
             }
         }
         with pytest.raises(AugurError):
-            dates.get_numerical_dates(metadata)
+            dates.get_numerical_dates(metadata, "%Y-%m-%d")
