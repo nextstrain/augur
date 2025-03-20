@@ -7,7 +7,7 @@ import pandas as pd
 from textwrap import dedent
 from typing import Collection, Dict, Iterable, List, Optional, Set, Tuple, Union
 
-from augur.dates import get_year_month, get_year_week
+from augur.dates import get_year_month, get_year_week, get_year_month_day
 from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err, _n
@@ -124,11 +124,11 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             # to generate other columns, and will be discarded at the end.
             temp_prefix = str(uuid.uuid4())
             temp_date_cols = [f'{temp_prefix}year', f'{temp_prefix}month', f'{temp_prefix}day']
-            df_dates = metadata[METADATA_DATE_COLUMN].str.split('-', n=2, expand=True)
-            df_dates = df_dates.set_axis(temp_date_cols[:len(df_dates.columns)], axis=1)
-            missing_date_cols = set(temp_date_cols) - set(df_dates.columns)
-            for col in missing_date_cols:
-                df_dates[col] = pd.NA
+            df_dates = pd.DataFrame(
+                metadata[METADATA_DATE_COLUMN].apply(get_year_month_day).tolist(),
+                columns=temp_date_cols,
+                index=metadata.index,
+            )
             for col in temp_date_cols:
                 df_dates[col] = pd.to_numeric(df_dates[col], errors='coerce').astype(pd.Int64Dtype())
 
