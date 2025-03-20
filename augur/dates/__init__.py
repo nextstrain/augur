@@ -114,7 +114,7 @@ def is_date_ambiguous(date, ambiguous_by):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
-def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
+def get_numerical_date_from_value(value, fmt, min_max_year=None):
     value = str(value)
     if re.match(r'^-*\d+\.\d+$', value):
         # numeric date which can be negative
@@ -133,21 +133,19 @@ def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
     except:
         return None
 
-def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date', fmt=None, min_max_year=None):
+def get_numerical_dates(metadata:pd.DataFrame, fmt, name_col = None, date_col='date', min_max_year=None):
     if not isinstance(metadata, pd.DataFrame):
         raise AugurError("Metadata should be a pandas.DataFrame.")
-    if fmt:
-        strains = metadata.index.values
-        dates = metadata[date_col].apply(
-            lambda date: get_numerical_date_from_value(
-                date,
-                fmt,
-                min_max_year
-            )
-        ).values
-    else:
-        strains = metadata.index.values
-        dates = metadata[date_col].astype(float)
+
+    strains = metadata.index.values
+    dates = metadata[date_col].apply(
+        lambda date: get_numerical_date_from_value(
+            date,
+            fmt,
+            min_max_year
+        )
+    ).values
+
     return dict(zip(strains, dates))
 
 def get_year_month(year, month):
