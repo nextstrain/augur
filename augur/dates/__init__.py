@@ -4,8 +4,8 @@ from textwrap import dedent
 import isodate
 import pandas as pd
 import re
-from treetime.utils import numeric_date as tt_numeric_date
-from typing import Dict, Tuple, Union
+from treetime.utils import numeric_date as tt_numeric_date, datetime_from_numeric
+from typing import Any, Dict, Optional, Tuple, Union
 from augur.errors import AugurError
 from .errors import InvalidDate
 
@@ -131,6 +131,11 @@ Matches:
 2. Other positive integers (e.g. 1, 123, 12345)
 """
 
+RE_YEAR_MONTH_ONLY = re.compile(r'^\d{4}-\d{2}$')
+"""
+Matches reduced precision ISO 8601 dates that are missing the day part (e.g. 2018-03).
+"""
+
 RE_AUGUR_AMBIGUOUS_DATE = re.compile(r'.*XX.*')
 """
 Matches an Augur-style ambiguous date with 'XX' used to mask unknown parts of the date.
@@ -146,6 +151,14 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
     if RE_YEAR_ONLY.match(value):
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
+
+    if RE_YEAR_MONTH_ONLY.match(value):
+        # Note: this is already ISO 8601 so format (fmt) is ignored.
+        try:
+            start, end = AmbiguousDate(f"{value}-XX", fmt="%Y-%m-%d").range(min_max_year=min_max_year)
+        except InvalidDate as error:
+            raise AugurError(str(error)) from error
+        return (date_to_numeric(start), date_to_numeric(end))
 
     if RE_AUGUR_AMBIGUOUS_DATE.match(value):
         try:
@@ -187,3 +200,31 @@ def get_year_month(year, month):
 def get_year_week(year, month, day):
     year, week = datetime.date(year, month, day).isocalendar()[:2]
     return f"{year}-{str(week).zfill(2)}"
+
+def get_year_month_day(value: Any) -> Tuple[Optional[int], Optional[int], Optional[int]]:
+    """
+    Extract year, month, and day from a date value.
+
+    Individual date components can be None if unresolvable.
+    """
+    date_or_range = get_numerical_date_from_value(value, fmt="%Y-%m-%d")
+
+    if date_or_range is None:
+        return (None, None, None)
+
+    # Date range
+    elif isinstance(date_or_range, tuple):
+        start, end = (datetime_from_numeric(date_or_range[0]),
+                      datetime_from_numeric(date_or_range[1]))
+
+        # Only use unambiguous date components
+        year = start.year if start.year == end.year else None
+        month = start.month if start.month == end.month else None
+        day = start.day if start.day == end.day else None
+
+        return (year, month, day)
+
+    # Exact date
+    else:
+        dt = datetime_from_numeric(date_or_range)
+        return (dt.year, dt.month, dt.day)
