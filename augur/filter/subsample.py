@@ -386,7 +386,7 @@ def _add_unweighted_columns(
             values_for_unweighted_columns[column].add(column_to_value_map[column])
 
     # Create a DataFrame for all permutations of values in unweighted columns.
-    lists = [list(values_for_unweighted_columns[column]) for column in unweighted_columns]
+    lists = [sorted(values_for_unweighted_columns[column]) for column in unweighted_columns]
     unweighted_permutations = pd.DataFrame(list(itertools.product(*lists)), columns=unweighted_columns)
 
     return pd.merge(unweighted_permutations, weights, how='cross')
