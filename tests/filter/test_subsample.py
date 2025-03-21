@@ -70,11 +70,11 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, '2020-01', 'unknown'),
-            'SEQ_2': ('A', 2020, '2020-02', 'unknown'),
-            'SEQ_3': ('B', 2020, '2020-03', 'unknown'),
-            'SEQ_4': ('B', 2020, '2020-04', 'unknown'),
-            'SEQ_5': ('B', 2020, '2020-05', 'unknown')
+            'SEQ_1': ('A', '2020', '2020-01', 'unknown'),
+            'SEQ_2': ('A', '2020', '2020-02', 'unknown'),
+            'SEQ_3': ('B', '2020', '2020-03', 'unknown'),
+            'SEQ_4': ('B', '2020', '2020-04', 'unknown'),
+            'SEQ_5': ('B', '2020', '2020-05', 'unknown')
         }
         captured = capsys.readouterr()
         assert captured.err == "WARNING: Some of the specified group-by categories couldn't be found: invalid\nFiltering by group may behave differently than expected!\n"
@@ -136,11 +136,11 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020),
-            'SEQ_2': ('A', 2020),
-            'SEQ_3': ('B', 2020),
-            'SEQ_4': ('B', 2020),
-            'SEQ_5': ('B', 2020)
+            'SEQ_1': ('A', '2020'),
+            'SEQ_2': ('A', '2020'),
+            'SEQ_3': ('B', '2020'),
+            'SEQ_4': ('B', '2020'),
+            'SEQ_5': ('B', '2020')
         }
 
     def test_filter_groupby_only_year_month_provided(self, valid_metadata: pd.DataFrame):
@@ -150,9 +150,9 @@ class TestFilterGroupBy:
         strains = metadata.index.tolist()
         group_by_strain = augur.filter.subsample.get_groups_for_subsampling(strains, metadata, group_by=groups)
         assert group_by_strain == {
-            'SEQ_1': ('A', 2020, '2020-01'),
-            'SEQ_2': ('A', 2020, '2020-01'),
-            'SEQ_3': ('B', 2020, '2020-01'),
-            'SEQ_4': ('B', 2020, '2020-01'),
-            'SEQ_5': ('B', 2020, '2020-01')
+            'SEQ_1': ('A', '2020', '2020-01'),
+            'SEQ_2': ('A', '2020', '2020-01'),
+            'SEQ_3': ('B', '2020', '2020-01'),
+            'SEQ_4': ('B', '2020', '2020-01'),
+            'SEQ_5': ('B', '2020', '2020-01')
         }
