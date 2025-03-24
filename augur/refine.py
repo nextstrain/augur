@@ -369,6 +369,10 @@ def run(args):
             if np.unique(col).size==1 and col[0]==tt.gtr.ambiguous:
                 # the column with all Ns has only one unique value, and the first value is N
                 ambiguous_positions.extend(tt.data.compressed_to_full_sequence_map[ci])
+
+                # Since TreeTime represents all columns of all Ns with a single
+                # entry in its compressed alignment structure, we can stop
+                # searching the data structure.
                 break
         # convert to set for faster lookup
         ambiguous_positions = set(ambiguous_positions)
