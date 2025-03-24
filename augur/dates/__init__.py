@@ -115,20 +115,46 @@ def is_date_ambiguous(date, ambiguous_by):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
+RE_NUMERIC_DATE = re.compile(r'^-*\d+\.\d+$')
+"""
+Matches floats (e.g. 2018.0, -2018.0).
+Note that a year-only value is treated as incomplete ambiguous and must be
+non-negative (see :const:`RE_YEAR_ONLY`).
+"""
+
+RE_YEAR_ONLY = re.compile(r'^\d+$')
+"""
+Matches:
+
+1. Incomplete ambiguous ISO 8601 dates that are missing both the month and day
+   parts (e.g. 2018)
+2. Other positive integers (e.g. 1, 123, 12345)
+"""
+
+RE_AUGUR_AMBIGUOUS_DATE = re.compile(r'.*XX.*')
+"""
+Matches an Augur-style ambiguous date with 'XX' used to mask unknown parts of the date.
+Note that this can support any date format, not just YYYY-MM-DD.
+"""
+
 def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float, Tuple[float, float], None]:
     value = str(value)
-    if re.match(r'^-*\d+\.\d+$', value):
-        # numeric date which can be negative
+
+    if RE_NUMERIC_DATE.match(value):
         return float(value)
-    if value.isnumeric():
+
+    if RE_YEAR_ONLY.match(value):
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
-    if 'XX' in value:
+
+    if RE_AUGUR_AMBIGUOUS_DATE.match(value):
         try:
             start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         except InvalidDate as error:
             raise AugurError(str(error)) from error
         return (date_to_numeric(start), date_to_numeric(end))
+
+    # Fallback: value is an exact date in the specified format (fmt).
     try:
         return date_to_numeric(datetime.datetime.strptime(value, fmt))
     except:
