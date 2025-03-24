@@ -30,6 +30,61 @@ def read_json(fname):
 
     return config
 
+def _merge_lists(base: dict[str, Any], overlay: dict[str, Any], config_key: str, identity_func: Callable) -> dict[str, Any]:
+    """
+    This merging approach is used for config keys which are encoded as lists
+    such as maintainers, colorings, filters.
+
+    Returns an extended list with elements from the base (config's) list and the
+    overlay (config's) list. If elements in the overlay are present in the base
+    list, as determined by the *identity_func* then the base element is replaced
+    with the overlay element.
+
+    NOTE: Currently there is no way to remove elements from the base list, nor
+    is it possible to insert a new (overlay) element at a specific position.
+    Both are possible but increase the conceptual and programmatic complexity.
+    """
+
+    if config_key not in overlay:
+        return base
+    if config_key not in base:
+        return {**base, config_key: overlay[config_key]}
+
+    if not isinstance(overlay[config_key], list) or not isinstance(base[config_key], list):
+        raise AugurError(f"Config merging for {config_key!r} failed as one (or more) entries were not lists")
+
+    values = [*base[config_key]]
+    for overlay_el in overlay[config_key]:
+        for (idx, base_el) in enumerate(values):
+            if identity_func(overlay_el, base_el):
+                values[idx] = overlay_el # replace existing element with one from the overlay config
+                break
+        else:
+            values.append(overlay_el)
+
+    return {**base, config_key: values}
+
+def _merge_scalar(base: dict[str, Any], overlay: dict[str, Any], config_key: str) -> dict[str, Any]:
+    return {**base, config_key: overlay[config_key]} if config_key in overlay else base
+
+def _merge_dicts(base: dict[str, Any], overlay: dict[str, Any], config_key: str) -> dict[str, Any]:
+    """
+    Dicts are _not_ recursively merged, they are simply merged by adding new keys from the overlay to
+    those keys already present in the base. Identical keys replace the original key.
+    """
+    if config_key not in overlay:
+        return base
+    if config_key not in base:
+        return {**base, config_key: overlay[config_key]}
+
+    if not isinstance(overlay[config_key], dict) or not isinstance(base[config_key], dict):
+        raise AugurError(f"Config merging for {config_key!r} failed as one (or more) entries were not dictionaries")
+
+    return {**base, config_key: {**base[config_key], **overlay[config_key]}}
+
+def _geo_resolution_id(el: Union[str, dict[str,str]]) -> str:
+    return el['key'] if isinstance(el, dict) else el
+
 def _replace_deprecated(config: dict[str,Any], old_name: str, new_name: Union[None,str], modify: Union[None, Callable]=None):
     if old_name not in config:
         return # NO-OP
@@ -140,7 +195,31 @@ def read_single_auspice_config(fname: str, validation_mode: ValidationMode) -> d
     return config
 
 def merge_configs(configs: list[dict[str, Any]], validation_mode: ValidationMode) -> dict[str, Any]:
-    raise AugurError("Multiple config file support TKTK")
+    merged = configs[0]
+    for overlay in configs[1:]:
+        # We could leverage the config schemas here in the future if desired
+        merged = _merge_scalar(merged, overlay, 'title')
+        merged = _merge_lists(merged, overlay, 'colorings', lambda x,y: x.get('key')==y.get('key'))
+        merged = _merge_lists(merged, overlay, 'geo_resolutions', lambda x,y: _geo_resolution_id(x)==_geo_resolution_id(y))
+        merged = _merge_lists(merged, overlay, 'maintainers', lambda x,y: x.get('name')==y.get('name'))
+        merged = _merge_scalar(merged, overlay, 'build_url')
+        merged = _merge_scalar(merged, overlay, 'build_avatar')
+        merged = _merge_lists(merged, overlay, 'filters', lambda x,y: x==y)
+        merged = _merge_dicts(merged, overlay, 'display_defaults')
+        merged = _merge_lists(merged, overlay, 'panels', lambda x,y: x==y)
+        merged = _merge_lists(merged, overlay, 'data_provenance', lambda x,y: x.get('name')==y.get('name'))
+        merged = _merge_lists(merged, overlay, 'metadata_columns', lambda x,y: x==y)
+
+        # extensions have any type (as per the schema), but in practice I've only seen dicts used.
+        # We merge these by taking the first encountered extension block, and if it's a dict
+        # then any future extension blocks which are also dicts are merged in
+        if 'extensions' not in merged and 'extensions' in overlay:
+            merged['extensions'] = overlay['extensions']
+        elif isinstance(merged.get('extensions', None), dict) and isinstance(overlay.get('extensions', None), dict):
+            merged = _merge_dicts(merged, overlay, 'extensions')
+
+    return merged
+
 
 def read_auspice_configs(*fnames: str, validation_mode: ValidationMode) -> dict[str, Any]:
     """
