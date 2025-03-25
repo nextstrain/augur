@@ -351,7 +351,6 @@ def filter_by_min_date(metadata, date_column, min_date) -> FilterFunctionReturn:
 
     filtered = {s for s in strains
                 if (dates[s] is not None
-                    and (np.isscalar(dates[s]) or all(dates[s]))
                     and np.max(dates[s]) >= min_date)}
 
     return filtered
@@ -392,7 +391,6 @@ def filter_by_max_date(metadata, date_column, max_date) -> FilterFunctionReturn:
 
     filtered = {s for s in strains
                 if (dates[s] is not None
-                    and (np.isscalar(dates[s]) or all(dates[s]))
                     and np.min(dates[s]) <= max_date)}
 
     return filtered
