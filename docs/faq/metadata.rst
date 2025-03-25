@@ -64,6 +64,9 @@ Ambiguity over a range of dates is supported in the following formats:
    (e.g.. ``2018``, ``2018-03``)
 2. Augur-style reduced precision format, i.e. ISO 8601 format with unknown parts explicitly masked by ``XX``
    (e.g. ``2018-XX-XX``, ``2018-03-XX``)
+3. `<start>/<end>` range format, where `<start>` and `<end>` are exact dates in `YYYY-MM-DD` format.
+   This is a subset of `ISO 8601 interval format <https://en.wikipedia.org/wiki/ISO_8601#Time_intervals>__`.
+   (e.g. ``2017-12-01/2018-03-25``)
 
 **Geography**
 
