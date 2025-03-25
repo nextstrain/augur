@@ -139,6 +139,12 @@ Matches an Augur-style ambiguous date with 'XX' used to mask unknown parts of th
 Note that this can support any date format, not just YYYY-MM-DD.
 """
 
+RE_DATE_RANGE = re.compile(r'^\d{4}-\d{2}-\d{2}/\d{4}-\d{2}-\d{2}$')
+"""
+Matches a date range in YYYY-MM-DD/YYYY-MM-DD format.
+Note that this is a subset of the ISO 8601 time interval format.
+"""
+
 def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float, Tuple[float, float], None]:
     value = str(value)
 
@@ -156,6 +162,17 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
 
     if RE_AUGUR_AMBIGUOUS_DATE.match(value):
         start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
+        return (date_to_numeric(start), date_to_numeric(end))
+
+    if RE_DATE_RANGE.match(value):
+        start, end = value.split("/")
+        
+        start = datetime.datetime.strptime(start, "%Y-%m-%d")
+        end   = datetime.datetime.strptime(end  , "%Y-%m-%d")
+
+        if start > end:
+            raise InvalidDate(value, f"Start {start!r} is later than end {end!r}")
+
         return (date_to_numeric(start), date_to_numeric(end))
 
     # Fallback: value is an exact date in the specified format (fmt).
