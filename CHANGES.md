@@ -12,11 +12,15 @@
 * titers: Improve error messages when titer models do not have enough data. [#1769][] (@huddlej)
 * align: Remove extra logs for insertions since the coordinates are output the *.insertions.csv. [#1772][] (@joverlee521)
 * filter: Fixed an error with weighted sampling by `year`. [#1776][] (@victorlin)
+* filter: Previously, subsampling with `--group-by` `year` or `month` would crash on numeric dates. This has been fixed by switching to the same internal date parsing function that is used by other commands. [#1774][] (@victorlin)
 * filter: Made a small adjustment to use pandas's `"string"` dtype alias when processing values in metadata. [#1782][] (@victorlin)
+* Updated outdated documentation on supported date formats in metadata. [#882][] (@victorlin)
 
+[#882]: https://github.com/nextstrain/augur/issues/882
 [#1756]: https://github.com/nextstrain/augur/pull/1756
 [#1769]: https://github.com/nextstrain/augur/pull/1769
 [#1772]: https://github.com/nextstrain/augur/pull/1772
+[#1774]: https://github.com/nextstrain/augur/issues/1774
 [#1776]: https://github.com/nextstrain/augur/issues/1776
 [#1782]: https://github.com/nextstrain/augur/pull/1782
 
