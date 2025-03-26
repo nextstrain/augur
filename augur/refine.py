@@ -362,6 +362,21 @@ def run(args):
     if args.divergence_units=='mutations-per-site': #default
         pass
     elif args.divergence_units=='mutations':
+        # find column of the compressed alignment that maps to masked positions of all N
+        compressed_alignment = np.array([x for x in tt.data.compressed_alignment.values()]).T
+        ambiguous_positions = []
+        for ci, col in enumerate(compressed_alignment):
+            if np.unique(col).size==1 and col[0]==tt.gtr.ambiguous:
+                # the column with all Ns has only one unique value, and the first value is N
+                ambiguous_positions.extend(tt.data.compressed_to_full_sequence_map[ci])
+
+                # Since TreeTime represents all columns of all Ns with a single
+                # entry in its compressed alignment structure, we can stop
+                # searching the data structure.
+                break
+        # convert to set for faster lookup
+        ambiguous_positions = set(ambiguous_positions)
+
         if not args.timetree:
             # infer ancestral sequence for the purpose of counting mutations
             # sample mutations from the root profile, otherwise use most likely state.
@@ -385,7 +400,7 @@ def run(args):
             n_muts = len([
                 position
                 for ancestral, position, derived in node.mutations
-                if are_sequence_states_different(ancestral, derived)
+                if are_sequence_states_different(ancestral, derived) and position not in ambiguous_positions
             ])
 
             if args.timetree:
