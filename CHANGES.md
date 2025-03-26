@@ -5,8 +5,12 @@
 ### Bug fixes
 
 * titers: Improve error messages when titer models do not have enough data. [#1769][] (@huddlej)
+* filter: Previously, subsampling with `--group-by` `year` or `month` would crash on numeric dates. This has been fixed by switching to the same internal date parsing function that is used by other commands. [#1774][] (@victorlin)
+* Updated outdated documentation on supported date formats in metadata. [#882][] (@victorlin)
 
+[#882]: https://github.com/nextstrain/augur/issues/882
 [#1769]: https://github.com/nextstrain/augur/pull/1769
+[#1774]: https://github.com/nextstrain/augur/issues/1774
 
 ## 29.0.0 (26 February 2025)
 
