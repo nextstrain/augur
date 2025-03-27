@@ -30,16 +30,15 @@ INVALID_METADATA_COLUMNS = ("none")
 
 
 # Set up warnings & exceptions
-warn = warnings.warn
 deprecationWarningsEmitted = False
 
 def deprecated(message):
-    warn(message, DeprecationWarning, stacklevel=2)
+    warnings.warn(message, DeprecationWarning, stacklevel=2)
     global deprecationWarningsEmitted
     deprecationWarningsEmitted=True
 
-def warning(message):
-    warn(message, UserWarning, stacklevel=2)
+def warn(message):
+    warnings.warn(message, UserWarning, stacklevel=2)
 
 def configure_warnings():
     # we must only set these when someone runs `augur export v2` (i.e. run_v2() is called)
