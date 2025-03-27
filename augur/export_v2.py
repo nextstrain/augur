@@ -41,10 +41,6 @@ def deprecated(message):
 def warning(message):
     warn(message, UserWarning, stacklevel=2)
 
-def fatal(message):
-    print("FATAL ERROR: {}".format(message))
-    sys.exit(2)
-
 def configure_warnings():
     # we must only set these when someone runs `augur export v2` (i.e. run_v2() is called)
     # else they will apply to _all_ augur commands due to the way all commands are pulled
@@ -1102,7 +1098,7 @@ def set_description(data_json, cmd_line_description_file):
             markdown_text = description_file.read()
         data_json['meta']['description'] = markdown_text
     except FileNotFoundError:
-        fatal("Provided desciption file {} does not exist".format(cmd_line_description_file))
+        raise AugurError("Provided description file {} does not exist".format(cmd_line_description_file))
 
 def set_warning(data_json, text_or_file):
     """
@@ -1349,7 +1345,7 @@ def run(args):
                 root_sequence_path = output_path.parent / Path(output_path.stem + "_root-sequence" + output_path.suffix)
                 write_json(data=node_data['reference'], file=root_sequence_path, include_version=False, **indent)
         else:
-            fatal("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
+            raise AugurError("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
     write_json(data=orderKeys(data_json), file=args.output, include_version=False, **indent)
 
     # validate outputs
