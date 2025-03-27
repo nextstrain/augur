@@ -6,7 +6,6 @@ from pathlib import Path
 import sys
 import time
 from collections import defaultdict, deque, OrderedDict
-import warnings
 import numbers
 import math
 import re
@@ -19,40 +18,15 @@ from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
 from .utils import read_node_data, write_json, json_size, read_config, read_lat_longs, read_colors
+from .util_support.warnings import configure_warnings, warn, deprecated, deprecationWarningsEmitted
 from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
 from .version import __version__
-
 
 MINIFY_THRESHOLD_MB = 5
 
 # Invalid metadata columns because they are used internally by Auspice
 INVALID_METADATA_COLUMNS = ("none")
 
-
-# Set up warnings & exceptions
-deprecationWarningsEmitted = False
-
-def deprecated(message):
-    warnings.warn(message, DeprecationWarning, stacklevel=2)
-    global deprecationWarningsEmitted
-    deprecationWarningsEmitted=True
-
-def warn(message):
-    warnings.warn(message, UserWarning, stacklevel=2)
-
-def configure_warnings():
-    # we must only set these when someone runs `augur export v2` (i.e. run_v2() is called)
-    # else they will apply to _all_ augur commands due to the way all commands are pulled
-    # in by the augur runner (augur/__init__.py)
-    def customformatwarning(message, category, filename, lineno, line=None):
-        if category.__name__ == "UserWarning":
-            return "WARNING: {}\n\n".format(message)
-        if category.__name__ == "DeprecationWarning":
-            return "DEPRECATED: {}\n\n".format(message)
-        return "{}\n".format(message)
-
-    warnings.formatwarning = customformatwarning
-    warnings.simplefilter("default") # show DeprecationWarnings by default
 
 class InvalidOption(Exception):
     pass
@@ -1350,7 +1324,7 @@ def run(args):
     # validate outputs
     validate_data_json(args.output, args.validation_mode)
 
-    if deprecationWarningsEmitted:
+    if deprecationWarningsEmitted():
         print("\n------------------------")
         print("There were deprecation warnings displayed. They have been fixed but these will likely become breaking errors in a future version of augur.")
         print("------------------------")
