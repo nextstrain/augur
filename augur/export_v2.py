@@ -954,6 +954,8 @@ def register_parser(parent_subparsers):
         title="OTHER OPTIONAL SETTINGS"
     )
     add_validation_arguments(optional_settings)
+    optional_settings.add_argument('--output-auspice-config', metavar="JSON", type=str,
+        help="Write out the merged auspice configuration file for debugging purposes etc. File is only written if you provide multiple config files via --auspice-config.")
 
     return parser
 
@@ -1162,7 +1164,7 @@ def run(args):
     T = Phylo.read(args.tree, 'newick')
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
             parse_node_data_and_metadata(T, node_data_file, metadata_file)
-    config = read_auspice_configs(*args.auspice_config, validation_mode=args.validation_mode)
+    config = read_auspice_configs(*args.auspice_config, validation_mode=args.validation_mode, output_fname=args.output_auspice_config)
     additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
     # set metadata data structures

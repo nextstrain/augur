@@ -196,9 +196,9 @@ def grouped(iterable, key):
 validate = validate_json  # TODO update uses and drop this alias
 
 
-def auspice_config_v2(config_json, **kwargs):
+def auspice_config_v2(config_json: Union[str,dict], **kwargs):
     schema = load_json_schema("schema-auspice-config-v2.json")
-    config = load_json(config_json)
+    config = config_json if isinstance(config_json, dict) else load_json(config_json)
     validate(config, schema, config_json)
 
 def export_v2(main_json, **kwargs):

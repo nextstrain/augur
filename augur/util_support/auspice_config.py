@@ -194,7 +194,7 @@ def read_single_auspice_config(fname: str, validation_mode: ValidationMode) -> d
 
     return config
 
-def merge_configs(configs: list[dict[str, Any]], validation_mode: ValidationMode) -> dict[str, Any]:
+def merge_configs(configs: list[dict[str, Any]], validation_mode: ValidationMode, output_fname: Union[str,None]=None) -> dict[str, Any]:
     merged = configs[0]
     for overlay in configs[1:]:
         # We could leverage the config schemas here in the future if desired
@@ -218,10 +218,29 @@ def merge_configs(configs: list[dict[str, Any]], validation_mode: ValidationMode
         elif isinstance(merged.get('extensions', None), dict) and isinstance(overlay.get('extensions', None), dict):
             merged = _merge_dicts(merged, overlay, 'extensions')
 
+    # Write the merged config before validation (if requested)
+    if output_fname:
+        print(f"Writing merged auspice config JSON to {output_fname!r}")
+        # don't use our util function `write_json` as we don't want any modification of values
+        with open_file(output_fname, 'w', encoding='utf-8') as handle:
+            json.dump(merged, handle, indent=2)
+
+    if validation_mode is not ValidationMode.SKIP:
+        try:
+            print(f"Validating merged config file against the JSON schema")
+            validate_auspice_config_v2(merged)
+        except ValidateError:
+            if output_fname:
+                print(f"Validation of merged config file failed. The merged JSON has been written to {output_fname!r} for debugging purposes", file=sys.stderr)
+            else:
+                print(f"Validation of merged config file failed. Here is the contents of the merged config JSON for debugging purposes:", file=sys.stderr)
+                json.dump(merged, sys.stderr, indent=2)
+            validation_failure(validation_mode)
+
     return merged
 
 
-def read_auspice_configs(*fnames: str, validation_mode: ValidationMode) -> dict[str, Any]:
+def read_auspice_configs(*fnames: str, validation_mode: ValidationMode, output_fname: Union[str,None]) -> dict[str, Any]:
     """
     Parses zero, one or multiple files as auspice config JSONs and returns a (merged) config dict.
     """
@@ -231,4 +250,4 @@ def read_auspice_configs(*fnames: str, validation_mode: ValidationMode) -> dict[
         return {}
     elif len(configs)==1: # no merging necessary
         return configs[0]
-    return merge_configs(configs, validation_mode)
+    return merge_configs(configs, validation_mode, output_fname)
