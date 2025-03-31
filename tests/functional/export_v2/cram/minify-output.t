@@ -16,13 +16,16 @@ names to create larger file sizes with less recursion.
   > }
 
 A small tree is not automatically minified.
-The unminified output is 13KB which is considered acceptable.
+The unminified output is 15KB which is considered acceptable.
 
-  $ echo "$(generate_newick 10);" > small_tree.nwk
+  $ echo "$(generate_newick 10);" > small_tree_raw.nwk
+
+Use augur refine to add internal node names
+  $ ${AUGUR} refine --tree small_tree_raw.nwk --output-tree small_tree.nwk  &>/dev/null
+
 
   $ ${AUGUR} export v2 \
   >   --tree small_tree.nwk \
-  >   --skip-validation \
   >   --output output.json &>/dev/null
 
   $ head -c 20 output.json
@@ -30,13 +33,12 @@ The unminified output is 13KB which is considered acceptable.
     "version": "v2", (no-eol)
 
   $ ls -l output.json | awk '{print $5}'
-  13813
+  15039
 
 It can be forcefully minified with an argument.
 
   $ ${AUGUR} export v2 \
   >   --tree small_tree.nwk \
-  >   --skip-validation \
   >   --minify-json \
   >   --output output.json &>/dev/null
 
@@ -48,21 +50,22 @@ even if it may seem "falsey".
 
   $ AUGUR_MINIFY_JSON=0 ${AUGUR} export v2 \
   >   --tree small_tree.nwk \
-  >   --skip-validation \
   >   --output output.json &>/dev/null
 
   $ head -c 20 output.json
   {"version": "v2", "m (no-eol)
 
 
-A large tree, when forcefully not minified, has an output size of 6MB which is
+A large tree, when forcefully not minified, has an output size of 8MB which is
 considered large.
 
-  $ echo "$(generate_newick 500);" > big_tree.nwk
+  $ echo "$(generate_newick 500);" > big_tree_raw.nwk
+
+Use augur refine to add internal node names
+  $ ${AUGUR} refine --tree big_tree_raw.nwk --output-tree big_tree.nwk  &>/dev/null
 
   $ ${AUGUR} export v2 \
   >   --tree big_tree.nwk \
-  >   --skip-validation \
   >   --no-minify-json \
   >   --output output.json &>/dev/null
 
@@ -71,7 +74,7 @@ considered large.
     "version": "v2", (no-eol)
 
   $ ls -l output.json | awk '{print $5}'
-  6568454
+  8591420
 
 This means it is automatically minified.
 
@@ -84,4 +87,4 @@ This means it is automatically minified.
   {"version": "v2", "m (no-eol)
 
   $ ls -l output.json | awk '{print $5}'
-  561436
+  576414

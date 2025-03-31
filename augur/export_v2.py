@@ -124,6 +124,24 @@ def orderKeys(data):
     return od
 
 
+def read_trees(filenames):
+    trees = [Phylo.read(fname, 'newick') for fname in filenames]
+    # augur export requires unique node names (both terminal and external) as these
+    # are used to associate metadata/node-data with nodes. Any duplication is fatal.
+    # The exception to this is unlabelled node names, which auspice will handle but
+    # won't be associated with any metadata within export.
+    node_names = [clade.name for tree in trees for clade in tree.root.find_clades()]
+    if None in node_names:
+        raise AugurError(f"Tree contains unnamed nodes. If these are internal nodes you may wish to run "+
+                         "`augur refine --tree <newick> --output-tree <newick>` to name them.")
+    if len(set(node_names))!=len(node_names):
+        from collections import Counter
+        dups = [name for name, count in Counter(node_names).items() if count>1]
+        raise AugurError(f"{len(dups)} node names occur multiple times in the tree: " +
+                         ", ".join([f"{v!r}" for v in dups[0:5]]) + ("..." if len(dups)>5 else ""))
+    return (trees, node_names)
+
+
 def node_div(T, node_attrs):
     """
     Scans the provided tree & metadata to see if divergence is defined, and if so returns
@@ -465,7 +483,7 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
     data_json['meta']["colorings"] = colorings
 
 
-def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping, node_attrs):
+def set_geo_resolutions(trees, meta_json, config, command_line_traits, lat_long_mapping, node_attrs):
     """
     appropriately combine provided geo resolutions from command line & config files
     and associate with lat/longs.
@@ -527,12 +545,11 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
         else:
             warn("Geo resolution \"{}\" had no demes with supplied lat/longs and will be excluded from the exported \"geo_resolutions\".".format(trait_info["key"]))
 
-    #
-    _transfer_geo_data(data_json['tree'])
-
+    for subtree in trees:
+        _transfer_geo_data(subtree)
 
     if geo_resolutions:
-        data_json['meta']["geo_resolutions"] = geo_resolutions
+        meta_json["geo_resolutions"] = geo_resolutions
 
 
 def set_annotations(data_json, node_data):
@@ -732,9 +749,9 @@ def create_author_data(node_attrs):
 
     return node_author_info
 
-def set_branch_attrs_on_tree(data_json, branch_attrs):
+def set_branch_attrs_on_tree(trees, branch_attrs):
     """
-    Shifts the provided `branch_attrs` onto the (auspice) `data_json`.
+    Shifts the provided `branch_attrs` onto the provided tree
     Currently all data is transferred, there is no way for (e.g.) the set of exported
     labels to be restricted by the user in a config.
     """
@@ -743,7 +760,9 @@ def set_branch_attrs_on_tree(data_json, branch_attrs):
             node['branch_attrs'] = branch_attrs[node['name']]
         for child in node.get("children", []):
             _recursively_set_data(child)
-    _recursively_set_data(data_json["tree"])
+
+    for subtree in trees:
+        _recursively_set_data(subtree)
 
 def is_numeric(n:Any) -> bool:
     # Typing a number is surprisingly hard in python, and `number.Number`
@@ -818,7 +837,7 @@ def attr_confidence(
 
 
 
-def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
+def set_node_attrs_on_tree(trees, meta_json, node_attrs, additional_metadata_columns):
     '''
     Assign desired colorings, metadata etc to the `node_attrs` of nodes in the tree
 
@@ -874,10 +893,10 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
 
     def _transfer_colorings_filters(node, raw_data):
         trait_keys = set() # order we add to the node_attrs is not important for auspice
-        if "colorings" in data_json["meta"]:
-            trait_keys = trait_keys.union([t["key"] for t in data_json["meta"]["colorings"]])
-        if "filters" in data_json["meta"]:
-            trait_keys = trait_keys.union(data_json["meta"]["filters"])
+        if "colorings" in meta_json:
+            trait_keys = trait_keys.union([t["key"] for t in meta_json["colorings"]])
+        if "filters" in meta_json:
+            trait_keys = trait_keys.union(meta_json["filters"])
         exclude_list = ["gt", "num_date", "author"] # exclude special cases already taken care of
         trait_keys = trait_keys.difference(exclude_list)
         for key in trait_keys:
@@ -908,7 +927,8 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
         for child in node.get("children", []):
             _recursively_set_data(child)
 
-    _recursively_set_data(data_json["tree"])
+    for subtree in trees:
+        _recursively_set_data(subtree)
 
 def node_data_prop_is_normal_trait(name):
     # those traits / keys / attrs which are not "special" and can be exported
@@ -949,7 +969,7 @@ def register_parser(parent_subparsers):
     required = parser.add_argument_group(
         title="REQUIRED"
     )
-    required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
+    required.add_argument('--tree','-t', metavar="newick", nargs='+', action='extend', required=True, help="Phylogenetic tree(s), usually output from `augur refine`")
     required.add_argument('--output', metavar="JSON", required=True, help="Output file (typically for visualisation in auspice)")
 
     config = parser.add_argument_group(
@@ -1155,12 +1175,12 @@ def create_branch_labels(branch_attrs, node_data, branch_data):
                 continue
             branch_attrs[node_name]["labels"][label_key] = label_value
 
-def parse_node_data_and_metadata(T, node_data, metadata):
+def parse_node_data_and_metadata(node_names, node_data, metadata):
     node_data_names = set()
     metadata_names = set()
 
     # assign everything to node_attrs, exclusions considered later
-    node_attrs = {clade.name: {} for clade in T.root.find_clades()}
+    node_attrs = {name: {} for name in node_names}
 
     # first pass: metadata
     for metadata_id, node in metadata.items():
@@ -1184,7 +1204,7 @@ def parse_node_data_and_metadata(T, node_data, metadata):
     # third pass: create `branch_attrs`. The data comes from
     # (a) some keys within `node_data['nodes']` (for legacy reasons)
     # (b) the `node_data['branches']` dictionary, which currently only defines labels
-    branch_attrs = {clade.name: defaultdict(dict) for clade in T.root.find_clades()}
+    branch_attrs = {name: defaultdict(dict) for name in node_names}
     create_branch_mutations(branch_attrs, node_data)
     create_branch_labels(branch_attrs, node_data['nodes'], node_data.get('branches', {}))
 
@@ -1273,9 +1293,9 @@ def run(args):
         metadata_file = {}
 
     # parse input files
-    T = Phylo.read(args.tree, 'newick')
+    (trees, node_names) = read_trees(args.tree)
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
-            parse_node_data_and_metadata(T, node_data_file, metadata_file)
+            parse_node_data_and_metadata(node_names, node_data_file, metadata_file)
     config = get_config(args)
     additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
@@ -1307,14 +1327,17 @@ def run(args):
         sys.exit(2)
     set_filters(data_json, config)
 
-    # set tree structure
-    data_json["tree"] = convert_tree_to_json_structure(T.root, node_attrs, node_div(T, node_attrs))
-    set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns)
-    set_branch_attrs_on_tree(data_json, branch_attrs)
+    # maintain a list of (sub)trees so that we are always dealing with a list even in the (common) case of a single tree
+    trees = [convert_tree_to_json_structure(tree.root, node_attrs, node_div(tree, node_attrs)) for tree in trees]
+    set_node_attrs_on_tree(trees, data_json['meta'], node_attrs, additional_metadata_columns)
+    set_branch_attrs_on_tree(trees, branch_attrs)
 
-    set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
+    set_geo_resolutions(trees, data_json['meta'], config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
     set_panels(data_json, config, args.panels)
     set_data_provenance(data_json, config)
+
+    # If we have a single tree then we set this directly as <json>.tree
+    data_json['tree'] = trees[0] if len(trees)==1 else trees
 
     # pass through any extensions block in the auspice config JSON without any changes / checking
     if config.get("extensions"):
