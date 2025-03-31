@@ -14,16 +14,17 @@ class InvalidWeightsFile(AugurError):
 
 
 def read_weights_file(weights_file):
-    weights = pd.read_csv(weights_file, delimiter='\t', comment='#')
+    weights = pd.read_csv(weights_file, delimiter='\t', comment='#', dtype="string")
 
-    if not pd.api.types.is_numeric_dtype(weights[WEIGHTS_COLUMN]):
-        non_numeric_weight_lines = [index + 2 for index in weights[~weights[WEIGHTS_COLUMN].str.isnumeric()].index.tolist()]
+    if non_numeric_weight_lines := [index + 2 for index in weights[~weights[WEIGHTS_COLUMN].str.lstrip("-").str.isnumeric()].index.tolist()]:
         raise InvalidWeightsFile(weights_file, dedent(f"""\
             Found non-numeric weights on the following lines: {non_numeric_weight_lines}
             {WEIGHTS_COLUMN!r} column must be numeric."""))
 
-    if any(weights[WEIGHTS_COLUMN] < 0):
-        negative_weight_lines = [index + 2 for index in weights[weights[WEIGHTS_COLUMN] < 0].index.tolist()]
+    # Cast weights to numeric for calculations
+    weights[WEIGHTS_COLUMN] = pd.to_numeric(weights[WEIGHTS_COLUMN])
+
+    if negative_weight_lines := [index + 2 for index in weights[weights[WEIGHTS_COLUMN] < 0].index.tolist()]:
         raise InvalidWeightsFile(weights_file, dedent(f"""\
             Found negative weights on the following lines: {negative_weight_lines}
             {WEIGHTS_COLUMN!r} column must be non-negative."""))
@@ -47,7 +48,16 @@ def get_weighted_columns(weights_file):
 
 
 def get_default_weight(weights: pd.DataFrame, weighted_columns: List[str]):
-    default_weight_values = weights[(weights[weighted_columns] == COLUMN_VALUE_FOR_DEFAULT_WEIGHT).all(axis=1)][WEIGHTS_COLUMN].unique()
+    # Match weighted columns with 'default' value. Multiple values can be matched for 2 reasons:
+    # 1. Repeated rows following additional permutation with unweighted columns.
+    #    This is handled by unique() since the value should be the same.
+    # 2. Multiple default rows specified in the weights file.
+    #    This is a user error.
+    mask = (
+        weights[weighted_columns].eq(COLUMN_VALUE_FOR_DEFAULT_WEIGHT).all(axis=1) &
+        weights[weighted_columns].notna().all(axis=1)
+    )
+    default_weight_values = weights.loc[mask, WEIGHTS_COLUMN].unique()
 
     if len(default_weight_values) > 1:
         # TODO: raise InvalidWeightsFile, not AugurError. This function takes

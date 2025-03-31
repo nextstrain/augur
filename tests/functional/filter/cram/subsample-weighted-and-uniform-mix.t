@@ -104,7 +104,7 @@ requested 17, so the total number of sequences outputted is lower than requested
   >   --output-strains strains.txt
   Sampling with weights defined by weights-A1B1.tsv.
   NOTE: Weights were not provided for the column 'year'. Using equal weights across values in that column.
-  WARNING: Targeted 17 sequences for group ['year=2002', "location='A'"] but only 1 is available.
+  WARNING: Targeted 17 sequences for group ["year='2002'", "location='A'"] but only 1 is available.
   168 strains were dropped during filtering
   	168 were dropped because of subsampling criteria
   83 strains passed all filters

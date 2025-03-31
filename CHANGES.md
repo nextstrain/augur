@@ -5,8 +5,10 @@
 ### Bug fixes
 
 * titers: Improve error messages when titer models do not have enough data. [#1769][] (@huddlej)
+* filter: Fixed an error with weighted sampling by `year`. [#1776][] (@victorlin)
 
 [#1769]: https://github.com/nextstrain/augur/pull/1769
+[#1776]: https://github.com/nextstrain/augur/issues/1776
 
 ## 29.0.0 (26 February 2025)
 
