@@ -970,7 +970,6 @@ def _replace_backtick_quoting(pandas_query: str):
     name_counter = 1
 
     def replace(match: re.Match):
-        nonlocal replacements
         nonlocal name_counter
         original_value = match.group(1)
 
