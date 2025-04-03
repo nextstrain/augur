@@ -4,7 +4,7 @@ import Bio.Phylo
 import numpy as np
 import os, json, sys
 import pandas as pd
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 from io import RawIOBase
 from .__version__ import __version__
 
@@ -434,25 +434,6 @@ def _read_genbank(reference, feature_names):
         print(f"WARNING: {features_skipped} CDS features skipped as they didn't have a locus_tag or gene qualifier.")
 
     return features
-
-def read_config(fname):
-    if not (fname and os.path.isfile(fname)):
-        print("ERROR: config file %s not found."%fname)
-        return defaultdict(dict)
-
-    try:
-        with open_file(fname, 'rb') as ifile:
-            config = json.load(ifile)
-    except json.decoder.JSONDecodeError as err:
-        print("FATAL ERROR:")
-        print("\tCouldn't parse the JSON file {}".format(fname))
-        print("\tError message: '{}'".format(err.msg))
-        print("\tLine number: '{}'".format(err.lineno))
-        print("\tColumn number: '{}'".format(err.colno))
-        print("\tYou must correct this file in order to proceed.")
-        sys.exit(2)
-
-    return config
 
 def read_lat_longs(overrides=None, use_defaults=True):
     coordinates = {}

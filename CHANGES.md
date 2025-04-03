@@ -2,10 +2,16 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* export v2: Allow multiple auspice config files (`--auspice-config`) which are merged together. Note that the merging of lists extends the original list, although elements representing the same data are overwritten instead. You can optionally write out this merged config via `--output-auspice-config` for debugging purposes. [#1756][] (@jameshadfield)
+
+
 ### Bug fixes
 
 * titers: Improve error messages when titer models do not have enough data. [#1769][] (@huddlej)
 
+[#1756]: https://github.com/nextstrain/augur/pull/1756
 [#1769]: https://github.com/nextstrain/augur/pull/1769
 
 ## 29.0.0 (26 February 2025)

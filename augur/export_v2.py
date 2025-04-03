@@ -6,7 +6,6 @@ from pathlib import Path
 import sys
 import time
 from collections import defaultdict, deque, OrderedDict
-import warnings
 import numbers
 import math
 import re
@@ -18,46 +17,17 @@ from .errors import AugurError
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
-from .utils import read_node_data, write_json, json_size, read_config, read_lat_longs, read_colors
-from .validate import export_v2 as validate_v2, auspice_config_v2 as validate_auspice_config_v2, ValidateError
+from .utils import read_node_data, write_json, json_size, read_lat_longs, read_colors
+from .util_support.warnings import configure_warnings, warn, deprecated, deprecationWarningsEmitted
+from .util_support.auspice_config import read_auspice_configs, remove_unused_metadata_columns
+from .validate import export_v2 as validate_v2, ValidateError, validation_failure
 from .version import __version__
-
 
 MINIFY_THRESHOLD_MB = 5
 
 # Invalid metadata columns because they are used internally by Auspice
 INVALID_METADATA_COLUMNS = ("none")
 
-
-# Set up warnings & exceptions
-warn = warnings.warn
-deprecationWarningsEmitted = False
-
-def deprecated(message):
-    warn(message, DeprecationWarning, stacklevel=2)
-    global deprecationWarningsEmitted
-    deprecationWarningsEmitted=True
-
-def warning(message):
-    warn(message, UserWarning, stacklevel=2)
-
-def fatal(message):
-    print("FATAL ERROR: {}".format(message))
-    sys.exit(2)
-
-def configure_warnings():
-    # we must only set these when someone runs `augur export v2` (i.e. run_v2() is called)
-    # else they will apply to _all_ augur commands due to the way all commands are pulled
-    # in by the augur runner (augur/__init__.py)
-    def customformatwarning(message, category, filename, lineno, line=None):
-        if category.__name__ == "UserWarning":
-            return "WARNING: {}\n\n".format(message)
-        if category.__name__ == "DeprecationWarning":
-            return "DEPRECATED: {}\n\n".format(message)
-        return "{}\n".format(message)
-
-    warnings.formatwarning = customformatwarning
-    warnings.simplefilter("default") # show DeprecationWarnings by default
 
 class InvalidOption(Exception):
     pass
@@ -221,29 +191,6 @@ def get_config_colorings_as_dict(config):
     config_colorings = {}
     if config.get("colorings"):
         config_colorings = {v.get("key"):v for v in config["colorings"]}
-    elif config.get("color_options"):
-        deprecated("[config file] 'color_options' has been replaced with 'colorings' & the structure has changed.")
-        # parse v1-style colorings & convert to v2-style
-        for key, info in config.get("color_options").items():
-            # note: if both legentTitle & menuItem are present then we use the latter. See https://github.com/nextstrain/auspice/issues/730
-            if "menuItem" in info:
-                deprecated("[config file] coloring '{}': 'menuItem' has been replaced with 'title'. Using 'menuItem' as 'title'.".format(key))
-                info["title"] = info["menuItem"]
-                del info["menuItem"]
-            if "legendTitle" in info:
-                if info["title"]: # this can only have been set via menuItem ^^^
-                    deprecated("[config file] coloring '{}': 'legendTitle' has been replaced with 'title' & is unused since 'menuItem' is present.".format(key))
-                else:
-                    deprecated("[config file] coloring '{}': 'legendTitle' has been replaced with 'title'. Using 'legendTitle' as 'title'.".format(key))
-                    info["title"] = info["legendTitle"]
-                del info["legendTitle"]
-            if "key" in info:
-                del info["key"]
-            if info.get("type") == "discrete":
-                deprecated("[config file] coloring '{}': type 'discrete' is no longer valid. Please use either 'ordinal', 'categorical' or 'boolean'. "
-                    "This has been automatically changed to 'categorical'.".format(key))
-                info["type"] = "categorical"
-            config_colorings[key] = info
     return config_colorings
 
 
@@ -387,10 +334,6 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
         return coloring
 
     def _add_coloring(colorings, key):
-        # handle deprecations
-        if key == "authors":
-            deprecated("[colorings] The 'authors' key is now called 'author'")
-            key = "author"
         # check if the key has already been added by another part of the color-creating logic
         if key not in {x['key'] for x in colorings}:
             colorings.append({"key": key})
@@ -429,6 +372,10 @@ def set_colorings(data_json, config, command_line_colorings, metadata_names, nod
                 _add_coloring(colorings, x)
             # then add in command line colorings
             for x in command_line_colorings:
+                if x == "authors":
+                    # Note - this correction is also applied to the config JSON (during parsing)
+                    deprecated("[colorings] The 'authors' key is now called 'author'")
+                    x = "author"
                 _add_coloring(colorings, x)
         else:
             # if we have a config file, start with these (extra info, such as title&type, is added in later)
@@ -498,9 +445,6 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
             print("WARNING: [config file] 'geo_resolutions' is not in an acceptible format. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
             print("\t It is being ignored - this run will have no geo_resolutions.\n")
             return False
-    elif config.get("geo"):
-        traits = [{"key": x} for x in config.get("geo")]
-        deprecated("[config file] 'geo' has been replaced with 'geo_resolutions'. The field is now list of strings, or list of dicts each with format {\"key\":\"country\"}")
     else:
         return False
 
@@ -567,17 +511,6 @@ def validate_data_json(filename, validation_mode=ValidationMode.ERROR):
         print("Validation of {} failed. Please check this in a local instance of `auspice`, as it is not expected to display correctly. ".format(filename))
         print("------------------------")
         validation_failure(validation_mode)
-
-def validation_failure(mode: ValidationMode):
-    if mode is ValidationMode.ERROR:
-        sys.exit(2)
-    elif mode is ValidationMode.WARN:
-        print(f"Continuing due to --validation-mode={mode.value} even though there were validation errors.")
-    elif mode is ValidationMode.SKIP:
-        # Shouldn't be doing validation under skip, but if we're called anyway just do nothing.
-        return
-    else:
-        raise ValueError(f"unknown validation mode: {mode!r}")
 
 
 def set_panels(data_json, config, cmd_line_panels):
@@ -955,10 +888,11 @@ def register_parser(parent_subparsers):
     config = parser.add_argument_group(
         title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
-            You can supply a config JSON (which has all available options) or command line arguments (which are more limited but great to get started). \
-            Supplying both is fine too, command line args will overrule what is set in the config file!"
+            Config JSON(s) allow customisation of all available options whereas individual command line arguments are more limited but great to get started. \
+            Supplying both is fine too, command line args will overrule what is set in the config file. \
+            Multiple JSONs will be merged together, and lists present in multiple configs will be merged by extending the original list."
     )
-    config.add_argument('--auspice-config', metavar="JSON", help="Auspice configuration file")
+    config.add_argument('--auspice-config', metavar="JSON", nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice configuration file(s)")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", action=ExtendOverwriteDefault, nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
@@ -1020,36 +954,11 @@ def register_parser(parent_subparsers):
         title="OTHER OPTIONAL SETTINGS"
     )
     add_validation_arguments(optional_settings)
+    optional_settings.add_argument('--output-auspice-config', metavar="JSON", type=str,
+        help="Write out the merged auspice configuration file for debugging purposes etc. File is only written if you provide multiple config files via --auspice-config.")
 
     return parser
 
-
-def set_display_defaults(data_json, config):
-    # Note: these cannot be provided via command line args
-    if config.get("display_defaults"):
-        defaults = config["display_defaults"]
-        if config.get("defaults"):
-            deprecated("[config file] both 'defaults' (deprecated) and 'display_defaults' provided. Ignoring the former.")
-    elif config.get("defaults"):
-        deprecated("[config file] 'defaults' has been replaced with 'display_defaults'")
-        defaults = config["defaults"]
-    else:
-        return
-
-    v1_v2_keys = [ # each item: [0] v2 key name. [1] deprecated v1 key name
-        ["geo_resolution", "geoResolution"],
-        ["color_by", "colorBy"],
-        ["distance_measure", "distanceMeasure"],
-        ["map_triplicate", "mapTriplicate"]
-    ]
-
-    for [v2_key, v1_key] in [x for x in v1_v2_keys if x[1] in defaults]:
-        deprecated("[config file] '{}' has been replaced with '{}'".format(v1_key, v2_key))
-        defaults[v2_key] = defaults[v1_key]
-        del defaults[v1_key]
-
-    if defaults:
-        data_json['meta']["display_defaults"] = defaults
 
 def set_maintainers(data_json, config, cmd_line_maintainers):
     # Command-line args overwrite the config file
@@ -1065,8 +974,6 @@ def set_maintainers(data_json, config, cmd_line_maintainers):
                 tmp_dict['url'] = url
             maintainers.append(tmp_dict)
         data_json['meta']['maintainers'] = maintainers
-    elif config.get("maintainer"): # v1-type specification
-        data_json['meta']["maintainers"] = [{ "name": config["maintainer"][0], "url": config["maintainer"][1]}]
     elif config.get("maintainers"): # see schema for details
         data_json['meta']['maintainers'] = config['maintainers']
     else:
@@ -1102,7 +1009,7 @@ def set_description(data_json, cmd_line_description_file):
             markdown_text = description_file.read()
         data_json['meta']['description'] = markdown_text
     except FileNotFoundError:
-        fatal("Provided desciption file {} does not exist".format(cmd_line_description_file))
+        raise AugurError("Provided description file {} does not exist".format(cmd_line_description_file))
 
 def set_warning(data_json, text_or_file):
     """
@@ -1190,29 +1097,11 @@ def parse_node_data_and_metadata(T, node_data, metadata):
 
     return (node_data, node_attrs, node_data_names, metadata_names, branch_attrs)
 
-def get_config(args):
-    if not args.auspice_config:
-        return {}
-    config = read_config(args.auspice_config)
-    if args.validation_mode is not ValidationMode.SKIP:
-        try:
-            print("Validating config file {} against the JSON schema".format(args.auspice_config))
-            validate_auspice_config_v2(args.auspice_config)
-        except ValidateError:
-            print("Validation of {} failed. Please check the formatting of this file & refer to the augur documentation for further help. ".format(args.auspice_config))
-            validation_failure(args.validation_mode)
-    # Print a warning about the inclusion of "vaccine_choices" which are _unused_ by `export v2`
-    # (They are in the schema as this allows v1-compat configs to be used)
-    if config.get("vaccine_choices"):
-        warning("The config JSON can no longer specify the `vaccine_choices`, they must be specified through a node-data JSON. This info will be unused.")
-        del config["vaccine_choices"]
-    return config
-
 
 def get_additional_metadata_columns(config, command_line_metadata_columns, metadata_names):
     # Command line args override what is set in the config file
     if command_line_metadata_columns:
-        potential_metadata_columns = command_line_metadata_columns
+        potential_metadata_columns = remove_unused_metadata_columns(command_line_metadata_columns)
     else:
         potential_metadata_columns = config.get("metadata_columns", [])
 
@@ -1223,11 +1112,10 @@ def get_additional_metadata_columns(config, command_line_metadata_columns, metad
                   "It will be ignored during export, please rename field if you would like to include as a metadata field.")
             continue
         # Match the column names corrected within parse_node_data_and_metadata
-        corrected_col = update_deprecated_names(col)
-        if corrected_col not in metadata_names:
+        if col not in metadata_names:
             warn(f"Requested metadata column {col!r} does not exist and will not be exported")
             continue
-        additional_metadata_columns.append(corrected_col)
+        additional_metadata_columns.append(col)
 
     return additional_metadata_columns
 
@@ -1276,12 +1164,13 @@ def run(args):
     T = Phylo.read(args.tree, 'newick')
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
             parse_node_data_and_metadata(T, node_data_file, metadata_file)
-    config = get_config(args)
+    config = read_auspice_configs(*args.auspice_config, validation_mode=args.validation_mode, output_fname=args.output_auspice_config)
     additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
     # set metadata data structures
     set_title(data_json, config, args.title)
-    set_display_defaults(data_json, config)
+    if 'display_defaults' in config:
+        data_json['meta']["display_defaults"] = config['display_defaults']
     set_maintainers(data_json, config, args.maintainers)
     set_build_url(data_json, config, args.build_url)
     set_build_avatar(data_json, config)
@@ -1349,13 +1238,13 @@ def run(args):
                 root_sequence_path = output_path.parent / Path(output_path.stem + "_root-sequence" + output_path.suffix)
                 write_json(data=node_data['reference'], file=root_sequence_path, include_version=False, **indent)
         else:
-            fatal("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
+            raise AugurError("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
     write_json(data=orderKeys(data_json), file=args.output, include_version=False, **indent)
 
     # validate outputs
     validate_data_json(args.output, args.validation_mode)
 
-    if deprecationWarningsEmitted:
+    if deprecationWarningsEmitted():
         print("\n------------------------")
         print("There were deprecation warnings displayed. They have been fixed but these will likely become breaking errors in a future version of augur.")
         print("------------------------")
