@@ -75,15 +75,15 @@ def prettify(x, trim=0, camelCase=False, etal=None, removeComma=False):
     if 0 < trim < len(x):
         res = x[:trim] + "..."
 
-    if res in {'usvi', 'usa', 'uk'}:
-        res = res.upper()
-
     words = res.split('_')
 
     if camelCase:
         words = map(str.capitalize, words)
 
     res = ' '.join(words)
+
+    if res in {'usvi', 'usa', 'uk', 'Usvi', 'Usa', 'Uk'}:
+        res = res.upper()
 
     if removeComma:
         res = res.replace(',', '')
