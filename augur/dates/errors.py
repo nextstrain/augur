@@ -12,3 +12,7 @@ class InvalidDate(Exception):
 
 class InvalidYearBounds(Exception):
     """Custom exception class to handle year bounds in unsupported formats."""
+
+class InvalidDateMessage(Exception):
+    """To be caught and raised as an InvalidDate exception which includes the original date."""
+    pass

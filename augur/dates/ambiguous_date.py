@@ -3,7 +3,11 @@ import datetime
 import functools
 import re
 
-from .errors import InvalidDate, InvalidYearBounds
+from .errors import InvalidDate, InvalidYearBounds, InvalidDateMessage
+
+
+# 'X' followed by a specific digit does not make sense.
+RE_INVALID_AMBIGUITY = re.compile(r'.*X[0-9]+.*')
 
 
 def tuple_to_date(year, month, day):
@@ -41,11 +45,15 @@ def resolve_uncertain_int(uncertain_string, min_or_max):
 class AmbiguousDate:
     """Transforms a date string with uncertainty into the range of possible dates."""
 
-    def __init__(self, uncertain_date, fmt="%Y-%m-%d"):
+    def __init__(self, uncertain_date, fmt):
         self.uncertain_date = uncertain_date
         self.fmt = fmt
 
-        self.assert_only_less_significant_uncertainty()
+    def date_matches_format(self):
+        """Returns a boolean indicating whether the date matches the format."""
+        if re.search(self.regex, self.uncertain_date):
+            return True
+        return False
 
     def range(self, min_max_year=None):
         """Return the range of possible dates defined by the ambiguous date.
@@ -94,9 +102,7 @@ class AmbiguousDate:
         matches = re.search(self.regex, self.uncertain_date)
 
         if matches is None:
-            raise InvalidDate(self.uncertain_date,
-                f"Date does not match format `{self.fmt}`."
-            )
+            raise InvalidDateMessage(f"Date does not match format `{self.fmt}`.")
 
         return dict(zip(self.fmt_components, matches.groups()))
 
@@ -140,14 +146,15 @@ class AmbiguousDate:
                 self.uncertain_date_components["m"] != "XX"
                 or self.uncertain_date_components["d"] != "XX"
             ):
-                raise InvalidDate(self.uncertain_date,
-                    "Year contains uncertainty, so month and day must also be uncertain."
-                )
+                raise InvalidDateMessage("Year contains uncertainty, so month and day must also be uncertain.")
         elif "X" in self.uncertain_date_components["m"]:
             if self.uncertain_date_components["d"] != "XX":
-                raise InvalidDate(self.uncertain_date,
-                    "Month contains uncertainty, so day must also be uncertain."
-                )
+                raise InvalidDateMessage("Month contains uncertainty, so day must also be uncertain.")
+
+        # Also check if an X is followed immediately by a digit, to catch
+        # improper significance within date parts.
+        if RE_INVALID_AMBIGUITY.match(self.uncertain_date):
+            raise InvalidDate(self.uncertain_date, "Ambiguity can not be followed by an exact digit.")
 
 
 def get_bounds(min_max_year):
