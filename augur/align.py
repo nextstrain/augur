@@ -356,16 +356,6 @@ def analyse_insertions(aln, ungapped, insertion_csv):
             if len(s):
                 insertions[idx][str(s)].append(seq.name)
 
-    for insertion_coord, data in zip(insertion_coords, insertions):
-        # GFF is 1-based & insertions are to the right of the base.
-        print("{}bp insertion at ref position {}".format(insertion_coord[1]-insertion_coord[0], insertion_coord[2]+1))
-        for k, v in data.items():
-            print("\t{}: {}".format(k, ", ".join(v)))
-        if not len(data.keys()):
-            # This happens when there _is_ an insertion, but it's an insertion of gaps
-            # We know that these are associated with poor alignments...
-            print("\tWARNING: this insertion was caused due to 'N's or '?'s in provided sequences")
-
     # output for auspice drag&drop -- GFF is 1-based & insertions are to the right of the base.
     header = ["strain"]+["insertion: {}bp @ ref pos {}".format(ic[1]-ic[0], ic[2]+1) for ic in insertion_coords]
     strain_data = defaultdict(lambda: ["" for _ in range(0, len(insertion_coords))])
@@ -373,6 +363,13 @@ def analyse_insertions(aln, ungapped, insertion_csv):
         for insertion_seq, strains in i_data.items():
             for strain in strains:
                 strain_data[strain][idx] = insertion_seq
+        if not len(i_data.keys()):
+            # This happens when there _is_ an insertion, but it's an insertion of gaps
+            # We know that these are associated with poor alignments...
+            # GFF is 1-based & insertions are to the right of the base.
+            insertion_coord = insertion_coords[idx]
+            print("WARNING: {}bp insertion at ref position {} was due to 'N's or '?'s in provided sequences"\
+                    .format(insertion_coord[1]-insertion_coord[0], insertion_coord[2]+1))
     with open_file(insertion_csv, 'w') as fh:
         print(",".join(header), file=fh)
         for strain in strain_data:
