@@ -13,9 +13,11 @@
 * filter: Fixed an error with weighted sampling by `year`. [#1776][] (@victorlin)
 * filter: Previously, subsampling with `--group-by` `year` or `month` would crash on numeric dates. This has been fixed by switching to the same internal date parsing function that is used by other commands. [#1774][] (@victorlin)
 * filter: Made a small adjustment to use pandas's `"string"` dtype alias when processing values in metadata. [#1782][] (@victorlin)
+* filter: Options `--output` and `-o` have been deprecated and will now show a warning message. See [DEPRECATED.md](./DEPRECATED.md) for details. [#1622][] (@victorlin)
 * Updated outdated documentation on supported date formats in metadata. [#882][] (@victorlin)
 
 [#882]: https://github.com/nextstrain/augur/issues/882
+[#1622]: https://github.com/nextstrain/augur/pull/1622
 [#1756]: https://github.com/nextstrain/augur/pull/1756
 [#1769]: https://github.com/nextstrain/augur/pull/1769
 [#1772]: https://github.com/nextstrain/augur/pull/1772
