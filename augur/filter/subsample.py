@@ -51,7 +51,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month"]
     >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, '2020-01'), 'strain2': (2020, '2020-02')}
+    {'strain1': ('2020', '2020-01'), 'strain2': ('2020', '2020-02')}
 
     If we omit the grouping columns, the result will group by a dummy column.
 
@@ -73,7 +73,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
     >>> group_by = ["year", "month", "missing_column"]
     >>> group_by_strain = get_groups_for_subsampling(strains, metadata, group_by)
     >>> group_by_strain
-    {'strain1': (2020, '2020-01', 'unknown'), 'strain2': (2020, '2020-02', 'unknown')}
+    {'strain1': ('2020', '2020-01', 'unknown'), 'strain2': ('2020', '2020-02', 'unknown')}
 
     We can group metadata without any non-ID columns.
 
@@ -142,7 +142,7 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
 
             # Generate columns.
             if constants.DATE_YEAR_COLUMN in generated_columns_requested:
-                metadata[constants.DATE_YEAR_COLUMN] = metadata[f'{temp_prefix}year']
+                metadata[constants.DATE_YEAR_COLUMN] = metadata[f'{temp_prefix}year'].astype('string')
             if constants.DATE_MONTH_COLUMN in generated_columns_requested:
                 metadata[constants.DATE_MONTH_COLUMN] = metadata.apply(lambda row: get_year_month(
                     row[f'{temp_prefix}year'],
@@ -386,7 +386,7 @@ def _add_unweighted_columns(
             values_for_unweighted_columns[column].add(column_to_value_map[column])
 
     # Create a DataFrame for all permutations of values in unweighted columns.
-    lists = [list(values_for_unweighted_columns[column]) for column in unweighted_columns]
+    lists = [sorted(values_for_unweighted_columns[column]) for column in unweighted_columns]
     unweighted_permutations = pd.DataFrame(list(itertools.product(*lists)), columns=unweighted_columns)
 
     return pd.merge(unweighted_permutations, weights, how='cross')

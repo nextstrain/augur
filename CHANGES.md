@@ -11,10 +11,12 @@
 
 * titers: Improve error messages when titer models do not have enough data. [#1769][] (@huddlej)
 * align: Remove extra logs for insertions since the coordinates are output the *.insertions.csv. [#1772][] (@joverlee521)
+* filter: Fixed an error with weighted sampling by `year`. [#1776][] (@victorlin)
 
 [#1756]: https://github.com/nextstrain/augur/pull/1756
 [#1769]: https://github.com/nextstrain/augur/pull/1769
 [#1772]: https://github.com/nextstrain/augur/pull/1772
+[#1776]: https://github.com/nextstrain/augur/issues/1776
 
 ## 29.0.0 (26 February 2025)
 
