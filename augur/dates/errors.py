@@ -1,4 +1,6 @@
-class InvalidDate(Exception):
+from augur.errors import AugurError
+
+class InvalidDate(AugurError):
     """Custom exception class to handle dates in unsupported formats."""
 
     def __init__(self, date, message):

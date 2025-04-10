@@ -4,7 +4,8 @@ from textwrap import dedent
 import isodate
 import pandas as pd
 import re
-import treetime.utils
+from treetime.utils import numeric_date as tt_numeric_date, datetime_from_numeric
+from typing import Any, Dict, Optional, Tuple, Union
 from augur.errors import AugurError
 from .errors import InvalidDate
 
@@ -15,6 +16,13 @@ SUPPORTED_DATE_HELP_TEXT = dedent("""\
     2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
     3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
 """)
+
+def date_to_numeric(date: datetime.date) -> float:
+    """Wrapper around treetime.utils.numeric_date that ensures a float is returned."""
+    value = tt_numeric_date(date)
+    if not isinstance(value, float):
+        raise Exception("treetime.utils.numeric_date unexpectedly returned a non-float.")
+    return value
 
 def numeric_date(date):
     """
@@ -31,13 +39,13 @@ def numeric_date(date):
     2020.42
     >>> numeric_date("2020-06-04")
     2020.42486...
-    >>> import datetime, isodate, treetime
-    >>> numeric_date("1W") == treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration("P1W"))
+    >>> import datetime, isodate
+    >>> numeric_date("1W") == date_to_numeric(datetime.date.today() - isodate.parse_duration("P1W"))
     True
     """
     # date is a datetime.date
     if isinstance(date, datetime.date):
-        return treetime.utils.numeric_date(date)
+        return date_to_numeric(date)
 
     # date is numeric
     try:
@@ -47,7 +55,7 @@ def numeric_date(date):
 
     # date is in YYYY-MM-DD form
     try:
-        return treetime.utils.numeric_date(datetime.date(*map(int, date.split("-", 2))))
+        return date_to_numeric(datetime.date(*map(int, date.split("-", 2))))
     except ValueError:
         pass
 
@@ -59,7 +67,7 @@ def numeric_date(date):
             duration_str = duration_str
         else:
             duration_str = 'P'+duration_str
-        return treetime.utils.numeric_date(datetime.date.today() - isodate.parse_duration(duration_str))
+        return date_to_numeric(datetime.date.today() - isodate.parse_duration(duration_str))
     except (ValueError, isodate.ISO8601Error):
         pass
 
@@ -107,40 +115,77 @@ def is_date_ambiguous(date, ambiguous_by):
         "X" in day and ambiguous_by in ("any", "day")
     ))
 
-def get_numerical_date_from_value(value, fmt=None, min_max_year=None):
+RE_NUMERIC_DATE = re.compile(r'^-*\d+\.\d+$')
+"""
+Matches floats (e.g. 2018.0, -2018.0).
+Note that a year-only value is treated as incomplete ambiguous and must be
+non-negative (see :const:`RE_YEAR_ONLY`).
+"""
+
+RE_YEAR_ONLY = re.compile(r'^\d+$')
+"""
+Matches:
+
+1. Incomplete ambiguous ISO 8601 dates that are missing both the month and day
+   parts (e.g. 2018)
+2. Other positive integers (e.g. 1, 123, 12345)
+"""
+
+RE_YEAR_MONTH_ONLY = re.compile(r'^\d{4}-\d{2}$')
+"""
+Matches reduced precision ISO 8601 dates that are missing the day part (e.g. 2018-03).
+"""
+
+RE_AUGUR_AMBIGUOUS_DATE = re.compile(r'.*XX.*')
+"""
+Matches an Augur-style ambiguous date with 'XX' used to mask unknown parts of the date.
+Note that this can support any date format, not just YYYY-MM-DD.
+"""
+
+def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float, Tuple[float, float], None]:
     value = str(value)
-    if re.match(r'^-*\d+\.\d+$', value):
-        # numeric date which can be negative
+
+    if RE_NUMERIC_DATE.match(value):
         return float(value)
-    if value.isnumeric():
+
+    if RE_YEAR_ONLY.match(value):
         # year-only date is ambiguous
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
-    if 'XX' in value:
-        try:
-            ambig_date = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
-        except InvalidDate as error:
-            raise AugurError(str(error)) from error
-        return [treetime.utils.numeric_date(d) for d in ambig_date]
+
+    if RE_YEAR_MONTH_ONLY.match(value):
+        # Note: this is already ISO 8601 so format (fmt) is ignored.
+        start, end = AmbiguousDate(f"{value}-XX", fmt="%Y-%m-%d").range(min_max_year=min_max_year)
+        return (date_to_numeric(start), date_to_numeric(end))
+
+    if RE_AUGUR_AMBIGUOUS_DATE.match(value):
+        start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
+        return (date_to_numeric(start), date_to_numeric(end))
+
+    # Fallback: value is an exact date in the specified format (fmt).
     try:
-        return treetime.utils.numeric_date(datetime.datetime.strptime(value, fmt))
+        return date_to_numeric(datetime.datetime.strptime(value, fmt))
     except:
         return None
 
-def get_numerical_dates(metadata:pd.DataFrame, name_col = None, date_col='date', fmt=None, min_max_year=None):
+def get_numerical_dates(
+    metadata: pd.DataFrame,
+    fmt,
+    name_col = None,
+    date_col = 'date',
+    min_max_year = None,
+) -> Dict[str, Union[float, Tuple[float, float], None]]:
     if not isinstance(metadata, pd.DataFrame):
         raise AugurError("Metadata should be a pandas.DataFrame.")
-    if fmt:
-        strains = metadata.index.values
-        dates = metadata[date_col].apply(
-            lambda date: get_numerical_date_from_value(
-                date,
-                fmt,
-                min_max_year
-            )
-        ).values
-    else:
-        strains = metadata.index.values
-        dates = metadata[date_col].astype(float)
+
+    strains = metadata.index.values
+    dates = metadata[date_col].apply(
+        lambda date: get_numerical_date_from_value(
+            date,
+            fmt,
+            min_max_year
+        )
+    ).values
+
     return dict(zip(strains, dates))
 
 def get_year_month(year, month):
@@ -149,3 +194,31 @@ def get_year_month(year, month):
 def get_year_week(year, month, day):
     year, week = datetime.date(year, month, day).isocalendar()[:2]
     return f"{year}-{str(week).zfill(2)}"
+
+def get_year_month_day(value: Any) -> Tuple[Optional[int], Optional[int], Optional[int]]:
+    """
+    Extract year, month, and day from a date value.
+
+    Individual date components can be None if unresolvable.
+    """
+    date_or_range = get_numerical_date_from_value(value, fmt="%Y-%m-%d")
+
+    if date_or_range is None:
+        return (None, None, None)
+
+    # Date range
+    elif isinstance(date_or_range, tuple):
+        start, end = (datetime_from_numeric(date_or_range[0]),
+                      datetime_from_numeric(date_or_range[1]))
+
+        # Only use unambiguous date components
+        year = start.year if start.year == end.year else None
+        month = start.month if start.month == end.month else None
+        day = start.day if start.day == end.day else None
+
+        return (year, month, day)
+
+    # Exact date
+    else:
+        dt = datetime_from_numeric(date_or_range)
+        return (dt.year, dt.month, dt.day)
