@@ -12,11 +12,13 @@
 * titers: Improve error messages when titer models do not have enough data. [#1769][] (@huddlej)
 * align: Remove extra logs for insertions since the coordinates are output the *.insertions.csv. [#1772][] (@joverlee521)
 * filter: Fixed an error with weighted sampling by `year`. [#1776][] (@victorlin)
+* filter: Made a small adjustment to use pandas's `"string"` dtype alias when processing values in metadata. [#1782][] (@victorlin)
 
 [#1756]: https://github.com/nextstrain/augur/pull/1756
 [#1769]: https://github.com/nextstrain/augur/pull/1769
 [#1772]: https://github.com/nextstrain/augur/pull/1772
 [#1776]: https://github.com/nextstrain/augur/issues/1776
+[#1782]: https://github.com/nextstrain/augur/pull/1782
 
 ## 29.0.0 (26 February 2025)
 
