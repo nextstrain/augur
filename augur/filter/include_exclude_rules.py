@@ -150,7 +150,7 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
         # column in the given query. This produces an array of boolean values we
         # can index with.
         excluded = op(
-            metadata[column].astype(str).str.lower(),
+            metadata[column].astype('string').str.lower(),
             value.lower()
         )
 
@@ -238,7 +238,7 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
             except ValueError as e:
                 raise AugurError(f"Failed to convert value in column {column!r} to bool. {e}")
         elif dtype == 'str':
-            metadata_copy[column] = metadata_copy[column].astype('str', errors='ignore')
+            metadata_copy[column] = metadata_copy[column].astype('string', errors='ignore')
 
     try:
         return set(metadata_copy.query(query).index.values)
@@ -578,7 +578,7 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
         # column in the given query. This produces an array of boolean values we
         # can index with.
         included_index = op(
-            metadata[column].astype(str).str.lower(),
+            metadata[column].astype('string').str.lower(),
             value.lower()
         )
         included = set(metadata[included_index].index.values)
