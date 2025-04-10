@@ -2,10 +2,9 @@
 
 ## __NEXT__
 
-### Major Changes
+### Features
 
 * export v2: Allow multiple auspice config files (`--auspice-config`) which are merged together. Note that the merging of lists extends the original list, although elements representing the same data are overwritten instead. You can optionally write out this merged config via `--output-auspice-config` for debugging purposes. [#1756][] (@jameshadfield)
-
 
 ### Bug fixes
 
