@@ -2,6 +2,20 @@
 
 ## __NEXT__
 
+### Major Changes
+
+*Note: The following breaking changes were effective as of version 29.1.0.*
+
+* filter: Date values in `<year>-<month>` format with more than 4 digits in the year (e.g. `02025-04`) or more than 2 digits in the month (e.g. `2025-004`) are no longer supported. Support for these was unintentional, but it worked in practice. [#1786][] (@victorlin)
+* filter: Date values in `<year>-<month>-<day>` format that fall outside of valid date boundaries now fail with an error. For example, `2025-00-01` is invalid. Previously, all date parts were treated categorically without date validation so `month=0` was its own category. [#1786][] (@victorlin)
+* filter: Date values in `<year>-<month>` format that fall outside of valid date boundaries are now auto-converted to the closest date. For example, `2025-00` will be auto-converted to `2025-01`. Previously, all date parts were treated categorically without date validation so `month=0` was its own category. It will now be treated as `month=1`. This is a side-effect of the change in 29.1.0 that switched to the same internal date parsing function that is used by other commands. A future major version may change behavior to fail with an error to better align with handling of `<year>-<month>-<day>`. [#1774][] (@victorlin)
+
+### Bug fixes
+
+* filter: version 29.1.0 inadvertently dropped support for date values in `<year>-<month>` or `<year>-<month>-<day>` format that are not in `YYYY-MM` or `YYYY-MM-DD` format. Support for some values has been restored. See the "Major Changes" section for details on which values are explicitly no longer supported. [#1785][] (@victorlin)
+
+[#1785]: https://github.com/nextstrain/augur/issues/1785
+[#1786]: https://github.com/nextstrain/augur/pull/1786
 
 ## 29.1.0 (10 April 2025)
 
