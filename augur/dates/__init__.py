@@ -131,9 +131,26 @@ Matches:
 2. Other positive integers (e.g. 1, 123, 12345)
 """
 
-RE_YEAR_MONTH_ONLY = re.compile(r'^\d{4}-\d{2}$')
+RE_YEAR_MONTH_ONLY = re.compile(r'^\d+-\d+$')
 """
-Matches reduced precision ISO 8601 dates that are missing the day part (e.g. 2018-03).
+Matches:
+
+1. Reduced precision ISO 8601 dates that are missing the day part (e.g. 2018-03)
+2. Other dates in <year>-<month> format (e.g. 2018-3)
+
+Note: This matches out of bounds dates such as 2018-13.
+Those should be further validated by date conversion functions.
+"""
+
+RE_YEAR_MONTH_DAY = re.compile(r'^\d+-\d+-\d+$')
+"""
+Matches:
+
+1. ISO 8601 dates (e.g. 2018-03-09)
+2. Other dates in <year>-<month>-<day> format (e.g. 2018-3-9)
+
+Note: This matches out of bounds dates such as 2018-03-32.
+Those should be further validated by date conversion functions.
 """
 
 RE_AUGUR_AMBIGUOUS_DATE = re.compile(r'.*XX.*')
@@ -154,13 +171,23 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
         value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
 
     if RE_YEAR_MONTH_ONLY.match(value):
-        # Note: this is already ISO 8601 so format (fmt) is ignored.
+        # Note: format (fmt) is ignored.
         start, end = AmbiguousDate(f"{value}-XX", fmt="%Y-%m-%d").range(min_max_year=min_max_year)
         return (date_to_numeric(start), date_to_numeric(end))
 
     if RE_AUGUR_AMBIGUOUS_DATE.match(value):
         start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         return (date_to_numeric(start), date_to_numeric(end))
+
+    if RE_YEAR_MONTH_DAY.match(value):
+        # Note: format (fmt) is ignored.
+        try:
+            return date_to_numeric(datetime.date(*map(int, value.split('-'))))
+        except ValueError:
+            # Note: This isn't consistent with the out of bounds handling in
+            # AmbiguousDate, which auto-converts out of bounds values to the
+            # closest in-bound value.
+            pass
 
     # Fallback: value is an exact date in the specified format (fmt).
     try:
