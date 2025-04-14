@@ -146,6 +146,7 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
     value = str(value)
 
     if RE_NUMERIC_DATE.match(value):
+        # Note: format (fmt) is ignored.
         return float(value)
 
     if RE_YEAR_ONLY.match(value):
