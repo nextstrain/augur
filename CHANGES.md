@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 30.0.0 (15 April 2025)
+
 ### Major Changes
 
 *Note: The following breaking changes were effective as of version 29.1.0.*
