@@ -131,9 +131,26 @@ Matches:
 2. Other positive integers (e.g. 1, 123, 12345)
 """
 
-RE_YEAR_MONTH_ONLY = re.compile(r'^\d{4}-\d{2}$')
+RE_YEAR_MONTH_ONLY = re.compile(r'^\d+-\d+$')
 """
-Matches reduced precision ISO 8601 dates that are missing the day part (e.g. 2018-03).
+Matches:
+
+1. Reduced precision ISO 8601 dates that are missing the day part (e.g. 2018-03)
+2. Other dates in <year>-<month> format (e.g. 2018-3)
+
+Note: This matches out of bounds dates such as 2018-13.
+Those should be further validated by date conversion functions.
+"""
+
+RE_YEAR_MONTH_DAY = re.compile(r'^\d+-\d+-\d+$')
+"""
+Matches:
+
+1. ISO 8601 dates (e.g. 2018-03-09)
+2. Other dates in <year>-<month>-<day> format (e.g. 2018-3-9)
+
+Note: This matches out of bounds dates such as 2018-03-32.
+Those should be further validated by date conversion functions.
 """
 
 RE_AUGUR_AMBIGUOUS_DATE = re.compile(r'.*XX.*')
@@ -145,27 +162,44 @@ Note that this can support any date format, not just YYYY-MM-DD.
 def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float, Tuple[float, float], None]:
     value = str(value)
 
-    if RE_NUMERIC_DATE.match(value):
-        return float(value)
+    # 1. Check if value is an exact date in the specified format (fmt).
 
-    if RE_YEAR_ONLY.match(value):
-        # year-only date is ambiguous
-        value = fmt.replace('%Y', value).replace('%m', 'XX').replace('%d', 'XX')
-
-    if RE_YEAR_MONTH_ONLY.match(value):
-        # Note: this is already ISO 8601 so format (fmt) is ignored.
-        start, end = AmbiguousDate(f"{value}-XX", fmt="%Y-%m-%d").range(min_max_year=min_max_year)
-        return (date_to_numeric(start), date_to_numeric(end))
+    try:
+        return date_to_numeric(datetime.datetime.strptime(value, fmt))
+    except:
+        pass
+    
+    # 2. Check if value is an ambiguous date in the specified format (fmt).
 
     if RE_AUGUR_AMBIGUOUS_DATE.match(value):
         start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         return (date_to_numeric(start), date_to_numeric(end))
 
-    # Fallback: value is an exact date in the specified format (fmt).
-    try:
-        return date_to_numeric(datetime.datetime.strptime(value, fmt))
-    except:
-        return None
+    # 3. Check formats that are always supported.
+
+    if RE_NUMERIC_DATE.match(value):
+        return float(value)
+
+    if RE_YEAR_ONLY.match(value):
+        start, end = AmbiguousDate(f"{value}-XX-XX", fmt="%Y-%m-%d").range(min_max_year=min_max_year)
+        return (date_to_numeric(start), date_to_numeric(end))
+
+    if RE_YEAR_MONTH_ONLY.match(value):
+        start, end = AmbiguousDate(f"{value}-XX", fmt="%Y-%m-%d").range(min_max_year=min_max_year)
+        return (date_to_numeric(start), date_to_numeric(end))
+
+    if RE_YEAR_MONTH_DAY.match(value):
+        try:
+            return date_to_numeric(datetime.date(*map(int, value.split('-'))))
+        except ValueError as error:
+            # Note: This isn't consistent with the out of bounds handling in
+            # AmbiguousDate, which auto-converts out of bounds values to the
+            # closest in-bound value.
+            raise InvalidDate(value, str(error)) from error
+
+    # 4. Return none (silent error) if the date does not match any of the checked formats.
+
+    return None
 
 def get_numerical_dates(
     metadata: pd.DataFrame,

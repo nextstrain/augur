@@ -26,8 +26,16 @@ class TestDates:
             == pytest.approx(2000.242, abs=1e-3)
         )
 
-    def test_get_numerical_date_from_value_ambiguous_day(self):
-        min_date, max_date = dates.get_numerical_date_from_value("2000-01-XX", "%Y-%m-%d")
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "2000-01-XX",
+            "2000-01",
+            "2000-1",
+        ],
+    )
+    def test_get_numerical_date_from_value_ambiguous_day(self, value):
+        min_date, max_date = dates.get_numerical_date_from_value(value, "%Y-%m-%d")
         assert (min_date
             == pytest.approx(dates.numeric_date(datetime.date(year=2000, month=1, day=1)), abs=1e-3)
             == pytest.approx(2000.001, abs=1e-3)
@@ -36,6 +44,72 @@ class TestDates:
             == pytest.approx(dates.numeric_date(datetime.date(year=2000, month=1, day=31)), abs=1e-3)
             == pytest.approx(2000.083, abs=1e-3)
         )
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "2000-001-XX",
+            "2000-001",
+        ],
+    )
+    def test_get_numerical_date_from_value_ambiguous_day_error(self, value):
+        with pytest.raises(dates.errors.InvalidDate, match="Invalid date '2000-001-XX': Date does not match format `%Y-%m-%d`"):
+            dates.get_numerical_date_from_value(value, "%Y-%m-%d")
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "2000-01-01",
+            "2000-1-1",
+            "2000-01-1",
+            "2000-1-01",
+            "2000-001-01",
+            "2000-001-001",
+        ],
+    )
+    def test_get_numerical_date_from_value_iso_like_date(self, value):
+        assert (
+            dates.get_numerical_date_from_value(value, "%Y-%m-%d")
+            == pytest.approx(dates.numeric_date(datetime.date(year=2000, month=1, day=1)), abs=1e-3)
+            == pytest.approx(2000.001, abs=1e-3)
+        )
+
+    @pytest.mark.parametrize(
+        "value, error",
+        [
+            ("2000-00-01", "month must be in 1..12"),
+            ("2000-13-01", "month must be in 1..12"),
+            ("2000-100-01", "month must be in 1..12"),
+            ("2000-01-00", "day is out of range for month"),
+            ("2000-01-32", "day is out of range for month"),
+            ("2000-01-100", "day is out of range for month"),
+        ],
+    )
+    def test_get_numerical_date_from_value_silent_error(self, value, error):
+        with pytest.raises(dates.errors.InvalidDate, match=error):
+            dates.get_numerical_date_from_value(value, "%Y-%m-%d")
+
+    @pytest.mark.parametrize(
+        "value, equivalent",
+        [
+            ("2000-00", "2000-01"),
+            ("2000-13", "2000-12"),
+            ("2000-99", "2000-12"),
+            ("0000-00", "0001-01"),
+        ],
+    )
+    def test_get_numerical_date_from_value_auto_fix(self, value, equivalent):
+        assert dates.get_numerical_date_from_value(value, "%Y-%m-%d") == dates.get_numerical_date_from_value(equivalent, "%Y-%m-%d")
+
+    @freeze_time("2000-02-20")
+    @pytest.mark.parametrize(
+        "value, equivalent",
+        [
+            ("2000-03", "2000-02-20"),
+        ],
+    )
+    def test_get_numerical_date_from_value_auto_fix_exact(self, value, equivalent):
+        assert dates.get_numerical_date_from_value(value, "%Y-%m-%d") == (dates.get_numerical_date_from_value(equivalent, "%Y-%m-%d"),)*2
 
     def test_get_numerical_date_from_value_ambiguous_month_and_day(self):
         min_date, max_date = dates.get_numerical_date_from_value("2000-XX-XX", "%Y-%m-%d")
