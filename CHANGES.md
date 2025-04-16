@@ -2,6 +2,7 @@
 
 ## __NEXT__
 
+* align: Added `--alignment-args` options for passing arguments to the alignment program. [#1789] (@vbadelita)
 
 ## 30.0.0 (15 April 2025)
 
