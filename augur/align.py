@@ -35,7 +35,7 @@ def register_arguments(parser):
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--method', default='mafft', choices=["mafft"], help="alignment program to use")
-    parser.add_argument('--alignment-args', help="arguments to pass to the alignment program (except for number of threads), overriding defaults. " +
+    parser.add_argument('--alignment-args', help="arguments to pass to the alignment program (except for threads, keeplength if --existing-alignment is passed), overriding defaults. " +
                                                 f"mafft defaults: '{DEFAULT_ARGS['mafft']}'")
     parser.add_argument('--reference-name', metavar="NAME", type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
     parser.add_argument('--reference-sequence', metavar="PATH", type=str, help="Add this reference sequence to the dataset & strip insertions relative to this. Use if the reference is NOT already in the input sequences")
