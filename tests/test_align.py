@@ -187,7 +187,7 @@ class TestAlign:
 
     def test_generate_alignment_cmd_non_mafft(self):
         with pytest.raises(align.AlignmentError):
-            assert align.generate_alignment_cmd('no-mafft', 1, None, None, None, None)
+            assert align.generate_alignment_cmd('no-mafft', 1, None, None, None, None, alignment_args=None)
             
     def test_generate_alignment_cmd_mafft_existing_aln_fname(self):
         existing_aln_fname = "existing_aln"
@@ -199,7 +199,8 @@ class TestAlign:
                                               existing_aln_fname,
                                               seqs_to_align_fname,
                                               aln_fname,
-                                              log_fname)
+                                              log_fname,
+                                              alignment_args=None)
         
         expected = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s" % (quote(seqs_to_align_fname), 1, quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
         
@@ -214,7 +215,8 @@ class TestAlign:
                                               None,
                                               seqs_to_align_fname,
                                               aln_fname,
-                                              log_fname)
+                                              log_fname,
+                                              alignment_args=None)
         
         expected = "mafft --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(aln_fname), quote(log_fname))
         

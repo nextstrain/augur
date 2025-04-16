@@ -138,7 +138,7 @@ def run(args):
 
         # generate alignment command & run
         log = args.output + ".log"
-        cmd = generate_alignment_cmd(args.method, args.alignment_args, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, log)
+        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, log, alignment_args=args.alignment_args)
         success = run_shell_command(cmd)
         if not success:
             raise AlignmentError(f"Error during alignment: please see the log file {log!r} for more details")
@@ -254,7 +254,7 @@ def read_reference(ref_fname):
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
     return ref_seq
 
-def generate_alignment_cmd(method, alignment_args, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname):
+def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname, alignment_args):
     if method not in DEFAULT_ARGS:
         raise AlignmentError('ERROR: alignment method %s not implemented'%method)
     
@@ -265,7 +265,7 @@ def generate_alignment_cmd(method, alignment_args, nthreads, existing_aln_fname,
 
     if method=='mafft':
         if existing_aln_fname:
-            cmd = "mafft --add %s --keeplength %s %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), args, nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
+            cmd = "mafft --add %s --keeplength %s --thread %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), args, nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
         else:
             cmd = "mafft %s --thread %d %s 1> %s 2> %s"%(args, nthreads, shquote(seqs_to_align_fname), shquote(aln_fname), shquote(log_fname))
         print("\nusing mafft to align via:\n\t" + cmd +
