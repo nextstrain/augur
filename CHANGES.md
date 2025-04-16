@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* merge: Support merging of sequence files with `--sequences`. [#1579][] (@victorlin)
+
+[#1579]: https://github.com/nextstrain/augur/issues/1579
 
 ## 30.0.0 (15 April 2025)
 
