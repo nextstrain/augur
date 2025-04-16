@@ -14,6 +14,10 @@ from .io.vcf import shquote
 from .utils import nthreads_value
 from collections import defaultdict
 
+DEFAULT_ARGS = {
+    "mafft": "--reorder --anysymbol --nomemsave --adjustdirection",
+}
+
 class AlignmentError(Exception):
     # TODO: this exception should potentially be renamed and made augur-wide
     # thus allowing any module to raise it and have the message printed & augur
@@ -31,6 +35,8 @@ def register_arguments(parser):
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--method', default='mafft', choices=["mafft"], help="alignment program to use")
+    parser.add_argument('--alignment-args', help="arguments to pass to the alignment program (except for number of threads), overriding defaults. " +
+                                                f"mafft defaults: '{DEFAULT_ARGS['mafft']}'")
     parser.add_argument('--reference-name', metavar="NAME", type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
     parser.add_argument('--reference-sequence', metavar="PATH", type=str, help="Add this reference sequence to the dataset & strip insertions relative to this. Use if the reference is NOT already in the input sequences")
     parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
@@ -132,7 +138,7 @@ def run(args):
 
         # generate alignment command & run
         log = args.output + ".log"
-        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, log)
+        cmd = generate_alignment_cmd(args.method, args.alignment_args, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, log)
         success = run_shell_command(cmd)
         if not success:
             raise AlignmentError(f"Error during alignment: please see the log file {log!r} for more details")
@@ -248,17 +254,26 @@ def read_reference(ref_fname):
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
     return ref_seq
 
-def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname):
+def generate_alignment_cmd(method, alignment_args, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname):
+    if method not in DEFAULT_ARGS:
+        raise AlignmentError('ERROR: alignment method %s not implemented'%method)
+    
+    if alignment_args is None:
+        args = DEFAULT_ARGS[method]
+    else:
+        args = alignment_args
+
     if method=='mafft':
         if existing_aln_fname:
-            cmd = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
+            cmd = "mafft --add %s --keeplength %s %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), args, nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
         else:
-            cmd = "mafft --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s"%(nthreads, shquote(seqs_to_align_fname), shquote(aln_fname), shquote(log_fname))
+            cmd = "mafft %s --thread %d %s 1> %s 2> %s"%(args, nthreads, shquote(seqs_to_align_fname), shquote(aln_fname), shquote(log_fname))
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
     else:
         raise AlignmentError('ERROR: alignment method %s not implemented'%method)
+    
     return cmd
 
 
