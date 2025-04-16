@@ -202,7 +202,7 @@ class TestAlign:
                                               log_fname,
                                               alignment_args=None)
         
-        expected = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s" % (quote(seqs_to_align_fname), 1, quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
+        expected = "mafft --keeplength --reorder --anysymbol --nomemsave --adjustdirection --thread %d --add %s %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
         
         assert result == expected
                                     
@@ -235,7 +235,7 @@ class TestAlign:
                                               log_fname,
                                               alignment_args="--auto")
         
-        expected = "mafft --add %s --keeplength --auto --thread %d %s 1> %s 2> %s" % (quote(seqs_to_align_fname), 1, quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
+        expected = "mafft --keeplength --auto --thread %d --add %s %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
         
         assert result == expected
 

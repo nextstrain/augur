@@ -259,15 +259,17 @@ def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_f
         raise AlignmentError('ERROR: alignment method %s not implemented'%method)
     
     if alignment_args is None:
-        args = DEFAULT_ARGS[method]
-    else:
-        args = alignment_args
+        alignment_args = DEFAULT_ARGS[method]
 
     if method=='mafft':
+        files_to_align = shquote(seqs_to_align_fname)
         if existing_aln_fname:
-            cmd = "mafft --add %s --keeplength %s --thread %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), args, nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
-        else:
-            cmd = "mafft %s --thread %d %s 1> %s 2> %s"%(args, nthreads, shquote(seqs_to_align_fname), shquote(aln_fname), shquote(log_fname))
+            # If there is an existing alignment, then seqs_to_align_fname becomes a parameter of --add
+            # and existing_aln_fname becomes the anonymous parameter
+            files_to_align = f"--add {shquote(seqs_to_align_fname)} {shquote(existing_aln_fname)}"
+            alignment_args = " ".join(["--keeplength", alignment_args])
+
+        cmd = f"mafft {alignment_args} --thread {nthreads} {files_to_align} 1> {shquote(aln_fname)} 2> {shquote(log_fname)}"
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
