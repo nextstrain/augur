@@ -233,9 +233,10 @@ class TestAlign:
                                               seqs_to_align_fname,
                                               aln_fname,
                                               log_fname,
-                                              alignment_args="--auto")
+                                              alignment_args="--auto",
+                                              override_default_args=False)
         
-        expected = "mafft --keeplength --auto --thread %d --add %s %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
+        expected = "mafft --keeplength --reorder --anysymbol --nomemsave --adjustdirection --auto --thread %d --add %s %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
         
         assert result == expected
 
@@ -249,12 +250,31 @@ class TestAlign:
                                               seqs_to_align_fname,
                                               aln_fname,
                                               log_fname,
-                                              alignment_args="--auto --anysymbol")
+                                              alignment_args="--auto",
+                                              override_default_args=False)
         
-        expected = "mafft --auto --anysymbol --thread %d %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(aln_fname), quote(log_fname))
+        expected = "mafft --reorder --anysymbol --nomemsave --adjustdirection --auto --thread %d %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(aln_fname), quote(log_fname))
         
         assert result == expected
+
+    def test_generate_alignment_cmd_mafft_custom_args_override_args(self):
+        existing_aln_fname = "existing_aln"
+        seqs_to_align_fname = "seqs_to_align"
+        aln_fname = "aln_fname"
+        log_fname = "log_fname"
         
+        result = align.generate_alignment_cmd("mafft", 1,
+                                              existing_aln_fname,
+                                              seqs_to_align_fname,
+                                              aln_fname,
+                                              log_fname,
+                                              alignment_args="--auto",
+                                              override_default_args=True)
+        
+        expected = "mafft --keeplength --auto --thread %d --add %s %s 1> %s 2> %s" % (1, quote(seqs_to_align_fname), quote(existing_aln_fname), quote(aln_fname), quote(log_fname))
+        
+        assert result == expected
+
     def test_read_alignment(self):
         data_file = pathlib.Path('tests/data/align/test_aligned_sequences.fasta')
         result = align.read_alignment(str(data_file.resolve()))
