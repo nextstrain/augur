@@ -6,8 +6,10 @@
 
 * export v2: Improved the error message that is displayed when the metadata index column has duplicated values [#1791][] (@genehack)
 * tree: Improved help text for `--tree-builder-args` to explain some IQ-TREE options won't work because of defline rewriting [#875][] (@genehack)
+* `augur.utils.read_bed_file()` was rewritten for increased compliance with the BED file specification. Providing an empty BED file, or one with only header lines and no data lines, will no longer cause an error to be thrown [#945][] (@genehack)
 
 [#875]: https://github.com/nextstrain/augur/issues/875
+[#945]: https://github.com/nextstrain/augur/issues/945
 [#1791]: https://github.com/nextstrain/augur/issues/1791
 
 ## 30.0.1 (28 April 2025)
