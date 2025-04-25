@@ -2,13 +2,20 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* `augur mask --mask`, `augur tree --exclude-sites`: BED files with inconsistent CHROM values (i.e., values in the first column of data lines) will throw an error, as Augur (implicitly) expects to be working on a single piece of DNA (chromosome, segment, etc), and multiple CHROM values in a BED file indicate a violation of this expectation. This is a breaking change. [#945][] (@genehack)
+
 ### Bug fixes
 
+* `augur mask --mask`, `augur tree --exclude-sites`: Providing an empty BED file, or one with only header lines and no data lines, will no longer cause an error to be thrown. [#945][] (@genehack)
+* `augur.utils.read_bed_file()` was rewritten for increased compliance with the BED file specification. In particular, header line dectection is improved and multiple header lines are now supported. [#945][] (@genehack)
 * export v2: Improved the error message that is displayed when the metadata index column has duplicated values [#1791][] (@genehack)
 * tree: Improved help text for `--tree-builder-args` to explain some IQ-TREE options won't work because of defline rewriting [#875][] (@genehack)
 * export v2: Automatically rename fields within the `filters` and `colorings` configs of the provided auspice config file to match the renamed fields in the exported nodes. [#1804][] (@joverlee521)
 
 [#875]: https://github.com/nextstrain/augur/issues/875
+[#945]: https://github.com/nextstrain/augur/issues/945
 [#1791]: https://github.com/nextstrain/augur/issues/1791
 [#1804]: https://github.com/nextstrain/augur/pull/1804
 
