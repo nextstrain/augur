@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* filter: Removed the note that appeared in output when running with `--sequences` and without `--sequence-index`. The help text of both options has been updated to clarify the relationship between the two. [#1797][] (@victorlin)
+
+[#1797]: https://github.com/nextstrain/augur/pull/1797
 
 ## 30.0.0 (15 April 2025)
 
