@@ -52,11 +52,6 @@ def run(args):
         with NamedTemporaryFile(delete=False) as sequence_index_file:
             sequence_index_path = sequence_index_file.name
 
-        print_err(
-            "Note: You did not provide a sequence index, so Augur will generate one.",
-            "You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`."
-        )
-
         if is_vcf:
             index_vcf(args.sequences, sequence_index_path)
         else:
