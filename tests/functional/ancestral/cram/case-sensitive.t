@@ -14,7 +14,7 @@ Change the _reference_ to lowercase
   >  --seed 314159 \
   >  --inference marginal > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  $ deep diff --ignore-order \
   >   "$TESTDIR/../data/simple-genome/nt_muts.ref-seq.json" \
   >   "nt_muts.ref-seq.json" \
   >   --exclude-paths "root['generated_by']"
@@ -37,7 +37,7 @@ be lowecase which will be compared against the uppercase reference
   >  --seed 314159 \
   >  --inference marginal > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  $ deep diff --ignore-order \
   >   "$TESTDIR/../data/simple-genome/nt_muts.ref-seq.json" \
   >   "nt_muts.ref-seq.json" \
   >   --exclude-paths "root['generated_by']"

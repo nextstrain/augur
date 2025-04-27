@@ -10,7 +10,7 @@ Export with auspice config JSON which defines scale & legend settings
   >   --auspice-config "$TESTDIR/../data/auspice_config1.json" \
   >   --output dataset.json &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset1.json" dataset.json \
+  $ deep diff --ignore-order  "$TESTDIR/../data/dataset1.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']"
   {}
 
@@ -23,6 +23,6 @@ Export with auspice config JSON which defines scale & legend settings
   >   --auspice-config "$TESTDIR/../data/auspice_config1.json" \
   >   --output dataset.json &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset1.json" dataset.json \
+  $ deep diff --ignore-order  "$TESTDIR/../data/dataset1.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']"
   {}

@@ -16,8 +16,8 @@ This is expected to output a warning that "none" is an invalid coloring column a
   It will be ignored during export, please rename field if you would like to use it as a coloring.
   \s{0} (re)
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-without-none-column.json" dataset1.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-without-none-column.json" dataset1.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}
 
 Run export with metadata that contains "none" column and asked to use as metadata.
@@ -34,6 +34,6 @@ This is expected to output a warning that "none" is an invalid node_attr and ski
   It will be ignored during export, please rename field if you would like to include as a metadata field.
   \s{0} (re)
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-without-none-column.json" dataset2.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-without-none-column.json" dataset2.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}

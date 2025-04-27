@@ -19,10 +19,11 @@ but it will have the reference sequence attached.
   >  --inference marginal > /dev/null
 
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  $ deep diff --ignore-order \
   >   "$DATA/nt_muts.ref-seq.json" \
   >   "nt_muts.vcf-input.ref-seq.json" \
-  >   --exclude-regex-paths "root\['nodes'\]\['.+'\]\['sequence'\]" "root\['generated_by'\]"
+  >   --exclude-regex-path "root['nodes']['.+']['sequence']" \
+  >   --exclude-regex-path "root['generated_by']"
   {}
 
 Here's the same mutations as in $DATA/nt_muts.ref-seq.json,

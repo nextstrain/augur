@@ -10,6 +10,6 @@ Test augur clades with simple Zika input files and hierarchical clades.
   >   --clades "$TESTDIR/../data/clades.tsv" \
   >   --output-node-data clades.json &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/clades.json" clades.json \
+  $ deep diff --ignore-order  "$TESTDIR/../data/clades.json" clades.json \
   >   --exclude-paths "root['generated_by']"
   {}

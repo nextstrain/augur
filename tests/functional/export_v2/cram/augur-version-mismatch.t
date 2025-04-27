@@ -29,6 +29,6 @@ Skipping validation allows mismatched augur versions to be used without error.
 
 Check the output from the above command against its expected contents
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset2.json" dataset.json \
+  $ deep diff --ignore-order  "$TESTDIR/../data/dataset2.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']"
   {}

@@ -19,7 +19,7 @@ The above minimal.json takes divergence from the newick file. This converts newi
 because BioPython uses floats (which is perfectly reasonable). Ignore this type change in the JSON diff.
 (Note that Auspice won't behave any differently)
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" --ignore-numeric-type-changes "$TESTDIR/../data/minimal.json" minimal.json \
+  $ deep diff --ignore-order --ignore-numeric-type-changes "$TESTDIR/../data/minimal.json" minimal.json \
   >   --exclude-paths "root['meta']['updated']"
   {}
 
@@ -37,7 +37,7 @@ Almost minimal export -- divergence is encoded via the node-data JSON typically 
   Validation of 'almost-minimal.json' succeeded.
   
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/minimal.json" almost-minimal.json \
+  $ deep diff --ignore-order  "$TESTDIR/../data/minimal.json" almost-minimal.json \
   >   --exclude-paths "root['meta']['updated']"
   {}
 

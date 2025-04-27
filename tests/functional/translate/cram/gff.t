@@ -47,10 +47,10 @@ the ##sequence-region pragma.
   >  --reference-sequence "reference-only.gff" \
   >  --output-node-data "aa_muts-only.json" > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  $ deep diff --ignore-order \
   >   "$DATA/aa_muts.json" \
   >   "aa_muts-only.json" \
-  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]"
+  >   --exclude-regex-path "root\['annotations'\]\['.+'\]\['seqid'\]"
   {'values_changed': {"root['annotations']['nuc']['type']": {'new_value': 'source', 'old_value': '##sequence-region pragma'}}}
 
 GFF file with data row added with GFF type 'source' with coordinates which don't match
@@ -74,10 +74,11 @@ GFF file with 'region' removed, so the only genome information is the ##sequence
   >  --reference-sequence "reference.pragma-only.gff" \
   >  --output-node-data "aa_muts.pragma-only.json" > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  $ deep diff --ignore-order \
   >   "$DATA/aa_muts.json" \
   >   "aa_muts.pragma-only.json" \
-  >   --exclude-regex-paths "root\['annotations'\]\['.+'\]\['seqid'\]" "root['meta']['updated']"
+  >   --exclude-regex-path "root\['annotations'\]\['.+'\]\['seqid'\]" \
+  >   --exclude-paths "root['meta']['updated']"
   {}
 
 GFF file with no genome coordinate information

@@ -12,8 +12,8 @@ Run export with metadata that contains "accession".
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-accession.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-with-accession.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}
 
 Run export with metadata that contains "accession", and use "accession" as the ID column.
@@ -27,6 +27,6 @@ Run export with metadata that contains "accession", and use "accession" as the I
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-accession-by-accession.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-with-accession-by-accession.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}

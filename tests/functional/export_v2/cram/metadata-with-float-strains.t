@@ -29,6 +29,6 @@ because we force the index column to be strings.
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-float-strains.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-with-float-strains.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}

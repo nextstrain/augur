@@ -35,8 +35,8 @@ Run export with tree and metadata with additional columns.
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}
 
 Missing columns are skipped with a warning.
@@ -50,8 +50,8 @@ Missing columns are skipped with a warning.
   WARNING: Requested metadata column 'missing_field' does not exist and will not be exported
   \s{0} (re)
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}
 
 Specifying a fields with both --metadata-columns and --colory-by-metadata should result in field used as a coloring and a filter.
@@ -64,8 +64,8 @@ Specifying a fields with both --metadata-columns and --colory-by-metadata should
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {'iterable_item_added': {"root['meta']['colorings'][0]": {'key': 'field_B', 'title': 'field_B', 'type': 'categorical'}, "root['meta']['filters'][0]": 'field_B'}}
 
 Missing columns are skipped with a warning when specified by both --metadata-columns and --color-by-metadata.
@@ -82,8 +82,8 @@ Missing columns are skipped with a warning when specified by both --metadata-col
   WARNING: Requested color-by field 'missing_field' does not exist and will not be used as a coloring or exported.
   \s{0} (re)
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}
 
 Specifying additional metadata columns via the Auspice configuration file.
@@ -95,8 +95,8 @@ Specifying additional metadata columns via the Auspice configuration file.
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}
 
 Specifying additional metadata columns via command line overrides the Auspice configuration file.
@@ -109,6 +109,6 @@ Specifying additional metadata columns via command line overrides the Auspice co
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}

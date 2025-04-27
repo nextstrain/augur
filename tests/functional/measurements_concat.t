@@ -10,7 +10,7 @@ Measurements concat for two measurements JSONs, each with a single collection.
   >   --default-collection collection_1 \
   >   --output-json "$TMP/two_collections_measurements.json" &>/dev/null
 
-  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" measurements_concat/two_collections_measurements.json "$TMP/two_collections_measurements.json"
+  $ deep diff --ignore-order measurements_concat/two_collections_measurements.json "$TMP/two_collections_measurements.json"
   {}
 
 Measurements concat for two measurements JSONs, where one has multiple collections.
@@ -20,7 +20,7 @@ Measurements concat for two measurements JSONs, where one has multiple collectio
   >   --default-collection collection_1 \
   >   --output-json "$TMP/multiple_collections_measurements.json" &>/dev/null
 
-  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" measurements_concat/multiple_collections_measurements.json "$TMP/multiple_collections_measurements.json"
+  $ deep diff --ignore-order measurements_concat/multiple_collections_measurements.json "$TMP/multiple_collections_measurements.json"
   {}
 
 Measurements concat for measurements JSONs that have collections that share the same key.

@@ -12,6 +12,6 @@ Run export with metadata and external colors TSV that contains zero values.
   >   --colors "$TESTDIR/../data/zero_value_colors.tsv" \
   >   --output dataset.json &> /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset3.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset3.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}

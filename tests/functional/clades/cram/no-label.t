@@ -11,6 +11,6 @@ Test the ability to _not_ export a branch label (same logic as not exporting the
   >   --label-name none \
   >   --output-node-data clades_no-labels.json &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/clades.json" clades_no-labels.json \
+  $ deep diff --ignore-order "$TESTDIR/../data/clades.json" clades_no-labels.json \
   >   --exclude-paths "root['generated_by']"
   {'dictionary_item_removed': [root['branches']]}

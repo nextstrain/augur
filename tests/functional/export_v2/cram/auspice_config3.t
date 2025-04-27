@@ -22,6 +22,6 @@ Setup
   >   --output dataset.json \
   >   --skip-validation &>/dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset2.json" dataset.json \
+  $ deep diff --ignore-order  "$TESTDIR/../data/dataset2.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']"
   {}

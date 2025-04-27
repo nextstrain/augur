@@ -19,10 +19,11 @@ See <https://github.com/nextstrain/augur/issues/1380> for the bug this is testin
   >  --inference marginal > /dev/null
 
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  $ deep diff --ignore-order \
   >   "$DATA/nt_muts.ref-seq.json" \
   >   nt_muts.json \
-  >   --exclude-regex-paths "root\['nodes'\]\['.+'\]\['sequence'\]" "root\['generated_by'\]"
+  >   --exclude-regex-path "root['nodes']['.+']['sequence']" \
+  >   --exclude-regex-path "root['generated_by']"
   {'iterable_item_added': {"root['nodes']['node_root']['muts'][3]": 'A30G'}}
 
   $ cat > expected.vcf <<EOF

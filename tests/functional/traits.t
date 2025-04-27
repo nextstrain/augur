@@ -11,7 +11,7 @@ Infer the ancestral region for a given tree and metadata.
   >  --columns region \
   >  --output-node-data "$TMP/traits.json" > /dev/null
 
-  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" "traits/traits_region.json" "$TMP/traits.json" --significant-digits 5
+  $ deep diff --ignore-order "traits/traits_region.json" "$TMP/traits.json" --significant-digits 5
   {}
   $ rm -f "$TMP/traits.json"
 
@@ -25,7 +25,7 @@ In this case, a sample from Panama (North America) has its region inferred as "S
   >  --columns region \
   >  --output-node-data "$TMP/traits.json" > /dev/null
 
-  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" "traits/traits_with_missing_region.json" "$TMP/traits.json" --significant-digits 2
+  $ deep diff --ignore-order "traits/traits_with_missing_region.json" "$TMP/traits.json" --significant-digits 2
   {}
   $ rm -f "$TMP/traits.json"
 
@@ -39,7 +39,7 @@ Since there is only a single virus in the data, Augur warns the user through std
   >  --output-node-data "$TMP/traits.json" > /dev/null
   WARNING: only one state found for discrete state reconstruction: ['zika']
 
-  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" "traits/traits_virus.json" "$TMP/traits.json" --significant-digits 5
+  $ deep diff --ignore-order "traits/traits_virus.json" "$TMP/traits.json" --significant-digits 5
   {}
   $ rm -f "$TMP/traits.json"
 
@@ -54,7 +54,7 @@ This should similarly warn the user through stderr, but it should produce an err
   >  --output-node-data "$TMP/traits.json" > /dev/null
   WARNING: only one state found for discrete state reconstruction: ['zika']
 
-  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" "traits/traits_virus.json" "$TMP/traits.json" --significant-digits 5
+  $ deep diff --ignore-order "traits/traits_virus.json" "$TMP/traits.json" --significant-digits 5
   {}
   $ rm -f "$TMP/traits.json"
 

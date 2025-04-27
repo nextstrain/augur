@@ -25,9 +25,11 @@ Confirm that trees match expected topology and branch lengths, given that the ou
   >   tree.nwk \
   >   --significant-digits 2
   {}
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  $ deep diff --ignore-order \
   >   "$TESTDIR/../data/integer_branch_lengths.json" \
   >   branch_lengths.json \
   >   --significant-digits 0 \
-  >   --exclude-paths "root['generated_by']['version']" "root['input_tree']" "root['alignment']"
+  >   --exclude-paths "root['generated_by']['version']" \
+  >   --exclude-paths "root['input_tree']" \
+  >   --exclude-paths "root['alignment']"
   {}

@@ -11,6 +11,6 @@ mutations (node_data→nodes) and a historical node_data→nodes→<name>→clad
   >   --maintainers "Nextstrain Team" \
   >   --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/dataset-with-branch-labels.json" dataset.json \
+  $ deep diff --ignore-order  "$TESTDIR/../data/dataset-with-branch-labels.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']"
   {}

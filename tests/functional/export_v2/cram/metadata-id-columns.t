@@ -12,8 +12,8 @@ Run export with metadata using the default id column of "strain".
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset1.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset1.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}
 
 Run export with metadata that uses a different id column other than "strain".
@@ -27,8 +27,8 @@ In this case, the column is "name" (one of the default columns expected by Augur
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset1.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
+  $ deep diff --ignore-order "$TESTDIR/../data/dataset1.json" dataset.json \
+  >   --exclude-paths "root['meta']['updated']" --exclude-paths "root['meta']['maintainers']"
   {}
 
 Run export with metadata that uses an invalid id column.

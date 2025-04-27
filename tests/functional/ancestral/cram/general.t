@@ -18,7 +18,7 @@ node-data JSON we diff against.
   >  --inference marginal > /dev/null
 
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  $ deep diff --ignore-order \
   >   "$TESTDIR/../data/simple-genome/nt_muts.ref-seq.json" \
   >   "nt_muts.ref-seq.json" \
   >   --exclude-paths "root['generated_by']"
@@ -39,7 +39,7 @@ mutations (as there's nothing to compare the root node to)
   >  --inference marginal > /dev/null
 
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
+  $ deep diff --ignore-order \
   >   "$TESTDIR/../data/simple-genome/nt_muts.no-ref-seq.json" \
   >   "nt_muts.no-ref-seq.json" \
   >   --exclude-paths "root['generated_by']"
