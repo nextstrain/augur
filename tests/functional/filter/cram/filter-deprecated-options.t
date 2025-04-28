@@ -26,7 +26,6 @@ Create files
   >   --sequences sequences.fasta \
   >   --output filtered.fasta
   WARNING: --output is deprecated. Use --output-sequences instead.
-  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   1 strain was dropped during filtering
   	1 had no metadata
   2 strains passed all filters
@@ -44,7 +43,6 @@ Create files
   >   --sequences sequences.fasta \
   >   -o filtered.fasta
   WARNING: -o is deprecated. Use --output-sequences instead.
-  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   1 strain was dropped during filtering
   	1 had no metadata
   2 strains passed all filters

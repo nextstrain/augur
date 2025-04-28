@@ -67,7 +67,6 @@ Error on duplicates in sequences.
   >   --metadata metadata.tsv \
   >   --sequences sequences.fasta \
   >   --output-sequences sequences-filtered.fasta
-  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   ERROR: The following strains are duplicated in 'sequences.fasta':
   a
   c
@@ -79,7 +78,6 @@ Error even if the corresponding output is not used.
   >   --metadata metadata.tsv \
   >   --sequences sequences.fasta \
   >   --output-strains filtered.txt
-  Note: You did not provide a sequence index, so Augur will generate one. You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`.
   ERROR: The following strains are duplicated in 'sequences.fasta':
   a
   c

@@ -46,17 +46,11 @@ def run(args):
         build_sequence_index = True
 
     if build_sequence_index:
-        # Generate the sequence index on the fly, for backwards compatibility
-        # with older workflows that don't generate the index ahead of time.
-        # Create a temporary index using a random filename to avoid collisions
-        # between multiple filter commands.
+        # Generate the sequence index on the fly for workflows that don't do
+        # this separately. Create a temporary index using a random filename to
+        # avoid collisions between multiple filter commands.
         with NamedTemporaryFile(delete=False) as sequence_index_file:
             sequence_index_path = sequence_index_file.name
-
-        print_err(
-            "Note: You did not provide a sequence index, so Augur will generate one.",
-            "You can generate your own index ahead of time with `augur index` and pass it with `augur filter --sequence-index`."
-        )
 
         if is_vcf:
             index_vcf(args.sequences, sequence_index_path)
