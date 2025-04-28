@@ -2,9 +2,13 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* export v2: Improved the error message that is displayed when the metadata index column has duplicated values [#1791][] (@genehack)
 * tree: Improved help text for `--tree-builder-args` to explain some IQ-TREE options won't work because of defline rewriting [#875][] (@genehack)
 
 [#875]: https://github.com/nextstrain/augur/issues/875
+[#1791]: https://github.com/nextstrain/augur/issues/1791
 
 ## 30.0.1 (28 April 2025)
 
