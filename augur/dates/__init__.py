@@ -4,6 +4,7 @@ from textwrap import dedent
 import isodate
 import pandas as pd
 import re
+from functools import cache
 from treetime.utils import numeric_date as tt_numeric_date, datetime_from_numeric
 from typing import Any, Dict, Optional, Tuple, Union
 from augur.errors import AugurError
@@ -229,6 +230,7 @@ def get_year_week(year, month, day):
     year, week = datetime.date(year, month, day).isocalendar()[:2]
     return f"{year}-{str(week).zfill(2)}"
 
+@cache
 def get_year_month_day(value: Any) -> Tuple[Optional[int], Optional[int], Optional[int]]:
     """
     Extract year, month, and day from a date value.
