@@ -141,7 +141,7 @@ def convert_tree_to_json_structure(node, metadata, get_div, div=0):
     node_struct = {'name': node.name, 'node_attrs': {}, 'branch_attrs': {}}
 
     if get_div is not None: # Store the (cumulative) observed divergence prior to this node
-        node_struct["node_attrs"]["div"] = format_number(div)
+        node_struct["node_attrs"]["div"] = format_number(div, precision=6)
 
     if node.clades:
         node_struct["children"] = []
@@ -674,17 +674,17 @@ def is_numeric(n:Any) -> bool:
     # doesn't work nicely with type hints. See <https://stackoverflow.com/a/73186301>
     return isinstance(n, (int, float))
 
-def format_number(n: Union[int, float]) -> Union[int, float]:
+def format_number(n: Union[int, float], precision: int = 3) -> Union[int, float]:
     if isinstance(n, int) or n==0:
         return n
-    # We want to use three sig figs for the fractional part of the float, while
+    # We want to use {precision} sig figs for the fractional part of the float, while
     # preserving all the data in the integral (integer) part. We leverage the
     # fact that python floats (incl scientific notation) storing the shortest
     # decimal string that’s guaranteed to round back to x. Note that this means we
     # drop trailing zeros, so it's not _quite_ sig figs.
     integral = int(abs(n))
     significand = math.floor(math.log10(integral))+1 if integral!=0 else 0
-    return float(f"{n:.{significand+3}g}")
+    return float(f"{n:.{significand+precision}g}")
 
 
 class ConfidenceNumeric(TypedDict):
