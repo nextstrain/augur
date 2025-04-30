@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+* tree: Improved help text for `--tree-builder-args` to explain some IQ-TREE options won't work because of defline rewriting [#875][] (@genehack)
+
+[#875]: https://github.com/nextstrain/augur/issues/875
 
 ## 30.0.1 (28 April 2025)
 
@@ -1661,9 +1664,9 @@ Note that names with spaces in the FASTA header (description line) continue to b
 ### Features
 
 * improve testing by
-	* adding a simple shell script to run tests and improving pytest configuration and output [#463][]
-	* adding code coverage reports ([#486][], [#491][]) and integration with codecov.io [#508][]
-	* adding unit tests for align ([#477][]), filter ([#478][], [#479][], [#487][]), utils ([#501][])
+    * adding a simple shell script to run tests and improving pytest configuration and output [#463][]
+    * adding code coverage reports ([#486][], [#491][]) and integration with codecov.io [#508][]
+    * adding unit tests for align ([#477][]), filter ([#478][], [#479][], [#487][]), utils ([#501][])
 * align: reverse complement sequences when necessary using mafft’s autodirection flag [#467][]
 * align: speed up replacement of gaps with “ambiguous” bases [#474][]
 * mask: add support for FASTA input files [#493][]
@@ -1825,9 +1828,9 @@ Note that names with spaces in the FASTA header (description line) continue to b
   [Also part of PR 431](https://github.com/nextstrain/augur/pull/431)
 * traits: Allow input of `--weights` which references a `.tsv` file in the following format:
   ```
-  division	Hubei	10.0
-  division	Jiangxi	1.0
-  division	Chongqing	1.0
+  division  Hubei   10.0
+  division  Jiangxi 1.0
+  division  Chongqing   1.0
   ```
   where these weights represent equilibrium frequencies in the CTMC transition model. We imagine the
   primary use of user-specified weights to correct for strong sampling biases in available data.
