@@ -14,6 +14,16 @@ Create files for testing.
   > tipF	FF	FFF
   > ~~
 
+  $ cat >metadata_with_duplicates.tsv <<~~
+  > strain	field_A	field_B
+  > tipA	AA	AAA
+  > tipA	BB	BBB
+  > tipC	CC	CCC
+  > tipC	DD	DDD
+  > tipE	EE	EEE
+  > tipE	FF	FFF
+  > ~~
+
   $ cat >tree.nwk <<~~
   > (tipA:1,(tipB:1,tipC:1)internalBC:2,(tipD:3,tipE:4,tipF:1)internalDEF:5)ROOT:0;
   > ~~
@@ -112,3 +122,20 @@ Specifying additional metadata columns via command line overrides the Auspice co
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
   {}
+
+Duplicated index values are properly detected
+
+  $ ${AUGUR} export v2 \
+  >  --tree tree.nwk \
+  >  --metadata metadata_with_duplicates.tsv \
+  >  --auspice-config auspice-config-overridden.json \
+  >  --metadata-columns "field_A" "field_B" \
+  >  --maintainers "Nextstrain Team" \
+  >  --output dataset.json > /dev/null
+  ERROR: The following strain values are duplicated in 'metadata_with_duplicates.tsv':
+  tipA
+  tipC
+  tipE
+  
+  You can fix this by either de-duplicating the metadata, or setting a different unique index column via --metadata-id-columns.
+  [2]
