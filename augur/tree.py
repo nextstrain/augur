@@ -472,6 +472,8 @@ def register_parser(parent_subparsers):
     FastTree defaults: "{DEFAULT_ARGS['fasttree']}".
     RAxML defaults: "{DEFAULT_ARGS['raxml']}".
     IQ-TREE defaults: "{DEFAULT_ARGS['iqtree']}".
+
+Note that IQ-TREE will rewrite certain characters in FASTA deflines. In order to prevent this from breaking downstream analysis steps, `augur tree` preemptively rewrites conflicting deflines, and then restores them later. Unfortunately, this breaks the use of certain IQ-TREE options (e.g., `-g`) which rely on matching names between the FASTA and other input files.
     """)
     parser.add_argument('--override-default-args', action="store_true", help="override default tree builder arguments with the values provided by the user in `--tree-builder-args` instead of augmenting the existing defaults.")
 

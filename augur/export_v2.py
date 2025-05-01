@@ -1154,6 +1154,15 @@ def run(args):
                 f"Valid delimiters are: {args.metadata_delimiters!r}. "
                 "This can be changed with --metadata-delimiters."
             )
+        except ValueError as error:
+            if len(metadata_df.index) > len(set(metadata_df.index)):
+                raise AugurError(
+                    f"The following {metadata_df.index.name} values are duplicated in '{args.metadata}':\n"
+                    + "\n".join(sorted(metadata_df.index[metadata_df.index.duplicated()]))
+                    + "\n\nYou can fix this by either de-duplicating the metadata, or setting a different unique index column via --metadata-id-columns.")
+            else:
+                print(f"ERROR: {error}", file=sys.stderr)
+                sys.exit(1)
         except Exception as error:
             print(f"ERROR: {error}", file=sys.stderr)
             sys.exit(1)
