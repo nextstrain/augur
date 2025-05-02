@@ -11,6 +11,14 @@ from typing import Union, Any
 from collections.abc import Callable
 
 
+def update_deprecated_names(name):
+    # correct deprecated keys
+    change = {
+        "authors": "author",
+        "numdate": "num_date"
+    }
+    return change.get(name, name)
+
 def read_json(fname):
     if not (fname and os.path.isfile(fname)):
         print("ERROR: config file %s not found."%fname)
