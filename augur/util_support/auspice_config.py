@@ -167,6 +167,9 @@ def _rename_display_keys(display: dict) -> dict:
         del defaults[v1_key]
     return defaults
 
+def _rename_deprecated_filters(filters: list) -> list:
+    return [update_deprecated_names(f) for f in filters]
+
 def remove_unused_metadata_columns(columns: list) -> list:
     # 1. Remove any occurrences of 'author' and 'num_date' as it's a no-op - author
     #    and numerical date information is always exported on nodes if it's available.
@@ -182,6 +185,7 @@ DEPRECATIONS = [
     {"old_name": "geo", "new_name": "geo_resolutions", "modify": lambda values: [{"key": v} for v in values]},
     {"old_name": "color_options", "new_name": "colorings", "modify": _parse_color_options},
     {"old_name": "colorings", "new_name": "colorings", "modify": _rename_deprecated_authors_coloring},
+    {"old_name": "filters", "new_name": "filters", "modify": _rename_deprecated_filters},
     {"old_name": "metadata_columns", "new_name": "metadata_columns", "modify": remove_unused_metadata_columns},
 ]
 
