@@ -22,7 +22,7 @@ from augur.io.print import print_err, _n
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
-from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
+from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata, write_strains
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling, get_weighted_group_sizes
 
@@ -410,10 +410,13 @@ def run(args):
             # Update the set of available sequence strains.
             sequence_strains = observed_sequence_strains
 
-    if args.output_metadata or args.output_strains:
-        write_metadata_based_outputs(args.metadata, args.metadata_delimiters,
-                                     args.metadata_id_columns, args.output_metadata,
-                                     args.output_strains, valid_strains)
+    if args.output_metadata:
+        write_metadata(args.metadata, args.metadata_delimiters,
+                       args.metadata_id_columns, args.output_metadata,
+                       valid_strains)
+
+    if args.output_strains:
+        write_strains(args.output_strains, valid_strains)
 
     # Calculate the number of strains that don't exist in either metadata or
     # sequences.

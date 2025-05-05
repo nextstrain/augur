@@ -30,20 +30,20 @@ Check that the row for a strain is identical between input and output metadata.
   >   <(grep -F "$strain" "$TESTDIR/../data/metadata.tsv") \
   >   <(grep -F "$strain" filtered_metadata.tsv)
 
-Check the order of strains in the filtered strains file.
+The strains in the filtered strains file should be sorted alphabetically.
 
   $ cat filtered_strains.txt
-  Colombia/2016/ZC204Se
-  ZKC2/2016
-  DOM/2016/BB_0059
   BRA/2016/FC_6706
+  Colombia/2016/ZC204Se
+  DOM/2016/BB_0059
   EcEs062_16
+  ZKC2/2016
 
-Check that the order of strains in the metadata is the same as above.
+Check that the same strains are on both outputs.
 
   $ diff \
-  >   <(cat filtered_strains.txt) \
-  >   <(tail -n+2 filtered_metadata.tsv | cut -f 1)
+  >   <(sort filtered_strains.txt) \
+  >   <(tail -n+2 filtered_metadata.tsv | cut -f 1 | sort)
 
 Check the order of strains in the FASTA sequence output.
 
