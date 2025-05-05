@@ -11,13 +11,16 @@ from typing import Union, Any
 from collections.abc import Callable
 
 
+# Deprecated attr keys that are automatically updated during `augur export`
+# old_key: new_key
+DEPRECATED_KEYS = {
+    "authors": "author",
+    "numdate": "num_date"
+}
+
 def update_deprecated_names(name):
     # correct deprecated keys
-    change = {
-        "authors": "author",
-        "numdate": "num_date"
-    }
-    return change.get(name, name)
+    return DEPRECATED_KEYS.get(name, name)
 
 def read_json(fname):
     if not (fname and os.path.isfile(fname)):
