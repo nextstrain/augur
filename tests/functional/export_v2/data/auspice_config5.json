@@ -1,0 +1,18 @@
+{
+    "colorings": [
+      {
+        "key": "authors",
+        "title": "Authors",
+        "type": "categorical"
+      },
+      {
+        "key": "numdate",
+        "title": "Date",
+        "type": "continuous"
+      }
+    ],
+    "filters": [
+      "authors",
+      "numdate"
+    ]
+  }

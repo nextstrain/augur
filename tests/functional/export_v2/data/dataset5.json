@@ -1,0 +1,136 @@
+{
+  "version": "v2",
+  "meta": {
+    "updated": "2025-05-02",
+    "colorings": [
+      {
+        "key": "author",
+        "title": "Authors",
+        "type": "categorical"
+      },
+      {
+        "key": "num_date",
+        "title": "Date",
+        "type": "continuous"
+      }
+    ],
+    "filters": [
+      "author",
+      "num_date"
+    ],
+    "panels": [
+      "tree"
+    ]
+  },
+  "tree": {
+    "name": "ROOT",
+    "node_attrs": {
+      "div": 0
+    },
+    "branch_attrs": {},
+    "children": [
+      {
+        "name": "tipA",
+        "node_attrs": {
+          "div": 1,
+          "num_date": {
+            "value": 2025.0
+          },
+          "author": {
+            "author": "Test et al.",
+            "value": "Test et al."
+          }
+        },
+        "branch_attrs": {}
+      },
+      {
+        "name": "internalBC",
+        "node_attrs": {
+          "div": 2
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "tipB",
+            "node_attrs": {
+              "div": 3,
+              "num_date": {
+                "value": 2025.0
+              },
+              "author": {
+                "author": "Test et al.",
+                "value": "Test et al."
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipC",
+            "node_attrs": {
+              "div": 3,
+              "num_date": {
+                "value": 2025.0
+              },
+              "author": {
+                "author": "Test et al.",
+                "value": "Test et al."
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      },
+      {
+        "name": "internalDEF",
+        "node_attrs": {
+          "div": 5
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "tipD",
+            "node_attrs": {
+              "div": 8,
+              "num_date": {
+                "value": 2025.0
+              },
+              "author": {
+                "author": "Test et al.",
+                "value": "Test et al."
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipE",
+            "node_attrs": {
+              "div": 9,
+              "num_date": {
+                "value": 2025.0
+              },
+              "author": {
+                "author": "Test et al.",
+                "value": "Test et al."
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipF",
+            "node_attrs": {
+              "div": 6,
+              "num_date": {
+                "value": 2025.0
+              },
+              "author": {
+                "author": "Test et al.",
+                "value": "Test et al."
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      }
+    ]
+  }
+}

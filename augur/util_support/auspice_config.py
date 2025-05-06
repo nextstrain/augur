@@ -11,6 +11,17 @@ from typing import Union, Any
 from collections.abc import Callable
 
 
+# Deprecated attr keys that are automatically updated during `augur export`
+# old_key: new_key
+DEPRECATED_KEYS = {
+    "authors": "author",
+    "numdate": "num_date"
+}
+
+def update_deprecated_names(name):
+    # correct deprecated keys
+    return DEPRECATED_KEYS.get(name, name)
+
 def read_json(fname):
     if not (fname and os.path.isfile(fname)):
         print("ERROR: config file %s not found."%fname)
@@ -131,17 +142,17 @@ def _parse_color_options(options: Any) -> list[dict]:
         colorings.append({"key": key, **info})
     return colorings
 
-def _rename_deprecated_authors_coloring(colorings: list):
-    # The 'authors' coloring (plural) is now called 'author' (singular)
-    author  = next(iter([{'index': idx, 'coloring': c} for [idx, c] in enumerate(colorings) if c['key']=='author'] or [None]))
-    authors = next(iter([{'index': idx, 'coloring': c} for [idx, c] in enumerate(colorings) if c['key']=='authors'] or [None]))
-    if authors:
-        if author:
-            deprecated("[config file] ignoring deprecated 'authors' because a coloring for 'author' already exists")
-            colorings = [c for [idx, c] in enumerate(colorings) if idx!=authors['index']]
-        else:
-            deprecated("[config file] renaming coloring 'authors' to 'author'")
-            colorings[authors['index']]['key'] = "author"
+def _rename_deprecated_colorings(colorings: list):
+    for old_key, new_key in DEPRECATED_KEYS.items():
+        new_coloring  = next(iter([{'index': idx, 'coloring': c} for [idx, c] in enumerate(colorings) if c['key']==new_key] or [None]))
+        old_coloring  = next(iter([{'index': idx, 'coloring': c} for [idx, c] in enumerate(colorings) if c['key']==old_key] or [None]))
+        if old_coloring:
+            if new_coloring:
+                deprecated(f"[config file] ignoring deprecated {old_key!r} because a coloring for {new_key!r} already exists")
+                colorings = [c for [idx, c] in enumerate(colorings) if idx!=old_coloring['index']]
+            else:
+                deprecated(f"[config file] renaming coloring {old_key!r} to {new_key!r}")
+                colorings[old_coloring['index']]['key'] = new_key
     return colorings
 
 def _rename_display_keys(display: dict) -> dict:
@@ -159,6 +170,9 @@ def _rename_display_keys(display: dict) -> dict:
         del defaults[v1_key]
     return defaults
 
+def _rename_deprecated_filters(filters: list) -> list:
+    return [update_deprecated_names(f) for f in filters]
+
 def remove_unused_metadata_columns(columns: list) -> list:
     # 1. Remove any occurrences of 'author' and 'num_date' as it's a no-op - author
     #    and numerical date information is always exported on nodes if it's available.
@@ -173,7 +187,8 @@ DEPRECATIONS = [
     {"old_name": "maintainer", "new_name": "maintainers", "modify": lambda m: [{"name": m[0], "url": m[1]}]},
     {"old_name": "geo", "new_name": "geo_resolutions", "modify": lambda values: [{"key": v} for v in values]},
     {"old_name": "color_options", "new_name": "colorings", "modify": _parse_color_options},
-    {"old_name": "colorings", "new_name": "colorings", "modify": _rename_deprecated_authors_coloring},
+    {"old_name": "colorings", "new_name": "colorings", "modify": _rename_deprecated_colorings},
+    {"old_name": "filters", "new_name": "filters", "modify": _rename_deprecated_filters},
     {"old_name": "metadata_columns", "new_name": "metadata_columns", "modify": remove_unused_metadata_columns},
 ]
 

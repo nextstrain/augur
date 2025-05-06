@@ -19,7 +19,7 @@ from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimite
 from .types import ValidationMode
 from .utils import read_node_data, write_json, json_size, read_lat_longs, read_colors
 from .util_support.warnings import configure_warnings, warn, deprecated, deprecationWarningsEmitted
-from .util_support.auspice_config import read_auspice_configs, remove_unused_metadata_columns
+from .util_support.auspice_config import read_auspice_configs, remove_unused_metadata_columns, update_deprecated_names
 from .validate import export_v2 as validate_v2, ValidateError, validation_failure
 from .version import __version__
 
@@ -164,15 +164,6 @@ def is_node_attr_defined(node_attrs, attr_name):
         if data.get(attr_name):
             return True
     return False
-
-
-def update_deprecated_names(name):
-    # correct deprecated keys
-    change = {
-        "authors": "author",
-        "numdate": "num_date"
-    }
-    return change.get(name, name)
 
 def get_values_across_nodes(node_attrs, key):
     vals = set()
