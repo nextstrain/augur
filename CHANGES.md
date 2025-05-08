@@ -2,12 +2,15 @@
 
 ## __NEXT__
 
+* align: Added `--alignment-args` options for passing arguments to the alignment program. [#1789] (@vbadelita)
+
 ### Bug fixes
 
 * export v2: Improved the error message that is displayed when the metadata index column has duplicated values [#1791][] (@genehack)
 * tree: Improved help text for `--tree-builder-args` to explain some IQ-TREE options won't work because of defline rewriting [#875][] (@genehack)
 * export v2: Automatically rename fields within the `filters` and `colorings` configs of the provided auspice config file to match the renamed fields in the exported nodes. [#1804][] (@joverlee521)
 
+[#1789]: https://github.com/nextstrain/augur/issues/1789
 [#875]: https://github.com/nextstrain/augur/issues/875
 [#1791]: https://github.com/nextstrain/augur/issues/1791
 [#1804]: https://github.com/nextstrain/augur/pull/1804
