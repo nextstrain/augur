@@ -5,6 +5,7 @@
 ### Major Changes
 
 * `augur mask --mask`, `augur tree --exclude-sites`: BED files with inconsistent CHROM values (i.e., values in the first column of data lines) will throw an error, as Augur (implicitly) expects to be working on a single piece of DNA (chromosome, segment, etc), and multiple CHROM values in a BED file indicate a violation of this expectation. This is a breaking change. [#945][] (@genehack)
+* filter: Empty values in the metadata id column will result in an error that can only be resolved by editing the metadata file or by specifying a different id column with `--metadata-id-columns`. [#1807][] (@joverlee521)
 
 ### Bug fixes
 
@@ -20,6 +21,7 @@
 [#1791]: https://github.com/nextstrain/augur/issues/1791
 [#1801]: https://github.com/nextstrain/augur/pull/1801
 [#1804]: https://github.com/nextstrain/augur/pull/1804
+[#1807]: https://github.com/nextstrain/augur/pull/1807
 
 ## 30.0.1 (28 April 2025)
 
