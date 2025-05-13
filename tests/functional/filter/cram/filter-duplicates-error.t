@@ -20,7 +20,7 @@ Error on duplicates in metadata within same chunk.
   >   --metadata-chunk-size 10 \
   >   --output-metadata metadata-filtered.tsv > /dev/null
   ERROR: The following strains are duplicated in .* (re)
-  a
+  'a'
   [2]
   $ cat metadata-filtered.tsv
   cat: .*: No such file or directory (re)
@@ -36,7 +36,7 @@ Error on duplicates in metadata in separate chunks.
   >   --metadata-chunk-size 1 \
   >   --output-metadata metadata-filtered.tsv > /dev/null
   ERROR: The following strains are duplicated in .* (re)
-  a
+  'a'
   [2]
   $ cat metadata-filtered.tsv
   cat: .*: No such file or directory (re)
@@ -68,8 +68,8 @@ Error on duplicates in sequences.
   >   --sequences sequences.fasta \
   >   --output-sequences sequences-filtered.fasta
   ERROR: The following strains are duplicated in 'sequences.fasta':
-  a
-  c
+  'a'
+  'c'
   [2]
 
 Error even if the corresponding output is not used.
@@ -79,6 +79,6 @@ Error even if the corresponding output is not used.
   >   --sequences sequences.fasta \
   >   --output-strains filtered.txt
   ERROR: The following strains are duplicated in 'sequences.fasta':
-  a
-  c
+  'a'
+  'c'
   [2]
