@@ -173,6 +173,11 @@ def run(args):
         dtype="string",
     )
     for metadata in metadata_reader:
+        if len(metadata.loc[metadata.index == '']):
+            cleanup_outputs(args)
+            raise AugurError(f"Found rows with empty values in id column {metadata.index.name!r} in {args.metadata!r}\n" + \
+                             "Please remove the rows with empty ids or use a different id column via --metadata-id-columns.")
+
         duplicate_strains = (
             set(metadata.index[metadata.index.duplicated()]) |
             (set(metadata.index) & metadata_strains)
