@@ -9,7 +9,7 @@ from io import RawIOBase
 from .__version__ import __version__
 
 from augur.data import as_file
-from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
+from augur.io.file import open_file
 from augur.io.sequences import read_single_sequence
 
 from augur.types import ValidationMode
@@ -660,10 +660,26 @@ def get_augur_version():
 def read_bed_file(bed_file):
     """Read a BED file and return a list of excluded sites.
 
-    Note: This function assumes the given file is a BED file. On parsing
-    failures, it will attempt to skip the first line and retry, but no
-    other error checking is attempted. Incorrectly formatted files will
-    raise errors.
+    This function attempts to parse the given file as a BED file, based on
+    the specification at <https://genome.ucsc.edu/FAQ/FAQformat.html#format1>,
+    using the following rules:
+
+    * BED files may start with one or more optional header lines
+    * Header lines must begin with one of "browser", "chrom", "track" — this
+      comparison is done case-insensitively. Note that "chrom" is not recognized
+      by the above standard or `bedtools` but is included because it has
+      historically been supported and is frequently used in the wild
+    * Any line starting with "#" is treated as a comment line, and skipped completely
+    * Once data (non-header) lines appear in the file, header lines are
+      no longer allowed
+    * Data lines have a number of fields, but we are only interested in
+      the first three, which are mandatory in BED files: `chrom`, `chromStart`,
+      and `chromEnd`. All fields beyond these first three are ignored
+    * The values of the `chromStart` and `chromEnd` field must be integer strings
+    * The value in the `chrom` field must match for all data lines -- this is an
+      augur-specific requirement, not something that arises out of the format spec
+
+    Any failure to conform to the above rules will raise an error.
 
     Parameters
     ----------
@@ -675,18 +691,61 @@ def read_bed_file(bed_file):
     list of int:
         Sorted list of unique zero-indexed sites
     """
-    mask_sites = []
-    try:
-        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
-                          dtype={1:int,2:int}, **PANDAS_READ_CSV_OPTIONS)
-    except ValueError:
-        # Check if we have a header row. Otherwise, just fail.
-        bed = pd.read_csv(bed_file, sep='\t', header=None, usecols=[1,2],
-                          dtype={1:int,2:int}, skiprows=1, **PANDAS_READ_CSV_OPTIONS)
-        print("Skipped row 1 of %s, assuming it is a header." % bed_file)
-    for _, row in bed.iterrows():
-        mask_sites.extend(range(row[1], row[2]))
+    in_header = True
+    initial_chrom_value: str | None = None
+    mask_sites: list[int] = []
+
+    bed_file_size = os.path.getsize(bed_file)
+
+    # Only try to read the file if it is larger than zero bytes;
+    # otherwise return an empty list
+    if bed_file_size == 0:
+        return mask_sites
+
+    with open(bed_file, 'r', newline='') as bed_fh:
+        for line in bed_fh:
+            row = line.split("\t")
+
+            # skip all lines starting with "#" regardless of where they are
+            if row[0].startswith("#"):
+                continue
+            elif row[0].lower().startswith(("browser", "chrom", "track")):
+                if in_header:
+                    # ignore header lines
+                    continue
+                else:
+                    # once a data line has been seen, header lines are not allowed
+                    raise AugurError(
+                        f"BED file {bed_file} has a header line after data lines."+
+                        f"\nInvalid header:\n{row!r}"
+                    )
+
+            # if we get to here, this is a data line, no going back now
+            in_header = False
+
+            # extract the values we care about
+            try:
+                chrom, start, end, *_ = row
+            except ValueError:
+                raise AugurError(
+                    "Data line with less than three values detected when parsing BED file; please correct:\n" +
+                    f"{row!r}"
+                )
+
+            # make sure the chrom values all match:
+            if initial_chrom_value is not None:
+                if chrom != initial_chrom_value:
+                    raise AugurError(
+                        "Augur does not support BED files with different chrom values; please correct:\n" +
+                        f"{initial_chrom_value!r} != {chrom!r}"
+                    )
+            else:
+                initial_chrom_value = chrom
+
+            mask_sites.extend(range(int(start), int(end)))
+
     return sorted(set(mask_sites))
+
 
 def read_mask_file(mask_file):
     """Read a masking file and return a list of excluded sites.

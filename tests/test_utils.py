@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from augur import utils
+from augur.errors import AugurError
 
 
 class TestUtils:
@@ -52,22 +53,66 @@ class TestUtils:
             fh.write("\n".join(bed_lines))
         assert utils.read_bed_file(bed_file) == expected_sites
 
+    def test_read_bed_file_empty_input(self, tmpdir):
+        """read_byd_file should return an empty list given an empty file"""
+        bed_file = str(tmpdir / "temp.bed")
+        expected_sites = []
+        with open(bed_file, "w") as fh:
+            fh.write("")
+        assert utils.read_bed_file(bed_file) == expected_sites
+
     def test_read_bed_file_with_header(self, tmpdir):
         """read_bed_file should skip header lines if they exist in bed files"""
         bed_file = str(tmpdir / "temp.bed")
-        bed_lines = ["CHROM\tSTART\tEND","SEQ\t7\t8", "SEQ\t2\t5"]
+        bed_lines = ["CHROM\tSTART\tEND","browser yaddayadda","track moreyadda","SEQ\t7\t8", "SEQ\t2\t5"]
         expected_sites = [2,3,4,7]
         with open(bed_file, "w") as fh:
             fh.write("\n".join(bed_lines))
         assert utils.read_bed_file(bed_file) == expected_sites
 
-    def test_read_bed_file_with_bad_lines(self, tmpdir):
+    def test_read_bed_file_with_only_header(self, tmpdir):
+        """read_bed_file should skip header lines if they exist in bed files"""
+        bed_file = str(tmpdir / "temp.bed")
+        bed_lines = ["CHROM\tSTART\tEND"]
+        expected_sites = []
+        with open(bed_file, "w") as fh:
+            fh.write("\n".join(bed_lines))
+        assert utils.read_bed_file(bed_file) == expected_sites
+
+    def test_read_bed_file_with_internal_comment_line(self, tmpdir):
+        """read_bed_file should ignore internal comment line"""
+        bed_file = str(tmpdir / "temp.bed")
+        bed_lines = ["SEQ\t7\t8", "# CHROM\tSTART\tEND", "SEQ\t2\t5"]
+        expected_sites = [2,3,4,7]
+        with open(bed_file, "w") as fh:
+            fh.write("\n".join(bed_lines))
+        assert utils.read_bed_file(bed_file) == expected_sites
+
+    def test_read_bed_file_with_internal_header(self, tmpdir):
         """read_bed_file should error out if any other lines are unreadable"""
         bed_file = str(tmpdir / "temp.bed")
         bed_lines = ["SEQ\t7\t8", "CHROM\tSTART\tEND", "SEQ\t2\t5"]
         with open(bed_file, "w") as fh:
             fh.write("\n".join(bed_lines))
-        with pytest.raises(Exception):
+        with pytest.raises(AugurError):
+            utils.read_bed_file(bed_file)
+
+    def test_read_bed_file_with_mismatched_chrom_values(self, tmpdir):
+        """read_bed_file should error out if chrom values don't match"""
+        bed_file = str(tmpdir / "temp.bed")
+        bed_lines = ["SEQ\t7\t8", "SEQ 2\t2\t5"]
+        with open(bed_file, "w") as fh:
+            fh.write("\n".join(bed_lines))
+        with pytest.raises(AugurError):
+            utils.read_bed_file(bed_file)
+
+    def test_read_bed_file_with_bad_data_line(self, tmpdir):
+        """read_bed_file should error out if data line has less than 3 values"""
+        bed_file = str(tmpdir / "temp.bed")
+        bed_lines = ["SEQ\t7\t8", "SEQ\t2"]
+        with open(bed_file, "w") as fh:
+            fh.write("\n".join(bed_lines))
+        with pytest.raises(AugurError):
             utils.read_bed_file(bed_file)
 
     def test_read_mask_file_drm_file(self, tmpdir):
