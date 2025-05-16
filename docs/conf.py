@@ -163,6 +163,7 @@ linkcheck_ignore = [
      r'^https://academic\.oup\.com/ve/article/4/1/vex042/4794731',
      r'https://www\.gnu\.org/software/bash/manual/bash\.html#ANSI_002dC-Quoting',
      r'https://stackoverflow\.com/',
+     r'https://github\.com/',
 ]
 linkcheck_anchors_ignore_for_url = [
      # Github uses anchor-looking links for highlighting lines but
