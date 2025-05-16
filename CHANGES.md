@@ -13,10 +13,12 @@
 * export v2: Improved the error message that is displayed when the metadata index column has duplicated values [#1791][] (@genehack)
 * tree: Improved help text for `--tree-builder-args` to explain some IQ-TREE options won't work because of defline rewriting [#875][] (@genehack)
 * export v2: Automatically rename fields within the `filters` and `colorings` configs of the provided auspice config file to match the renamed fields in the exported nodes. [#1804][] (@joverlee521)
+* export v2: Divergence values are now exported with increased precision, showing up to 6 significant digits instead of 3. [#1801][] (@rneher)
 
 [#875]: https://github.com/nextstrain/augur/issues/875
 [#945]: https://github.com/nextstrain/augur/issues/945
 [#1791]: https://github.com/nextstrain/augur/issues/1791
+[#1801]: https://github.com/nextstrain/augur/pull/1801
 [#1804]: https://github.com/nextstrain/augur/pull/1804
 
 ## 30.0.1 (28 April 2025)
