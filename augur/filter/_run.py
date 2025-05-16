@@ -173,13 +173,18 @@ def run(args):
         dtype="string",
     )
     for metadata in metadata_reader:
+        if len(metadata.loc[metadata.index == '']):
+            cleanup_outputs(args)
+            raise AugurError(f"Found rows with empty values in id column {metadata.index.name!r} in {args.metadata!r}\n" + \
+                             "Please remove the rows with empty ids or use a different id column via --metadata-id-columns.")
+
         duplicate_strains = (
             set(metadata.index[metadata.index.duplicated()]) |
             (set(metadata.index) & metadata_strains)
         )
         if len(duplicate_strains) > 0:
             cleanup_outputs(args)
-            raise AugurError(f"The following strains are duplicated in '{args.metadata}':\n" + "\n".join(sorted(duplicate_strains)))
+            raise AugurError(f"The following strains are duplicated in '{args.metadata}':\n" + "\n".join(repr(x) for x in sorted(duplicate_strains)))
 
         # Maintain list of all strains seen.
         metadata_strains.update(set(metadata.index.values))
@@ -396,7 +401,7 @@ def run(args):
 
         if duplicates:
             cleanup_outputs(args)
-            raise AugurError(f"The following strains are duplicated in '{args.sequences}':\n" + "\n".join(sorted(duplicates)))
+            raise AugurError(f"The following strains are duplicated in '{args.sequences}':\n" + "\n".join(repr(x) for x in sorted(duplicates)))
 
         if sequence_strains != observed_sequence_strains:
             # Warn the user if the expected strains from the sequence index are
