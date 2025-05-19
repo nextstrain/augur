@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 31.0.0 (19 May 2025)
+
 ### Major Changes
 
 * `augur mask --mask`, `augur tree --exclude-sites`: BED files with inconsistent CHROM values (i.e., values in the first column of data lines) will throw an error, as Augur (implicitly) expects to be working on a single piece of DNA (chromosome, segment, etc), and multiple CHROM values in a BED file indicate a violation of this expectation. This is a breaking change. [#945][] (@genehack)
