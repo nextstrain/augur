@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* schema: Allow full stop character (`.`) in gene names. [#955][] (@jameshadfield)
+
+[#955]: https://github.com/nextstrain/augur/pull/955
 
 ## 31.0.0 (19 May 2025)
 
