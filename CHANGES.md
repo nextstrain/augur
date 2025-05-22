@@ -6,7 +6,12 @@
 
 * schema: Allow full stop character (`.`) in gene names. [#955][] (@jameshadfield)
 
+### Bug fixes
+
+* filter: Improved speed of `--group-by` with `year` or `month` on large datasets. [#1792][] (@victorlin)
+
 [#955]: https://github.com/nextstrain/augur/pull/955
+[#1792]: https://github.com/nextstrain/augur/pull/1792
 
 ## 31.0.0 (19 May 2025)
 
