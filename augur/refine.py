@@ -297,6 +297,12 @@ def run(args):
             dtype="string",
         )
 
+        # This conversion is necessary because the value is passed as a
+        # parameter to a date function using functools.cache, which only works
+        # with hashable parameters.
+        if args.year_bounds is not None:
+            args.year_bounds = tuple(args.year_bounds)
+
         try:
             dates = get_numerical_dates(metadata, fmt=args.date_format,
                                         min_max_year=args.year_bounds)
