@@ -8,10 +8,11 @@
 
 ### Bug fixes
 
-* filter: Improved speed of `--group-by` with `year` or `month` on large datasets. [#1792][] (@victorlin)
+* filter: Improved speed of using `--group-by`, `--min-date`, and `--max-date` on large datasets. [#1792][], [#1811][] (@victorlin)
 
 [#955]: https://github.com/nextstrain/augur/pull/955
 [#1792]: https://github.com/nextstrain/augur/pull/1792
+[#1811]: https://github.com/nextstrain/augur/pull/1811
 
 ## 31.0.0 (19 May 2025)
 

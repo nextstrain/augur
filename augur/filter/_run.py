@@ -255,7 +255,7 @@ def run(args):
                         )
 
                     queues_by_group[group].add(
-                        metadata.loc[strain],
+                        strain,
                         priorities[strain],
                     )
 
@@ -333,7 +333,7 @@ def run(args):
             for strain in sorted(group_by_strain.keys()):
                 group = group_by_strain[strain]
                 queues_by_group[group].add(
-                    metadata.loc[strain],
+                    strain,
                     priorities[strain],
                 )
 
@@ -344,14 +344,8 @@ def run(args):
         # Populate the set of strains to keep from the records in queues.
         subsampled_strains = set()
         for group, queue in queues_by_group.items():
-            records = []
-            for record in queue.get_items():
-                # Each record is a pandas.Series instance. Track the name of the
-                # record, so we can output its sequences later.
-                subsampled_strains.add(record.name)
-
-                # Construct a data frame of records to simplify metadata output.
-                records.append(record)
+            for strain in queue.get_items():
+                subsampled_strains.add(strain)
 
         # Count and optionally log strains that were not included due to
         # subsampling.

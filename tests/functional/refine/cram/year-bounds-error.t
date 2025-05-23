@@ -22,7 +22,7 @@ Check that invalid --year-bounds provides useful error messages.
   >  --timetree \
   >  --year-bounds 1950 1960 1970 \
   >  --divergence-units mutations > /dev/null
-  ERROR: Invalid value for --year-bounds: The year bounds [1950, 1960, 1970] must have only one (lower) or two (lower, upper) bounds.
+  ERROR: Invalid value for --year-bounds: The year bounds (1950, 1960, 1970) must have only one (lower) or two (lower, upper) bounds.
   [2]
 
   $ ${AUGUR} refine \
