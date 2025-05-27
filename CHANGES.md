@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 31.1.0 (27 May 2025)
+
 ### Features
 
 * schema: Allow full stop character (`.`) in gene names. [#955][] (@jameshadfield)
