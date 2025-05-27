@@ -160,6 +160,7 @@ Matches an Augur-style ambiguous date with 'XX' used to mask unknown parts of th
 Note that this can support any date format, not just YYYY-MM-DD.
 """
 
+@cache
 def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float, Tuple[float, float], None]:
     value = str(value)
 
@@ -223,9 +224,11 @@ def get_numerical_dates(
 
     return dict(zip(strains, dates))
 
+@cache
 def get_year_month(year, month):
     return f"{year}-{str(month).zfill(2)}"
 
+@cache
 def get_year_week(year, month, day):
     year, week = datetime.date(year, month, day).isocalendar()[:2]
     return f"{year}-{str(week).zfill(2)}"
