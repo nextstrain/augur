@@ -190,6 +190,11 @@
                     "type": "string",
                     "pattern": "^(none|[a-zA-Z0-9]+)$"
                 },
+                "label": {
+                    "description": "branch label that tree starts zoomed to, expressed as <key>:<value>",
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9]+:[^:]+$"
+                },
                 "tip_label": {
                     "description": "What tip label should be displayed by default, or 'none' to hide labels by default.",
                     "$comment": "Should be a key present in (at least some) node_attrs",
