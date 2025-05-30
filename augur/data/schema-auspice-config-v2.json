@@ -143,9 +143,9 @@
             "type": "array"
         },
         "build_url": {
-          "description": "URL with instructions to reproduce build, usually expected to be a GitHub repo URL",
-          "$comment": "Auspice displays this at the top of the page as part of a byline",
-          "type": "string"
+            "description": "URL with instructions to reproduce build, usually expected to be a GitHub repo URL",
+            "$comment": "Auspice displays this at the top of the page as part of a byline",
+            "type": "string"
         },
         "build_avatar": {
             "description": "The custom avatar image URL allows users to include a logo, even if it is hosted outside of GitHub.",
@@ -153,11 +153,11 @@
             "type": "string"
         },
         "filters": {
-          "description": "These appear as filters in the footer of Auspice (which populates the displayed values based upon the tree)",
-          "$comment": "These values must be present as keys on a tree node -> trait",
-          "type": "array",
-          "uniqueItems": true,
-          "items": {"type": "string"}
+            "description": "These appear as filters in the footer of Auspice (which populates the displayed values based upon the tree)",
+            "$comment": "These values must be present as keys on a tree node -> trait",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string"}
         },
         "display_defaults": {
             "description": "Set the defaults for certain display options in Auspice. All are optional.",
@@ -190,11 +190,20 @@
                     "type": "string",
                     "pattern": "^(none|[a-zA-Z0-9]+)$"
                 },
+                "label": {
+                    "description": "branch label that tree starts zoomed to, expressed as <key>:<value>",
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9]+:[^:]+$"
+                },
                 "tip_label": {
-                  "description": "What tip label should be displayed by default, or 'none' to hide labels by default.",
-                  "$comment": "Should be a key present in (at least some) node_attrs",
-                  "type": "string"
-              },
+                    "description": "What tip label should be displayed by default, or 'none' to hide labels by default.",
+                    "$comment": "Should be a key present in (at least some) node_attrs",
+                    "type": "string"
+                },
+                "stream_label": {
+                    "description": "Start with streamtrees enabled using this branch label",
+                    "type": "string"
+                },
                 "transmission_lines": {
                     "$comment": "Transmission lines depend on the geo_resolution being defined for internal nodes",
                     "type": "boolean"
@@ -223,6 +232,14 @@
             "description": "DEPRECATED v1 syntax for defining auspice view defaults",
             "deprecated": true,
             "type": "object"
+        },
+        "stream_labels": {
+            "description": "Branch labels which are may be used as streamtree defining labels (otherwise all available labels will be used). Use an empty array to prevent streamtrees from being used.",
+            "type": "array",
+            "minItems": 0,
+            "items": {
+                "type": "string"
+            }
         },
         "updated": {
             "description": "DEPRECATED v1 (or older) syntax for defining when the build was updated",

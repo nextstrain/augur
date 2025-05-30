@@ -1171,6 +1171,8 @@ def run(args):
     set_title(data_json, config, args.title)
     if 'display_defaults' in config:
         data_json['meta']["display_defaults"] = config['display_defaults']
+    if 'stream_labels' in config:
+        data_json['meta']['stream_labels'] = config['stream_labels']
     set_maintainers(data_json, config, args.maintainers)
     set_build_url(data_json, config, args.build_url)
     set_build_avatar(data_json, config)

@@ -112,6 +112,9 @@
                 "display_defaults": {
                     "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/display_defaults"
                 },
+                "stream_labels": {
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/stream_labels"
+                },
                 "data_provenance": {
                     "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/data_provenance"
                 }
