@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* Added a missing redirect for the environment variables documentation page from its previous location. [#1812][] (@tsibley)
+
+[#1812]: https://github.com/nextstrain/augur/pull/1812
 
 ## 31.1.0 (27 May 2025)
 
