@@ -200,6 +200,10 @@
                     "$comment": "Should be a key present in (at least some) node_attrs",
                     "type": "string"
                 },
+                "stream_label": {
+                    "description": "Start with streamtrees enabled using this branch label",
+                    "type": "string"
+                },
                 "transmission_lines": {
                     "$comment": "Transmission lines depend on the geo_resolution being defined for internal nodes",
                     "type": "boolean"
@@ -228,6 +232,14 @@
             "description": "DEPRECATED v1 syntax for defining auspice view defaults",
             "deprecated": true,
             "type": "object"
+        },
+        "stream_labels": {
+            "description": "Branch labels which are may be used as streamtree defining labels (otherwise all available labels will be used). Use an empty array to prevent streamtrees from being used.",
+            "type": "array",
+            "minItems": 0,
+            "items": {
+                "type": "string"
+            }
         },
         "updated": {
             "description": "DEPRECATED v1 (or older) syntax for defining when the build was updated",
