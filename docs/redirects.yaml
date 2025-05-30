@@ -207,3 +207,7 @@
 - type: page
   from_url: /api/augur.version.html
   to_url: /api/developer/augur.version.html
+
+- type: page
+  from_url: /envvars.html
+  to_url: /usage/envvars.html
