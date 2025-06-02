@@ -3,7 +3,7 @@ Infer ancestral traits based on a tree.
 """
 
 import numpy as np
-from collections import defaultdict
+from collections import defaultdict, OrderedDict, Counter
 import sys
 from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
@@ -97,6 +97,45 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     return tt.tree, tt.gtr, letter_to_state
 
 
+class BranchLabeller():
+    """
+    A class to create branch labels based on changes in *column* state.
+    If the *enabled* arg is false then the user-facing methods are no-ops.
+    """
+
+    def __init__(self, enabled, column):
+        self.enabled = enabled
+        self.column = column
+        self.labels = {}
+
+    def _state(self, node):
+        # Future todo: conditional on confidence
+        return getattr(node, self.column)
+
+    def process(self, node):
+        if not self.enabled:
+            return
+        node_state = self._state(node)
+        if not node.up:
+            self.labels[node.name] = node_state
+            return
+        if (parent_state:=self._state(node.up)) != node_state:
+            self.labels[node.name] = f"{parent_state} → {node_state}"
+        return
+
+    def changes(self):
+        if not self.enabled:
+            return
+        counts = Counter(self.labels.values())
+        observed = defaultdict(int)
+        for node_name, base_label in self.labels.items():
+            if counts[base_label]==1:
+                label = base_label
+            else:
+                observed[base_label]+=1
+                label = f"{base_label} {observed[base_label]}"
+            yield (self.column, node_name, label)
+
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("traits", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
@@ -110,6 +149,8 @@ def register_parser(parent_subparsers):
                         help='metadata fields to perform discrete reconstruction on')
     parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')
+    parser.add_argument('--branch-labels',action="store_true",
+                        help='Add branch labels (using the column as the key) where there is a change in trait inferred')
     parser.add_argument('--sampling-bias-correction', type=float,
                         help='a rough estimate of how many more events would have been observed'
                              ' if sequences represented an even sample. This should be'
@@ -174,6 +215,7 @@ def run(args):
         weight_dict = {c:None for c in args.columns}
 
     mugration_states = defaultdict(dict)
+    branch_states = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
     models = defaultdict(dict)
     out_prefix = '.'.join(args.output_node_data.split('.')[:-1])
 
@@ -188,6 +230,8 @@ def run(args):
         if T is None: # something went wrong
             continue
 
+        branch_labeller = BranchLabeller(args.branch_labels, column)
+
         for node in T.find_clades():
             mugration_states[node.name][column] = getattr(node, column)
 
@@ -199,6 +243,11 @@ def run(args):
                 entropy = getattr(node, f"{column}_entropy", None)
                 if entropy is not None:
                     mugration_states[node.name][f"{column}_entropy"] = entropy
+
+            branch_labeller.process(node)
+
+        for column_name, node_name, label in branch_labeller.changes():
+            branch_states[node_name]['labels'][column_name] = label
 
         if gtr:
             # add gtr models to json structure for export
@@ -217,7 +266,10 @@ def run(args):
                 ofile.write(str(gtr))
 
     out_name = get_json_name(args, out_prefix+'_traits.json')
-    write_json({"models":models, "nodes":mugration_states},out_name)
+    json_data = OrderedDict([["models", models], ["nodes", mugration_states]])
+    if branch_states:
+        json_data['branches'] = branch_states
+    write_json(json_data, out_name)
 
     print("\nInferred ancestral states of discrete character using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
