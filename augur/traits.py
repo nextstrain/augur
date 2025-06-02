@@ -102,18 +102,51 @@ class BranchLabeller():
     A class to create branch labels based on changes in *column* state.
     If the *enabled* arg is false then the user-facing methods are no-ops.
     """
-
-    def __init__(self, enabled, column):
-        self.enabled = enabled
+    def __init__(self, arg, column):
+        if arg is None:     # `augur traits` invoked without --branch-labels
+            self.column = None
+            return
         self.column = column
+        self.column_label = column
+        self._confidence_threshold = None
         self.labels = {}
+        if len(arg)==0:    # `augur traits` invoked with --branch-labels as a flag
+            pass
+        else:              # `augur traits` invoked with --branch-labels with arguments
+            params = next(iter([b for b in [a.split(':') for a in arg] if b[0]==column]), None)
+            if params is None: # no specifier for this column -> don't store branch labels
+                self.column = None
+                return
+            if len(params)==2:
+                self._parse_confidence(params[1])
+            elif len(params)==3:
+                if not len(params[1]):
+                    raise AugurError("The --branch-labels argument {arg:r} is not valid (empty column label)") 
+                self.column_label = params[1]
+                self._parse_confidence(params[2])
+            elif len(params)>3:
+                raise AugurError("The --branch-labels argument {arg:r} is not valid")
+
+    def _parse_confidence(self, value): # simpler than using @property
+        if len(value): # an empty value indicates no confidence threshold
+            try:
+                self._confidence_threshold = int(value)
+                assert self._confidence_threshold >=0
+                assert self._confidence_threshold <=100
+            except:
+                raise AugurError(f"--branch-labels' confidence threshold must be an integer between 0 and 100  (column {self.column})")
 
     def _state(self, node):
-        # Future todo: conditional on confidence
-        return getattr(node, self.column)
+        attr = getattr(node, self.column)
+        if self._confidence_threshold is None:
+            return attr
+        conf = getattr(node, f"{self.column}_confidence", None)[attr]*100
+        if conf > self._confidence_threshold:
+            return attr
+        return "uncertain"
 
     def process(self, node):
-        if not self.enabled:
+        if self.column is None:
             return
         node_state = self._state(node)
         if not node.up:
@@ -124,7 +157,7 @@ class BranchLabeller():
         return
 
     def changes(self):
-        if not self.enabled:
+        if self.column is None:
             return
         counts = Counter(self.labels.values())
         observed = defaultdict(int)
@@ -134,7 +167,7 @@ class BranchLabeller():
             else:
                 observed[base_label]+=1
                 label = f"{base_label} {observed[base_label]}"
-            yield (self.column, node_name, label)
+            yield (self.column_label, node_name, label)
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("traits", help=__doc__)
@@ -149,8 +182,13 @@ def register_parser(parent_subparsers):
                         help='metadata fields to perform discrete reconstruction on')
     parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')
-    parser.add_argument('--branch-labels',action="store_true",
-                        help='Add branch labels (using the column as the key) where there is a change in trait inferred')
+    parser.add_argument('--branch-labels', nargs='*', default=None, metavar="COLUMN[:[LABEL][:CONFIDENCE]]", action=ExtendOverwriteDefault,
+                        help='Add branch labels where there is a change in trait inferred for that column.' \
+                        ' Use this as a flag to store all inferred state changes for each column, using the' \
+                        ' column as the label key. Alternatively provide a number of arguments, each corresponding' \
+                        ' to a column you wish to label. The syntax here is "column", or "column:conf" to only' \
+                        ' label state changes with confidence above <conf> (if <conf> is empty then all state' \
+                        ' changes are recorded), or "column:label:conf" to use a custom label key.')
     parser.add_argument('--sampling-bias-correction', type=float,
                         help='a rough estimate of how many more events would have been observed'
                              ' if sequences represented an even sample. This should be'
