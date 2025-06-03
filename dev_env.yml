@@ -1,0 +1,12 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - fasttree
+  - iqtree
+  - mafft
+  - python
+  - raxml
+  - sqlite
+  - tsv-utils
+  - vcftools

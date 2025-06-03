@@ -20,6 +20,33 @@ Please see the [open issues list](https://github.com/nextstrain/augur/issues) fo
 We currently target compatibility with Python 3.9 and higher. As Python releases new versions,
 the minimum target compatibility may be increased in the future.
 
+### Development environment
+
+1. Set up a local environment with all [external dependencies](../installation/non-python-dependencies.rst). You can do so with Conda:
+
+    ```
+    conda env create -n augur -f dev_env.yml
+    ```
+
+    or Micromamba:
+
+    ```
+    micromamba env create -n nextstrain-augur -f dev_env.yml
+    ```
+
+3. Activate the new environment.
+
+2. Install `augur` into the environment:
+
+    First, make sure you have the development dependencies of augur installed:
+
+    ```bash
+    pip install -e '.[dev]'
+    ```
+
+    This installs packages listed in the `dev` section of `extras_require` in _setup.py_,
+    as well as Augur's Python dependencies.
+
 ### Running local changes
 
 While you are making code changes, you will want to run augur to see it behavior with those changes.
@@ -335,14 +362,6 @@ submodule, autogenerate a new API file as follows.
 ### Building documentation
 
 Building the documentation locally is useful to test changes.
-First, make sure you have the development dependencies of augur installed:
-
-```bash
-pip install -e '.[dev]'
-```
-
-This installs packages listed in the `dev` section of `extras_require` in _setup.py_,
-as well as augur's dependencies as necessary.
 
 Sphinx and make are used when **building** documentation. Here are some examples that you
 may find useful:
