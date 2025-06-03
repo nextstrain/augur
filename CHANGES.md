@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* read-file: Multiple files are now accepted. [#1815][] (@victorlin)
+
 ### Bug fixes
 
 * Added a missing redirect for the environment variables documentation page from its previous location. [#1812][] (@tsibley)
 
 [#1812]: https://github.com/nextstrain/augur/pull/1812
+[#1815]: https://github.com/nextstrain/augur/pull/1815
 
 ## 31.1.0 (27 May 2025)
 
