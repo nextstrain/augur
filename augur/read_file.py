@@ -72,12 +72,19 @@ def run(args):
             return 128 + SIGPIPE if SIGPIPE else 1
 
 
-def copyfileobj(fsrc, fdst, length=0):
+def copyfileobj(fsrc, fdst, length=0, ensure_trailing_newline=False):
     """copy data from file-like object fsrc to file-like object fdst"""
     if not length:
         length = BUFFER_SIZE
+
     # Localize variable access to minimize overhead.
     fsrc_read = fsrc.read
     fdst_write = fdst.write
+
+    last_char = None
     while buf := fsrc_read(length):
         fdst_write(buf)
+        last_char = buf[-1]
+
+    if ensure_trailing_newline and last_char != '\n':
+        fdst_write('\n')
