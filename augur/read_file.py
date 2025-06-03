@@ -15,7 +15,6 @@ import io
 import os
 import signal
 import sys
-from shutil import copyfileobj
 
 from .io.file import open_file
 from .utils import first_line
@@ -60,7 +59,7 @@ def run(args):
         # and like most Unix programs.  See also
         # <https://docs.python.org/3/library/signal.html#note-on-sigpipe>.
         try:
-            copyfileobj(f, sys.stdout, BUFFER_SIZE)
+            copyfileobj(f, sys.stdout)
 
             # Force a flush so if SIGPIPE is going to happen it happens now.
             sys.stdout.flush()
@@ -71,3 +70,14 @@ def run(args):
 
             # Return conventional exit status for "killed by SIGPIPE" on Unix.
             return 128 + SIGPIPE if SIGPIPE else 1
+
+
+def copyfileobj(fsrc, fdst, length=0):
+    """copy data from file-like object fsrc to file-like object fdst"""
+    if not length:
+        length = BUFFER_SIZE
+    # Localize variable access to minimize overhead.
+    fsrc_read = fsrc.read
+    fdst_write = fdst.write
+    while buf := fsrc_read(length):
+        fdst_write(buf)
