@@ -210,6 +210,8 @@ def format_date(date_string, expected_formats):
 
 
 def validate_arguments(args):
+    if not args.date_fields and not args.target_date_field:
+        raise AugurError("At least one of --date-fields or --target-date-field is required.")
     if args.target_date_field and not args.target_date_field_min and not args.target_date_field_max:
         raise AugurError("--target-date-field requires at least one of --target-date-field-min, --target-date-field-max.")
     if args.target_date_field_min and not args.target_date_field:
