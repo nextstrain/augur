@@ -43,10 +43,7 @@ This is expected to print warnings for failures and return the masked date strin
   >     --failure-reporting "warn"
   WARNING: Unable to format date string '2020-01' in field 'collectionDate' of record 0.
   WARNING: Unable to format date string '2020-01' in field 'releaseDate' of record 0.
-  WARNING: Unable to format dates for the following (record, field, date string):
-  (0, 'collectionDate', '2020-01')
-  (0, 'releaseDate', '2020-01')
-  Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y', '%Y-%m-%dT%H:%M:%SZ']. This can be updated with --expected-date-formats.
+  WARNING: Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y', '%Y-%m-%dT%H:%M:%SZ']. This can be updated with --expected-date-formats.
   {"record": 1, "date": "2020-XX-XX", "collectionDate": "XXXX-XX-XX", "releaseDate": "XXXX-XX-XX", "updateDate": "2020-07-18"}
 
 Test output with unmatched expected date formats while silencing failures.
