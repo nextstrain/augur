@@ -50,7 +50,7 @@ from typing import Iterable, Tuple, TypeVar
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, Metadata
-from augur.io.print import print_err, print_debug, _n
+from augur.io.print import print_err, print_debug, indented_list, _n
 from augur.utils import first_line
 
 
@@ -425,10 +425,6 @@ def count_unique(xs: Iterable[T]) -> Iterable[Tuple[T, int]]:
     # property for the user since we generate an error message with this.
     #   -trs, 24 July 2024
     yield from reduce(lambda counts, x: {**counts, x: counts.get(x, 0) + 1}, xs, counts := {}).items() # type: ignore
-
-
-def indented_list(xs, prefix):
-    return f"\n{prefix}".join(xs)
 
 
 def shquote_humanized(x):
