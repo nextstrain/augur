@@ -33,11 +33,11 @@ def register_parser(parent_subparsers):
         help=first_line(__doc__))
 
     required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--date-fields", nargs="+", action=ExtendOverwriteDefault,
+    required.add_argument("--date-fields", metavar="NAME", nargs="+", action=ExtendOverwriteDefault,
         help="List of date field names in the record that need to be standardized.")
 
     optional = parser.add_argument_group(title="OPTIONAL")
-    optional.add_argument("--expected-date-formats", nargs="+", action=ExtendOverwriteDefault,
+    optional.add_argument("--expected-date-formats", metavar="FORMAT", nargs="+", action=ExtendOverwriteDefault,
         help=dedent(f"""\
             Custom date formats for values in the provided date fields, defined by standard
             format codes available at
