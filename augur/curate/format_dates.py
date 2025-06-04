@@ -235,15 +235,14 @@ def run(args, records):
         yield record
 
     if failure_reporting is not DataErrorMethod.SILENT and failures:
-        failure_message = dedent(f"""\
-            Unable to format dates for the following (record, field, date string):
-            {indented_list(map(repr, failures), "            ")}
-            {failure_suggestion}""")
         if failure_reporting is DataErrorMethod.ERROR_ALL:
-            raise AugurError(failure_message)
+            raise AugurError(dedent(f"""\
+                Unable to format dates for the following (record, field, date string):
+                {indented_list(map(repr, failures), "                ")}
+                {failure_suggestion}"""))
 
         elif failure_reporting is DataErrorMethod.WARN:
-            print_err(f"WARNING: {failure_message}")
+            print_err(f"WARNING: {failure_suggestion}")
 
         else:
             raise ValueError(f"Encountered unhandled failure reporting method: {failure_reporting!r}")
