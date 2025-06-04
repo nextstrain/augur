@@ -11,7 +11,7 @@ from textwrap import dedent
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
-from augur.io.print import print_err
+from augur.io.print import print_err, indented_list
 from augur.types import DataErrorMethod
 from augur.utils import first_line
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
@@ -195,7 +195,7 @@ def run(args, records):
     failures = []
     failure_reporting = args.failure_reporting
     failure_suggestion = (
-        f"\nCurrent expected date formats are {expected_date_formats!r}. " +
+        f"Current expected date formats are {expected_date_formats!r}. "
         "This can be updated with --expected-date-formats."
     )
     for index, record in enumerate(records):
@@ -220,7 +220,9 @@ def run(args, records):
 
                 failure_message = f"Unable to format date string {date_string!r} in field {field!r} of record {record_id!r}."
                 if failure_reporting is DataErrorMethod.ERROR_FIRST:
-                    raise AugurError(failure_message + failure_suggestion)
+                    raise AugurError(dedent(f"""\
+                        {failure_message}
+                        {failure_suggestion}"""))
 
                 if failure_reporting is DataErrorMethod.WARN:
                     print_err(f"WARNING: {failure_message}")
@@ -233,15 +235,15 @@ def run(args, records):
         yield record
 
     if failure_reporting is not DataErrorMethod.SILENT and failures:
-        failure_message = (
-            "Unable to format dates for the following (record, field, date string):\n" + \
-            '\n'.join(map(repr, failures))
-        )
+        failure_message = dedent(f"""\
+            Unable to format dates for the following (record, field, date string):
+            {indented_list(map(repr, failures), "            ")}
+            {failure_suggestion}""")
         if failure_reporting is DataErrorMethod.ERROR_ALL:
-            raise AugurError(failure_message + failure_suggestion)
+            raise AugurError(failure_message)
 
         elif failure_reporting is DataErrorMethod.WARN:
-            print_err(f"WARNING: {failure_message}" + failure_suggestion)
+            print_err(f"WARNING: {failure_message}")
 
         else:
             raise ValueError(f"Encountered unhandled failure reporting method: {failure_reporting!r}")
