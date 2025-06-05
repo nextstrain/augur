@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 31.2.0 (5 June 2025)
+
 ### Features
 
 * merge: Support merging of sequence files with `--sequences`. [#1579][] (@victorlin)
