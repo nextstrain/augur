@@ -336,7 +336,7 @@
                                 }
                             },
                             "patternProperties": {
-                                "^(?!nuc$)[a-zA-Z0-9*_.-]+$": {
+                                "^(?!nuc$)[a-zA-Z0-9*_.()-]+$": {
                                     "description": "Amino acid mutations for this CDS",
                                     "$comment": "properties must exist in the meta.JSON -> annotation object",
                                     "type": "array",
