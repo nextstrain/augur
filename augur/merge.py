@@ -1,8 +1,13 @@
 """
-Merge two or more metadata tables into one.
+Merge two or more datasets into one.
 
-Tables must be given unique names to identify them in the output and are
-merged in the order given.
+Datasets can consist of metadata and/or sequence files. If both are provided,
+the order and file contents are used independently.
+
+**Metadata**
+
+Metadata tables must be given unique names to identify them in the output and
+are merged in the order given.
 
 Rows are joined by id (e.g. "strain" or "name" or other
 --metadata-id-columns), and ids must be unique within an input table (i.e.
@@ -29,11 +34,24 @@ disk space.  Tables are not required to be entirely loadable into memory.  The
 transient disk space required is approximately the sum of the uncompressed size
 of the inputs.
 
-SQLite is used behind the scenes to implement the merge, but, at least for now,
-this should be considered an implementation detail that may change in the
-future.  The SQLite 3 CLI, sqlite3, must be available.  If it's not on PATH (or
-you want to use a version different from what's on PATH), set the SQLITE3
-environment variable to path of the desired sqlite3 executable.
+SQLite is used behind the scenes to implement the merge, but this should be
+considered an implementation detail that may change in the future.  The SQLite 3
+CLI, sqlite3, must be available.  If it's not on PATH (or you want to use a
+version different from what's on PATH), set the SQLITE3 environment variable to
+path of the desired sqlite3 executable.
+
+**Sequences**
+
+Sequence files are unnamed and are merged in the order given. Sequence ids with
+more than one entry within a sequence file results in an error. Sequence ids
+with more than one entry across multiple sequences files is handled by keeping
+the entry from the rightmost file based on the given order.
+
+SeqKit is used behind the scenes to implement the merge, but this should be
+considered an implementation detail that may change in the future.  The CLI
+program seqkit must be available.  If it's not on PATH (or you want to use a
+version different from what's on PATH), set the SEQKIT environment variable to
+path of the desired seqkit executable.
 """
 import os
 import re
@@ -43,18 +61,31 @@ from functools import reduce
 from itertools import starmap
 from shlex import quote as shquote
 from shutil import which
-from tempfile import mkstemp
+from tempfile import mkstemp, NamedTemporaryFile
 from textwrap import dedent
-from typing import Iterable, Tuple, TypeVar
+from typing import Iterable, IO, Tuple, TypeVar
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, Metadata
 from augur.io.print import print_err, print_debug, _n
+from augur.io.shell_command_runner import run_shell_command
 from augur.utils import first_line
 
 
 T = TypeVar('T')
+
+
+print_info = print_err
+
+
+# Locate how to re-invoke ourselves (_this_ specific Augur).
+if sys.executable:
+    augur = f"{shquote(sys.executable)} -m augur"
+else:
+    # A bit unusual we don't know our own Python executable, but assume we
+    # can access ourselves as the ``augur`` command.
+    augur = f"augur"
 
 
 class NamedMetadata(Metadata):
@@ -77,23 +108,61 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("merge", help=first_line(__doc__))
 
     input_group = parser.add_argument_group("inputs", "options related to input")
-    input_group.add_argument("--metadata", nargs="+", action=ExtendOverwriteDefault, required=True, metavar="NAME=FILE", help="Required. Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    input_group.add_argument("--metadata", nargs="+", action=ExtendOverwriteDefault, metavar="NAME=FILE", help="Metadata table names and file paths. Names are arbitrary monikers used solely for referring to the associated input file in other arguments and in output column names. Paths must be to seekable files, not unseekable streams. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
 
     input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]COLUMN", help=f"Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables by default. Table-specific column names may be given using the same names assigned in --metadata. Only one ID column will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_ID_COLUMNS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
     input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]CHARACTER", help=f"Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables by default. Table-specific delimiters may be given using the same names assigned in --metadata. Only one delimiter will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_DELIMITERS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
 
+    input_group.add_argument("--sequences", nargs="+", action=ExtendOverwriteDefault, metavar="FILE", help="Sequence files in FASTA format. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    input_group.add_argument("--skip-input-sequences-validation", action="store_true", default=False, help="Skip validation of --sequences (checking for no duplicates) to improve run time. Note that this may result in unexpected behavior in cases where validation would fail.")
+
     output_group = parser.add_argument_group("outputs", "options related to output")
-    output_group.add_argument('--output-metadata', required=True, metavar="FILE", help="Required. Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--output-metadata', metavar="FILE", help="Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--source-columns', metavar="TEMPLATE", help=f"Template with which to generate names for the columns (described above) identifying the source of each row's data. Must contain a literal placeholder, {{NAME}}, which stands in for the metadata table names assigned in --metadata. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--no-source-columns', dest="source_columns", action="store_const", const=None, help=f"Suppress generated columns (described above) identifying the source of each row's data. This is the default behaviour, but it may be made explicit or used to override a previous --source-columns." + SKIP_AUTO_DEFAULT_IN_HELP)
+
+    output_group.add_argument('--output-sequences', metavar="FILE", help="Merged sequences as FASTA. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+
     output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     return parser
 
 
-def run(args):
-    print_info = print_err if not args.quiet else lambda *_: None
+def validate_arguments(args):
+    if not any((args.metadata, args.sequences)):
+        raise AugurError("At least one of --metadata or --sequences (or both) must be specified, along with its corresponding output option.")
 
+    if args.output_metadata and not args.metadata:
+        raise AugurError("--output-metadata requires --metadata.")
+    if args.metadata and not args.output_metadata:
+        raise AugurError("--metadata requires --output-metadata.")
+    if args.output_sequences and not args.sequences:
+        raise AugurError("--output-sequences requires --sequences.")
+    if args.sequences and not args.output_sequences:
+        raise AugurError("--sequences requires --output-sequences.")
+
+
+def run(args):
+    global print_info
+
+    if args.quiet:
+        print_info = lambda *_: None
+
+    # Catch user errors early to avoid unnecessary computation.
+    validate_arguments(args)
+
+    if args.metadata:
+        merge_metadata(args)
+
+    if args.sequences:
+        try:
+            merge_sequences(args)
+        except AugurError as error:
+            print_info(f"WARNING: Metadata merge was successful but sequence merge has failed, so --output-metadata has no corresponding sequence output.")
+            raise error
+
+
+def merge_metadata(args):
     # Parse --metadata arguments
     if not len(args.metadata) >= 2:
         raise AugurError(f"At least two metadata inputs are required for merging.")
@@ -167,15 +236,6 @@ def run(args):
         NamedMetadata(name, path, [delim  for name_, delim  in metadata_delimiters if not name_ or name_ == name] or DEFAULT_DELIMITERS,
                                   [column for name_, column in metadata_id_columns if not name_ or name_ == name] or DEFAULT_ID_COLUMNS)
             for name, path in metadata]
-
-
-    # Locate how to re-invoke ourselves (_this_ specific Augur).
-    if sys.executable:
-        augur = f"{shquote(sys.executable)} -m augur"
-    else:
-        # A bit unusual we don't know our own Python executable, but assume we
-        # can access ourselves as the ``augur`` command.
-        augur = f"augur"
 
 
     # Work with a temporary, on-disk SQLite database under a name we control so
@@ -329,6 +389,61 @@ def run(args):
             print_info(f"WARNING: Skipped deletion of {db_path} due to error, but you may want to clean it up yourself (e.g. if it's large).")
 
 
+def merge_sequences(args):
+    if not args.skip_input_sequences_validation:
+        for s in args.sequences:
+            print_info(f"Validating {s!r}…")
+            validate_sequence_file(s)
+
+    print_info(f"Merging sequences and writing to {args.output_sequences!r}…")
+
+    # Reversed because seqkit rmdup keeps the first entry but this command
+    # should keep the last entry.
+    command = f"""
+        {augur} read-file {" ".join(shquote(s) for s in reversed(args.sequences))} |
+        {seqkit()} rmdup |
+        {augur} write-file {shquote(args.output_sequences)}
+    """
+
+    try:
+        run_shell_command(command, raise_errors=True)
+    except Exception:
+        # Ideally, read-file, seqkit, and write-file errors would all be handled
+        # separately. That is not possible because everything is done in one
+        # child process with one return code.
+        if os.path.isfile(args.output_sequences):
+            # Remove the partial output file.
+            os.remove(args.output_sequences)
+            raise AugurError(f"Merging failed, see error(s) above.")
+        else:
+            raise AugurError(f"Merging failed, see error(s) above. The command may have already written data to stdout. You may want to clean up any partial outputs.")
+
+
+def validate_sequence_file(file: str):
+    """Ensure all sequence identifiers in the file are unique."""
+    with NamedTemporaryFile("w+", encoding="utf-8") as dup_num_file:
+        command = f"""
+            {augur} read-file {shquote(file)} |
+            {seqkit()} rmdup --dup-num-file {shquote(dup_num_file.name)}
+        """
+
+        try:
+            run_shell_command(command, raise_errors=True)
+        except Exception as error:
+            raise AugurError(f"Validation failed for {file!r}. See error above.") from error
+
+        dup_num_file.seek(0)
+
+        if duplicates := list(sorted(parse_seqkit_dup_num_file(dup_num_file))):
+            raise AugurError(dedent(f"""\
+                Sequence ids must be unique.
+
+                The following {_n("id was", "ids were", len(duplicates))} were duplicated in {file!r}:
+
+                  {indented_list(duplicates, '                ' + '  ')}
+            """))
+
+
 def sqlite3(*args, **kwargs):
     """
     Internal helper for invoking ``sqlite3``, the SQLite CLI program.
@@ -478,3 +593,73 @@ def shquote_humanized(x):
     # …and instead quote a final empty string down here if we're still empty
     # after joining all our parts together.
     return quoted if quoted else shquote('')
+
+
+def seqkit():
+    """
+    Internal helper for invoking SeqKit.
+
+    Unlike ``sqlite3()``, this function is not a wrapper around subprocess.run.
+    It is meant to be called without any parameters and only returns the
+    location of the executable. This is due to differences in the way the two
+    programs are invoked.
+    """
+    seqkit = os.environ.get("SEQKIT", which("seqkit"))
+    if not seqkit:
+        raise AugurError(dedent(f"""\
+            Unable to find the program `seqkit`.  Is it installed?
+            In order to use `augur merge`, SeqKit must be installed
+            separately.  It is typically provided by a Nextstrain runtime.
+            """))
+    return shquote(seqkit)
+
+
+def parse_seqkit_dup_num_file(handle: IO[str]):
+    """Extract duplicated ids from the output of seqkit rmdup --dup-num-file.
+
+    There is one line per duplicated id, in the format of a number n followed by
+    tab character followed by the id duplicated n times, separated by ", ".
+
+    Example FASTA headers
+
+        > id, 1
+        > id, 2
+        > id, 3
+        > id1
+        > id1
+
+    will produce a --dup-num-file output file
+
+        3\tid,, id,, id,
+        2\tid1, id1
+
+    which parsed by this function will yield
+
+        id,
+        id1
+
+    Examples
+    ========
+
+    Two duplicate ids.
+
+    >>> from io import StringIO
+    >>> contents = "3\\tid,, id,, id,\\n2\\tid1, id1\\n"
+    >>> list(parse_seqkit_dup_num_file(StringIO(contents)))
+    ['id,', 'id1']
+
+    One duplicate id.
+
+    >>> contents = "4\\tid, id, id, id,\\n"
+    >>> list(parse_seqkit_dup_num_file(StringIO(contents)))
+    ['id,']
+
+    An empty file returns an empty list.
+
+    >>> list(parse_seqkit_dup_num_file(StringIO("")))
+    []
+    """
+    for line in handle:
+        line = line.rstrip('\n')
+        if ", " in line:
+            yield line[line.rfind(", ")+2:]
