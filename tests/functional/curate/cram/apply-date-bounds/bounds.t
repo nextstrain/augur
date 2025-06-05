@@ -7,8 +7,8 @@ An incomplete date will be restricted by a lower and upper bound based on other 
   $ echo '{"record": 1, "date": "2020", "cladeRootDate": "2020-01-02", "collectionDate": "2020-01-23"}' \
   >   | ${AUGUR} curate apply-date-bounds \
   >     --date-field date \
-  >     --date-field-min cladeRootDate \
-  >     --date-field-max collectionDate
+  >     --lower-bound cladeRootDate \
+  >     --upper-bound collectionDate
   {"record": 1, "date": "2020-01-02/2020-01-23", "cladeRootDate": "2020-01-02", "collectionDate": "2020-01-23"}
 
 It can be restricted by a lower bound only.
@@ -16,7 +16,7 @@ It can be restricted by a lower bound only.
   $ echo '{"record": 1, "date": "2020", "cladeRootDate": "2020-01-02"}' \
   >   | ${AUGUR} curate apply-date-bounds \
   >     --date-field date \
-  >     --date-field-min cladeRootDate
+  >     --lower-bound cladeRootDate
   {"record": 1, "date": "2020-01-02/2020-12-31", "cladeRootDate": "2020-01-02"}
 
 It can be restricted by an upper bound only.
@@ -24,7 +24,7 @@ It can be restricted by an upper bound only.
   $ echo '{"record": 1, "date": "2020", "collectionDate": "2020-01-23"}' \
   >   | ${AUGUR} curate apply-date-bounds \
   >     --date-field date \
-  >     --date-field-max collectionDate
+  >     --upper-bound collectionDate
   {"record": 1, "date": "2020-01-01/2020-01-23", "collectionDate": "2020-01-23"}
 
 An error is shown if it is entirely out of bounds.
@@ -32,22 +32,22 @@ An error is shown if it is entirely out of bounds.
   $ echo '{"record": 1, "date": "2019", "cladeRootDate": "2020-01-02"}' \
   >   | ${AUGUR} curate apply-date-bounds \
   >     --date-field date \
-  >     --date-field-min cladeRootDate
+  >     --lower-bound cladeRootDate
   ERROR: 'date'='2019' is earlier than the lower bound of 'cladeRootDate'='2020-01-02'
   [2]
 
   $ echo '{"record": 1, "date": "2021", "collectionDate": "2020-01-23"}' \
   >   | ${AUGUR} curate apply-date-bounds \
   >     --date-field date \
-  >     --date-field-max collectionDate
+  >     --upper-bound collectionDate
   ERROR: 'date'='2021' is later than the upper bound of 'collectionDate'='2020-01-23'
   [2]
 
-Exact dates are kept as-is.
+Exact dates are converted to intervals.
 
   $ echo '{"record": 1, "date": "2020-01-10", "cladeRootDate": "2020-01-02", "collectionDate": "2020-01-23"}' \
   >   | ${AUGUR} curate apply-date-bounds \
   >     --date-field date \
-  >     --date-field-min cladeRootDate \
-  >     --date-field-max collectionDate
-  {"record": 1, "date": "2020-01-10", "cladeRootDate": "2020-01-02", "collectionDate": "2020-01-23"}
+  >     --lower-bound cladeRootDate \
+  >     --upper-bound collectionDate
+  {"record": 1, "date": "2020-01-10/2020-01-10", "cladeRootDate": "2020-01-02", "collectionDate": "2020-01-23"}

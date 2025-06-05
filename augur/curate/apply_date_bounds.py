@@ -18,18 +18,18 @@ def register_parser(parent_subparsers):
         parents=[parent_subparsers.shared_parser],
         help=first_line(__doc__))
 
-    # FIXME: rename arguments
-    # FIXME: make required
-    optional = parser.add_argument_group(title="OPTIONAL")
-    optional.add_argument("--date-field", metavar="NAME",
+    required = parser.add_argument_group(title="REQUIRED")
+    required.add_argument("--date-field", metavar="NAME",
         help=dedent("""\
             Name of an existing date field to apply bounds to. Values will be
-            formatted as an interval using bounds provided by --date-field-min
-            and/or --date-field-max."""))
+            formatted as an interval using bounds provided by --lower-bound
+            and/or --upper-bound."""))
+
+    optional = parser.add_argument_group(title="OPTIONAL")
     # FIXME: support constants
-    optional.add_argument("--date-field-min", metavar="NAME",
+    optional.add_argument("--lower-bound", metavar="NAME",
         help="Name of an existing date field to use as the lower bound for --date-field (i.e. minimum)")
-    optional.add_argument("--date-field-max", metavar="NAME",
+    optional.add_argument("--upper-bound", metavar="NAME",
         help="Name of an existing date field to use as the upper bound for --date-field (i.e. maximum)")
     optional.add_argument("--failure-reporting",
         type=DataErrorMethod.argtype,
@@ -41,14 +41,8 @@ def register_parser(parent_subparsers):
 
 
 def validate_arguments(args):
-    if not args.date_field:
-        raise AugurError("At least one of --date-fields or --date-field is required.")
-    if args.date_field and not args.date_field_min and not args.date_field_max:
-        raise AugurError("--date-field requires at least one of --date-field-min, --date-field-max.")
-    if args.date_field_min and not args.date_field:
-        raise AugurError("--date-field-min requires --date-field.")
-    if args.date_field_max and not args.date_field:
-        raise AugurError("--date-field-max requires --date-field.")
+    if not args.lower_bound and not args.upper_bound:
+        raise AugurError("At least one of --lower-bound and --upper-bound is required.")
 
 
 def run(args, records):
@@ -58,25 +52,26 @@ def run(args, records):
 
     failures = []
     failure_suggestion = ...
-    if args.date_field_min and args.date_field_max:
+    if args.lower_bound and args.upper_bound:
         failure_suggestion = (
             f"Current bounds for incomplete dates in {args.date_field!r} "
-            f"are defined by a minimum from {args.date_field_min!r} "
-            f"and a maximum from {args.date_field_max!r}. "
-            "These can be updated with --date-field-min and --date-field-max."
+            f"are defined by a minimum from {args.lower_bound!r} "
+            f"and a maximum from {args.upper_bound!r}. "
+            "These can be updated with --lower-bound and --upper-bound."
         )
-    elif args.date_field_min:
+    elif args.lower_bound:
         failure_suggestion = (
             f"Current bounds for incomplete dates in {args.date_field!r} "
-            f"are defined by a minimum from {args.date_field_min!r}. "
-            "This can be updated with --date-field-min."
+            f"are defined by a minimum from {args.lower_bound!r}. "
+            "This can be updated with --lower-bound."
         )
-    elif args.date_field_max:
+    elif args.upper_bound:
         failure_suggestion = (
             f"Current bounds for incomplete dates in {args.date_field!r} "
-            f"are defined by a maximum from {args.date_field_max!r}. "
-            "This can be updated with --date-field-max."
+            f"are defined by a maximum from {args.upper_bound!r}. "
+            "This can be updated with --upper-bound."
         )
+
 
     def apply_bounds(record, record_id):
         record = record.copy()
@@ -96,17 +91,18 @@ def run(args, records):
         lower_bound, upper_bound = None, None
 
         # Get bounds
-        if args.date_field_min:
-            lower_bound = get_numerical_date_from_value(record[args.date_field_min], fmt="%Y-%m-%d")
+        if args.lower_bound:
+            lower_bound = get_numerical_date_from_value(record[args.lower_bound], fmt="%Y-%m-%d")
             if isinstance(lower_bound, tuple):
                 lower_bound = lower_bound[0]
-        if args.date_field_max:
-            upper_bound = get_numerical_date_from_value(record[args.date_field_max], fmt="%Y-%m-%d")
+        if args.upper_bound:
+            upper_bound = get_numerical_date_from_value(record[args.upper_bound], fmt="%Y-%m-%d")
             if isinstance(upper_bound, tuple):
                 upper_bound = upper_bound[1]
 
-        # Only modify empty dates if both bounds are set
-        if start == float("-inf") and end == float("inf") and (lower_bound is None or upper_bound is None):
+        # If any infinities are unbounded, don't modify the date
+        if (start == float("-inf") and lower_bound is None) or \
+           (end   == float( "inf") and upper_bound is None):
             return record
 
         # Error if the target date does not overlap with the bounds
@@ -117,7 +113,7 @@ def run(args, records):
             failure_message = (
                 f"{args.date_field!r}={record[args.date_field]!r} "
                 f"is earlier than the lower bound of "
-                f"{args.date_field_min!r}={record[args.date_field_min]!r}"
+                f"{args.lower_bound!r}={record[args.lower_bound]!r}"
             )
             if failure_reporting is DataErrorMethod.SILENT:
                 pass
@@ -135,7 +131,7 @@ def run(args, records):
             failure_message = (
                 f"{args.date_field!r}={record[args.date_field]!r} "
                 f"is later than the upper bound of "
-                f"{args.date_field_max!r}={record[args.date_field_max]!r}"
+                f"{args.upper_bound!r}={record[args.upper_bound]!r}"
             )
             if failure_reporting is DataErrorMethod.SILENT:
                 pass
@@ -166,18 +162,23 @@ def run(args, records):
         return record
 
     for index, record in enumerate(records):
-        record = apply_bounds(record, index)
+        date_string = record.get(args.date_field)
+        if date_string is None:
+            raise AugurError(f"Expected date field {args.date_field!r} not found in record {record_id!r}.")
 
-        if failure_reporting is DataErrorMethod.WARN and failures:
-            print_err(f"WARNING: {failure_suggestion}")
+        record = apply_bounds(record, index)
 
         yield record
 
-    if failure_reporting is DataErrorMethod.ERROR_ALL and failures:
-        failure_message = dedent(f"""\
-            Unable to apply bounds for the following (record, field, formatted date string, lower bound, upper bound):
-            {indented_list(map(repr, failures), "            ")}
-            {failure_suggestion}""")
-        raise AugurError(failure_message)
-    if failure_reporting is DataErrorMethod.WARN and failures:
-        print_err(f"WARNING: {failure_suggestion}")
+    if failure_reporting is not DataErrorMethod.SILENT and failures:
+        if failure_reporting is DataErrorMethod.ERROR_ALL:
+            raise AugurError(dedent(f"""\
+                Unable to apply bounds for the following (record, field, formatted date string, lower bound, upper bound):
+                {indented_list(map(repr, failures), "                ")}
+                {failure_suggestion}"""))
+
+        elif failure_reporting is DataErrorMethod.WARN:
+            print_err(f"WARNING: {failure_suggestion}")
+
+        else:
+            raise ValueError(f"Encountered unhandled failure reporting method: {failure_reporting!r}")
