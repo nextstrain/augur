@@ -16,6 +16,10 @@ def print_debug(*args):
         print_err(*args)
 
 
+def indented_list(xs, prefix):
+    return f"\n{prefix}".join(xs)
+
+
 # Use ngettext() without a message catalog for its singular/plural handling so
 # we can make proper error messages.  gettext() (no "n") is conventionally
 # aliased as "_", so alias ngettext() as "_n".

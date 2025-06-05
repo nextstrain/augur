@@ -11,7 +11,7 @@ from textwrap import dedent
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
-from augur.io.print import print_err
+from augur.io.print import print_err, indented_list
 from augur.types import DataErrorMethod
 from augur.utils import first_line
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
@@ -33,11 +33,11 @@ def register_parser(parent_subparsers):
         help=first_line(__doc__))
 
     required = parser.add_argument_group(title="REQUIRED")
-    required.add_argument("--date-fields", nargs="+", action=ExtendOverwriteDefault,
+    required.add_argument("--date-fields", metavar="NAME", nargs="+", action=ExtendOverwriteDefault,
         help="List of date field names in the record that need to be standardized.")
 
     optional = parser.add_argument_group(title="OPTIONAL")
-    optional.add_argument("--expected-date-formats", nargs="+", action=ExtendOverwriteDefault,
+    optional.add_argument("--expected-date-formats", metavar="FORMAT", nargs="+", action=ExtendOverwriteDefault,
         help=dedent(f"""\
             Custom date formats for values in the provided date fields, defined by standard
             format codes available at
@@ -195,7 +195,7 @@ def run(args, records):
     failures = []
     failure_reporting = args.failure_reporting
     failure_suggestion = (
-        f"\nCurrent expected date formats are {expected_date_formats!r}. " +
+        f"Current expected date formats are {expected_date_formats!r}. "
         "This can be updated with --expected-date-formats."
     )
     for index, record in enumerate(records):
@@ -220,7 +220,9 @@ def run(args, records):
 
                 failure_message = f"Unable to format date string {date_string!r} in field {field!r} of record {record_id!r}."
                 if failure_reporting is DataErrorMethod.ERROR_FIRST:
-                    raise AugurError(failure_message + failure_suggestion)
+                    raise AugurError(dedent(f"""\
+                        {failure_message}
+                        {failure_suggestion}"""))
 
                 if failure_reporting is DataErrorMethod.WARN:
                     print_err(f"WARNING: {failure_message}")
@@ -233,15 +235,14 @@ def run(args, records):
         yield record
 
     if failure_reporting is not DataErrorMethod.SILENT and failures:
-        failure_message = (
-            "Unable to format dates for the following (record, field, date string):\n" + \
-            '\n'.join(map(repr, failures))
-        )
         if failure_reporting is DataErrorMethod.ERROR_ALL:
-            raise AugurError(failure_message + failure_suggestion)
+            raise AugurError(dedent(f"""\
+                Unable to format dates for the following (record, field, date string):
+                {indented_list(map(repr, failures), "                ")}
+                {failure_suggestion}"""))
 
         elif failure_reporting is DataErrorMethod.WARN:
-            print_err(f"WARNING: {failure_message}" + failure_suggestion)
+            print_err(f"WARNING: {failure_suggestion}")
 
         else:
             raise ValueError(f"Encountered unhandled failure reporting method: {failure_reporting!r}")
