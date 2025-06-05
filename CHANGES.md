@@ -6,6 +6,7 @@
 
 * merge: Support merging of sequence files with `--sequences`. [#1579][] (@victorlin)
 * read-file: Multiple files are now accepted. [#1815][] (@victorlin)
+* schema: Added fields for streamtrees and default zoom branch label. [#1813] (@jameshadfield)
 
 ### Bug fixes
 
@@ -13,6 +14,7 @@
 
 [#1579]: https://github.com/nextstrain/augur/issues/1579
 [#1812]: https://github.com/nextstrain/augur/pull/1812
+[#1813]: https://github.com/nextstrain/augur/pull/1813
 [#1815]: https://github.com/nextstrain/augur/pull/1815
 
 ## 31.1.0 (27 May 2025)
