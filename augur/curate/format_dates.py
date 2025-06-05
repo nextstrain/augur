@@ -295,6 +295,10 @@ def run(args, records):
     def apply_bounds(record, record_id):
         record = record.copy()
 
+        # Only modify empty dates if both bounds are set
+        if record[args.target_date_field] == "XXXX-XX-XX" and not (args.target_date_field_min and args.target_date_field_max):
+            return record
+
         original_date = get_numerical_date_from_value(record[args.target_date_field], fmt="%Y-%m-%d")
 
         # Keep exact dates as-is
