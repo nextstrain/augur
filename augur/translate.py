@@ -17,7 +17,8 @@ import sys
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.vcf import write_VCF_translation, is_vcf as is_filename_vcf
-from .utils import parse_genes_argument, read_node_data, load_features, \
+from .io.sequences import load_features
+from .utils import parse_genes_argument, read_node_data, \
     write_json, get_json_name, genome_features_to_auspice_annotation
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
