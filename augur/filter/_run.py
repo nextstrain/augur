@@ -18,7 +18,7 @@ from augur.index import (
 from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
 from augur.io.sequences import read_sequences, write_sequences
-from augur.io.print import print_err, _n
+from augur.io.print import print_debug, print_err, _n
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
@@ -46,6 +46,7 @@ def run(args):
         build_sequence_index = True
 
     if build_sequence_index:
+        print_debug(f"Building sequence index for {args.sequences!r}…")
         # Generate the sequence index on the fly for workflows that don't do
         # this separately. Create a temporary index using a random filename to
         # avoid collisions between multiple filter commands.
@@ -60,6 +61,10 @@ def run(args):
     # Load the sequence index, if a path exists.
     sequence_index = None
     if sequence_index_path:
+        if args.sequence_index:
+            print_debug(f"Reading sequence index from {sequence_index_path!r}…")
+        else:
+            print_debug("Reading sequence index from temporary file…")
         sequence_index = pd.read_csv(
             sequence_index_path,
             sep=SEQUENCE_INDEX_DELIMITER,
@@ -164,6 +169,7 @@ def run(args):
         )
     useful_metadata_columns = get_useful_metadata_columns(args, metadata_object.id_column, metadata_object.columns)
 
+    print_debug(f"Reading metadata from {args.metadata!r}…")
     metadata_reader = read_metadata(
         args.metadata,
         delimiters=[metadata_object.delimiter],
@@ -303,6 +309,7 @@ def run(args):
                     group_sizes = {group: sequences_per_group for group in records_per_group.keys()}
             queues_by_group = create_queues_by_group(group_sizes)
 
+        print_debug(f"Reading metadata from {args.metadata!r}…")
         # Make a second pass through the metadata, only considering records that
         # have passed filters.
         metadata_reader = read_metadata(
@@ -367,12 +374,14 @@ def run(args):
     # Write requested outputs.
 
     if args.output_strains:
+        print_debug(f"Writing strains to {args.output_strains!r}…")
         with open(args.output_strains, "w") as f:
             for strain in valid_strains:
                 f.write(f"{strain}\n")
 
     if is_vcf:
         if args.output_sequences:
+            print_debug(f"Reading sequences from {args.sequences!r} and writing to {args.output_sequences!r}…")
             # Get the samples to be deleted, not to keep, for VCF
             dropped_samps = list(sequence_strains - valid_strains)
             write_vcf(args.sequences, args.output_sequences, dropped_samps)
@@ -385,6 +394,10 @@ def run(args):
         observed_sequence_strains = set()
         duplicates = set()
         with open_file(args.output_sequences, "wt") if args.output_sequences else nullcontext() as output_handle:
+            if args.output_sequences:
+                print_debug(f"Reading sequences from {args.sequences!r} and writing to {args.output_sequences!r}…")
+            else:
+                print_debug(f"Reading sequences from {args.sequences!r}…")
             for sequence in read_sequences(args.sequences):
                 if sequence.id in observed_sequence_strains:
                     duplicates.add(sequence.id)
@@ -416,6 +429,7 @@ def run(args):
             sequence_strains = observed_sequence_strains
 
     if args.output_metadata:
+        print_debug(f"Reading metadata from {args.metadata!r} and writing to {args.output_metadata!r}…")
         write_output_metadata(args.metadata, args.metadata_delimiters,
                               args.metadata_id_columns, args.output_metadata,
                               valid_strains)
