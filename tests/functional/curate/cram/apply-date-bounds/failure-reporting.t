@@ -17,8 +17,8 @@ Test output with date out of range with "error_all" failure reporting and upper 
   >     --failure-reporting "error_all" \
   >     --date-field date \
   >     --upper-bound collectionDate 1> /dev/null
-  ERROR: Unable to apply bounds for the following (record, field, formatted date string, lower bound, upper bound):
-  (0, 'date', '2021', None, 2020.061475409836)
-  (1, 'date', '2022', None, 2020.061475409836)
-  Current bounds for incomplete dates in 'date' are defined by a maximum from 'collectionDate'. This can be updated with --upper-bound.
+  ERROR: Unable to apply bounds for the following (record, date, lower bound, upper bound):
+  (0, '2021', None, 2020.061475409836)
+  (1, '2022', None, 2020.061475409836)
+  The upper bound is 'collectionDate'. This can be updated with --upper-bound.
   [2]
