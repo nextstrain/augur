@@ -67,9 +67,13 @@ Error on duplicates in sequences.
   >   --metadata metadata.tsv \
   >   --sequences sequences.fasta \
   >   --output-sequences sequences-filtered.fasta
-  ERROR: The following strains are duplicated in 'sequences.fasta':
-  'a'
-  'c'
+  ERROR: Sequence ids must be unique.
+  
+  The following ids were were duplicated in 'sequences.fasta':
+  
+    a
+    c
+  
   [2]
 
 Error even if the corresponding output is not used.
@@ -78,7 +82,11 @@ Error even if the corresponding output is not used.
   >   --metadata metadata.tsv \
   >   --sequences sequences.fasta \
   >   --output-strains filtered.txt
-  ERROR: The following strains are duplicated in 'sequences.fasta':
-  'a'
-  'c'
+  ERROR: Sequence ids must be unique.
+  
+  The following ids were were duplicated in 'sequences.fasta':
+  
+    a
+    c
+  
   [2]

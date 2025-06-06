@@ -174,6 +174,24 @@ def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='seq
             }
 
 
+def subset_fasta(input_filename: str, output_filename: str, ids_file: str):
+    command = f"""
+        {augur()} read-file {shquote(input_filename)} |
+        {seqkit()} grep -f {ids_file} |
+        {augur()} write-file {shquote(output_filename)}
+    """
+
+    try:
+        run_shell_command(command, raise_errors=True)
+    except Exception:
+        if os.path.isfile(output_filename):
+            # Remove the partial output file.
+            os.remove(output_filename)
+            raise AugurError(f"Sequence output failed, see error(s) above.")
+        else:
+            raise AugurError(f"Sequence output failed, see error(s) above. The command may have already written data to stdout. You may want to clean up any partial outputs.")
+
+
 def load_features(reference, feature_names=None):
     """
     Parse a GFF/GenBank reference file. See the docstrings for _read_gff and
@@ -448,13 +466,28 @@ def _read_genbank(reference, feature_names):
     return features
 
 
-def validate_sequence_file(file: str):
-    """Ensure all sequence identifiers in the file are unique."""
+def validate_sequence_file(file: str, output_ids: str = None):
+    """Validate identifiers in a sequence file.
+
+    Parameters
+    ----------
+    file : str
+        Path to sequence file to validate.
+    output_ids : str, optional
+        Path to write unique sequence identifiers to.
+    """
     with NamedTemporaryFile("w+", encoding="utf-8") as dup_num_file:
-        command = f"""
-            {augur()} read-file {shquote(file)} |
-            {seqkit()} rmdup --dup-num-file {shquote(dup_num_file.name)} > /dev/null
-        """
+        if output_ids:
+            command = f"""
+                {augur()} read-file {shquote(file)} |
+                {seqkit()} rmdup --dup-num-file {shquote(dup_num_file.name)} |
+                {seqkit()} fx2tab --name > {shquote(output_ids)}
+            """
+        else:
+            command = f"""
+                {augur()} read-file {shquote(file)} |
+                {seqkit()} rmdup --dup-num-file {shquote(dup_num_file.name)} > /dev/null
+            """
 
         try:
             run_shell_command(command, raise_errors=True)
