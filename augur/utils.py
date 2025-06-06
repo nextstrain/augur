@@ -6,6 +6,7 @@ import os, json, sys
 import pandas as pd
 from collections import OrderedDict
 from io import RawIOBase
+from shlex import quote as shquote
 from .__version__ import __version__
 
 from augur.data import as_file
@@ -17,6 +18,18 @@ from augur.errors import AugurError
 
 from augur.util_support.color_parser import ColorParser
 from augur.util_support.node_data_reader import NodeDataReader
+
+
+def augur():
+    """
+    Locate how to re-invoke ourselves (_this_ specific Augur).
+    """
+    if sys.executable:
+        return f"{shquote(sys.executable)} -m augur"
+    else:
+        # A bit unusual we don't know our own Python executable, but assume we
+        # can access ourselves as the ``augur`` command.
+        return f"augur"
 
 
 def get_json_name(args, default=None):
