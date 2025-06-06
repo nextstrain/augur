@@ -23,7 +23,7 @@ I.e. the groups here are:
   >   --subsample-seed 0 \
   >   --output-log filtered-log.tsv \
   >   --output-strains filtered-strains.txt 2>/dev/null
-  $ cat filtered-strains.txt
+  $ sort filtered-strains.txt
   SEQ1
   SEQ3
   $ tail -n+2 filtered-log.tsv | sort

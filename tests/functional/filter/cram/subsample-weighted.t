@@ -41,7 +41,7 @@ location C is ignored because there are no corresponding rows in the metadata.
   	2 were dropped because of subsampling criteria
   6 strains passed all filters
 
-  $ cat strains.txt
+  $ sort strains.txt
   SEQ1
   SEQ2
   SEQ5

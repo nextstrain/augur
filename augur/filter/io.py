@@ -96,46 +96,25 @@ def read_priority_scores(fname):
         raise AugurError(f"missing or malformed priority scores file {fname}")
 
 
-def write_metadata_based_outputs(input_metadata_path: str, delimiters: Sequence[str],
-                                 id_columns: Sequence[str], output_metadata_path: str,
-                                 output_strains_path: str, ids_to_write: Set[str]):
+def write_output_metadata(input_metadata_path: str, delimiters: Sequence[str],
+                          id_columns: Sequence[str], output_metadata_path: str,
+                          ids_to_write: Set[str]):
     """
-    Write output metadata and/or strains file given input metadata information
-    and a set of IDs to write.
+    Write output metadata file given input metadata information and a set of IDs
+    to write.
     """
     input_metadata = Metadata(input_metadata_path, delimiters, id_columns)
 
-    # Handle all outputs with one pass of metadata. This requires using
-    # conditionals both outside of and inside the loop through metadata rows.
-
-    # Make these conditionally set variables available at this scope.
-    output_metadata_handle = None
-    output_metadata = None
-    output_strains = None
-
-    # Set up output streams.
-    if output_metadata_path:
-        output_metadata_handle = xopen(output_metadata_path, "w", newline="")
+    with xopen(output_metadata_path, "w", newline="") as output_metadata_handle:
         output_metadata = csv.DictWriter(output_metadata_handle, fieldnames=input_metadata.columns,
                                          delimiter="\t", lineterminator=os.linesep)
         output_metadata.writeheader()
-    if output_strains_path:
-        output_strains = open(output_strains_path, "w")
 
-    # Write outputs based on rows in the original metadata.
-    for row in input_metadata.rows():
-        row_id = row[input_metadata.id_column]
-        if row_id in ids_to_write:
-            if output_metadata:
+        # Write outputs based on rows in the original metadata.
+        for row in input_metadata.rows():
+            row_id = row[input_metadata.id_column]
+            if row_id in ids_to_write:
                 output_metadata.writerow(row)
-            if output_strains:
-                output_strains.write(row_id + '\n')
-
-    # Close file handles.
-    if output_metadata_handle:
-        output_metadata_handle.close()
-    if output_strains:
-        output_strains.close()
 
 
 # These are the types accepted in the following function.
