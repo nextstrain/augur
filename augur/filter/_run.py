@@ -22,7 +22,7 @@ from augur.io.print import print_err, _n
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
-from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
+from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_output_metadata
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling, get_weighted_group_sizes
 
@@ -364,11 +364,13 @@ def run(args):
     # Force inclusion of specific strains after filtering and subsampling.
     valid_strains = valid_strains | all_sequences_to_include
 
-    # Write output starting with sequences, if they've been requested. It is
-    # possible for the input sequences and sequence index to be out of sync
-    # (e.g., the index is a superset of the given sequences input), so we need
-    # to update the set of strains to keep based on which strains are actually
-    # available.
+    # Write requested outputs.
+
+    if args.output_strains:
+        with open(args.output_strains, "w") as f:
+            for strain in valid_strains:
+                f.write(f"{strain}\n")
+
     if is_vcf:
         if args.output_sequences:
             # Get the samples to be deleted, not to keep, for VCF
@@ -397,6 +399,10 @@ def run(args):
             cleanup_outputs(args)
             raise AugurError(f"The following strains are duplicated in '{args.sequences}':\n" + "\n".join(repr(x) for x in sorted(duplicates)))
 
+        # It is possible for the input sequences and sequence index to be out of
+        # sync (e.g., the index is a superset of the given sequences input), so
+        # we need to update the set of strains to keep based on which strains
+        # are actually available.
         if sequence_strains != observed_sequence_strains:
             # Warn the user if the expected strains from the sequence index are
             # not a superset of the observed strains.
@@ -409,10 +415,10 @@ def run(args):
             # Update the set of available sequence strains.
             sequence_strains = observed_sequence_strains
 
-    if args.output_metadata or args.output_strains:
-        write_metadata_based_outputs(args.metadata, args.metadata_delimiters,
-                                     args.metadata_id_columns, args.output_metadata,
-                                     args.output_strains, valid_strains)
+    if args.output_metadata:
+        write_output_metadata(args.metadata, args.metadata_delimiters,
+                              args.metadata_id_columns, args.output_metadata,
+                              valid_strains)
 
     # Calculate the number of strains that don't exist in either metadata or
     # sequences.
