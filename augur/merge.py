@@ -424,7 +424,7 @@ def validate_sequence_file(file: str):
     with NamedTemporaryFile("w+", encoding="utf-8") as dup_num_file:
         command = f"""
             {augur} read-file {shquote(file)} |
-            {seqkit()} rmdup --dup-num-file {shquote(dup_num_file.name)}
+            {seqkit()} rmdup --dup-num-file {shquote(dup_num_file.name)} > /dev/null
         """
 
         try:

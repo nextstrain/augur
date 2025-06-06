@@ -5,8 +5,10 @@
 ### Bug fixes
 
 * curate format-dates: Removed redundant warning messages that were previously displayed when using `--failure-reporting "warn"`. [#1816][] (@victorlin)
+* merge: Fixed a performance bug where input sequence file validation unnecessarily loaded file contents into device memory. [#1820][] (@victorlin)
 
 [#1816]: https://github.com/nextstrain/augur/pull/1816
+[#1820]: https://github.com/nextstrain/augur/pull/1820
 
 ## 31.2.0 (5 June 2025)
 
