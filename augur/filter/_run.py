@@ -1,11 +1,11 @@
 from collections import defaultdict
-from contextlib import nullcontext
 import csv
 import itertools
 import json
 import numpy as np
 import os
 import pandas as pd
+from shutil import copyfile
 from tempfile import NamedTemporaryFile
 
 from augur.errors import AugurError
@@ -17,12 +17,12 @@ from augur.index import (
 )
 from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
-from augur.io.sequences import read_sequences, write_sequences
-from augur.io.print import print_err, _n
+from augur.io.sequences import read_sequences, validate_sequence_file, subset_fasta
+from augur.io.print import print_debug, print_err, _n
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
-from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_metadata_based_outputs
+from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_output_metadata
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling, get_weighted_group_sizes
 
@@ -46,6 +46,7 @@ def run(args):
         build_sequence_index = True
 
     if build_sequence_index:
+        print_debug(f"Building sequence index for {args.sequences!r}…")
         # Generate the sequence index on the fly for workflows that don't do
         # this separately. Create a temporary index using a random filename to
         # avoid collisions between multiple filter commands.
@@ -60,6 +61,10 @@ def run(args):
     # Load the sequence index, if a path exists.
     sequence_index = None
     if sequence_index_path:
+        if args.sequence_index:
+            print_debug(f"Reading sequence index from {sequence_index_path!r}…")
+        else:
+            print_debug("Reading sequence index from temporary file…")
         sequence_index = pd.read_csv(
             sequence_index_path,
             sep=SEQUENCE_INDEX_DELIMITER,
@@ -164,6 +169,7 @@ def run(args):
         )
     useful_metadata_columns = get_useful_metadata_columns(args, metadata_object.id_column, metadata_object.columns)
 
+    print_debug(f"Reading metadata from {args.metadata!r}…")
     metadata_reader = read_metadata(
         args.metadata,
         delimiters=[metadata_object.delimiter],
@@ -303,6 +309,7 @@ def run(args):
                     group_sizes = {group: sequences_per_group for group in records_per_group.keys()}
             queues_by_group = create_queues_by_group(group_sizes)
 
+        print_debug(f"Reading metadata from {args.metadata!r}…")
         # Make a second pass through the metadata, only considering records that
         # have passed filters.
         metadata_reader = read_metadata(
@@ -364,39 +371,42 @@ def run(args):
     # Force inclusion of specific strains after filtering and subsampling.
     valid_strains = valid_strains | all_sequences_to_include
 
+    # Write a strains file if explicitly requested or if sequence output is requested.
+    strains_file = None
+    if args.output_strains or args.output_sequences:
+        with NamedTemporaryFile(mode="w+", delete=False) as temp_file:
+            strains_file = temp_file.name
+            print_debug(f"Writing strains to temporary file {temp_file.name!r}…")
+            for strain in valid_strains:
+                temp_file.write(f"{strain}\n")
+
+        if args.output_strains:
+            print_debug(f"Copying strains to {args.output_strains!r}…")
+            copyfile(strains_file, args.output_strains)
+
     # Write output starting with sequences, if they've been requested. It is
     # possible for the input sequences and sequence index to be out of sync
     # (e.g., the index is a superset of the given sequences input), so we need
     # to update the set of strains to keep based on which strains are actually
     # available.
-    if is_vcf:
-        if args.output_sequences:
-            # Get the samples to be deleted, not to keep, for VCF
-            dropped_samps = list(sequence_strains - valid_strains)
-            write_vcf(args.sequences, args.output_sequences, dropped_samps)
-    elif args.sequences:
-        # If the user requested sequence output, stream to disk all sequences
-        # that passed all filters to avoid reading sequences into memory first.
-        # Even if we aren't emitting sequences, we check for duplicates and
-        # track the observed strain names in the sequence file as part of the
-        # single pass to allow comparison with the provided sequence index.
+
+    # For non-VCF sequence inputs, check ids for duplicates and compare against sequence index.
+    if args.sequences and not is_vcf:
+        print_debug(f"Reading sequences from {args.sequences!r}…")
+
         observed_sequence_strains = set()
-        duplicates = set()
-        with open_file(args.output_sequences, "wt") if args.output_sequences else nullcontext() as output_handle:
-            for sequence in read_sequences(args.sequences):
-                if sequence.id in observed_sequence_strains:
-                    duplicates.add(sequence.id)
+        with NamedTemporaryFile(mode="w+") as temp_file:
+            try:
+                validate_sequence_file(args.sequences, output_ids=temp_file.name)
+            except AugurError as e:
+                cleanup_outputs(args)
+                raise e
 
-                observed_sequence_strains.add(sequence.id)
+            with open(temp_file.name) as f:
+                for line in f:
+                    observed_sequence_strains.add(line.strip())
 
-                if args.output_sequences:
-                    if sequence.id in valid_strains:
-                        write_sequences(sequence, output_handle, 'fasta')
-
-        if duplicates:
-            cleanup_outputs(args)
-            raise AugurError(f"The following strains are duplicated in '{args.sequences}':\n" + "\n".join(repr(x) for x in sorted(duplicates)))
-
+        # Compare sequence index with observed.
         if sequence_strains != observed_sequence_strains:
             # Warn the user if the expected strains from the sequence index are
             # not a superset of the observed strains.
@@ -409,10 +419,22 @@ def run(args):
             # Update the set of available sequence strains.
             sequence_strains = observed_sequence_strains
 
-    if args.output_metadata or args.output_strains:
-        write_metadata_based_outputs(args.metadata, args.metadata_delimiters,
-                                     args.metadata_id_columns, args.output_metadata,
-                                     args.output_strains, valid_strains)
+    if args.output_sequences:
+        print_debug(f"Reading sequences from {args.sequences!r} and writing to {args.output_sequences!r}…")
+        if is_vcf:
+            # Get the samples to be deleted, not to keep, for VCF
+            dropped_samps = list(sequence_strains - valid_strains)
+            write_vcf(args.sequences, args.output_sequences, dropped_samps)
+        else:
+            subset_fasta(args.sequences, args.output_sequences, strains_file)
+            if not args.output_strains:
+                os.remove(strains_file)
+
+    if args.output_metadata:
+        print_debug(f"Reading metadata from {args.metadata!r} and writing to {args.output_metadata!r}…")
+        write_output_metadata(args.metadata, args.metadata_delimiters,
+                              args.metadata_id_columns, args.output_metadata,
+                              valid_strains)
 
     # Calculate the number of strains that don't exist in either metadata or
     # sequences.

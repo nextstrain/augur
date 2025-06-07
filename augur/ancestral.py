@@ -435,7 +435,7 @@ def run(args):
     if not is_vcf and args.genes:
         genes = parse_genes_argument(args.genes)
 
-        from .utils import load_features
+        from .io.sequences import load_features
         ## load features; only requested features if genes given
         features = load_features(args.annotation, genes)
         # Ensure the already-created nuc annotation coordinates match those parsed from the reference file
