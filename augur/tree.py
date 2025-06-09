@@ -14,6 +14,7 @@ import Bio
 from Bio.Seq import MutableSeq
 from Bio import Phylo
 import numpy as np
+from shlex import quote as shquote
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
 from textwrap import dedent
@@ -22,7 +23,6 @@ from .errors import AugurError
 from .io.file import open_file
 from .io.sequences import read_sequences
 from .io.shell_command_runner import run_shell_command
-from .io.vcf import shquote
 from .utils import nthreads_value, load_mask_sites, read_tree
 
 DEFAULT_ARGS = {

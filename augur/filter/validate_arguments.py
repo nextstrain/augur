@@ -1,8 +1,7 @@
 from shutil import which
 from augur.errors import AugurError
 from augur.filter.weights_file import get_weighted_columns
-from augur.io.sequences import seqkit
-from augur.io.vcf import is_vcf as filename_is_vcf
+from augur.io.sequences import is_vcf as filename_is_vcf, seqkit
 
 
 SEQUENCE_ONLY_FILTERS = (

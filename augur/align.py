@@ -3,6 +3,7 @@ Align multiple sequences from FASTA.
 """
 
 import os
+from shlex import quote as shquote
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
@@ -10,7 +11,6 @@ from .argparse_ import ExtendOverwriteDefault
 from .io.file import open_file
 from .io.sequences import read_sequences, read_single_sequence
 from .io.shell_command_runner import run_shell_command
-from .io.vcf import shquote
 from .utils import nthreads_value
 from collections import defaultdict
 

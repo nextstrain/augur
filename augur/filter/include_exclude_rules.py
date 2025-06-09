@@ -11,7 +11,7 @@ from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from augur.io.strains import read_strains
-from augur.io.vcf import is_vcf as filename_is_vcf
+from augur.io.sequences import is_vcf as filename_is_vcf
 from . import constants
 
 try:

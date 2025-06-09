@@ -16,9 +16,8 @@ from augur.index import (
 )
 from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
-from augur.io.sequences import read_sequence_ids, subset_fasta
+from augur.io.sequences import read_sequence_ids, subset_fasta, is_vcf as filename_is_vcf, write_vcf
 from augur.io.print import print_debug, print_err, _n
-from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
 from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_output_metadata

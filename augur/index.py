@@ -5,8 +5,7 @@ from itertools import combinations
 import csv
 
 from .io.file import open_file
-from .io.sequences import read_sequences
-from .io.vcf import is_vcf
+from .io.sequences import read_sequences, is_vcf
 from treetime.vcf_utils import read_vcf
 
 
