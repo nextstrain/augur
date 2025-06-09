@@ -1,6 +1,12 @@
 """
 Filter and subsample a sequence set.
 
+SeqKit is used behind the scenes to handle FASTA files, but this should be
+considered an implementation detail that may change in the future.  The CLI
+program seqkit must be available.  If it's not on PATH (or you want to use a
+version different from what's on PATH), set the SEQKIT environment variable to
+path of the desired seqkit executable.
+
 VCFtools is used behind the scenes to handle VCF files, but this should be
 considered an implementation detail that may change in the future.  The CLI
 program vcftools must be available on PATH.

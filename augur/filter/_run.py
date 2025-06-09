@@ -1,5 +1,4 @@
 from collections import defaultdict
-from contextlib import nullcontext
 import csv
 import itertools
 import json
@@ -17,7 +16,7 @@ from augur.index import (
 )
 from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
-from augur.io.sequences import read_sequences, write_sequences
+from augur.io.sequences import read_sequence_ids, subset_fasta
 from augur.io.print import print_debug, print_err, _n
 from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
@@ -373,44 +372,28 @@ def run(args):
 
     # Write requested outputs.
 
+    # Write a strains file if explicitly requested or if sequence output is requested.
+    strains_file = None
     if args.output_strains:
-        print_debug(f"Writing strains to {args.output_strains!r}…")
-        with open(args.output_strains, "w") as f:
+        strains_file = args.output_strains
+    elif args.output_sequences:
+        strains_file = NamedTemporaryFile(delete=False).name
+
+    if strains_file is not None:
+        print_debug(f"Writing strains to {strains_file!r}…")
+        with open(strains_file, "w") as f:
             for strain in valid_strains:
                 f.write(f"{strain}\n")
 
-    if is_vcf:
-        if args.output_sequences:
-            print_debug(f"Reading sequences from {args.sequences!r} and writing to {args.output_sequences!r}…")
-            # Get the samples to be deleted, not to keep, for VCF
-            dropped_samps = list(sequence_strains - valid_strains)
-            write_vcf(args.sequences, args.output_sequences, dropped_samps)
-    elif args.sequences:
-        # If the user requested sequence output, stream to disk all sequences
-        # that passed all filters to avoid reading sequences into memory first.
-        # Even if we aren't emitting sequences, we check for duplicates and
-        # track the observed strain names in the sequence file as part of the
-        # single pass to allow comparison with the provided sequence index.
-        observed_sequence_strains = set()
-        duplicates = set()
-        with open_file(args.output_sequences, "wt") if args.output_sequences else nullcontext() as output_handle:
-            if args.output_sequences:
-                print_debug(f"Reading sequences from {args.sequences!r} and writing to {args.output_sequences!r}…")
-            else:
-                print_debug(f"Reading sequences from {args.sequences!r}…")
-            for sequence in read_sequences(args.sequences):
-                if sequence.id in observed_sequence_strains:
-                    duplicates.add(sequence.id)
+    # For non-VCF sequence inputs, check ids for duplicates and compare against sequence index.
+    if args.sequences and not is_vcf:
+        print_debug(f"Reading sequences from {args.sequences!r}…")
 
-                observed_sequence_strains.add(sequence.id)
-
-                if args.output_sequences:
-                    if sequence.id in valid_strains:
-                        write_sequences(sequence, output_handle, 'fasta')
-
-        if duplicates:
+        try:
+            observed_sequence_strains = read_sequence_ids(args.sequences, error_on_duplicates=True)
+        except AugurError as e:
             cleanup_outputs(args)
-            raise AugurError(f"The following strains are duplicated in '{args.sequences}':\n" + "\n".join(repr(x) for x in sorted(duplicates)))
+            raise e
 
         # It is possible for the input sequences and sequence index to be out of
         # sync (e.g., the index is a superset of the given sequences input), so
@@ -427,6 +410,17 @@ def run(args):
 
             # Update the set of available sequence strains.
             sequence_strains = observed_sequence_strains
+
+    if args.output_sequences:
+        print_debug(f"Reading sequences from {args.sequences!r} and writing to {args.output_sequences!r}…")
+        if is_vcf:
+            # Get the samples to be deleted, not to keep, for VCF
+            dropped_samps = list(sequence_strains - valid_strains)
+            write_vcf(args.sequences, args.output_sequences, dropped_samps)
+        else:
+            subset_fasta(args.sequences, args.output_sequences, strains_file)
+            if not args.output_strains:
+                os.remove(strains_file)
 
     if args.output_metadata:
         print_debug(f"Reading metadata from {args.metadata!r} and writing to {args.output_metadata!r}…")
