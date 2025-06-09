@@ -384,8 +384,8 @@ def run(args):
             for strain in valid_strains:
                 f.write(f"{strain}\n")
 
-    # For non-VCF sequence inputs, check ids for duplicates and compare against sequence index.
-    if args.sequences and not is_vcf:
+    # Check ids for duplicates and compare against sequence index.
+    if args.sequences:
         print_debug(f"Reading sequences from {args.sequences!r}…")
 
         try:

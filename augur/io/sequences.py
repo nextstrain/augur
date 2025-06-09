@@ -474,10 +474,16 @@ def read_sequence_ids(file: str, error_on_duplicates = True):
     duplicates = set()
 
     with NamedTemporaryFile("w+") as temp_file:
-        command = f"""
-            {augur()} read-file {shquote(file)} |
-            {seqkit()} fx2tab --name --only-id > {shquote(temp_file.name)}
-        """
+        if is_vcf(file):
+            # Unfortunately, vcf-query doesn't support piped input from augur read-file.
+            command = f"""
+                vcf-query -l {shquote(file)} > {shquote(temp_file.name)}
+            """
+        else:
+            command = f"""
+                {augur()} read-file {shquote(file)} |
+                {seqkit()} fx2tab --name --only-id > {shquote(temp_file.name)}
+            """
 
         try:
             run_shell_command(command, raise_errors=True)
