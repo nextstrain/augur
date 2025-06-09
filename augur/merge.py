@@ -68,7 +68,7 @@ from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, Metadata
 from augur.io.print import print_err, print_debug, indented_list, _n
-from augur.io.sequences import seqkit, validate_sequence_file
+from augur.io.sequences import seqkit, read_sequence_ids
 from augur.io.shell_command_runner import run_shell_command
 from augur.utils import augur, first_line
 
@@ -384,7 +384,7 @@ def merge_sequences(args):
     if not args.skip_input_sequences_validation:
         for s in args.sequences:
             print_info(f"Validating {s!r}…")
-            validate_sequence_file(s)
+            read_sequence_ids(s, error_on_duplicates=True)
 
     print_info(f"Merging sequences and writing to {args.output_sequences!r}…")
 

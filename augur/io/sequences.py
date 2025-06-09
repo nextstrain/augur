@@ -9,7 +9,7 @@ from shlex import quote as shquote
 from shutil import which
 from tempfile import NamedTemporaryFile
 from textwrap import dedent
-from typing import IO, Iterator, Iterable, Union
+from typing import Iterator, Iterable, Union
 from .file import open_file
 from .print import _n, indented_list
 from .shell_command_runner import run_shell_command
@@ -448,29 +448,43 @@ def _read_genbank(reference, feature_names):
     return features
 
 
-def validate_sequence_file(file: str):
-    """Ensure all sequence identifiers in the file are unique."""
-    with NamedTemporaryFile("w+", encoding="utf-8") as dup_num_file:
+# TODO: consider consolidating with augur.io.metadata.read_metadata_with_sequences
+# <https://github.com/nextstrain/augur/pull/1821#discussion_r2138629823>
+def read_sequence_ids(file: str, error_on_duplicates = True):
+    """Get unique identifiers from a sequence file."""
+    unique = set()
+    duplicates = set()
+
+    with NamedTemporaryFile("w+") as temp_file:
         command = f"""
             {augur()} read-file {shquote(file)} |
-            {seqkit()} rmdup --dup-num-file {shquote(dup_num_file.name)} > /dev/null
+            {seqkit()} fx2tab --name --only-id > {shquote(temp_file.name)}
         """
 
         try:
             run_shell_command(command, raise_errors=True)
         except Exception as error:
-            raise AugurError(f"Validation failed for {file!r}. See error above.") from error
+            raise AugurError(f"Unable to read {file!r}. See error above.") from error
 
-        dup_num_file.seek(0)
+        temp_file.seek(0)
 
-        if duplicates := list(sorted(parse_seqkit_dup_num_file(dup_num_file))):
-            raise AugurError(dedent(f"""\
-                Sequence ids must be unique.
+        for line in temp_file:
+            identifier = line.strip()
+            if identifier in unique:
+                duplicates.add(identifier)
+            else:
+                unique.add(identifier)
 
-                The following {_n("id was", "ids were", len(duplicates))} were duplicated in {file!r}:
+    if duplicates and error_on_duplicates:
+        raise AugurError(dedent(f"""\
+            Sequence ids must be unique.
 
-                  {indented_list(duplicates, '                ' + '  ')}
-            """))
+            The following {_n("id was", "ids were", len(duplicates))} were duplicated in {file!r}:
+
+              {indented_list(sorted(duplicates), '            ' + '  ')}
+        """))
+    
+    return unique
 
 
 def seqkit():
@@ -490,54 +504,3 @@ def seqkit():
             separately.  It is typically provided by a Nextstrain runtime.
             """))
     return shquote(seqkit)
-
-
-def parse_seqkit_dup_num_file(handle: IO[str]):
-    """Extract duplicated ids from the output of seqkit rmdup --dup-num-file.
-
-    There is one line per duplicated id, in the format of a number n followed by
-    tab character followed by the id duplicated n times, separated by ", ".
-
-    Example FASTA headers
-
-        > id, 1
-        > id, 2
-        > id, 3
-        > id1
-        > id1
-
-    will produce a --dup-num-file output file
-
-        3\tid,, id,, id,
-        2\tid1, id1
-
-    which parsed by this function will yield
-
-        id,
-        id1
-
-    Examples
-    ========
-
-    Two duplicate ids.
-
-    >>> from io import StringIO
-    >>> contents = "3\\tid,, id,, id,\\n2\\tid1, id1\\n"
-    >>> list(parse_seqkit_dup_num_file(StringIO(contents)))
-    ['id,', 'id1']
-
-    One duplicate id.
-
-    >>> contents = "4\\tid, id, id, id,\\n"
-    >>> list(parse_seqkit_dup_num_file(StringIO(contents)))
-    ['id,']
-
-    An empty file returns an empty list.
-
-    >>> list(parse_seqkit_dup_num_file(StringIO("")))
-    []
-    """
-    for line in handle:
-        line = line.rstrip('\n')
-        if ", " in line:
-            yield line[line.rfind(", ")+2:]
