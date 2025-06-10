@@ -154,6 +154,11 @@ Note: This matches out of bounds dates such as 2018-03-32.
 Those should be further validated by date conversion functions.
 """
 
+RE_AUGUR_UNKNOWN_DATE = re.compile(r'^XXXX-XX-XX$')
+"""
+Matches an Augur-style unknown date.
+"""
+
 RE_AUGUR_AMBIGUOUS_DATE = re.compile(r'.*XX.*')
 """
 Matches an Augur-style ambiguous date with 'XX' used to mask unknown parts of the date.
@@ -177,13 +182,20 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
     except:
         pass
     
-    # 2. Check if value is an ambiguous date in the specified format (fmt).
+    # 2. Check if value is an unknown date.
+    # This is checked before ambiguous dates since it is a subset of that with
+    # special handling.
+
+    if RE_AUGUR_UNKNOWN_DATE.match(value):
+        return (float("-inf"), float("inf"))
+
+    # 3. Check if value is an ambiguous date in the specified format (fmt).
 
     if RE_AUGUR_AMBIGUOUS_DATE.match(value):
         start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         return (date_to_numeric(start), date_to_numeric(end))
 
-    # 3. Check formats that are always supported.
+    # 4. Check formats that are always supported.
 
     if RE_NUMERIC_DATE.match(value):
         return float(value)
@@ -216,7 +228,7 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
 
         return (date_to_numeric(start), date_to_numeric(end))
 
-    # 4. Return none (silent error) if the date does not match any of the checked formats.
+    # 5. Return none (silent error) if the date does not match any of the checked formats.
 
     return None
 

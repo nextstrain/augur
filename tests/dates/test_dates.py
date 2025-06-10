@@ -26,6 +26,11 @@ class TestDates:
             == pytest.approx(2000.242, abs=1e-3)
         )
 
+    def test_get_numerical_date_from_value_unknown_date(self):
+        assert (dates.get_numerical_date_from_value("XXXX-XX-XX", "%Y-%m-%d")
+            == (float("-inf"), float("inf"))
+        )
+
     @pytest.mark.parametrize(
         "value",
         [
