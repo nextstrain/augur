@@ -30,4 +30,4 @@ The query initially filters 3 strains from Colombia, one of which is added back 
   COL/FLR_00008/2015\tforce_include_strains\t"[[""include_file"", ""*/data/include.txt""]]" (esc) (glob)
   COL/FLR_00024/2015	filter_by_query	"[[""query"", ""country != 'Colombia'""]]"
   Colombia/2016/ZC204Se	filter_by_query	"[[""query"", ""country != 'Colombia'""]]"
-  HND/2016/HU_ME59	filter_by_sequence_index	[]
+  HND/2016/HU_ME59	filter_by_sequence_ids	[]
