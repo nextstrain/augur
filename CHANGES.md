@@ -5,6 +5,7 @@
 ### Features
 
 * filter, frequencies, refine: Added support in metadata for precise date ranges in `YYYY-MM-DD/YYYY-MM-DD` format. [#1304][] (@victorlin)
+* A new command, `augur curate apply-date-bounds`, allows imposing lower and/or upper bounds on date values using metadata such as an upper bound of collection date. The modified date values are in the `YYYY-MM-DD/YYYY-MM-DD` format described in the previous feature. [#1494]
 
 ### Bug fixes
 
@@ -12,6 +13,7 @@
 * merge: Fixed a performance bug where input sequence file validation unnecessarily loaded file contents into device memory. [#1820][] (@victorlin)
 
 [#1304]: https://github.com/nextstrain/augur/issues/1304
+[#1494]: https://github.com/nextstrain/augur/issues/1494
 [#1816]: https://github.com/nextstrain/augur/pull/1816
 [#1820]: https://github.com/nextstrain/augur/pull/1820
 
