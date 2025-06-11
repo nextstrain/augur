@@ -13,6 +13,7 @@ Submodules
    :maxdepth: 4
 
    augur.curate.abbreviate_authors
+   augur.curate.apply_date_bounds
    augur.curate.apply_geolocation_rules
    augur.curate.apply_record_annotations
    augur.curate.format_dates
