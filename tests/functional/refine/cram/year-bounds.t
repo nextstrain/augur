@@ -65,3 +65,13 @@ Run the same check as above.
 
   $ python3 -c 'import json, sys; print(json.load(sys.stdin)["nodes"]["PAN/CDC_259359_V1_V3/2015"]["date"])' < branch_lengths.json
   2020-12-31
+
+Check that the date is marked as inferred.
+
+  $ python3 -c 'import json, sys; print(json.load(sys.stdin)["nodes"]["PAN/CDC_259359_V1_V3/2015"]["date_inferred"])' < branch_lengths.json
+  True
+
+Check that another date is not marked as inferred.
+
+  $ python3 -c 'import json, sys; print(json.load(sys.stdin)["nodes"]["Colombia/2016/ZC204Se"]["date_inferred"])' < branch_lengths.json
+  False
