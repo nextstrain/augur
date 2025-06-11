@@ -1,5 +1,9 @@
 """
 Filter and subsample a sequence set.
+
+VCFtools is used behind the scenes to handle VCF files, but this should be
+considered an implementation detail that may change in the future.  The CLI
+program vcftools must be available on PATH.
 """
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT
