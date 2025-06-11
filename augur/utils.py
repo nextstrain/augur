@@ -1,22 +1,24 @@
 import argparse
+import json
+import os
+import sys
+from collections import OrderedDict
+from io import RawIOBase
+
 import Bio
 import Bio.Phylo
 import numpy as np
-import os, json, sys
 import pandas as pd
-from collections import OrderedDict
-from io import RawIOBase
-from .__version__ import __version__
 
 from augur.data import as_file
+from augur.errors import AugurError
 from augur.io.file import open_file
 from augur.io.sequences import read_single_sequence
-
 from augur.types import ValidationMode
-from augur.errors import AugurError
-
 from augur.util_support.color_parser import ColorParser
 from augur.util_support.node_data_reader import NodeDataReader
+
+from .__version__ import __version__
 
 
 def get_json_name(args, default=None):
@@ -126,7 +128,17 @@ def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") e
         data["generated_by"] = {"program": "augur", "version": get_augur_version()}
     with open_file(file, 'w', encoding='utf-8') as handle:
         sort_keys = False if isinstance(data, OrderedDict) else True
-        json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
+        try:
+            json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
+        except TypeError as e:
+            if "'<' not supported" in str(e):
+                handle.seek(0)
+                handle.truncate(0)
+                print("WARNING: When writing JSON, could not sort JSON keys. A tree node is likely missing a name. Retrying without sorting keys.", file=sys.stderr)
+                json.dump(data, handle, indent=indent, sort_keys=False, cls=AugurJSONEncoder)
+            else:
+                raise e
+
 
 
 class BytesWrittenCounterIO(RawIOBase):
@@ -227,7 +239,7 @@ def _read_nuc_annotation_from_gff(record, reference):
     if len(sequence_regions)>1:
         raise AugurError(f"Reference {reference!r} contains multiple ##sequence-region pragma lines. Augur can only handle GFF files with a single one.")
     elif sequence_regions:
-        from Bio.SeqFeature import SeqFeature, FeatureLocation
+        from Bio.SeqFeature import FeatureLocation, SeqFeature
         (name, start, stop) = sequence_regions[0]
         nuc['pragma'] = SeqFeature(
             FeatureLocation(start, stop, strand=1),
@@ -298,6 +310,7 @@ def _read_gff(reference, feature_names):
         # TODO: Remove warning suppression after it's addressed upstream:
         # <https://github.com/chapmanb/bcbb/issues/143>
         import warnings
+
         from Bio import BiopythonDeprecationWarning
         warnings.simplefilter("ignore", BiopythonDeprecationWarning)
         gff_entries = list(GFF.parse(in_handle, limit_info={'gff_type': valid_types}))
@@ -883,7 +896,7 @@ def genome_features_to_auspice_annotation(features, ref_seq_name=None, assert_nu
         See schema-annotations.json for the schema this conforms to
 
     """
-    from Bio.SeqFeature import SimpleLocation, CompoundLocation
+    from Bio.SeqFeature import CompoundLocation, SimpleLocation
 
     if assert_nuc and 'nuc' not in features:
         raise AugurError("Genome features must include a feature for 'nuc'")
