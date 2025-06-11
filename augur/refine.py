@@ -353,7 +353,7 @@ def run(args):
                 return 1
 
         for node in T.find_clades():
-            inferred = node.raw_date_constraint is None or isinstance(node.raw_date_constraint, list)
+            inferred = not isinstance(node.raw_date_constraint, float)
             setattr(node, 'date_inferred', inferred)
 
         attributes.extend(['numdate', 'clock_length', 'mutation_length', 'raw_date', 'date', 'date_inferred'])
