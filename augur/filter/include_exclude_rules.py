@@ -11,7 +11,7 @@ from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err
 from augur.io.strains import read_strains
-from augur.io.vcf import is_vcf as filename_is_vcf
+from augur.io.sequences import is_vcf as filename_is_vcf
 from . import constants
 
 try:
@@ -396,30 +396,27 @@ def filter_by_max_date(metadata, date_column, max_date) -> FilterFunctionReturn:
     return filtered
 
 
-def filter_by_sequence_index(metadata, sequence_index) -> FilterFunctionReturn:
-    """Filter metadata by presence of corresponding entries in a given sequence
-    index. This filter effectively intersects the strain ids in the metadata and
-    sequence index.
+def filter_by_sequence_ids(metadata, sequence_ids: Set[str]) -> FilterFunctionReturn:
+    """Filter metadata by presence of corresponding entries in the input sequence file.
 
     Parameters
     ----------
     metadata : pandas.DataFrame
         Metadata indexed by strain name
-    sequence_index : pandas.DataFrame
-        Sequence index
+    sequence_ids
+        Identifiers from the sequence file
 
     Examples
     --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}]).set_index("strain")
-    >>> filter_by_sequence_index(metadata, sequence_index)
+    >>> sequence_ids = {"strain1"}
+    >>> filter_by_sequence_ids(metadata, sequence_ids)
     {'strain1'}
 
     """
     metadata_strains = set(metadata.index.values)
-    sequence_index_strains = set(sequence_index.index.values)
 
-    return metadata_strains & sequence_index_strains
+    return metadata_strains & sequence_ids
 
 
 def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunctionReturn:
@@ -587,7 +584,7 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
     return included
 
 
-def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[FilterOption]]:
+def construct_filters(args, sequence_index, sequence_ids: Set[str]) -> Tuple[List[FilterOption], List[FilterOption]]:
     """Construct lists of filters and inclusion criteria based on user-provided
     arguments.
 
@@ -627,11 +624,11 @@ def construct_filters(args, sequence_index) -> Tuple[List[FilterOption], List[Fi
         exclude_by.append((filter_by_exclude_all, {}))
 
     # Filter by sequence index.
-    if sequence_index is not None:
+    if sequence_ids is not None:
         exclude_by.append((
-            filter_by_sequence_index,
+            filter_by_sequence_ids,
             {
-                "sequence_index": sequence_index,
+                "sequence_ids": sequence_ids,
             },
         ))
 
@@ -903,7 +900,7 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
 
         # Handle special cases for data types that we want to represent
         # differently from their defaults or not at all.
-        if isinstance(value, pd.DataFrame):
+        if isinstance(value, (pd.DataFrame, set)):
             continue
         elif isinstance(value, float):
             value = round(value, 2)

@@ -19,4 +19,3 @@ Submodules
    augur.io.sequences
    augur.io.shell_command_runner
    augur.io.strains
-   augur.io.vcf

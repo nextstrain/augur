@@ -6,12 +6,16 @@
 
 * curate format-dates: Removed redundant warning messages that were previously displayed when using `--failure-reporting "warn"`. [#1816][] (@victorlin)
 * filter: Improved performance of `--output-sequences` by using SeqKit internally. [#1794][] (@victorlin)
+* filter: Improved performance when using `--sequences` without `--sequence-index` by skipping indexing of `--sequences` when no sequence-based filters are used. [#1827][] (@victorlin)
+* filter: Fixed a bug that prevented proper checking of duplicates and sequence index mismatches on VCF inputs. [#1826][] (@victorlin)
 * merge: Fixed a performance bug where input sequence file validation unnecessarily loaded file contents into device memory. [#1820][] (@victorlin)
 * refine: Fixed a bug where inferred dates were being wrongly marked as not inferred. [#1829][] (@victorlin)
 
 [#1794]: https://github.com/nextstrain/augur/issues/1794
 [#1816]: https://github.com/nextstrain/augur/pull/1816
 [#1820]: https://github.com/nextstrain/augur/pull/1820
+[#1826]: https://github.com/nextstrain/augur/issues/1826
+[#1827]: https://github.com/nextstrain/augur/pull/1827
 [#1829]: https://github.com/nextstrain/augur/issues/1829
 
 ## 31.2.0 (5 June 2025)

@@ -32,8 +32,7 @@ from Bio.SeqRecord import SeqRecord
 from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_json, get_json_name, \
     genome_features_to_auspice_annotation
 from .io.file import open_file
-from .io.sequences import read_single_sequence
-from .io.vcf import is_vcf as is_filename_vcf
+from .io.sequences import read_single_sequence, is_vcf as is_filename_vcf
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 from .argparse_ import add_validation_arguments

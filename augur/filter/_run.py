@@ -16,32 +16,33 @@ from augur.index import (
 )
 from augur.io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from augur.io.metadata import InvalidDelimiter, Metadata, read_metadata
-from augur.io.sequences import read_sequence_ids, subset_fasta
+from augur.io.sequences import read_sequence_ids, subset_fasta, is_vcf as filename_is_vcf, write_vcf
 from augur.io.print import print_debug, print_err, _n
-from augur.io.vcf import is_vcf as filename_is_vcf, write_vcf
 from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
 from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_output_metadata
 from .include_exclude_rules import apply_filters, construct_filters
 from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling, get_weighted_group_sizes
+from .validate_arguments import SEQUENCE_ONLY_FILTERS
 
 
 def run(args):
     # Determine whether the sequence index exists or whether should be
-    # generated. We need to generate an index if the input sequences are in a
-    # VCF, if sequence output has been requested (so we can filter strains by
-    # sequences that are present), or if any other sequence-based filters have
-    # been requested.
+    # generated.
     sequence_strains = None
     sequence_index_path = args.sequence_index
+    sequence_index_ids = None
     build_sequence_index = False
     is_vcf = filename_is_vcf(args.sequences)
 
-    # Don't build sequence index with --exclude-all since the only way to add
-    # strains back in with this flag are the `--include` or `--include-where`
-    # options, so we know we don't need a sequence index to apply any additional
-    # filters.
-    if sequence_index_path is None and args.sequences and not args.exclude_all:
+    # Build the sequence index if an input sequence file is provided and
+    # sequence-based filters will be used. It can be skipped with --exclude-all
+    # since the only way to add strains back in with this flag are the
+    # `--include` or `--include-where` options.
+    if (sequence_index_path is None and
+        args.sequences and
+        any(getattr(args, arg) for arg in SEQUENCE_ONLY_FILTERS) and
+        not args.exclude_all):
         build_sequence_index = True
 
     if build_sequence_index:
@@ -76,7 +77,29 @@ def run(args):
         if build_sequence_index:
             os.unlink(sequence_index_path)
 
-        sequence_strains = set(sequence_index.index.values)
+        sequence_index_ids = set(sequence_index.index.values)
+
+    # Check ids for duplicates and compare against sequence index.
+    if args.sequences:
+        print_debug(f"Reading sequences from {args.sequences!r}…")
+
+        try:
+            sequence_strains = read_sequence_ids(args.sequences, error_on_duplicates=True)
+        except AugurError as e:
+            cleanup_outputs(args)
+            raise e
+
+        # Warn the user if the expected strains from the sequence index are
+        # not a superset of the observed strains.
+        if args.sequence_index and sequence_strains > sequence_index_ids:
+            print_err(
+                "WARNING: The sequence index is out of sync with the provided sequences. ",
+                "Sequence-based filters may drop sequences that are present in --sequences that would have otherwise passed the filters."
+            )
+
+    # Use ids from sequence index if no sequence file is provided.
+    if sequence_strains is None and sequence_index_ids:
+        sequence_strains = sequence_index_ids
 
     #####################################
     #Filtering steps
@@ -86,6 +109,7 @@ def run(args):
     exclude_by, include_by = construct_filters(
         args,
         sequence_index,
+        sequence_strains,
     )
 
     # Setup grouping. We handle the following major use cases:
@@ -385,32 +409,6 @@ def run(args):
             for strain in valid_strains:
                 f.write(f"{strain}\n")
 
-    # For non-VCF sequence inputs, check ids for duplicates and compare against sequence index.
-    if args.sequences and not is_vcf:
-        print_debug(f"Reading sequences from {args.sequences!r}…")
-
-        try:
-            observed_sequence_strains = read_sequence_ids(args.sequences, error_on_duplicates=True)
-        except AugurError as e:
-            cleanup_outputs(args)
-            raise e
-
-        # It is possible for the input sequences and sequence index to be out of
-        # sync (e.g., the index is a superset of the given sequences input), so
-        # we need to update the set of strains to keep based on which strains
-        # are actually available.
-        if sequence_strains != observed_sequence_strains:
-            # Warn the user if the expected strains from the sequence index are
-            # not a superset of the observed strains.
-            if sequence_strains is not None and observed_sequence_strains > sequence_strains:
-                print_err(
-                    "WARNING: The sequence index is out of sync with the provided sequences.",
-                    "Metadata and strain output may not match sequence output."
-                )
-
-            # Update the set of available sequence strains.
-            sequence_strains = observed_sequence_strains
-
     if args.output_sequences:
         print_debug(f"Reading sequences from {args.sequences!r} and writing to {args.output_sequences!r}…")
         if is_vcf:
@@ -445,7 +443,7 @@ def run(args):
         print_err(f"\t{num_excluded_by_lack_of_metadata} had no metadata")
 
     report_template_by_filter_name = {
-        include_exclude_rules.filter_by_sequence_index.__name__: "{count} had no sequence data",
+        include_exclude_rules.filter_by_sequence_ids.__name__: "{count} had no sequence data",
         include_exclude_rules.filter_by_exclude_all.__name__: "{count} {were} dropped by `--exclude-all`",
         include_exclude_rules.filter_by_exclude.__name__: "{count} {were} dropped because {they} {were} in {exclude_file}",
         include_exclude_rules.filter_by_exclude_where.__name__: "{count} {were} dropped because of '{exclude_where}'",
