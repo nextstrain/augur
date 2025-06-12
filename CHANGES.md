@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 31.2.1 (12 June 2025)
+
 ### Bug fixes
 
 * curate format-dates: Removed redundant warning messages that were previously displayed when using `--failure-reporting "warn"`. [#1816][] (@victorlin)
