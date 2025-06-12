@@ -403,8 +403,9 @@ def run(args):
             # not a superset of the observed strains.
             if sequence_strains is not None and observed_sequence_strains > sequence_strains:
                 print_err(
-                    "WARNING: The sequence index is out of sync with the provided sequences.",
-                    "Metadata and strain output may not match sequence output."
+                    "WARNING: The sequence index is out of sync with the provided sequences. ",
+                    "Metadata and strain output may not match sequence output. ",
+                    "Additionally, sequence-based filters may drop sequences that are present in --sequences that would have otherwise passed the filters."
                 )
 
             # Update the set of available sequence strains.
