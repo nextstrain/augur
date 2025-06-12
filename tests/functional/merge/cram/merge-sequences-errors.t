@@ -45,14 +45,13 @@ A missing input file shows a meaningful error during validation…
   
   ERROR: Shell exited 2 when running: 
   .*augur read-file z.fasta | (re)
-  .*seqkit rmdup --dup-num-file.* (re)
+  .*seqkit fx2tab --name.* (re)
   
   Command output was:
     ERROR: No such file or directory: 'z.fasta'
-    [INFO]\x1b[0m 0 duplicated records removed (esc)
   
   WARNING: Metadata merge was successful but sequence merge has failed, so --output-metadata has no corresponding sequence output.
-  ERROR: Validation failed for 'z.fasta'. See error above.
+  ERROR: Unable to read 'z.fasta'. See error above.
   [2]
 
 … as well as during merging.

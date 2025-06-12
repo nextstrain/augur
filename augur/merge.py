@@ -56,36 +56,27 @@ path of the desired seqkit executable.
 import os
 import re
 import subprocess
-import sys
 from functools import reduce
 from itertools import starmap
 from shlex import quote as shquote
 from shutil import which
-from tempfile import mkstemp, NamedTemporaryFile
+from tempfile import mkstemp
 from textwrap import dedent
-from typing import Iterable, IO, Tuple, TypeVar
+from typing import Iterable, Tuple, TypeVar
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, Metadata
 from augur.io.print import print_err, print_debug, indented_list, _n
+from augur.io.sequences import seqkit, read_sequence_ids
 from augur.io.shell_command_runner import run_shell_command
-from augur.utils import first_line
+from augur.utils import augur, first_line
 
 
 T = TypeVar('T')
 
 
 print_info = print_err
-
-
-# Locate how to re-invoke ourselves (_this_ specific Augur).
-if sys.executable:
-    augur = f"{shquote(sys.executable)} -m augur"
-else:
-    # A bit unusual we don't know our own Python executable, but assume we
-    # can access ourselves as the ``augur`` command.
-    augur = f"augur"
 
 
 class NamedMetadata(Metadata):
@@ -310,7 +301,7 @@ def merge_metadata(args):
             sqlite3(db_path,
                 f'.mode csv',
                 f'.separator {sqlite_quote_dot(m.delimiter)} {sqlite_quote_dot(newline)}',
-                f'.import {sqlite_quote_dot(f"|{augur} read-file {shquote(m.path)}")} {sqlite_quote_dot(m.table_name)}',
+                f'.import {sqlite_quote_dot(f"|{augur()} read-file {shquote(m.path)}")} {sqlite_quote_dot(m.table_name)}',
 
                 f'create unique index {sqlite_quote_id(f"{m.table_name}_id")} on {sqlite_quote_id(m.table_name)}({sqlite_quote_id(m.id_column)});',
 
@@ -375,7 +366,7 @@ def merge_metadata(args):
             f'.mode csv',
             f'.separator "\\t" "\\n"',
             f'.headers on',
-            f'.once {sqlite_quote_dot(f"|{augur} write-file {shquote(args.output_metadata)}")}',
+            f'.once {sqlite_quote_dot(f"|{augur()} write-file {shquote(args.output_metadata)}")}',
             query)
 
     except SQLiteError as err:
@@ -393,16 +384,16 @@ def merge_sequences(args):
     if not args.skip_input_sequences_validation:
         for s in args.sequences:
             print_info(f"Validating {s!r}…")
-            validate_sequence_file(s)
+            read_sequence_ids(s, error_on_duplicates=True)
 
     print_info(f"Merging sequences and writing to {args.output_sequences!r}…")
 
     # Reversed because seqkit rmdup keeps the first entry but this command
     # should keep the last entry.
     command = f"""
-        {augur} read-file {" ".join(shquote(s) for s in reversed(args.sequences))} |
+        {augur()} read-file {" ".join(shquote(s) for s in reversed(args.sequences))} |
         {seqkit()} rmdup |
-        {augur} write-file {shquote(args.output_sequences)}
+        {augur()} write-file {shquote(args.output_sequences)}
     """
 
     try:
@@ -417,31 +408,6 @@ def merge_sequences(args):
             raise AugurError(f"Merging failed, see error(s) above.")
         else:
             raise AugurError(f"Merging failed, see error(s) above. The command may have already written data to stdout. You may want to clean up any partial outputs.")
-
-
-def validate_sequence_file(file: str):
-    """Ensure all sequence identifiers in the file are unique."""
-    with NamedTemporaryFile("w+", encoding="utf-8") as dup_num_file:
-        command = f"""
-            {augur} read-file {shquote(file)} |
-            {seqkit()} rmdup --dup-num-file {shquote(dup_num_file.name)} > /dev/null
-        """
-
-        try:
-            run_shell_command(command, raise_errors=True)
-        except Exception as error:
-            raise AugurError(f"Validation failed for {file!r}. See error above.") from error
-
-        dup_num_file.seek(0)
-
-        if duplicates := list(sorted(parse_seqkit_dup_num_file(dup_num_file))):
-            raise AugurError(dedent(f"""\
-                Sequence ids must be unique.
-
-                The following {_n("id was", "ids were", len(duplicates))} were duplicated in {file!r}:
-
-                  {indented_list(duplicates, '                ' + '  ')}
-            """))
 
 
 def sqlite3(*args, **kwargs):
@@ -589,73 +555,3 @@ def shquote_humanized(x):
     # …and instead quote a final empty string down here if we're still empty
     # after joining all our parts together.
     return quoted if quoted else shquote('')
-
-
-def seqkit():
-    """
-    Internal helper for invoking SeqKit.
-
-    Unlike ``sqlite3()``, this function is not a wrapper around subprocess.run.
-    It is meant to be called without any parameters and only returns the
-    location of the executable. This is due to differences in the way the two
-    programs are invoked.
-    """
-    seqkit = os.environ.get("SEQKIT", which("seqkit"))
-    if not seqkit:
-        raise AugurError(dedent(f"""\
-            Unable to find the program `seqkit`.  Is it installed?
-            In order to use `augur merge`, SeqKit must be installed
-            separately.  It is typically provided by a Nextstrain runtime.
-            """))
-    return shquote(seqkit)
-
-
-def parse_seqkit_dup_num_file(handle: IO[str]):
-    """Extract duplicated ids from the output of seqkit rmdup --dup-num-file.
-
-    There is one line per duplicated id, in the format of a number n followed by
-    tab character followed by the id duplicated n times, separated by ", ".
-
-    Example FASTA headers
-
-        > id, 1
-        > id, 2
-        > id, 3
-        > id1
-        > id1
-
-    will produce a --dup-num-file output file
-
-        3\tid,, id,, id,
-        2\tid1, id1
-
-    which parsed by this function will yield
-
-        id,
-        id1
-
-    Examples
-    ========
-
-    Two duplicate ids.
-
-    >>> from io import StringIO
-    >>> contents = "3\\tid,, id,, id,\\n2\\tid1, id1\\n"
-    >>> list(parse_seqkit_dup_num_file(StringIO(contents)))
-    ['id,', 'id1']
-
-    One duplicate id.
-
-    >>> contents = "4\\tid, id, id, id,\\n"
-    >>> list(parse_seqkit_dup_num_file(StringIO(contents)))
-    ['id,']
-
-    An empty file returns an empty list.
-
-    >>> list(parse_seqkit_dup_num_file(StringIO("")))
-    []
-    """
-    for line in handle:
-        line = line.rstrip('\n')
-        if ", " in line:
-            yield line[line.rfind(", ")+2:]

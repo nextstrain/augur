@@ -5,9 +5,11 @@
 ### Bug fixes
 
 * curate format-dates: Removed redundant warning messages that were previously displayed when using `--failure-reporting "warn"`. [#1816][] (@victorlin)
+* filter: Improved performance of `--output-sequences` by using SeqKit internally. [#1794][] (@victorlin)
 * merge: Fixed a performance bug where input sequence file validation unnecessarily loaded file contents into device memory. [#1820][] (@victorlin)
 * refine: Fixed a bug where inferred dates were being wrongly marked as not inferred. [#1829][] (@victorlin)
 
+[#1794]: https://github.com/nextstrain/augur/issues/1794
 [#1816]: https://github.com/nextstrain/augur/pull/1816
 [#1820]: https://github.com/nextstrain/augur/pull/1820
 [#1829]: https://github.com/nextstrain/augur/issues/1829

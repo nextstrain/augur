@@ -1,5 +1,7 @@
+from shutil import which
 from augur.errors import AugurError
 from augur.filter.weights_file import get_weighted_columns
+from augur.io.sequences import seqkit
 from augur.io.vcf import is_vcf as filename_is_vcf
 
 
@@ -31,12 +33,15 @@ def validate_arguments(args):
     if not args.sequences and not args.sequence_index and any(getattr(args, arg) for arg in SEQUENCE_ONLY_FILTERS):
         raise AugurError("You need to provide a sequence index or sequences to filter on sequence-specific information.")
 
+    # Confirm that seqkit is installed.
+    if args.sequences:
+        seqkit()
+
     # Set flags if VCF
     is_vcf = filename_is_vcf(args.sequences)
 
     # Confirm that vcftools is installed.
     if is_vcf:
-        from shutil import which
         if which("vcftools") is None:
             raise AugurError("'vcftools' is not installed! This is required for VCF data. "
                   "Please see the augur install instructions to install it.")
