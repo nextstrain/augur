@@ -3,7 +3,7 @@ Infer ancestral traits based on a tree.
 """
 
 import numpy as np
-from collections import defaultdict
+from collections import defaultdict, OrderedDict, Counter
 import sys
 from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
@@ -97,6 +97,78 @@ def mugration_inference(tree=None, seq_meta=None, field='country', confidence=Tr
     return tt.tree, tt.gtr, letter_to_state
 
 
+class BranchLabeller():
+    """
+    A class to create branch labels based on changes in *column* state.
+    If the *enabled* arg is false then the user-facing methods are no-ops.
+    """
+    def __init__(self, labels_arg, confidence_arg, column):
+        self.labels = {}
+
+        # parse the label argument
+        self.column = None
+        for word in labels_arg:
+            parts = word.split("=")
+            if len(parts)>2:
+                raise AugurError("The --branch-labels argument {labels_arg:r} is not valid (multiple equals signs in a value)") 
+            if parts[0]==column:
+                self.column = column
+                self.column_label = parts[1] if len(parts)==2 else column
+
+        if self.column is None:
+            return
+
+        # parse the confidence argument
+        self._confidence_threshold = None
+        for word in confidence_arg:
+            parts = word.split("=")
+            if len(parts)!=2:
+                raise AugurError("The --branch-confidence argument {confidence_arg:r} is not valid (each element must be COLUMN=CONFIDENCE)") 
+            if parts[0]==column:
+                self._parse_confidence(parts[1])
+
+    def _parse_confidence(self, value): # simpler than using @property
+        if len(value): # an empty value indicates no confidence threshold
+            try:
+                self._confidence_threshold = int(value)
+                assert self._confidence_threshold >=0
+                assert self._confidence_threshold <=100
+            except:
+                raise AugurError(f"--branch-labels' confidence threshold must be an integer between 0 and 100  (column {self.column})")
+
+    def _state(self, node):
+        attr = getattr(node, self.column)
+        if self._confidence_threshold is None:
+            return attr
+        conf = getattr(node, f"{self.column}_confidence", None)[attr]*100
+        if conf > self._confidence_threshold:
+            return attr
+        return "uncertain"
+
+    def process(self, node):
+        if self.column is None:
+            return
+        node_state = self._state(node)
+        if not node.up:
+            self.labels[node.name] = node_state
+            return
+        if (parent_state:=self._state(node.up)) != node_state:
+            self.labels[node.name] = f"{parent_state} → {node_state}"
+        return
+
+    def changes(self):
+        if self.column is None:
+            return
+        counts = Counter(self.labels.values())
+        observed = defaultdict(int)
+        for node_name, base_label in self.labels.items():
+            if counts[base_label]==1:
+                label = base_label
+            else:
+                observed[base_label]+=1
+                label = f"{base_label} {observed[base_label]}"
+            yield (self.column_label, node_name, label)
+
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("traits", help=__doc__)
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
@@ -110,6 +182,14 @@ def register_parser(parent_subparsers):
                         help='metadata fields to perform discrete reconstruction on')
     parser.add_argument('--confidence',action="store_true",
                         help='record the distribution of subleading mugration states')
+    parser.add_argument('--branch-labels', nargs='+', default=[], metavar="COLUMN[=NAME]", action=ExtendOverwriteDefault,
+                        help='Add branch labels where there is a change in trait inferred for that column.' \
+                        ' You must supply this for each column you would like to label.' \
+                        ' By default the branch label key the same as the column name, but you may customise this' \
+                        ' via the COLUMN=NAME syntax.')
+    parser.add_argument('--branch-confidence', nargs='+', default=[], metavar="COLUMN=CONFIDENCE", action=ExtendOverwriteDefault,
+                        help='Only label state changes where the confidence percentage is above the specified value.' \
+                        'Transitions to lower confidence states will be represented by a "uncertain" label.')
     parser.add_argument('--sampling-bias-correction', type=float,
                         help='a rough estimate of how many more events would have been observed'
                              ' if sequences represented an even sample. This should be'
@@ -174,6 +254,7 @@ def run(args):
         weight_dict = {c:None for c in args.columns}
 
     mugration_states = defaultdict(dict)
+    branch_states = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
     models = defaultdict(dict)
     out_prefix = '.'.join(args.output_node_data.split('.')[:-1])
 
@@ -188,6 +269,8 @@ def run(args):
         if T is None: # something went wrong
             continue
 
+        branch_labeller = BranchLabeller(args.branch_labels, args.branch_confidence, column)
+
         for node in T.find_clades():
             mugration_states[node.name][column] = getattr(node, column)
 
@@ -199,6 +282,11 @@ def run(args):
                 entropy = getattr(node, f"{column}_entropy", None)
                 if entropy is not None:
                     mugration_states[node.name][f"{column}_entropy"] = entropy
+
+            branch_labeller.process(node)
+
+        for column_name, node_name, label in branch_labeller.changes():
+            branch_states[node_name]['labels'][column_name] = label
 
         if gtr:
             # add gtr models to json structure for export
@@ -217,7 +305,10 @@ def run(args):
                 ofile.write(str(gtr))
 
     out_name = get_json_name(args, out_prefix+'_traits.json')
-    write_json({"models":models, "nodes":mugration_states},out_name)
+    json_data = OrderedDict([["models", models], ["nodes", mugration_states]])
+    if branch_states:
+        json_data['branches'] = branch_states
+    write_json(json_data, out_name)
 
     print("\nInferred ancestral states of discrete character using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"
