@@ -25,7 +25,7 @@ Seqkit errors messages are shown directly.
   
   ERROR: Shell exited 255 when running: 
   .*augur read-file y.fasta x.fasta | (re)
-  .*seqkit rmdup | (re)
+  .*rmdup | (re)
   .*augur write-file - (re)
   
   Command output was:
@@ -45,7 +45,7 @@ A missing input file shows a meaningful error during validation…
   
   ERROR: Shell exited 2 when running: 
   .*augur read-file z.fasta | (re)
-  .*seqkit fx2tab --name.* (re)
+  .*fx2tab --name.* (re)
   
   Command output was:
     ERROR: No such file or directory: 'z.fasta'
@@ -64,7 +64,7 @@ A missing input file shows a meaningful error during validation…
   
   ERROR: Shell exited 2 when running: 
   .*augur read-file z.fasta x.fasta | (re)
-  .*seqkit rmdup | (re)
+  .*rmdup | (re)
   .*augur write-file - (re)
   
   Command output was:

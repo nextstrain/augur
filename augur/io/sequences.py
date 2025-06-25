@@ -174,10 +174,10 @@ def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='seq
             }
 
 
-def subset_fasta(input_filename: str, output_filename: str, ids_file: str):
+def subset_fasta(input_filename: str, output_filename: str, ids_file: str, nthreads: int):
     command = f"""
         {augur()} read-file {shquote(input_filename)} |
-        {seqkit()} grep -f {ids_file} |
+        {seqkit()} --threads {nthreads} grep -f {ids_file} |
         {augur()} write-file {shquote(output_filename)}
     """
 
@@ -468,7 +468,7 @@ def _read_genbank(reference, feature_names):
 
 # TODO: consider consolidating with augur.io.metadata.read_metadata_with_sequences
 # <https://github.com/nextstrain/augur/pull/1821#discussion_r2138629823>
-def read_sequence_ids(file: str):
+def read_sequence_ids(file: str, nthreads: int):
     """Get unique identifiers from a sequence file."""
     unique = set()
     duplicates = set()
@@ -482,7 +482,7 @@ def read_sequence_ids(file: str):
         else:
             command = f"""
                 {augur()} read-file {shquote(file)} |
-                {seqkit()} fx2tab --name --only-id > {shquote(temp_file.name)}
+                {seqkit()} --threads {nthreads} fx2tab --name --only-id > {shquote(temp_file.name)}
             """
 
         try:
