@@ -84,7 +84,7 @@ def run(args):
         print_debug(f"Reading sequences from {args.sequences!r}…")
 
         try:
-            sequence_strains = read_sequence_ids(args.sequences)
+            sequence_strains = read_sequence_ids(args.sequences, args.nthreads)
         except AugurError as e:
             cleanup_outputs(args)
             raise e
@@ -416,7 +416,7 @@ def run(args):
             dropped_samps = list(sequence_strains - valid_strains)
             write_vcf(args.sequences, args.output_sequences, dropped_samps)
         else:
-            subset_fasta(args.sequences, args.output_sequences, strains_file)
+            subset_fasta(args.sequences, args.output_sequences, strains_file, args.nthreads)
             if not args.output_strains:
                 os.remove(strains_file)
 

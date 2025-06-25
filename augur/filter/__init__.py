@@ -125,6 +125,9 @@ def register_arguments(parser):
         default=EmptyOutputReportingMethod.ERROR,
         help="How should empty outputs be reported when no strains pass filtering and/or subsampling.")
 
+    other_group = parser.add_argument_group("other", "other options")
+    other_group.add_argument('--nthreads', metavar="N", type=int, default=4, help="Number of CPUs/cores/threads/jobs to utilize at once. Default of 4 is taken from SeqKit's default for --threads." + SKIP_AUTO_DEFAULT_IN_HELP)
+
     deprecated_group = parser.add_argument_group("deprecated", "options to be removed in a future major version")
     deprecated_group.add_argument('--output', metavar="FILE", help="alias to --output-sequences" + SKIP_AUTO_DEFAULT_IN_HELP)
     deprecated_group.add_argument('-o', metavar="FILE", help="alias to --output-sequences" + SKIP_AUTO_DEFAULT_IN_HELP)
