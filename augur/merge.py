@@ -384,7 +384,7 @@ def merge_sequences(args):
     if not args.skip_input_sequences_validation:
         for s in args.sequences:
             print_info(f"Validating {s!r}…")
-            read_sequence_ids(s, error_on_duplicates=True)
+            read_sequence_ids(s)
 
     print_info(f"Merging sequences and writing to {args.output_sequences!r}…")
 

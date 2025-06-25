@@ -84,7 +84,7 @@ def run(args):
         print_debug(f"Reading sequences from {args.sequences!r}…")
 
         try:
-            sequence_strains = read_sequence_ids(args.sequences, error_on_duplicates=True)
+            sequence_strains = read_sequence_ids(args.sequences)
         except AugurError as e:
             cleanup_outputs(args)
             raise e

@@ -468,7 +468,7 @@ def _read_genbank(reference, feature_names):
 
 # TODO: consider consolidating with augur.io.metadata.read_metadata_with_sequences
 # <https://github.com/nextstrain/augur/pull/1821#discussion_r2138629823>
-def read_sequence_ids(file: str, error_on_duplicates = True):
+def read_sequence_ids(file: str):
     """Get unique identifiers from a sequence file."""
     unique = set()
     duplicates = set()
@@ -499,7 +499,7 @@ def read_sequence_ids(file: str, error_on_duplicates = True):
             else:
                 unique.add(identifier)
 
-    if duplicates and error_on_duplicates:
+    if duplicates:
         raise AugurError(dedent(f"""\
             Sequence ids must be unique.
 
