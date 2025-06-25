@@ -80,7 +80,9 @@ def run(args):
         sequence_index_ids = set(sequence_index.index.values)
 
     # Check ids for duplicates and compare against sequence index.
-    if args.sequences:
+    if args.skip_checks:
+        print_debug(f"Skipping first pass of sequence file due to --skip-checks.")
+    elif args.sequences:
         print_debug(f"Reading sequences from {args.sequences!r}…")
 
         try:
