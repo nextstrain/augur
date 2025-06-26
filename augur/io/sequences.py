@@ -176,9 +176,7 @@ def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='seq
 
 def subset_fasta(input_filename: str, output_filename: str, ids_file: str, nthreads: int):
     command = f"""
-        {augur()} read-file {shquote(input_filename)} |
-        {seqkit()} --threads {nthreads} grep -f {ids_file} |
-        {augur()} write-file {shquote(output_filename)}
+        {seqkit()} --threads {nthreads} grep -f {ids_file} {shquote(input_filename)} > {shquote(output_filename)}
     """
 
     try:
