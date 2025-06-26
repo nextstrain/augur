@@ -117,7 +117,7 @@ def register_parser(parent_subparsers):
     output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
 
     other_group = parser.add_argument_group("other", "other options")
-    other_group.add_argument('--nthreads', metavar="N", type=int, default=4, help="Number of CPUs/cores/threads/jobs to utilize at once. Default of 4 is taken from SeqKit's default for --threads." + SKIP_AUTO_DEFAULT_IN_HELP)
+    other_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once.")
 
     return parser
 
