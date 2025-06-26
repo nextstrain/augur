@@ -20,6 +20,13 @@ These can be especially useful in the context of an entire pipeline or workflow 
 
     Minifying the JSON will substantially reduce file sizes, which is helpful for large, deeply nested trees.
 
+.. envvar:: AUGUR_PROFILE
+
+    File path.
+    If set, Augur will run with Python's cProfile profiler and save results to the path provided.
+
+    This may result in slightly slower run times, and should only be used for debugging purposes.
+
 .. envvar:: AUGUR_RECURSION_LIMIT
 
     Integer.

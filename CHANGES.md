@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* Added a new `AUGUR_PROFILE` environment variable. If set, Augur will run with Python's cProfile profiler and save results to the value which should be a file path. This may result in slightly slower run times, and should only be used for debugging purposes. [#1835][] (@victorlin)
+
+[#1835]: https://github.com/nextstrain/augur/pull/1835
 
 ## 31.2.1 (12 June 2025)
 
