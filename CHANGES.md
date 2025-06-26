@@ -4,8 +4,16 @@
 
 ### Features
 
+* filter, merge: Added a new option `--nthreads` to configure parallelism. Right now, it is only passed to SeqKit, but it may be used for other internal optimizations in the future. [#1833][] (@victorlin)
+* filter: Added a new option `--skip-checks` to bypass checks for duplicates in sequences and whether ids in metadata have a sequence entry. Mainly useful when working with larger files. [#1833][] (@victorlin)
 * Added a new `AUGUR_PROFILE` environment variable. If set, Augur will run with Python's cProfile profiler and save results to the value which should be a file path. This may result in slightly slower run times, and should only be used for debugging purposes. [#1835][] (@victorlin)
 
+### Bug fixes
+
+* filter, merge: Improved run time of sequence I/O operations, especially in the common use case of having a workflow manager run multiple invocations simultaneously. [#1833][] (@victorlin)
+* filter, merge: Previously, SeqKit was hardcoded to use its default of 4 threads per command, which could have resulted in oversubscription of resources in the common use case of having a workflow manager run multiple invocations simultaneously. The default behavior has been updated to use 1 thread per command to discourage oversubscription of resources. It is configurable with the new `--nthreads` option described above. [#1833][] (@victorlin)
+
+[#1833]: https://github.com/nextstrain/augur/issues/1833
 [#1835]: https://github.com/nextstrain/augur/pull/1835
 
 ## 31.2.1 (12 June 2025)
