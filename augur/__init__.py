@@ -48,7 +48,6 @@ command_strings = [
     "write_file",
 ]
 
-COMMANDS = [importlib.import_module('augur.' + c) for c in command_strings]
 
 def make_parser():
     parser = argparse.ArgumentParser(
@@ -59,7 +58,8 @@ def make_parser():
     add_version_alias(parser)
 
     subparsers = parser.add_subparsers()
-    add_command_subparsers(subparsers, COMMANDS)
+    commands = [importlib.import_module('augur.' + c) for c in command_strings]
+    add_command_subparsers(subparsers, commands)
 
     return parser
 
