@@ -6,6 +6,12 @@
 
 * Added a new `AUGUR_PROFILE` environment variable. If set, Augur will run with Python's cProfile profiler and save results to the value which should be a file path. This may result in slightly slower run times, and should only be used for debugging purposes. [#1835][] (@victorlin)
 
+### Bug fixes
+
+* filter, merge: Previously, SeqKit was hardcoded to use its default of 4 threads per command, which could have resulted in oversubscription of resources in the common use case of having a workflow manager run multiple invocations simultaneously. This is now configurable via a new option `--nthreads`. The default value is 1 to discourage oversubscription of resources. Right now, it is only passed to SeqKit, but it may be used for other internal optimizations in the future. [#1833][] (@victorlin)
+* filter: Compared to the previous version, 31.2.1 does an extra pass of `--sequences` in some cases. Unfortunately, this is by design, as it allows the command to skip building the sequence index when it's not necessary. A new option, `--skip-checks`, allows bypassing of checks for duplicates in sequences and whether ids in metadata have a sequence entry. Mainly useful when working with larger files. [#1833][] (@victorlin)
+
+[#1833]: https://github.com/nextstrain/augur/issues/1833
 [#1835]: https://github.com/nextstrain/augur/pull/1835
 
 ## 31.2.1 (12 June 2025)
