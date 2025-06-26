@@ -2,11 +2,33 @@
 Stub function and module used as a setuptools entry point.
 """
 
+import functools
+import os
 import sys
 import augur
 from sys import argv, exit
 
+def profile(func):
+    @functools.wraps(func)
+    def wrapper():
+        if save_file := os.environ.get("AUGUR_PROFILE"):
+            from cProfile import Profile
+            profiler = Profile()
+            profiler.enable()
+            try:
+                return func()
+            finally:
+                profiler.disable()
+                if parent_dirs := os.path.dirname(save_file):
+                    os.makedirs(parent_dirs, exist_ok=True)
+                profiler.dump_stats(save_file)
+        else:
+            return func()
+    return wrapper
+
+
 # Entry point for setuptools-installed script and bin/augur dev wrapper.
+@profile
 def main():
     sys.stdout.reconfigure(
         # Support non-Unicode encodings by replacing Unicode characters instead of erroring.
