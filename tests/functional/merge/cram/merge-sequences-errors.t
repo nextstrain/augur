@@ -24,7 +24,6 @@ Seqkit errors messages are shown directly.
   Merging sequences and writing to '-'…
   
   ERROR: Shell exited 255 when running: 
-  .*augur read-file y.fasta x.fasta | (re)
   .*rmdup | (re)
   .*augur write-file - (re)
   
@@ -43,12 +42,11 @@ A missing input file shows a meaningful error during validation…
   Validating 'x.fasta'…
   Validating 'z.fasta'…
   
-  ERROR: Shell exited 2 when running: 
-  .*augur read-file z.fasta | (re)
+  ERROR: Shell exited 255 when running: 
   .*fx2tab --name.* (re)
   
   Command output was:
-    ERROR: No such file or directory: 'z.fasta'
+    \x1b[31m[ERRO]\x1b[0m stat z.fasta: no such file or directory (esc)
   
   WARNING: Metadata merge was successful but sequence merge has failed, so --output-metadata has no corresponding sequence output.
   ERROR: Unable to read 'z.fasta'. See error above.
@@ -62,14 +60,12 @@ A missing input file shows a meaningful error during validation…
   >   --output-sequences -
   Merging sequences and writing to '-'…
   
-  ERROR: Shell exited 2 when running: 
-  .*augur read-file z.fasta x.fasta | (re)
+  ERROR: Shell exited 255 when running: 
   .*rmdup | (re)
   .*augur write-file - (re)
   
   Command output was:
-    ERROR: No such file or directory: 'z.fasta'
-    [INFO]\x1b[0m 0 duplicated records removed (esc)
+    \x1b[31m[ERRO]\x1b[0m stat z.fasta: no such file or directory (esc)
   
   WARNING: Metadata merge was successful but sequence merge has failed, so --output-metadata has no corresponding sequence output.
   ERROR: Merging failed, see error(s) above. The command may have already written data to stdout. You may want to clean up any partial outputs.
