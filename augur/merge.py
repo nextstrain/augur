@@ -116,6 +116,9 @@ def register_parser(parent_subparsers):
 
     output_group.add_argument('--quiet', action="store_true", default=False, help="Suppress informational and warning messages normally written to stderr. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
 
+    other_group = parser.add_argument_group("other", "other options")
+    other_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once.")
+
     return parser
 
 
@@ -384,15 +387,14 @@ def merge_sequences(args):
     if not args.skip_input_sequences_validation:
         for s in args.sequences:
             print_info(f"Validating {s!r}…")
-            read_sequence_ids(s, error_on_duplicates=True)
+            read_sequence_ids(s, args.nthreads)
 
     print_info(f"Merging sequences and writing to {args.output_sequences!r}…")
 
     # Reversed because seqkit rmdup keeps the first entry but this command
     # should keep the last entry.
     command = f"""
-        {augur()} read-file {" ".join(shquote(s) for s in reversed(args.sequences))} |
-        {seqkit()} rmdup |
+        {seqkit()} --threads {args.nthreads} rmdup {" ".join(shquote(s) for s in reversed(args.sequences))} |
         {augur()} write-file {shquote(args.output_sequences)}
     """
 

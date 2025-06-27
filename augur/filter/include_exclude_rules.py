@@ -624,7 +624,7 @@ def construct_filters(args, sequence_index, sequence_ids: Set[str]) -> Tuple[Lis
         exclude_by.append((filter_by_exclude_all, {}))
 
     # Filter by sequence index.
-    if sequence_ids is not None:
+    if sequence_ids is not None and not args.skip_checks:
         exclude_by.append((
             filter_by_sequence_ids,
             {
