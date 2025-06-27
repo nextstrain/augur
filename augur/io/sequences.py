@@ -176,8 +176,7 @@ def write_records_to_fasta(records, fasta, seq_id_field='strain', seq_field='seq
 
 def subset_fasta(input_filename: str, output_filename: str, ids_file: str, nthreads: int):
     command = f"""
-        {augur()} read-file {shquote(input_filename)} |
-        {seqkit()} --threads {nthreads} grep -f {ids_file} |
+        {seqkit()} --threads {nthreads} grep -f {ids_file} {shquote(input_filename)} |
         {augur()} write-file {shquote(output_filename)}
     """
 
@@ -481,8 +480,7 @@ def read_sequence_ids(file: str, nthreads: int):
             """
         else:
             command = f"""
-                {augur()} read-file {shquote(file)} |
-                {seqkit()} --threads {nthreads} fx2tab --name --only-id > {shquote(temp_file.name)}
+                {seqkit()} --threads {nthreads} fx2tab --name --only-id {shquote(file)} > {shquote(temp_file.name)}
             """
 
         try:

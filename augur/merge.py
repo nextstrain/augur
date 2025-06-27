@@ -394,8 +394,7 @@ def merge_sequences(args):
     # Reversed because seqkit rmdup keeps the first entry but this command
     # should keep the last entry.
     command = f"""
-        {augur()} read-file {" ".join(shquote(s) for s in reversed(args.sequences))} |
-        {seqkit()} --threads {args.nthreads} rmdup |
+        {seqkit()} --threads {args.nthreads} rmdup {" ".join(shquote(s) for s in reversed(args.sequences))} |
         {augur()} write-file {shquote(args.output_sequences)}
     """
 
