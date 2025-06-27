@@ -1,0 +1,9 @@
+clade	gene	site	alt
+# There's two options for clade X - each of the root's children
+# match this. The upper clade "wins" as it has more descendants
+X	nuc	1	T
+# Clade Y "inherits" from clade X with an additional mutation.
+# Intuitively, this means Y must be a descendent of X, however
+# this isn't the way `augur clades` is currently implemented
+Y	clade	X
+Y	nuc	2	T
