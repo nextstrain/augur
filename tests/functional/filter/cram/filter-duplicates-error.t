@@ -90,3 +90,27 @@ Error even if the corresponding output is not used.
     c
   
   [2]
+
+If the error is bypassed with --skip-checks, the output will contain duplicates.
+
+  $ AUGUR_DEBUG=1 ${AUGUR} filter \
+  >   --metadata metadata.tsv \
+  >   --sequences sequences.fasta \
+  >   --skip-checks \
+  >   --output-sequences sequences-filtered.fasta
+  Skipping first pass of sequence file due to --skip-checks.
+  Reading metadata from 'metadata.tsv'…
+  Writing strains to .* (re)
+  Reading sequences from 'sequences.fasta' and writing to 'sequences-filtered.fasta'…
+  0 strains were dropped during filtering
+  4 strains passed all filters
+
+  $ cat sequences-filtered.fasta
+  >a
+  AAAA
+  >a
+  GGGG
+  >c
+  CCCC
+  >c
+  TTTT

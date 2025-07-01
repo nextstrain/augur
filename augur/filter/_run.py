@@ -80,11 +80,13 @@ def run(args):
         sequence_index_ids = set(sequence_index.index.values)
 
     # Check ids for duplicates and compare against sequence index.
-    if args.sequences:
+    if args.skip_checks:
+        print_debug(f"Skipping first pass of sequence file due to --skip-checks.")
+    elif args.sequences:
         print_debug(f"Reading sequences from {args.sequences!r}…")
 
         try:
-            sequence_strains = read_sequence_ids(args.sequences, error_on_duplicates=True)
+            sequence_strains = read_sequence_ids(args.sequences, args.nthreads)
         except AugurError as e:
             cleanup_outputs(args)
             raise e
@@ -416,7 +418,7 @@ def run(args):
             dropped_samps = list(sequence_strains - valid_strains)
             write_vcf(args.sequences, args.output_sequences, dropped_samps)
         else:
-            subset_fasta(args.sequences, args.output_sequences, strains_file)
+            subset_fasta(args.sequences, args.output_sequences, strains_file, args.nthreads)
             if not args.output_strains:
                 os.remove(strains_file)
 

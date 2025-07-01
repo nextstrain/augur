@@ -33,6 +33,7 @@ def register_arguments(parser):
     input_group.add_argument('--metadata-chunk-size', type=int, default=100000, help="maximum number of metadata records to read into memory at a time. Increasing this number can speed up filtering at the cost of more memory used.")
     input_group.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     input_group.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
+    input_group.add_argument('--skip-checks', action='store_true', help="use this option to skip checking for duplicates in sequences and whether ids in metadata have a sequence entry. Can improve performance on large files. Note that this should only be used if you are sure there are no duplicate sequences or mismatched ids since they can lead to errors in downstream Augur commands.")
 
     metadata_filter_group = parser.add_argument_group("metadata filters", "filters to apply to metadata")
     metadata_filter_group.add_argument(
@@ -124,6 +125,9 @@ def register_arguments(parser):
         choices=list(EmptyOutputReportingMethod),
         default=EmptyOutputReportingMethod.ERROR,
         help="How should empty outputs be reported when no strains pass filtering and/or subsampling.")
+
+    other_group = parser.add_argument_group("other", "other options")
+    other_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once.")
 
     deprecated_group = parser.add_argument_group("deprecated", "options to be removed in a future major version")
     deprecated_group.add_argument('--output', metavar="FILE", help="alias to --output-sequences" + SKIP_AUTO_DEFAULT_IN_HELP)
