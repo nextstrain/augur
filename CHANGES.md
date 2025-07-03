@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 31.3.0 (3 July 2025)
+
 ### Features
 
 * traits: Added new options `--branch-labels` and `--branch-confidence` to export branch labels for nodes which have a corresponding state change. These are useful for creating streamtrees which convey geographic jumps. [#1814][] (@jameshadfield)
