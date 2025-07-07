@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://nextstrain.org/schemas/augur/subsample-config",
+    "title": "Configuration for augur subsample",
+    "description": "YAML configuration describing samples for subsampling.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["samples"],
+    "properties": {
+        "samples": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "group_by": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1
+                    },
+                    "group_by_weights": {"type": "string"},
+                    "max_sequences": {"type": "integer", "minimum": 1},
+                    "sequences_per_group": {"type": "integer", "minimum": 1},
+                    "min_date": {"type": "string"},
+                    "max_date": {"type": "string"},
+                    "exclude": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
+                    "exclude_where": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                    }
+                },
+                "oneOf": [
+                    { "required": ["max_sequences"], "not": { "required": ["sequences_per_group"] } },
+                    { "required": ["sequences_per_group"], "not": { "required": ["max_sequences"] } }
+                ]
+            }
+        }
+    }
+}
