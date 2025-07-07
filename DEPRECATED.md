@@ -11,6 +11,14 @@ available for backwards compatibility, but should not be used in new code.
 `--output` and `-o` are aliases to `--output-sequences`. They will be removed to
 avoid confusion with other output options.
 
+Note that usage of `--output` may come from code written before version 11.2.0
+(the first to support `--output-sequences`, `--output-metadata`, and
+`--output-strains`). Outputting sequences without metadata is not recommended
+for most current workflows. Doing so would mean that downstream rules such as
+`augur export` use the original unfiltered metadata. Unlike `augur filter` which
+has `--metadata-chunk-size` and selective loading of columns, `augur export` is
+not designed to load large metadata files.
+
 ## `xopen` major version 1
 
 *Deprecated in version 25.1.0 (July 2024). Removed in version 27.0.0 (December 2024).*
