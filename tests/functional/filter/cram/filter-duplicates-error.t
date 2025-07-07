@@ -99,7 +99,7 @@ If the error is bypassed with --skip-checks, the output will contain duplicates.
   >   --skip-checks \
   >   --output-sequences sequences-filtered.fasta
   Skipping first pass of sequence file due to --skip-checks.
-  Reading metadata from 'metadata.tsv'…
+  Reading metadata from 'metadata.tsv' and writing to .* (re)
   Writing strains to .* (re)
   Reading sequences from 'sequences.fasta' and writing to 'sequences-filtered.fasta'…
   0 strains were dropped during filtering

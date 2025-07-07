@@ -5,6 +5,8 @@ import json
 import numpy as np
 import os
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 from tempfile import NamedTemporaryFile
 
 from augur.errors import AugurError
@@ -22,7 +24,7 @@ from augur.types import EmptyOutputReportingMethod
 from . import include_exclude_rules
 from .io import cleanup_outputs, get_useful_metadata_columns, read_priority_scores, write_output_metadata
 from .include_exclude_rules import apply_filters, construct_filters
-from .subsample import PriorityQueue, TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling, get_weighted_group_sizes
+from .subsample import TooManyGroupsError, calculate_sequences_per_group, get_probabilistic_group_sizes, create_queues_by_group, get_groups_for_subsampling, get_weighted_group_sizes
 from .validate_arguments import SEQUENCE_ONLY_FILTERS
 
 
@@ -138,11 +140,9 @@ def run(args):
     sequences_per_group = args.sequences_per_group
     records_per_group = None
 
-    if group_by and args.subsample_max_sequences:
-        # In this case, we need two passes through the metadata with the first
-        # pass used to count the number of records per group.
-        records_per_group = defaultdict(int)
-    elif not group_by and args.subsample_max_sequences:
+    # If there are no grouping columns, behave as if all data is under a single
+    # group.
+    if not group_by and args.subsample_max_sequences:
         group_by = ("_dummy",)
         sequences_per_group = args.subsample_max_sequences
 
@@ -177,13 +177,7 @@ def run(args):
         )
         output_log_writer.writeheader()
 
-    # Load metadata. Metadata are the source of truth for which sequences we
-    # want to keep in filtered output.
-    metadata_strains = set()
-    valid_strains = set() # TODO: rename this more clearly
-    all_sequences_to_include = set()
-    filter_counts = defaultdict(int)
-
+    # Load metadata.
     try:
         metadata_object = Metadata(args.metadata, args.metadata_delimiters, args.metadata_id_columns)
     except InvalidDelimiter:
@@ -194,8 +188,14 @@ def run(args):
         )
     useful_metadata_columns = get_useful_metadata_columns(args, metadata_object.id_column, metadata_object.columns)
 
-    print_debug(f"Reading metadata from {args.metadata!r}…")
-    metadata_reader = read_metadata(
+    # Convert metadata to a parquet file so that subsequent operations can be
+    # done without chunking, even on large datasets.
+    # The conversion is done in chunks to put a limit on memory usage.
+    with NamedTemporaryFile(delete=False, suffix=".parquet") as parquet_file:
+        parquet_path = parquet_file.name
+
+    print_debug(f"Reading metadata from {args.metadata!r} and writing to {parquet_path!r}")
+    tabular_reader = read_metadata(
         args.metadata,
         delimiters=[metadata_object.delimiter],
         columns=useful_metadata_columns,
@@ -203,101 +203,85 @@ def run(args):
         chunk_size=args.metadata_chunk_size,
         dtype="string",
     )
-    for metadata in metadata_reader:
+    parquet_writer = None
+    for metadata in tabular_reader:
         if len(metadata.loc[metadata.index == '']):
             cleanup_outputs(args)
             raise AugurError(f"Found rows with empty values in id column {metadata.index.name!r} in {args.metadata!r}\n" + \
                              "Please remove the rows with empty ids or use a different id column via --metadata-id-columns.")
 
-        duplicate_strains = (
-            set(metadata.index[metadata.index.duplicated()]) |
-            (set(metadata.index) & metadata_strains)
-        )
-        if len(duplicate_strains) > 0:
-            cleanup_outputs(args)
-            raise AugurError(f"The following strains are duplicated in '{args.metadata}':\n" + "\n".join(repr(x) for x in sorted(duplicate_strains)))
+        table = pa.Table.from_pandas(metadata)
+        if parquet_writer is None:
+            # The parquet writer takes the schema from the first chunk
+            parquet_writer = pq.ParquetWriter(parquet_path, table.schema)
+        parquet_writer.write_table(table)
 
-        # Maintain list of all strains seen.
-        metadata_strains.update(set(metadata.index.values))
+    if parquet_writer is not None:
+        parquet_writer.close()
 
-        # Filter metadata.
-        seq_keep, sequences_to_filter, sequences_to_include = apply_filters(
+    # Note: columns is redundant for auto-converted parquet files, but will help
+    # when supporting parquet input.
+    metadata = pd.read_parquet(parquet_path, columns=useful_metadata_columns)
+
+    duplicate_strains = list(metadata.index[metadata.index.duplicated()])
+    if len(duplicate_strains) > 0:
+        cleanup_outputs(args)
+        raise AugurError(f"The following strains are duplicated in '{args.metadata}':\n" + "\n".join(repr(x) for x in sorted(duplicate_strains)))
+
+    # Store metadata strains.
+    metadata_strains = set(metadata.index.values)
+
+    # Filter metadata.
+    seq_keep, sequences_to_filter, sequences_to_include = apply_filters(
+        metadata,
+        exclude_by,
+        include_by,
+    )
+    valid_strains = seq_keep  # TODO: rename this more clearly
+
+    # Track distinct strains to include, so we can write their
+    # corresponding metadata, strains, or sequences later, as needed.
+    force_included_strains = {
+        record["strain"]
+        for record in sequences_to_include
+    }
+
+    # Track reasons for filtered or force-included strains, so we can
+    # report total numbers filtered and included at the end. Optionally,
+    # write out these reasons to a log file.
+    filter_counts = defaultdict(int)
+    for filtered_strain in itertools.chain(sequences_to_filter, sequences_to_include):
+        filter_counts[(filtered_strain["filter"], filtered_strain["kwargs"])] += 1
+
+        # Log the names of strains that were filtered or force-included,
+        # so we can properly account for each strain (e.g., including
+        # those that were initially filtered for one reason and then
+        # included again for another reason).
+        if args.output_log:
+            output_log_writer.writerow(filtered_strain)
+
+    if group_by:
+        # Prevent force-included sequences from being included again during
+        # subsampling.
+        seq_keep = seq_keep - force_included_strains
+
+        # If grouping, track the highest priority metadata records or
+        # count the number of records per group. First, we need to get
+        # the groups for the given records.
+        group_by_strain = get_groups_for_subsampling(
+            seq_keep,
             metadata,
-            exclude_by,
-            include_by,
+            group_by,
         )
-        valid_strains.update(seq_keep)
 
-        # Track distinct strains to include, so we can write their
-        # corresponding metadata, strains, or sequences later, as needed.
-        distinct_force_included_strains = {
-            record["strain"]
-            for record in sequences_to_include
-        }
-        all_sequences_to_include.update(distinct_force_included_strains)
+        # Count the number of records per group. We will use this
+        # information to calculate the number of sequences per group
+        # for the given maximum number of requested sequences.
+        records_per_group = defaultdict(int)
+        for group in group_by_strain.values():
+            records_per_group[group] += 1
 
-        # Track reasons for filtered or force-included strains, so we can
-        # report total numbers filtered and included at the end. Optionally,
-        # write out these reasons to a log file.
-        for filtered_strain in itertools.chain(sequences_to_filter, sequences_to_include):
-            filter_counts[(filtered_strain["filter"], filtered_strain["kwargs"])] += 1
-
-            # Log the names of strains that were filtered or force-included,
-            # so we can properly account for each strain (e.g., including
-            # those that were initially filtered for one reason and then
-            # included again for another reason).
-            if args.output_log:
-                output_log_writer.writerow(filtered_strain)
-
-        if group_by:
-            # Prevent force-included sequences from being included again during
-            # subsampling.
-            seq_keep = seq_keep - distinct_force_included_strains
-
-            # If grouping, track the highest priority metadata records or
-            # count the number of records per group. First, we need to get
-            # the groups for the given records.
-            group_by_strain = get_groups_for_subsampling(
-                seq_keep,
-                metadata,
-                group_by,
-            )
-
-            if args.subsample_max_sequences and records_per_group is not None:
-                # Count the number of records per group. We will use this
-                # information to calculate the number of sequences per group
-                # for the given maximum number of requested sequences.
-                for group in group_by_strain.values():
-                    records_per_group[group] += 1
-            else:
-                # Track the highest priority records, when we already
-                # know the number of sequences allowed per group.
-                if queues_by_group is None:
-                    queues_by_group = {}
-
-                for strain in sorted(group_by_strain.keys()):
-                    # During this first pass, we do not know all possible
-                    # groups will be, so we need to build each group's queue
-                    # as we first encounter the group.
-                    group = group_by_strain[strain]
-                    if group not in queues_by_group:
-                        queues_by_group[group] = PriorityQueue(
-                            max_size=sequences_per_group,
-                        )
-
-                    queues_by_group[group].add(
-                        strain,
-                        priorities[strain],
-                    )
-
-    # In the worst case, we need to calculate sequences per group from the
-    # requested maximum number of sequences and the number of sequences per
-    # group. Then, we need to make a second pass through the metadata to find
-    # the requested number of records.
-    if args.subsample_max_sequences and records_per_group is not None:
-        if queues_by_group is None:
-            # We know all of the possible groups now from the first pass through
-            # the metadata, so we can create queues for all groups at once.
+        if args.subsample_max_sequences:
             if args.group_by_weights:
                 print_err(f"Sampling with weights defined by {args.group_by_weights}.")
                 group_sizes = get_weighted_group_sizes(
@@ -332,42 +316,17 @@ def run(args):
                     print_err(f"Sampling at {sequences_per_group} per group.")
                     assert type(sequences_per_group) is int
                     group_sizes = {group: sequences_per_group for group in records_per_group.keys()}
-            queues_by_group = create_queues_by_group(group_sizes)
+        else:
+            group_sizes = {group: sequences_per_group for group in records_per_group.keys()}
 
-        print_debug(f"Reading metadata from {args.metadata!r}…")
-        # Make a second pass through the metadata, only considering records that
-        # have passed filters.
-        metadata_reader = read_metadata(
-            args.metadata,
-            delimiters=args.metadata_delimiters,
-            columns=useful_metadata_columns,
-            id_columns=args.metadata_id_columns,
-            chunk_size=args.metadata_chunk_size,
-            dtype="string",
-        )
-        for metadata in metadata_reader:
-            # Recalculate groups for subsampling as we loop through the
-            # metadata a second time. TODO: We could store these in memory
-            # during the first pass, but we want to minimize overall memory
-            # usage at the moment.
-            seq_keep = set(metadata.index.values) & valid_strains
+        queues_by_group = create_queues_by_group(group_sizes)
 
-            # Prevent force-included strains from being considered in this
-            # second pass, as in the first pass.
-            seq_keep = seq_keep - all_sequences_to_include
-
-            group_by_strain = get_groups_for_subsampling(
-                seq_keep,
-                metadata,
-                group_by,
+        for strain in sorted(group_by_strain.keys()):
+            group = group_by_strain[strain]
+            queues_by_group[group].add(
+                strain,
+                priorities[strain],
             )
-
-            for strain in sorted(group_by_strain.keys()):
-                group = group_by_strain[strain]
-                queues_by_group[group].add(
-                    strain,
-                    priorities[strain],
-                )
 
     # If we have any records in queues, we have grouped results and need to
     # stream the highest priority records to the requested outputs.
@@ -394,7 +353,7 @@ def run(args):
         valid_strains = subsampled_strains
 
     # Force inclusion of specific strains after filtering and subsampling.
-    valid_strains = valid_strains | all_sequences_to_include
+    valid_strains = valid_strains | force_included_strains
 
     # Write requested outputs.
 
