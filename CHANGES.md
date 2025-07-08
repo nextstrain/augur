@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* geolocation rules: Add rules to define region per country to ensure that regions are labelled for all countries. This is especially useful for data sources that do not include region in the metadata. [#1844][] (@joverlee521)
+
+[#1844]: https://github.com/nextstrain/augur/pull/1844
 
 ## 31.3.0 (3 July 2025)
 
