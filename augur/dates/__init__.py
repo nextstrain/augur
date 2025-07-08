@@ -225,10 +225,6 @@ def get_numerical_dates(
     return dict(zip(strains, dates))
 
 @cache
-def get_year_month(year, month):
-    return f"{year}-{str(month).zfill(2)}"
-
-@cache
 def get_year_week(year, month, day):
     year, week = datetime.date(year, month, day).isocalendar()[:2]
     return f"{year}-{str(week).zfill(2)}"

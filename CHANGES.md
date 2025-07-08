@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* filter: Improved speed of using `--group-by month` on large datasets. [#1845][] (@victorlin)
+
+[#1845]: https://github.com/nextstrain/augur/pull/1845
 
 ## 31.3.0 (3 July 2025)
 

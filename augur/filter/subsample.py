@@ -7,7 +7,7 @@ import pandas as pd
 from textwrap import dedent
 from typing import Collection, Dict, Iterable, List, Optional, Set, Tuple, Union
 
-from augur.dates import get_year_month, get_year_week, get_year_month_day
+from augur.dates import get_year_week, get_year_month_day
 from augur.errors import AugurError
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err, _n
@@ -144,10 +144,9 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
             if constants.DATE_YEAR_COLUMN in generated_columns_requested:
                 metadata[constants.DATE_YEAR_COLUMN] = metadata[f'{temp_prefix}year'].astype('string')
             if constants.DATE_MONTH_COLUMN in generated_columns_requested:
-                metadata[constants.DATE_MONTH_COLUMN] = metadata.apply(lambda row: get_year_month(
-                    row[f'{temp_prefix}year'],
-                    row[f'{temp_prefix}month']
-                    ), axis=1
+                metadata[constants.DATE_MONTH_COLUMN] = (
+                    metadata[f'{temp_prefix}year'].astype(str) + '-' +
+                    metadata[f'{temp_prefix}month'].astype(str).str.zfill(2)
                 )
             if constants.DATE_WEEK_COLUMN in generated_columns_requested:
                 # Note that week = (year, week) from the date.isocalendar().
