@@ -402,7 +402,7 @@ def run(args):
     strains_file = None
     if args.output_strains:
         strains_file = args.output_strains
-    elif args.output_sequences:
+    elif args.output_sequences or args.output_metadata:
         strains_file = NamedTemporaryFile(delete=False).name
 
     if strains_file is not None:

@@ -108,7 +108,7 @@ def write_output_metadata(input_filename: str, id_column: str, output_filename: 
 
     command = f"""
         {augur()} read-file {shquote(input_filename)} |
-        {tsv_join} -H --filter-file {ids_file} --key-fields {id_column} |
+        {tsv_join} -H --filter-file <(printf "%s\n" {shquote(id_column)}; cat {shquote(ids_file)}) --key-fields {shquote(id_column)} |
         {augur()} write-file {shquote(output_filename)}
     """
 
