@@ -57,6 +57,7 @@ setuptools.setup(
         "cvxopt >=1.1.9, ==1.*",
         "importlib_resources >=5.3.0; python_version < '3.11'",
         "isodate >=0.6,<0.8",
+        # Sync this with 'types-jsonschema' dev dependency
         "jsonschema >=4.18.0, ==4.*",
         "networkx >= 2.5, <4",
         "numpy ==1.*",
@@ -91,7 +92,7 @@ setuptools.setup(
             "sphinx-rtd-theme >=0.4.3",
             "sphinx-autodoc-typehints >=1.21.4",
             "sphinx-tabs",
-            "types-jsonschema >=3.0.0, ==3.*",
+            "types-jsonschema >=4.18.0, ==4.*",
             "types-setuptools",
             "wheel >=0.32.3",
             "ipdb >=0.10.1"
