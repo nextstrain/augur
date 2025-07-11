@@ -56,7 +56,7 @@ setuptools.setup(
         "biopython >=1.80, ==1.*",
         "cvxopt >=1.1.9, ==1.*",
         "importlib_resources >=5.3.0; python_version < '3.11'",
-        "isodate ==0.6.*",
+        "isodate >=0.6,<0.8",
         "jsonschema >=4.18.0, ==4.*",
         "networkx >= 2.5, <4",
         "numpy ==1.*",
