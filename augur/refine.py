@@ -177,7 +177,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
     parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
     parser.add_argument('--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
-    parser.add_argument('--root', nargs="+", action=ExtendOverwriteDefault, default=['best'], help="rooting mechanism ('best', least-squares', 'min_dev', 'oldest', 'mid_point') "
+    parser.add_argument('--root', nargs="+", action=ExtendOverwriteDefault, default=['best'], help="rooting mechanism ('best', 'least-squares', 'min_dev', 'oldest', 'mid_point') "
                                 "OR node to root by OR two nodes indicating a monophyletic group to root by. "
                                 "Run treetime -h for definitions of rooting methods.")
     parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
