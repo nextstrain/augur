@@ -4,9 +4,9 @@
 
 ### Internal changes
 
-* Support numpy v2 in addition to v1. [#1504][] (@corneliusroemer)
+* Support numpy v2 in addition to v1. [#1855][] (@corneliusroemer)
 
-[#1504]: https://github.com/nextstrain/augur/pull/1504
+[#1855]: https://github.com/nextstrain/augur/pull/1855
 
 ### Bug fixes
 
