@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Internal changes
+
+* Support numpy v2 in addition to v1. [#1504][] (@corneliusroemer)
+
+[#1504]: https://github.com/nextstrain/augur/pull/1504
+
 ### Bug fixes
 
 * filter: Improved speed of using `--group-by month` on large datasets. [#1845][] (@victorlin)
