@@ -11,6 +11,7 @@ import math
 import re
 from Bio import Phylo
 from typing import Dict, Union, TypedDict, Any, Tuple
+from urllib.parse import urlparse
 
 from .argparse_ import ExtendOverwriteDefault, add_validation_arguments
 from .errors import AugurError
@@ -740,6 +741,25 @@ def attr_confidence(
     warn(f"[confidence] {key+'_confidence'!r} is of an unknown format. Skipping.")
     return {}
 
+def valid_url(url: str) -> bool:
+    # <https://stackoverflow.com/questions/7160737/how-to-validate-a-url-in-python-malformed-or-not>
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except AttributeError:
+        return False
+
+def encode_node_attr(value):
+    """Returns a node attr structure with keys 'value' and (optional) 'url'"""
+    if type(value) is not str: # only string values can encode URLs
+        return {"value": value}
+    elif m:=re.match(r'(.+?)\s?<(.+)>$', value): # value <URL>
+        if valid_url(m.groups()[1]):
+            return {"value": m.groups()[0], "url": m.groups()[1]}
+    elif m:=re.match(r'(.+?):\s?(.+)$', value): # value: URL
+        if valid_url(m.groups()[1]):
+            return {"value": m.groups()[0], "url": m.groups()[1]}
+    return {"value": value}
 
 
 def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
@@ -760,7 +780,7 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
     def _transfer_additional_metadata_columns(node, raw_data):
         for col in additional_metadata_columns:
             if is_valid(raw_data.get(col, None)):
-                node["node_attrs"][col] = {"value": raw_data[col]}
+                node["node_attrs"][col] = encode_node_attr(raw_data[col])
 
     def _transfer_vaccine_info(node, raw_data):
         if raw_data.get("vaccine"):
@@ -807,7 +827,10 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
         for key in trait_keys:
             value = raw_data.get(key, None)
             if is_valid(value):
-                node["node_attrs"][key] = {"value": format_number(value) if is_numeric(value) else value}
+                if is_numeric(value):
+                    node["node_attrs"][key] = {"value": format_number(value)}
+                else:
+                    node["node_attrs"][key] = encode_node_attr(value)
                 node["node_attrs"][key].update(attr_confidence(node["name"], raw_data, key))
 
     def _transfer_author_data(node):
