@@ -1,6 +1,7 @@
-from pathlib    import Path
-import setuptools
 import sys
+from pathlib import Path
+
+import setuptools
 
 py_min_version = (3, 9)  # minimal supported python version
 since_augur_version = (27, 0)  # py_min_version is required since this augur version
@@ -109,6 +110,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
     # Install an "augur" program which calls augur.__main__.main()
     #   https://setuptools.readthedocs.io/en/latest/setuptools.html#automatic-script-creation
