@@ -413,7 +413,7 @@ def json_to_tree(
         ]
 
     if root:
-        node = annotate_parents_for_tree(node)  # type: ignore
+        node = annotate_parents_for_tree(node)  # type: ignore[arg-type,assignment]
 
     return node
 

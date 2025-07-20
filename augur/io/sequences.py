@@ -451,12 +451,12 @@ def _read_genbank(reference: str, feature_names: Optional[Union[set[str], list[s
     features_skipped = 0
     for feature in gb.features:
         feat = feature
-        if feat.type=='CDS':  # type: ignore[has-type]
+        if feat.type=='CDS':
             fname = None
-            if "locus_tag" in feat.qualifiers:  # type: ignore[has-type]
-                fname = feat.qualifiers["locus_tag"][0]  # type: ignore[has-type]
-            elif "gene" in feat.qualifiers: # type: ignore[has-type]
-                fname = feat.qualifiers["gene"][0]  # type: ignore[has-type]
+            if "locus_tag" in feat.qualifiers:
+                fname = feat.qualifiers["locus_tag"][0]
+            elif "gene" in feat.qualifiers:
+                fname = feat.qualifiers["gene"][0]
             else:
                 features_skipped+=1
 
