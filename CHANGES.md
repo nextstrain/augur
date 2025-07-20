@@ -11,9 +11,14 @@
 
 * filter: Improved speed of using `--group-by month` on large datasets. [#1845][] (@victorlin)
 
+### Internal changes
+
+* Improved type annotations for better type checking. [#1860][] (@corneliusroemer)
+
 [#1819]: https://github.com/nextstrain/augur/pull/1819
 [#1844]: https://github.com/nextstrain/augur/pull/1844
 [#1845]: https://github.com/nextstrain/augur/pull/1845
+[#1860]: https://github.com/nextstrain/augur/pull/1860
 
 ## 31.3.0 (3 July 2025)
 
