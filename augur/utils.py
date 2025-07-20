@@ -4,7 +4,7 @@ import os
 import sys
 import warnings
 from collections import Counter, OrderedDict
-from io import RawIOBase
+from io import TextIOBase
 from shlex import quote as shquote
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -16,7 +16,6 @@ import numpy as np
 import pandas as pd
 from Bio.Phylo.BaseTree import Clade, Tree
 from Bio.SeqFeature import CompoundLocation, FeatureLocation, SeqFeature
-from typing_extensions import Buffer
 
 from augur.data import as_file
 from augur.errors import AugurError
@@ -151,16 +150,16 @@ def write_json(data: dict, file, indent: int = (None if os.environ.get("AUGUR_MI
         json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
 
 
-class BytesWrittenCounterIO(RawIOBase):
-    """Binary stream to count the number of bytes sent via write()."""
+class BytesWrittenCounterIO(TextIOBase):
+    """Text stream to count the number of bytes that would be written."""
     def __init__(self) -> None:
         self.written: int = 0
         """Number of bytes written."""
 
-    def write(self, b: Buffer) -> int:
-        n = memoryview(b).nbytes
+    def write(self, s: str) -> int:
+        n = len(s.encode('utf-8'))
         self.written += n
-        return n
+        return len(s)
 
 
 def json_size(data: dict) -> int:
