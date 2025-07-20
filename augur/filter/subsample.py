@@ -351,8 +351,8 @@ def get_weighted_group_sizes(
     # Warn on any under-sampled groups
     for _, row in weights.iterrows():
         if row[INPUT_SIZE_COLUMN] < row[TARGET_SIZE_COLUMN]:
-            sequences = _n('sequence', 'sequences', row[TARGET_SIZE_COLUMN])
-            are = _n('is', 'are', row[INPUT_SIZE_COLUMN])
+            sequences = _n('sequence', 'sequences', int(row[TARGET_SIZE_COLUMN]))
+            are = _n('is', 'are', int(row[INPUT_SIZE_COLUMN]))
             group = list(f'{col}={value!r}' for col, value in row[group_by].items())
             print_err(f"WARNING: Targeted {row[TARGET_SIZE_COLUMN]} {sequences} for group {group} but only {row[INPUT_SIZE_COLUMN]} {are} available.")
 
@@ -493,7 +493,7 @@ def _handle_incomplete_weights(
         print_err(dedent(f"""\
             WARNING: The input metadata contains these values under the following columns that are not directly covered by {weights_file!r}:
             - {columns_with_values}
-            The default weight of {default_weight!r} will be used for all groups defined by those values."""))
+            The default weight of {default_weight} will be used for all groups defined by those values."""))
 
         missing_weights = pd.DataFrame(sorted(missing_groups), columns=group_by)
         missing_weights[WEIGHTS_COLUMN] = default_weight
