@@ -77,7 +77,7 @@ jobs:
     - name: Install dependencies from Conda
       uses: mamba-org/setup-micromamba@v2
       with:
-        create-args: mafft raxml fasttree iqtree vcftools seqkit sqlite tsv-utils biopython=${{ matrix.biopython-version }} python=${{ matrix.python-version }}
+        create-args: mafft raxml fasttree iqtree vcftools seqkit sqlite tsv-utils biopython=${{ matrix.biopython-version }} python=${{ matrix.python-version }} numpy=1
         condarc: |
           channels:
             - conda-forge
@@ -95,15 +95,19 @@ jobs:
     - name: Run pytest
       run: |
         if [[ -n "${COVERAGE_FILE:-}" ]]; then
+          echo "Running pytest with coverage enabled"
           pytest --cov=augur
         else
+          echo "Running pytest without coverage"
           pytest
         fi
     - name: Run cram tests
       run: |
         if [[ -n "${COVERAGE_FILE:-}" ]]; then
+          echo "Running cram tests with coverage enabled"
           export AUGUR="coverage run -a ${{ github.workspace }}/bin/augur"
         else
+          echo "Running cram tests without coverage"
           export AUGUR="${{ github.workspace }}/bin/augur"
         fi
         cram tests/
