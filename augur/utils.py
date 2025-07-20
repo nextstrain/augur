@@ -26,7 +26,6 @@ from augur.util_support.node_data_reader import NodeDataReader
 
 from .__version__ import __version__
 
-TreeLike = Union[Tree, Clade]
 
 def augur() -> str:
     """

@@ -7,7 +7,7 @@ from textwrap import dedent
 from typing import Iterable, Iterator, Optional, Union
 
 import Bio
-from Bio.SeqFeature import SeqFeature
+from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.SeqRecord import SeqRecord
 from packaging.version import Version
 
@@ -258,7 +258,6 @@ def _read_nuc_annotation_from_gff(record, reference):
     if len(sequence_regions)>1:
         raise AugurError(f"Reference {reference!r} contains multiple ##sequence-region pragma lines. Augur can only handle GFF files with a single one.")
     elif sequence_regions:
-        from Bio.SeqFeature import FeatureLocation, SeqFeature
         (name, start, stop) = sequence_regions[0]
         nuc['pragma'] = SeqFeature(
             FeatureLocation(start, stop, strand=1),
