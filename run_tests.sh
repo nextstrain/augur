@@ -23,8 +23,8 @@ if [ "$run_coverage" = 1 ]; then
 
     # Set env variable COVERAGE_CORE to sysmon for coverage
     # This reduces overhead of coverage collection
-    # But only if Python version >3.12
-    if python3 -c 'import sys; print(sys.version_info >= (3, 12))' | grep -q True; then
+    # But only if Python version >3.14
+    if python3 -c 'import sys; print(sys.version_info >= (3, 14))' | grep -q True; then
         echo "Using sysmon for coverage to reduce overhead"
         export COVERAGE_CORE=sysmon
     else
@@ -42,16 +42,9 @@ python3 -m pytest $coverage_arg $filtered_args
 
 # Only run functional tests if we are not running a subset of tests for pytest.
 if [ "$partial_test" = 0 ]; then
-    echo "Running functional tests with cram"
-    if [ "$run_coverage" = 1 ]; then
-        # Use coverage for cram tests when coverage is requested
-        AUGUR="coverage run -a bin/augur" cram tests/
-    else
-        # Use regular augur binary when coverage is not requested
-        cram tests/
-    fi
+    cram tests/
 else
-    echo "Skipping functional tests when running a subset of unit tests"
+    echo "Skipping functional (cram) tests when running a subset of unit tests"
 fi
 
 exit $?
