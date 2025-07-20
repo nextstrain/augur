@@ -36,7 +36,9 @@ def fix_dates(d: str, dayfirst: bool = True) -> str:
     try:
         try:
             # pandas <= 2.1
-            from pandas.core.tools.datetimes import parsing  # type: ignore[attr-defined, import-not-found]
+            from pandas.core.tools.datetimes import (  # type: ignore[attr-defined]
+                parsing,
+            )
         except ImportError:
             # pandas >= 2.2
             from pandas._libs.tslibs import parsing
@@ -45,7 +47,7 @@ def fix_dates(d: str, dayfirst: bool = True) -> str:
             results = parsing.parse_datetime_string_with_reso(d, dayfirst=dayfirst)
         except AttributeError:
             # pandas 1.x
-            results = parsing.parse_time_string(d, dayfirst=dayfirst)  # type: ignore[attr-defined]
+            results = parsing.parse_time_string(d, dayfirst=dayfirst)  # type: ignore[attr-defined, unused-ignore]
         if len(results) == 2:
             dto, res = results
         else:

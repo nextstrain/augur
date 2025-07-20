@@ -1,15 +1,19 @@
-import Bio.SeqIO
 import os
-
-from augur.errors import AugurError
-from augur.utils import augur
 from importlib.metadata import version as installed_version
-from packaging.version import Version
 from shlex import quote as shquote
 from shutil import which
 from tempfile import NamedTemporaryFile
 from textwrap import dedent
-from typing import Iterator, Iterable, Union
+from typing import Iterable, Iterator, Optional, Union
+
+import Bio
+from Bio.SeqFeature import SeqFeature, FeatureLocation
+from Bio.SeqRecord import SeqRecord
+from packaging.version import Version
+
+from augur.errors import AugurError
+from augur.utils import augur
+
 from .file import open_file
 from .print import _n, indented_list
 from .shell_command_runner import run_shell_command
@@ -186,12 +190,12 @@ def subset_fasta(input_filename: str, output_filename: str, ids_file: str, nthre
         if os.path.isfile(output_filename):
             # Remove the partial output file.
             os.remove(output_filename)
-            raise AugurError(f"Sequence output failed, see error(s) above.")
+            raise AugurError("Sequence output failed, see error(s) above.")
         else:
-            raise AugurError(f"Sequence output failed, see error(s) above. The command may have already written data to stdout. You may want to clean up any partial outputs.")
+            raise AugurError("Sequence output failed, see error(s) above. The command may have already written data to stdout. You may want to clean up any partial outputs.")
 
 
-def load_features(reference, feature_names=None):
+def load_features(reference: str, feature_names: Optional[Union[set[str], list[str]]] = None) -> dict:
     """
     Parse a GFF/GenBank reference file. See the docstrings for _read_gff and
     _read_genbank for details.
@@ -254,7 +258,6 @@ def _read_nuc_annotation_from_gff(record, reference):
     if len(sequence_regions)>1:
         raise AugurError(f"Reference {reference!r} contains multiple ##sequence-region pragma lines. Augur can only handle GFF files with a single one.")
     elif sequence_regions:
-        from Bio.SeqFeature import SeqFeature, FeatureLocation
         (name, start, stop) = sequence_regions[0]
         nuc['pragma'] = SeqFeature(
             FeatureLocation(start, stop, strand=1),
@@ -285,7 +288,7 @@ def _read_nuc_annotation_from_gff(record, reference):
         raise AugurError(f"Reference {reference!r} didn't define any information we can use to create the 'nuc' annotation. You can use a line with a 'record' or 'source' GFF type or a ##sequence-region pragma.")
 
 
-def _read_gff(reference, feature_names):
+def _read_gff(reference: str, feature_names: Optional[Union[set[str], list[str]]] = None) -> dict[str, SeqFeature]:
     """
     Read a GFF file. We only read GFF IDs 'gene' or 'source' (the latter may not technically
     be a valid GFF field, but is used widely within the Nextstrain ecosystem).
@@ -325,6 +328,7 @@ def _read_gff(reference, feature_names):
         # TODO: Remove warning suppression after it's addressed upstream:
         # <https://github.com/chapmanb/bcbb/issues/143>
         import warnings
+
         from Bio import BiopythonDeprecationWarning
         warnings.simplefilter("ignore", BiopythonDeprecationWarning)
         gff_entries = list(GFF.parse(in_handle, limit_info={'gff_type': valid_types}))
@@ -377,7 +381,7 @@ def _read_gff(reference, feature_names):
     return features
 
 
-def _read_nuc_annotation_from_genbank(record, reference):
+def _read_nuc_annotation_from_genbank(record: SeqRecord, reference: str):
     """
     Extracts the mandatory 'source' feature. If the sequence is present we check
     the length agrees with the source. (The 'ORIGIN' may be left blank,
@@ -387,7 +391,8 @@ def _read_nuc_annotation_from_genbank(record, reference):
 
     Parameters
     ----------
-    record : :py:class:`Bio.SeqRecord.SeqRecord` reference: string
+    record : :py:class:`Bio.SeqRecord.SeqRecord`
+    reference : string
 
     Returns
     -------
@@ -411,7 +416,7 @@ def _read_nuc_annotation_from_genbank(record, reference):
     return nuc
 
 
-def _read_genbank(reference, feature_names):
+def _read_genbank(reference: str, feature_names: Optional[Union[set[str], list[str]]] = None) -> dict[str, SeqFeature]:
     """
     Read a GenBank file. We only read GenBank feature keys 'CDS' or 'source'.
     We create a "feature name" via:
@@ -443,7 +448,8 @@ def _read_genbank(reference, feature_names):
     }
 
     features_skipped = 0
-    for feat in gb.features:
+    for feature in gb.features:
+        feat = feature
         if feat.type=='CDS':
             fname = None
             if "locus_tag" in feat.qualifiers:

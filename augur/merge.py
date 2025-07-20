@@ -499,7 +499,7 @@ def pairs(xs: Iterable[str]) -> Iterable[Tuple[str, str]]:
     >>> pairs(["abc=123=xyz", "=v=v"])
     [('abc', '123=xyz'), ('', 'v=v')]
     """
-    return [tuple(x.split("=", 1)) if "=" in x else ("", x) for x in xs] # type: ignore
+    return [tuple(x.split("=", 1)) if "=" in x else ("", x) for x in xs] # type: ignore[misc]
 
 
 def count_unique(xs: Iterable[T]) -> Iterable[Tuple[T, int]]:
@@ -507,7 +507,7 @@ def count_unique(xs: Iterable[T]) -> Iterable[Tuple[T, int]]:
     # itertools.groupby(), which requires a sort.  Preserving order is a nice
     # property for the user since we generate an error message with this.
     #   -trs, 24 July 2024
-    yield from reduce(lambda counts, x: {**counts, x: counts.get(x, 0) + 1}, xs, counts := {}).items() # type: ignore
+    yield from reduce(lambda counts, x: {**counts, x: counts.get(x, 0) + 1}, xs, {}).items()  # type: ignore[arg-type,dict-item,return-value, call-overload]
 
 
 def shquote_humanized(x):

@@ -1,26 +1,32 @@
 import argparse
+import json
+import os
+import sys
+import warnings
+from collections import Counter, OrderedDict
+from io import TextIOBase
+from shlex import quote as shquote
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import Bio
 import Bio.Phylo
+import Bio.Phylo.BaseTree
+import Bio.Phylo.Newick
 import numpy as np
-import os, json, sys
 import pandas as pd
-from collections import OrderedDict
-from io import RawIOBase
-from shlex import quote as shquote
-from .__version__ import __version__
+from Bio.SeqFeature import CompoundLocation, FeatureLocation, SeqFeature
 
 from augur.data import as_file
-from augur.io.file import open_file
-from augur.io.print import print_err
-
-from augur.types import ValidationMode
 from augur.errors import AugurError
-
+from augur.io.file import open_file
+from augur.types import ValidationMode
 from augur.util_support.color_parser import ColorParser
 from augur.util_support.node_data_reader import NodeDataReader
 
+from .__version__ import __version__
 
-def augur():
+
+def augur() -> str:
     """
     Locate how to re-invoke ourselves (_this_ specific Augur).
     """
@@ -29,15 +35,15 @@ def augur():
     else:
         # A bit unusual we don't know our own Python executable, but assume we
         # can access ourselves as the ``augur`` command.
-        return f"augur"
+        return "augur"
 
 
-def get_json_name(args, default=None):
+def get_json_name(args: argparse.Namespace, default: Optional[str] = None) -> str:
     if args.output_node_data:
         return args.output_node_data
     else:
         if default:
-            print("WARNING: no name for the output file was specified. Writing results to %s."%default, file=sys.stderr)
+            print(f"WARNING: no name for the output file was specified. Writing results to {default}.", file=sys.stderr)
             return default
         else:
             raise ValueError("Please specify a name for the JSON file containing the results.")
@@ -49,7 +55,7 @@ class InvalidTreeError(Exception):
     pass
 
 
-def read_tree(fname, min_terminals=3):
+def read_tree(fname: str, min_terminals: int = 3) -> Bio.Phylo.BaseTree.Tree:
     """Safely load a tree from a given filename or raise an error if the file does
     not contain a valid tree.
 
@@ -100,11 +106,11 @@ def read_tree(fname, min_terminals=3):
     return T
 
 
-def read_node_data(fnames, tree=None, validation_mode=ValidationMode.ERROR):
+def read_node_data(fnames: Union[str, list[str]], tree: Optional[str] = None, validation_mode: ValidationMode = ValidationMode.ERROR) -> dict:
     return NodeDataReader(fnames, tree, validation_mode).read()
 
 
-def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):
+def write_json(data: dict, file, indent: int = (None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version: bool=True) -> None:
     """
     Write ``data`` as JSON to the given ``file``, creating parent directories
     if necessary. The augur version is included as a top-level key "augur_version".
@@ -142,19 +148,19 @@ def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") e
         json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
 
 
-class BytesWrittenCounterIO(RawIOBase):
-    """Binary stream to count the number of bytes sent via write()."""
-    def __init__(self):
-        self.written = 0
+class BytesWrittenCounterIO(TextIOBase):
+    """Text stream to count the number of bytes that would be written."""
+    def __init__(self) -> None:
+        self.written: int = 0
         """Number of bytes written."""
 
-    def write(self, b):
-        n = len(b)
+    def write(self, s: str) -> int:
+        n = len(s.encode('utf-8'))
         self.written += n
-        return n
+        return len(s)
 
 
-def json_size(data):
+def json_size(data: dict) -> int:
     """Return size in bytes of a Python object in JSON string form."""
     with BytesWrittenCounterIO() as counter:
         write_json(data, counter, include_version=False)
@@ -166,7 +172,7 @@ class AugurJSONEncoder(json.JSONEncoder):
     A custom JSONEncoder subclass to serialize data types used for various data
     stored in dictionary format.
     """
-    def default(self, obj):
+    def default(self, obj: object) -> Union[int, float, list]:
         if isinstance(obj, np.integer):
             return int(obj)
         if isinstance(obj, np.floating):
@@ -178,19 +184,25 @@ class AugurJSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-def load_features(*args, **kwargs):
-    print_err("WARNING: augur.utils.load_features has been moved to augur.io.sequences.load_features.")
+def load_features(reference: str, feature_names: Optional[Union[set[str], list[str]]] = None) -> dict:
+    """Deprecated function, moved to augur.io.sequences.load_features."""
+    warnings.warn(
+        "augur.utils.load_features has been moved to augur.io.sequences.load_features. "
+        "Please update your imports. This function will be removed in a future version.",
+        FutureWarning,
+        stacklevel=2
+    )
     from augur.io.sequences import load_features as new_location
-    return new_location(*args, **kwargs)
+    return new_location(reference=reference, feature_names=feature_names)
 
 
-def read_lat_longs(overrides=None, use_defaults=True):
+def read_lat_longs(overrides: Optional[str] = None, use_defaults: bool = True) -> dict[Tuple[str,str], dict[str, float]]:
     coordinates = {}
     # TODO: make parsing of tsv files more robust while allow for whitespace delimiting for backwards compatibility
     def add_line_to_coordinates(line):
         if line.startswith('#') or line.strip() == "":
             return
-        fields = line.strip().split() if not '\t' in line else line.strip().split('\t')
+        fields = line.strip().split() if '\t' not in line else line.strip().split('\t')
         if len(fields) == 4:
             geo_field, loc = fields[0].lower(), fields[1].lower()
             lat, long = float(fields[2]), float(fields[3])
@@ -214,10 +226,10 @@ def read_lat_longs(overrides=None, use_defaults=True):
             print("WARNING: input lat/long file %s not found." % overrides)
     return coordinates
 
-def read_colors(overrides=None, use_defaults=True):
+def read_colors(overrides: Optional[str] = None, use_defaults: bool = True) -> Dict[str, List[Tuple[str, str]]]:
     return ColorParser(mapping_filename=overrides, use_defaults=use_defaults).mapping
 
-def first_line(text):
+def first_line(text: str) -> str:
     """
     Returns the first line of the given text, ignoring leading and trailing
     whitespace.
@@ -250,7 +262,7 @@ def available_cpu_cores(fallback: int = 1) -> int:
         return os.cpu_count() or fallback
 
 
-def nthreads_value(value):
+def nthreads_value(value: str) -> int:
     """
     Argument value validation and casting function for --nthreads.
     """
@@ -264,7 +276,7 @@ def nthreads_value(value):
         raise argparse.ArgumentTypeError("'%s' is not an integer or the word 'auto'" % value) from None
 
 
-def get_parent_name_by_child_name_for_tree(tree):
+def get_parent_name_by_child_name_for_tree(tree: Bio.Phylo.BaseTree.Tree) -> Dict[str, str]:
     '''
     Return dictionary mapping child node names to parent node names
     '''
@@ -275,7 +287,7 @@ def get_parent_name_by_child_name_for_tree(tree):
     return parents
 
 
-def annotate_parents_for_tree(tree):
+def annotate_parents_for_tree(tree: Bio.Phylo.BaseTree.Tree) -> Bio.Phylo.BaseTree.Tree:
     """Annotate each node in the given tree with its parent.
 
     Examples
@@ -299,7 +311,11 @@ def annotate_parents_for_tree(tree):
     return tree
 
 
-def json_to_tree(json_dict, root=True, parent_cumulative_branch_length=None):
+def json_to_tree(
+        json_dict: dict,
+        root: bool = True,
+        parent_cumulative_branch_length: Optional[Union[float, int]] = None
+    ) -> Bio.Phylo.BaseTree.Clade:
     """Returns a Bio.Phylo tree corresponding to the given JSON dictionary exported
     by `tree_to_json`.
 
@@ -356,7 +372,7 @@ def json_to_tree(json_dict, root=True, parent_cumulative_branch_length=None):
     if root and "meta" in json_dict and "tree" in json_dict:
         json_dict = json_dict["tree"]
 
-    node = Bio.Phylo.Newick.Clade()
+    node: Bio.Phylo.Newick.Clade = Bio.Phylo.Newick.Clade()
 
     # v1 and v2 JSONs use different keys for strain names.
     if "name" in json_dict:
@@ -371,13 +387,13 @@ def json_to_tree(json_dict, root=True, parent_cumulative_branch_length=None):
 
     # Only v1 JSONs support a single `attr` attribute.
     if hasattr(node, "attr"):
-        node.numdate = node.attr.get("num_date")
-        node.cumulative_branch_length = node.attr.get("div")
+        node.numdate = node.attr.get("num_date")  # type: ignore
+        node.cumulative_branch_length = node.attr.get("div")  # type: ignore
 
         if "translations" in node.attr:
-            node.translations = node.attr["translations"]
+            node.translations = node.attr["translations"]  # type: ignore
     elif hasattr(node, "node_attrs"):
-        node.cumulative_branch_length = node.node_attrs.get("div")
+        node.cumulative_branch_length = node.node_attrs.get("div")  # type: ignore[attr-defined]
 
     node.branch_length = 0.0
     if parent_cumulative_branch_length is not None and hasattr(node, "cumulative_branch_length"):
@@ -389,24 +405,24 @@ def json_to_tree(json_dict, root=True, parent_cumulative_branch_length=None):
             json_to_tree(
                 child,
                 root=False,
-                parent_cumulative_branch_length=node.cumulative_branch_length
+                parent_cumulative_branch_length=node.cumulative_branch_length  # type: ignore[attr-defined]
             )
             for child in json_dict["children"]
         ]
 
     if root:
-        node = annotate_parents_for_tree(node)
+        node = annotate_parents_for_tree(node)  # type: ignore[arg-type,assignment]
 
     return node
 
-def get_augur_version():
+def get_augur_version() -> str:
     """
     Returns a string of the current augur version.
     """
     return __version__
 
 
-def read_bed_file(bed_file):
+def read_bed_file(bed_file: str) -> list[int]:
     """Read a BED file and return a list of excluded sites.
 
     This function attempts to parse the given file as a BED file, based on
@@ -441,7 +457,7 @@ def read_bed_file(bed_file):
         Sorted list of unique zero-indexed sites
     """
     in_header = True
-    initial_chrom_value: str | None = None
+    initial_chrom_value: Optional[str] = None
     mask_sites: list[int] = []
 
     bed_file_size = os.path.getsize(bed_file)
@@ -496,7 +512,7 @@ def read_bed_file(bed_file):
     return sorted(set(mask_sites))
 
 
-def read_mask_file(mask_file):
+def read_mask_file(mask_file: str) -> list[int]:
     """Read a masking file and return a list of excluded sites.
 
     Masking files have a single masking site per line, either alone
@@ -527,7 +543,7 @@ def read_mask_file(mask_file):
                 raise
     return sorted(set(mask_sites))
 
-def load_mask_sites(mask_file):
+def load_mask_sites(mask_file: str) -> list[int]:
     """Load masking sites from either a BED file or a masking file.
 
     Parameters
@@ -553,7 +569,7 @@ VALID_NUCLEOTIDES = { # http://reverse-complement.com/ambiguity.html
 }
 
 
-def read_entries(*files, comment_char="#"):
+def read_entries(*files: str, comment_char: str = "#") -> list[str]:
     """Reads entries (one per line) from one or more plain text files.
 
     Entries can be commented with full-line or inline comments. For example, the
@@ -587,7 +603,7 @@ def read_entries(*files, comment_char="#"):
     return entries
 
 
-def parse_genes_argument(input):
+def parse_genes_argument(input: Optional[Union[str, List[str]]] = None) -> Union[str ,list[str], None]:
     if input is None:
         return None
 
@@ -599,23 +615,30 @@ def parse_genes_argument(input):
     return input
 
 
-def _get_genes_from_file(fname):
+def _get_genes_from_file(fname: str) -> list[str]:
     if os.path.isfile(fname):
         genes = read_entries(fname)
     else:
         print("File with genes not found. Looking for", fname)
         genes = []
 
-    unique_genes = np.unique(np.array(genes))
-    if len(unique_genes) != len(genes):
-        print("You have duplicates in your genes file. They are being ignored.")
+    gene_counts = Counter(genes)
+    duplicates = [gene for gene, count in gene_counts.items() if count > 1]
+    
+    unique_genes = list(dict.fromkeys(genes))  # Preserves order while removing duplicates
+    if duplicates:
+        print(f"Warning: You have duplicates in your genes file. The following genes appear multiple times: {', '.join(duplicates)}. Duplicates are being ignored.")
     print("Read in {} specified genes to translate.".format(len(unique_genes)))
 
     return unique_genes
 
 
 
-def genome_features_to_auspice_annotation(features, ref_seq_name=None, assert_nuc=False):
+def genome_features_to_auspice_annotation(
+        features: Dict[str, SeqFeature],
+        ref_seq_name: Optional[str] = None,
+        assert_nuc: bool = False
+    ) -> Dict[str, Any]:
     """
     Parameters
     ----------
@@ -632,19 +655,17 @@ def genome_features_to_auspice_annotation(features, ref_seq_name=None, assert_nu
         See schema-annotations.json for the schema this conforms to
 
     """
-    from Bio.SeqFeature import SimpleLocation, CompoundLocation
-
     if assert_nuc and 'nuc' not in features:
         raise AugurError("Genome features must include a feature for 'nuc'")
 
-    def _parse(feat):
-        a = {}
+    def _parse(feat: SeqFeature) -> Dict[str, Any]:
+        a: Dict[str, Any] = {}
         # Note that BioPython locations use "Pythonic" coordinates: [zero-origin, half-open)
         # Starting with augur v6 we use GFF coordinates: [one-origin, inclusive]
-        if type(feat.location)==SimpleLocation:
+        if isinstance(feat.location, FeatureLocation):
             a['start'] = int(feat.location.start)+1
             a['end'] = int(feat.location.end)
-        elif type(feat.location)==CompoundLocation:
+        elif isinstance(feat.location, CompoundLocation):
             a['segments'] = [
                 {'start':int(segment.start)+1, 'end':int(segment.end)}
                 for segment in feat.location.parts # segment: SimpleLocation

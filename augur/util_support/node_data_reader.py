@@ -1,9 +1,10 @@
-import Bio.Phylo
 import sys
+from typing import Optional, Union
+
+import Bio.Phylo
 
 from augur.types import ValidationMode
-from augur.util_support.node_data import DuplicatedNonDictAttributeError
-from augur.util_support.node_data import NodeData
+from augur.util_support.node_data import DuplicatedNonDictAttributeError, NodeData
 from augur.util_support.node_data_file import NodeDataFile
 
 
@@ -19,21 +20,21 @@ class NodeDataReader:
     If validation_mode is set to :py:attr:`augur.types.ValidationMode.SKIP` no validation is performed.
     """
 
-    def __init__(self, filenames, tree_file=None, validation_mode=ValidationMode.ERROR):
+    def __init__(self, filenames: Union[str, list[str]], tree_file: Optional[str] =None, validation_mode=ValidationMode.ERROR) -> None:
         if not isinstance(filenames, list):
             filenames = [filenames]
         self.filenames = filenames
         self.tree_file = tree_file
         self.validation_mode = validation_mode
 
-    def read(self):
+    def read(self) -> dict:
         node_data = self.build_node_data()
 
         self.check_against_tree_file(node_data)
 
         return node_data
 
-    def build_node_data(self):
+    def build_node_data(self) -> dict:
         node_data = NodeData()
 
         for node_data_file in self.node_data_files:
@@ -54,7 +55,7 @@ class NodeDataReader:
     def node_data_files(self):
         return (NodeDataFile(fname, validation_mode = self.validation_mode) for fname in self.filenames)
 
-    def check_against_tree_file(self, node_data):
+    def check_against_tree_file(self, node_data: dict) -> None:
         if not self.tree_file:
             return
 
@@ -67,7 +68,7 @@ class NodeDataReader:
             sys.exit(2)
 
     @property
-    def node_names_from_tree_file(self):
+    def node_names_from_tree_file(self) -> set[str]:
         try:
             tree = Bio.Phylo.read(self.tree_file, "newick")
         except Exception as e:
