@@ -99,7 +99,7 @@ jobs:
           pytest --cov=augur
         else
           echo "Running pytest without coverage"
-          pytest -p no:pytest_cov
+          pytest --no-cov
         fi
     - name: Run cram tests
       run: |
