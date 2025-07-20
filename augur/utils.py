@@ -14,7 +14,6 @@ import Bio.Phylo.BaseTree
 import Bio.Phylo.Newick
 import numpy as np
 import pandas as pd
-from Bio.Phylo.BaseTree import Clade, Tree
 from Bio.SeqFeature import CompoundLocation, FeatureLocation, SeqFeature
 
 from augur.data import as_file
