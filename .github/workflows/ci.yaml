@@ -57,14 +57,18 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-    env:
-      COVERAGE_FILE: ${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}
-      COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
     steps:
     - uses: actions/checkout@v4
 
     - name: Set cache key
       run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
+    # Set coverage environment variables only for the coverage job
+    - name: Set coverage environment variables
+      if: matrix.python-version == '3.11' && matrix.biopython-version == ''
+      run: |
+        echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
+        echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"
 
     # While it may be tempting to install Augur using Conda to avoid hardcoding
     # the list of dependencies here, installing just the dependencies not
@@ -85,19 +89,31 @@ jobs:
 
     # Replace the Conda Augur installation with the local version.
     - run: pip install .[dev]
+    - run: pip list
     - run: conda info
     - run: conda list
-    - run: pytest --cov=augur
-    - run: cram tests/
-      env:
-        AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
-    # Only upload coverage for one job
-    - if: matrix.python-version == '3.11' && matrix.biopython-version == ''
+    - name: Run pytest
+      run: |
+        if [[ -n "${COVERAGE_FILE:-}" ]]; then
+          pytest --cov=augur
+        else
+          pytest
+        fi
+    - name: Run cram tests
+      run: |
+        if [[ -n "${COVERAGE_FILE:-}" ]]; then
+          export AUGUR="coverage run -a ${{ github.workspace }}/bin/augur"
+        else
+          export AUGUR="${{ github.workspace }}/bin/augur"
+        fi
+        cram tests/
+    - name: Upload coverage
+      if: env.COVERAGE_FILE
       uses: actions/upload-artifact@v4
       with:
         name: coverage
         include-hidden-files: true
-        path: "${{ env.COVERAGE_FILE }}"
+        path: "${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}"
 
   # Replicating pathogen-repo-ci workflow because we decided not to support
   # local versions of Augur in the centralized workflow
