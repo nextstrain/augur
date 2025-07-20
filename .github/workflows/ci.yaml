@@ -69,6 +69,8 @@ jobs:
       run: |
         echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
         echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"
+        # Using sysmon for coverage to reduce overhead
+        echo "COVERAGE_CORE=sysmon" >> "$GITHUB_ENV"
 
     # While it may be tempting to install Augur using Conda to avoid hardcoding
     # the list of dependencies here, installing just the dependencies not
