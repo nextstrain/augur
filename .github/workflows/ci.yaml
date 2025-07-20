@@ -92,7 +92,7 @@ jobs:
       run: |
         echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
         echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"
-        if python3 -c 'import sys; print(sys.version_info >= (3, 12))' | grep -q True; then
+        if python3 -c 'import sys; print(sys.version_info >= (3, 14))' | grep -q True; then
             echo "Using sysmon for coverage to reduce overhead"
             echo COVERAGE_CORE=sysmon >> "$GITHUB_ENV"
         else
