@@ -23,7 +23,13 @@ if [ "$run_coverage" = 1 ]; then
 
     # Set env variable COVERAGE_CORE to sysmon for coverage
     # This reduces overhead of coverage collection
-    export COVERAGE_CORE=sysmon
+    # But only if Python version >3.12
+    if python3 -c 'import sys; print(sys.version_info >= (3, 12))' | grep -q True; then
+        echo "Using sysmon for coverage to reduce overhead"
+        export COVERAGE_CORE=sysmon
+    else
+        echo "Using default coverage collection method"
+    fi
 else
     # Default to no coverage
     echo "Running tests without coverage, use --cov to enable"
