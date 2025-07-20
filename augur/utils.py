@@ -1,4 +1,5 @@
 import argparse
+from typing import Optional
 import Bio
 import Bio.Phylo
 import numpy as np
@@ -406,7 +407,7 @@ def get_augur_version():
     return __version__
 
 
-def read_bed_file(bed_file):
+def read_bed_file(bed_file: str) -> list[int]:
     """Read a BED file and return a list of excluded sites.
 
     This function attempts to parse the given file as a BED file, based on
@@ -441,7 +442,7 @@ def read_bed_file(bed_file):
         Sorted list of unique zero-indexed sites
     """
     in_header = True
-    initial_chrom_value: str | None = None
+    initial_chrom_value: Optional[str] = None
     mask_sites: list[int] = []
 
     bed_file_size = os.path.getsize(bed_file)
