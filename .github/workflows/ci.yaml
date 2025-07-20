@@ -63,19 +63,6 @@ jobs:
     - name: Set cache key
       run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
 
-    # Set coverage environment variables only for the coverage job
-    - name: Set coverage environment variables
-      if: matrix.python-version == '3.11' && matrix.biopython-version == ''
-      run: |
-        echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
-        echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"
-        if python3 -c 'import sys; print(sys.version_info >= (3, 12))' | grep -q True; then
-            echo "Using sysmon for coverage to reduce overhead"
-            echo COVERAGE_CORE=sysmon >> "$GITHUB_ENV"
-        else
-            echo "Using default coverage collection method"
-        fi
-
     # While it may be tempting to install Augur using Conda to avoid hardcoding
     # the list of dependencies here, installing just the dependencies not
     # available on PyPI allows us to test against dependencies installed by pip,
@@ -98,6 +85,20 @@ jobs:
     - run: pip list
     - run: conda info
     - run: conda list
+
+    # Set coverage environment variables only for the coverage job
+    - name: Set coverage environment variables
+      if: matrix.python-version == '3.11' && matrix.biopython-version == ''
+      run: |
+        echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
+        echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"
+        if python3 -c 'import sys; print(sys.version_info >= (3, 12))' | grep -q True; then
+            echo "Using sysmon for coverage to reduce overhead"
+            echo COVERAGE_CORE=sysmon >> "$GITHUB_ENV"
+        else
+            echo "Using default coverage collection method"
+        fi
+
     - name: Run pytest
       run: |
         if [[ -n "${COVERAGE_FILE:-}" ]]; then
