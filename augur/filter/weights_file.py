@@ -1,6 +1,9 @@
+from typing import List, Optional
+
+import numpy as np
 import pandas as pd
+
 from textwrap import dedent
-from typing import List
 from augur.errors import AugurError
 
 
@@ -47,7 +50,7 @@ def get_weighted_columns(weights_file):
     return columns
 
 
-def get_default_weight(weights: pd.DataFrame, weighted_columns: List[str]):
+def get_default_weight(weights: pd.DataFrame, weighted_columns: List[str]) -> Optional[np.number]:
     # Match weighted columns with 'default' value. Multiple values can be matched for 2 reasons:
     # 1. Repeated rows following additional permutation with unweighted columns.
     #    This is handled by unique() since the value should be the same.
@@ -57,7 +60,7 @@ def get_default_weight(weights: pd.DataFrame, weighted_columns: List[str]):
         weights[weighted_columns].eq(COLUMN_VALUE_FOR_DEFAULT_WEIGHT).all(axis=1) &
         weights[weighted_columns].notna().all(axis=1)
     )
-    default_weight_values = weights.loc[mask, WEIGHTS_COLUMN].unique()
+    default_weight_values = weights.loc[mask, WEIGHTS_COLUMN].unique()  # type: ignore[operator]
 
     if len(default_weight_values) > 1:
         # TODO: raise InvalidWeightsFile, not AugurError. This function takes
@@ -71,3 +74,4 @@ def get_default_weight(weights: pd.DataFrame, weighted_columns: List[str]):
         raise AugurError(f"Multiple default weights were specified: {', '.join(repr(weight) for weight in default_weight_values)}. Only one default weight entry can be accepted.")
     if len(default_weight_values) == 1:
         return default_weight_values[0]
+    return None

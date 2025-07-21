@@ -6,6 +6,7 @@
 
 * schema: Allow parentheses (`()`) in gene names. [#1819][] (@kimandrews)
 * geolocation rules: Add rules to define region per country to ensure that regions are labelled for all countries. This is especially useful for data sources that do not include region in the metadata. [#1844][] (@joverlee521)
+* Support numpy v2 in addition to v1. [#1855][] (@corneliusroemer)
 
 ### Bug fixes
 
@@ -14,6 +15,7 @@
 [#1819]: https://github.com/nextstrain/augur/pull/1819
 [#1844]: https://github.com/nextstrain/augur/pull/1844
 [#1845]: https://github.com/nextstrain/augur/pull/1845
+[#1855]: https://github.com/nextstrain/augur/pull/1855
 
 ## 31.3.0 (3 July 2025)
 
