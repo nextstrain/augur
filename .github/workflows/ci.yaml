@@ -124,7 +124,7 @@ jobs:
       with:
         name: coverage
         include-hidden-files: true
-        path: "${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}"
+        path: "${{ env.COVERAGE_FILE }}"
 
   # Replicating pathogen-repo-ci workflow because we decided not to support
   # local versions of Augur in the centralized workflow
