@@ -20,7 +20,7 @@ from .validate_export import verifyMainJSONIsInternallyConsistent, verifyMetaAnd
 from .types import ValidationMode
 
 def fatal(message):
-    print("FATAL ERROR: {}".format(message))
+    print_err("FATAL ERROR: {}".format(message))
     sys.exit(2)
 
 class ValidateError(Exception):
@@ -30,7 +30,7 @@ def validation_failure(mode: ValidationMode):
     if mode is ValidationMode.ERROR:
         sys.exit(2)
     elif mode is ValidationMode.WARN:
-        print(f"Continuing due to --validation-mode={mode.value} even though there were validation errors.")
+        print_err(f"Continuing due to --validation-mode={mode.value} even though there were validation errors.")
     elif mode is ValidationMode.SKIP:
         # Shouldn't be doing validation under skip, but if we're called anyway just do nothing.
         return
@@ -93,7 +93,7 @@ def validate_json(jsonToValidate, schema, filename):
     # See <https://python-jsonschema.readthedocs.io/en/v3.2.0/errors/> and
     # <https://python-jsonschema.readthedocs.io/en/v3.2.0/validate/> for the
     # jsonschema APIs we use here.
-    print("Validating schema of {!r}...".format(filename))
+    print_err("Validating schema of {!r}...".format(filename))
 
     # Find all errors.  This is what schema.validate() uses internally, before
     # raising just one "best" error.  We want to report ~everything at once, so
@@ -221,9 +221,9 @@ def export_v2(main_json, **kwargs):
     validate(main, main_schema, main_json)
 
     if verifyMainJSONIsInternallyConsistent(main, ValidateError):
-        print("Validation of {!r} succeeded.".format(main_json))
+        print_err("Validation of {!r} succeeded.".format(main_json))
     else:
-        print("Validation of {!r} succeeded, but there were warnings you may want to resolve.".format(main_json))
+        print_err("Validation of {!r} succeeded, but there were warnings you may want to resolve.".format(main_json))
 
 
 def export_v1(meta_json, tree_json, **kwargs):
@@ -243,9 +243,9 @@ def export_v1(meta_json, tree_json, **kwargs):
     validate(tree, tree_schema, tree_json)
 
     if verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta, tree, ValidateError):
-        print("Validation of {!r} and {!r} succeeded.".format(meta_json, tree_json))
+        print_err("Validation of {!r} and {!r} succeeded.".format(meta_json, tree_json))
     else:
-        print("Validation of {!r} and {!r} succeeded, but there were warnings you may want to resolve.".format(meta_json, tree_json))
+        print_err("Validation of {!r} and {!r} succeeded, but there were warnings you may want to resolve.".format(meta_json, tree_json))
 
 
 def get_unique_keys(list_of_dicts):
@@ -299,10 +299,9 @@ def validate_collection_config_fields(collection, index=None):
         if invalid_fields:
             valid_collection_config_fields = False
             include_index = f"(at index {index}) " if index is not None else ""
-            print(
+            print_err(
                 f"ERROR: Collection {include_index}includes {config_field} that",
-                f"do not exist as fields in measurements: {invalid_fields}.",
-                file=sys.stderr
+                f"do not exist as fields in measurements: {invalid_fields}."
             )
 
     return valid_collection_config_fields
@@ -336,10 +335,9 @@ def validate_collection_display_defaults(collection, index=None):
     if default_grouping and default_grouping not in grouping_fields:
         valid_display_defaults = False
         include_index = f"(at index {index}) " if index is not None else ""
-        print(
+        print_err(
             f"ERROR: Collection {include_index}has a default group-by field",
-            f"'{default_grouping}' that is not included in the groupings' fields.",
-            file=sys.stderr
+            f"'{default_grouping}' that is not included in the groupings' fields."
         )
 
     return valid_display_defaults
@@ -384,18 +382,16 @@ def validate_measurements_config(measurements):
     for collection_key, collection_indexes in collection_keys.items():
         if len(collection_indexes) > 1:
             valid_measurements_config = False
-            print(
-                f"ERROR: Collections at indexes {collection_indexes} share the same collection key '{collection_key}'.",
-                file=sys.stderr
+            print_err(
+                f"ERROR: Collections at indexes {collection_indexes} share the same collection key '{collection_key}'."
             )
 
     # Check the default collection value matches a collection's key value
     default_collection = measurements.get('default_collection')
     if default_collection and default_collection not in collection_keys.keys():
         valid_measurements_config = False
-        print(
-            f"ERROR: The default collection key {default_collection!r} does not match any of the collections' keys.",
-            file=sys.stderr
+        print_err(
+            f"ERROR: The default collection key {default_collection!r} does not match any of the collections' keys."
         )
 
     return valid_measurements_config

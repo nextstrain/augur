@@ -21,8 +21,8 @@ to the provided reference.fasta)
   >  --alignment-output aa_muts.vcf \
   >  --vcf-reference "$ANC_DATA/reference.fasta" \
   >  --vcf-reference-output reference.fasta
-  Read in 3 features from reference sequence file
   Validating schema of 'aa_muts.json'...
+  Read in 3 features from reference sequence file
   amino acid mutations written to aa_muts.json
 
 The _reference_ produced is the actual reference, not using the mutations in the tree

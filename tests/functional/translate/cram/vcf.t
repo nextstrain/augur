@@ -13,8 +13,8 @@ Setup
   >  --alignment-output aa_muts.vcf \
   >  --vcf-reference "$ANC_DATA/reference.fasta" \
   >  --vcf-reference-output reference.fasta
-  Read in 3 features from reference sequence file
   Validating schema of 'aa_muts.json'...
+  Read in 3 features from reference sequence file
   amino acid mutations written to aa_muts.json
 
   $ cat reference.fasta

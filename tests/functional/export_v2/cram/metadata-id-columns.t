@@ -10,7 +10,7 @@ Run export with metadata using the default id column of "strain".
   >  --node-data "$TESTDIR/../data/div_node-data.json" "$TESTDIR/../data/location_node-data.json" \
   >  --auspice-config "$TESTDIR/../data/auspice_config1.json" \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset.json > /dev/null
+  >  --output dataset.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset1.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
@@ -25,7 +25,7 @@ In this case, the column is "name" (one of the default columns expected by Augur
   >  --node-data "$TESTDIR/../data/div_node-data.json" "$TESTDIR/../data/location_node-data.json" \
   >  --auspice-config "$TESTDIR/../data/auspice_config1.json" \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset.json > /dev/null
+  >  --output dataset.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset1.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
