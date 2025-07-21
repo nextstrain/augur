@@ -36,7 +36,7 @@ jobs:
     - run: npx pyright --stats
 
   pytest-cram:
-    name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }})
+    name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }} numpy=${{ matrix.numpy-version || 'latest' }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -53,6 +53,16 @@ jobs:
           - '1.82' # first to support Python 3.12
           - '1.85' # first to support Python 3.13
           - ''     # latest
+        numpy-version:
+          - ''        # latest (numpy 2.x) - test with all combinations
+        include:
+          # Python 3.9 automatically uses numpy v1, so no need to specify here
+          - python-version: '3.10'
+            biopython-version: '1.80'
+            numpy-version: '1.26.4'
+          - python-version: '3.12'
+            biopython-version: ''
+            numpy-version: '1.26.4'
         exclude:
           # some older Biopython versions are incompatible with later Python versions
           - { biopython-version: '1.80', python-version: '3.12' }
@@ -63,7 +73,7 @@ jobs:
       run:
         shell: bash -l {0}
     env:
-      COVERAGE_FILE: ${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}
+      COVERAGE_FILE: ${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }},numpy=${{ matrix.numpy-version || 'latest' }}
       COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
     steps:
     - uses: actions/checkout@v4
@@ -78,7 +88,11 @@ jobs:
     - name: Install dependencies from Conda
       uses: mamba-org/setup-micromamba@v2
       with:
-        create-args: mafft raxml fasttree iqtree vcftools seqkit sqlite tsv-utils biopython=${{ matrix.biopython-version }} python=${{ matrix.python-version }}
+        create-args: >-
+          mafft raxml fasttree iqtree vcftools seqkit sqlite tsv-utils
+          biopython=${{ matrix.biopython-version }}
+          numpy=${{ matrix.numpy-version }}
+          python=${{ matrix.python-version }}
         condarc: |
           channels:
             - conda-forge
@@ -97,7 +111,7 @@ jobs:
       env:
         AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
     # Only upload coverage for one job
-    - if: matrix.python-version == '3.11' && matrix.biopython-version == ''
+    - if: matrix.python-version == '3.11' && matrix.biopython-version == '' && matrix.numpy-version == ''
       uses: actions/upload-artifact@v4
       with:
         name: coverage
