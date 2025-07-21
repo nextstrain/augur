@@ -93,7 +93,7 @@ def validate_json(jsonToValidate, schema, filename):
     # See <https://python-jsonschema.readthedocs.io/en/v3.2.0/errors/> and
     # <https://python-jsonschema.readthedocs.io/en/v3.2.0/validate/> for the
     # jsonschema APIs we use here.
-    print("Validating schema of {!r}...".format(filename))
+    print_err("Validating schema of {!r}...".format(filename))
 
     # Find all errors.  This is what schema.validate() uses internally, before
     # raising just one "best" error.  We want to report ~everything at once, so
