@@ -9,13 +9,7 @@ This should fail.
   $ ${AUGUR} parse \
   >   --sequences parse/zika.fasta \
   >   --output-sequences "$TMP/sequences.fasta" \
-  >   --output-metadata "$TMP/metadata.tsv"
-  usage: .* (re)
-  .* (re)
-  .* (re)
-  .* (re)
-  .* (re)
-  .* (re)
+  >   --output-metadata "$TMP/metadata.tsv" 2>&1 | tail -1
   augur parse: error: the following arguments are required: --fields
   [2]
 
