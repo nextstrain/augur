@@ -33,7 +33,7 @@ Duplicates within the same file are not allowed.
   WARNING: Metadata merge was successful but sequence merge has failed, so --output-metadata has no corresponding sequence output.
   ERROR: Sequence ids must be unique.
   
-  The following ids were were duplicated in 'x.fasta':
+  The following ids were duplicated in 'x.fasta':
   
     seq2
     seq3

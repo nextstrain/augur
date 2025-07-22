@@ -69,7 +69,7 @@ Error on duplicates in sequences.
   >   --output-sequences sequences-filtered.fasta
   ERROR: Sequence ids must be unique.
   
-  The following ids were were duplicated in 'sequences.fasta':
+  The following ids were duplicated in 'sequences.fasta':
   
     a
     c
@@ -84,7 +84,7 @@ Error even if the corresponding output is not used.
   >   --output-strains filtered.txt
   ERROR: Sequence ids must be unique.
   
-  The following ids were were duplicated in 'sequences.fasta':
+  The following ids were duplicated in 'sequences.fasta':
   
     a
     c
