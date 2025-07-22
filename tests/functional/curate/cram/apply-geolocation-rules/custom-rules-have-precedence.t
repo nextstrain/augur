@@ -31,7 +31,7 @@ Run the command with the custom rules.
   >       --geolocation-rules custom-rules.tsv > custom-annotations.ndjson
 
 Show the difference between the default annotations and the custom annotations.
-Note the the custom rules only affected the single location.
+Note the custom rules only affected the single location.
 
   $ diff -u default-annotations.ndjson custom-annotations.ndjson
   --- default-annotations.ndjson.* (re)

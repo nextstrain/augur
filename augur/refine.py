@@ -1,18 +1,28 @@
 """
 Refine an initial tree using sequence metadata.
 """
-import numpy as np
 import sys
-from Bio import Phylo
 from textwrap import dedent
+
+import numpy as np
+from Bio import Phylo
+from treetime.seq_utils import profile_maps
+from treetime.vcf_utils import read_vcf
+
 from .argparse_ import ExtendOverwriteDefault
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
-from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
-from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
-from treetime.vcf_utils import read_vcf
-from treetime.seq_utils import profile_maps
+from .io.metadata import (
+    DEFAULT_DELIMITERS,
+    DEFAULT_ID_COLUMNS,
+    METADATA_DATE_COLUMN,
+    InvalidDelimiter,
+    Metadata,
+    read_metadata,
+)
+from .utils import InvalidTreeError, read_tree, write_json
+
 
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, stochastic_resolve=False, max_iter=2, precision='auto',
@@ -62,7 +72,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
     else:
         marginal = 'only-final' if confidence else False
 
-    # uncertainty of the the clock rate is relevant if confidence intervals are estimated
+    # uncertainty of the clock rate is relevant if confidence intervals are estimated
     if confidence and clock_std:
         vary_rate = clock_std # if standard devivation of clock is specified, use that
     elif (clock_rate is None) and confidence and covariance:
@@ -241,7 +251,7 @@ def run(args):
             return 1
 
         # fake alignment to appease treetime when only using it for naming nodes...
-        from Bio import SeqRecord, Seq, Align
+        from Bio import Align, Seq, SeqRecord
         seqs = []
         for n in T.get_terminals():
             seqs.append(SeqRecord.SeqRecord(seq=Seq.Seq('ACGT'), id=n.name, name=n.name, description=''))

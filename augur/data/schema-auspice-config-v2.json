@@ -291,7 +291,7 @@
             "items": {"type": "string", "not": {"const": "none"}}
         },
         "extensions": {
-            "description": "Data to be passed through to the the resulting dataset JSON",
+            "description": "Data to be passed through to the resulting dataset JSON",
             "$comment": "Any type is accepted"
         }
     }
