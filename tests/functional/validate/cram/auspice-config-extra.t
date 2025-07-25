@@ -16,6 +16,6 @@ Additional properties are not allowed.
 
   $ ${AUGUR} validate auspice-config-v2 additional-properties.json
   Validating schema of 'additional-properties.json'...
-     {"title": "Test Dataset", "invalid_field": "shou…} failed additionalProperties validation for false
+     {"title": "Test Dataset", "invalid_field": "shou…} failed: Additional properties are not allowed ('invalid_field' was unexpected)
   FATAL ERROR: Validation of 'additional-properties.json' failed.
   [2]

@@ -108,14 +108,13 @@ def validate_json(jsonToValidate, schema, filename):
             value = shorten_as_json(error.instance, 50, "…")
 
             validator = error.validator
-            validator_value = shorten_as_json(error.validator_value, 100, "…")
 
             if validator == "oneOf":
                 print_err(indent(f"{path} {value} did not match one of the acceptable options below.", prefix*level))
             elif validator == "anyOf":
                 print_err(indent(f"{path} {value} did not match any of the acceptable options below.", prefix*level))
             else:
-                print_err(indent(f"{path} {value} failed {validator} validation for {validator_value}", prefix*level))
+                print_err(indent(f"{path} {value} failed: {error.args[0]}", prefix*level))
 
             # Report sub-errors, as they're often closer to what needs fixing.
             #

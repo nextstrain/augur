@@ -25,10 +25,10 @@ Test with invalid genome annotations structure:
   Validating schema of 'invalid-annotations.json'...
     .meta.genome_annotations.invalid_gene "not_an_object" did not match one of the acceptable options below.
       Option 1: {"$ref": "#/$defs/startend"}
-        .meta.genome_annotations.invalid_gene "not_an_object" failed type validation for "object"
+        .meta.genome_annotations.invalid_gene "not_an_object" failed: 'not_an_object' is not of type 'object'
       Option 2: {"$ref": "#/$defs/segments"}
-        .meta.genome_annotations.invalid_gene "not_an_object" failed type validation for "object"
-    .meta.genome_annotations.invalid_gene "not_an_object" failed type validation for "object"
-    .meta.genome_annotations {"invalid_gene": "not_an_object"} failed required validation for ["nuc"]
+        .meta.genome_annotations.invalid_gene "not_an_object" failed: 'not_an_object' is not of type 'object'
+    .meta.genome_annotations.invalid_gene "not_an_object" failed: 'not_an_object' is not of type 'object'
+    .meta.genome_annotations {"invalid_gene": "not_an_object"} failed: 'nuc' is a required property
   FATAL ERROR: Validation of 'invalid-annotations.json' failed.
   [2]
