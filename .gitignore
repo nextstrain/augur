@@ -21,6 +21,7 @@ tests/functional/tree/data/full_aligned-delim.fasta.splits.nex
 tests/functional/tree/data/full_aligned-delim.fasta.ufboot
 tests/functional/tree/data/masked_aligned-delim.iqtree.log.xz
 tests/functional/tree/data/masked_aligned.fasta.xz
+tests/functional/mask/variants.vcf.gz_maskTemp
 
 # Transient error outputs from tests
 /tests/**/*.t.err
