@@ -3,9 +3,12 @@ Integration tests for augur mask.
   $ source "$TESTDIR"/_setup.sh
 
 Mask a VCF with a BED file and a specified output file.
+Note the input VCF file is copied to the default temp dir to ensure that the
+temporary variants.vcf.gz_maskTemp is created in the temp dir as well.
 
+  $ cp "$TESTDIR/../data/variants.vcf.gz" ./
   $ ${AUGUR} mask \
-  >  --sequences "$TESTDIR/../data/variants.vcf.gz" \
+  >  --sequences "variants.vcf.gz" \
   >  --mask "$TESTDIR/../data/mask_variants.bed" \
   >  --output "masked_variants.vcf" > /dev/null
 
