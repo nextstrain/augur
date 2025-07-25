@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 import textwrap
-from augur.subsample import Sample, _parse_config
+from augur.subsample import Sample, _parse_config, _merge_options
 from augur.errors import AugurError
 
 
@@ -18,8 +18,8 @@ class TestSubsampleConfigValidation:
                   - region
                 subsample_max_sequences: 5
                 probabilistic_sampling: true
-            include:
-              - strain1
+                include:
+                  - strain1
             """)
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             f.write(config_content)
@@ -31,7 +31,7 @@ class TestSubsampleConfigValidation:
             assert 'test_sample' in config['samples']
             assert config['samples']['test_sample']['subsample_max_sequences'] == 5
             assert config['samples']['test_sample']['probabilistic_sampling'] is True
-            assert config['include'] == ['strain1']
+            assert config['samples']['test_sample']['include'] == ['strain1']
         finally:
             os.unlink(temp_file)
 
@@ -326,18 +326,18 @@ class TestSubsampleConfigValidation:
         finally:
             os.unlink(temp_file)
 
-    def test_global_yaml_options_validation(self):
-        """Test that remaining global YAML options are properly validated."""
+    def test_sample_yaml_options_validation(self):
+        """Test that include/include_where options are properly validated in sample configs."""
         config_content = textwrap.dedent("""
-            include_where:
-              - "region=North America"
-            include:
-              - strain1
             samples:
               test_sample:
                 group_by:
                   - region
                 subsample_max_sequences: 5
+                include_where:
+                  - "region=North America"
+                include:
+                  - strain1
             """)
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             f.write(config_content)
@@ -345,8 +345,9 @@ class TestSubsampleConfigValidation:
 
         try:
             config = _parse_config(temp_file)
-            assert config['include_where'] == ['region=North America']
-            assert config['include'] == ['strain1']
+            sample_config = config['samples']['test_sample']
+            assert sample_config['include_where'] == ['region=North America']
+            assert sample_config['include'] == ['strain1']
         finally:
             os.unlink(temp_file)
 
@@ -536,17 +537,18 @@ class TestGlobalFilterArgs:
         seq_idx = global_filter_args.index("--sequence-index")
         assert global_filter_args[seq_idx + 1] == "index.tsv"
 
-    def test_yaml_config_to_global_filter_args(self):
-        """Test that YAML config options like include and include_where are handled correctly."""
+    def test_yaml_config_to_sample_filter_args(self):
+        """Test that YAML config options like include and include_where can be used in defaults."""
         import tempfile
         import os
         from augur.subsample import _parse_config
         
         config_content = textwrap.dedent("""
-            include_where:
-              - "region=North America"
-            include:
-              - strain1
+            defaults:
+              include_where:
+                - "region=North America"
+              include:
+                - strain1
             samples:
               test_sample:
                 group_by:
@@ -561,11 +563,12 @@ class TestGlobalFilterArgs:
         try:
             config = _parse_config(config_file)
             
-            # Check that include and include_where are correctly parsed
-            assert "include_where" in config
-            assert config["include_where"] == ["region=North America"]
-            assert "include" in config
-            assert config["include"] == ["strain1"]
+            # Check that include and include_where are correctly parsed in defaults
+            assert "defaults" in config
+            assert "include_where" in config["defaults"]
+            assert config["defaults"]["include_where"] == ["region=North America"]
+            assert "include" in config["defaults"]
+            assert config["defaults"]["include"] == ["strain1"]
             
         finally:
             os.unlink(config_file)
@@ -606,3 +609,254 @@ class TestGlobalFilterArgs:
         assert "--metadata-chunk-size" not in global_filter_args
         assert "--sequence-index" not in global_filter_args
         assert "--skip-checks" not in global_filter_args
+
+
+class TestMergeOptions:
+    """Tests for the _merge_options function."""
+
+    def test_merge_with_defaults(self):
+        """Test basic merging where defaults provide missing options."""
+        defaults = {
+            "group_by": ["region"],
+            "probabilistic_sampling": True,
+            "min_date": "2020-01-01",
+            "exclude": ["strain1.fasta"]
+        }
+        sample_options = {
+            "subsample_max_sequences": 5,
+            "max_date": "2020-12-31"
+        }
+        
+        result = _merge_options(sample_options, defaults)
+        
+        # From defaults
+        assert result["group_by"] == ["region"]
+        assert result["probabilistic_sampling"] is True
+        assert result["min_date"] == "2020-01-01"
+        assert result["exclude"] == ["strain1.fasta"]
+        
+        # From sample options
+        assert result["subsample_max_sequences"] == 5
+        assert result["max_date"] == "2020-12-31"
+
+    def test_sample_options_override_defaults(self):
+        """Test that sample-specific options override defaults."""
+        defaults = {
+            "group_by": ["region"],
+            "probabilistic_sampling": True,
+            "exclude": ["strain1.fasta", "strain2.fasta"]
+        }
+        sample_options = {
+            "subsample_max_sequences": 5,
+            "group_by": ["country"],  # Should override default
+            "probabilistic_sampling": False,  # Should override default
+            "exclude": ["strain3.fasta"]  # Should override default
+        }
+        
+        result = _merge_options(sample_options, defaults)
+        
+        # Sample options should override defaults
+        assert result["group_by"] == ["country"]  # From sample, not default
+        assert result["probabilistic_sampling"] is False  # From sample, not default
+        assert result["exclude"] == ["strain3.fasta"]  # From sample, not default
+        assert result["subsample_max_sequences"] == 5
+
+    def test_merge_with_none_defaults(self):
+        """Test backwards compatibility with None defaults."""
+        sample_options = {
+            "group_by": ["region"],
+            "subsample_max_sequences": 5,
+            "probabilistic_sampling": True
+        }
+        
+        result = _merge_options(sample_options, None)
+        
+        # Should return exactly the sample options
+        assert result["group_by"] == ["region"]
+        assert result["subsample_max_sequences"] == 5
+        assert result["probabilistic_sampling"] is True
+
+    def test_merge_with_empty_defaults(self):
+        """Test merging with empty defaults object."""
+        defaults = {}
+        sample_options = {
+            "group_by": ["region"],
+            "subsample_max_sequences": 5,
+            "probabilistic_sampling": True
+        }
+        
+        result = _merge_options(sample_options, defaults)
+        
+        # Should return exactly the sample options since defaults is empty
+        assert result["group_by"] == ["region"]
+        assert result["subsample_max_sequences"] == 5
+        assert result["probabilistic_sampling"] is True
+
+    def test_mutual_exclusivity_sequences_per_group_wins(self):
+        """Test that when sample has sequences_per_group, subsample_max_sequences is removed from defaults."""
+        defaults = {
+            "group_by": ["region"],
+            "subsample_max_sequences": 10
+        }
+        sample_options = {
+            "sequences_per_group": 3  # Should override and remove subsample_max_sequences
+        }
+        
+        result = _merge_options(sample_options, defaults)
+        
+        assert result["group_by"] == ["region"]  # From defaults
+        assert result["sequences_per_group"] == 3  # From sample
+        assert "subsample_max_sequences" not in result  # Should be removed
+
+    def test_mutual_exclusivity_subsample_max_sequences_wins(self):
+        """Test that when sample has subsample_max_sequences, sequences_per_group is removed from defaults."""
+        defaults = {
+            "group_by": ["region"],
+            "sequences_per_group": 2
+        }
+        sample_options = {
+            "subsample_max_sequences": 5  # Should override and remove sequences_per_group
+        }
+        
+        result = _merge_options(sample_options, defaults)
+        
+        assert result["group_by"] == ["region"]  # From defaults
+        assert result["subsample_max_sequences"] == 5  # From sample
+        assert "sequences_per_group" not in result  # Should be removed
+
+    def test_no_mutual_exclusivity_conflict(self):
+        """Test that when no conflict exists, both options can coexist."""
+        defaults = {
+            "group_by": ["region"],
+            "min_date": "2020-01-01"
+        }
+        sample_options = {
+            "subsample_max_sequences": 5,
+            "max_date": "2020-12-31"
+        }
+        
+        result = _merge_options(sample_options, defaults)
+        
+        # No conflict, all options should be present
+        assert result["group_by"] == ["region"]
+        assert result["min_date"] == "2020-01-01"
+        assert result["subsample_max_sequences"] == 5
+        assert result["max_date"] == "2020-12-31"
+
+    def test_merge_complex_types(self):
+        """Test that complex types like arrays are merged correctly."""
+        defaults = {
+            "group_by": ["region", "country"],
+            "exclude": ["strain1.fasta", "strain2.fasta"],
+            "query_columns": ["region:str", "date:str"]
+        }
+        sample_options = {
+            "subsample_max_sequences": 5,
+            "exclude": ["strain3.fasta", "strain4.fasta"]  # Should override default array
+        }
+        
+        result = _merge_options(sample_options, defaults)
+        
+        # Array from defaults when not overridden
+        assert result["group_by"] == ["region", "country"]
+        assert result["query_columns"] == ["region:str", "date:str"]
+        
+        # Array from sample overrides defaults
+        assert result["exclude"] == ["strain3.fasta", "strain4.fasta"]
+        assert result["subsample_max_sequences"] == 5
+
+    def test_merge_preserves_types(self):
+        """Test that data types are preserved during merging."""
+        defaults = {
+            "group_by": ["region"],  # list
+            "probabilistic_sampling": True,  # boolean
+            "min_length": 1000,  # integer
+            "min_date": "2020-01-01"  # string
+        }
+        sample_options = {
+            "subsample_max_sequences": 5,  # integer
+            "max_date": "2020-12-31"  # string
+        }
+        
+        result = _merge_options(sample_options, defaults)
+        
+        # Check types are preserved
+        assert isinstance(result["group_by"], list)
+        assert isinstance(result["probabilistic_sampling"], bool)
+        assert isinstance(result["min_length"], int)
+        assert isinstance(result["min_date"], str)
+        assert isinstance(result["subsample_max_sequences"], int)
+        assert isinstance(result["max_date"], str)
+
+    def test_defaults_with_both_subsample_options(self):
+        """Test that defaults can contain both subsample options, and sample choice takes precedence."""
+        defaults = {
+            "group_by": ["region"],
+            "subsample_max_sequences": 10,
+            "sequences_per_group": 2
+        }
+        sample_options = {
+            "sequences_per_group": 3  # Should keep this and remove subsample_max_sequences
+        }
+        
+        result = _merge_options(sample_options, defaults)
+        
+        assert result["group_by"] == ["region"]
+        assert result["sequences_per_group"] == 3  # From sample
+        assert "subsample_max_sequences" not in result  # Removed due to conflict
+
+
+class TestSubsampleDefaults:
+    """Tests for schema validation of defaults functionality."""
+
+    def test_valid_config_with_defaults(self):
+        """Test that a valid config with defaults passes validation."""
+        config_content = textwrap.dedent("""
+            defaults:
+              group_by:
+                - region
+              probabilistic_sampling: true
+              min_date: "2020-01-01"
+            samples:
+              sample1:
+                subsample_max_sequences: 5
+              sample2:
+                sequences_per_group: 3
+                max_date: "2020-12-31"
+            """)
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+            f.write(config_content)
+            temp_file = f.name
+
+        try:
+            config = _parse_config(temp_file)
+            assert 'defaults' in config
+            assert config['defaults']['group_by'] == ['region']
+            assert config['defaults']['probabilistic_sampling'] is True
+            assert config['defaults']['min_date'] == "2020-01-01"
+            assert 'samples' in config
+            assert 'sample1' in config['samples']
+            assert 'sample2' in config['samples']
+        finally:
+            os.unlink(temp_file)
+
+    def test_invalid_defaults_schema_validation(self):
+        """Test that invalid defaults fail schema validation."""
+        config_content = textwrap.dedent("""
+            defaults:
+              invalid_property: "not_allowed"  # Invalid property name
+            samples:
+              sample1:
+                group_by:
+                  - region
+                subsample_max_sequences: 10
+            """)
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+            f.write(config_content)
+            temp_file = f.name
+
+        try:
+            with pytest.raises(AugurError, match="Config validation failed"):
+                _parse_config(temp_file)
+        finally:
+            os.unlink(temp_file)

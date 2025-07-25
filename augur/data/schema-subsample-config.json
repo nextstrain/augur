@@ -5,60 +5,68 @@
     "type": "object",
     "additionalProperties": false,
     "required": ["samples"],
+    "$defs": {
+        "sampleProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "exclude": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "exclude_all": {"type": "boolean"},
+                "exclude_ambiguous_dates_by": {
+                    "type": "string",
+                    "enum": ["any", "day", "month", "year"]
+                },
+                "exclude_where": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "include": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "include_where": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "min_date": {"type": "string"},
+                "max_date": {"type": "string"},
+                "min_length": {"type": "integer"},
+                "max_length": {"type": "integer"},
+                "non_nucleotide": {"type": "boolean"},
+                "query": {"type": "string"},
+                "query_columns": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "group_by": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "minItems": 1
+                },
+                "group_by_weights": {"type": "string"},
+                "probabilistic_sampling": {"type": "boolean"},
+                "sequences_per_group": {"type": "integer"},
+                "subsample_max_sequences": {"type": "integer"}
+            }
+        }
+    },
     "properties": {
-        "include": {
-            "type": "array",
-            "items": {"type": "string"}
-        },
-        "include_where": {
-            "type": "array",
-            "items": {"type": "string"}
-        },
+        "defaults": {"$ref": "#/$defs/sampleProperties"},
         "samples": {
             "type": "object",
             "minProperties": 1,
             "additionalProperties": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                    "exclude": {
-                        "type": "array",
-                        "items": {"type": "string"}
-                    },
-                    "exclude_all": {
-                        "type": "boolean"
-                    },
-                    "exclude_ambiguous_dates_by": {
-                        "type": "string",
-                        "enum": ["any", "day", "month", "year"]
-                    },
-                    "exclude_where": {
-                        "type": "array",
-                        "items": {"type": "string"}
-                    },
-                    "group_by": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "minItems": 1
-                    },
-                    "group_by_weights": {"type": "string"},
-                    "max_date": {"type": "string"},
-                    "max_length": {"type": "integer"},
-                    "min_date": {"type": "string"},
-                    "min_length": {"type": "integer"},
-                    "non_nucleotide": {"type": "boolean"},
-                    "probabilistic_sampling": {"type": "boolean"},
-                    "query": {"type": "string"},
-                    "query_columns": {
-                        "type": "array",
-                        "items": {"type": "string"}
-                    },
-                    "sequences_per_group": {"type": "integer"},
-                    "subsample_max_sequences": {"type": "integer"}
-                },
-                "oneOf": [
-                    { "required": ["subsample_max_sequences"], "not": { "required": ["sequences_per_group"] } },
-                    { "required": ["sequences_per_group"], "not": { "required": ["subsample_max_sequences"] } }
+                "allOf": [
+                    {"$ref": "#/$defs/sampleProperties"},
+                    {
+                        "oneOf": [
+                            { "required": ["subsample_max_sequences"], "not": { "required": ["sequences_per_group"] } },
+                            { "required": ["sequences_per_group"], "not": { "required": ["subsample_max_sequences"] } }
+                        ]
+                    }
                 ]
             }
         }

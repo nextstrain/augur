@@ -18,51 +18,12 @@ GLOBAL_CLI_OPTIONS = {
     "metadata_delimiters": "--metadata-delimiters",
     "metadata_id_columns": "--metadata-id-columns",
     "sequences": "--sequences",
-
-    # FIXME: build sequence index once upfront if any sample has a sequence-based filter?
-    # or replace sequence indexing entirely <https://github.com/nextstrain/augur/issues/1846>
     "sequence_index": "--sequence-index",
-
     "subsample_seed": "--subsample-seed",
 }
 """
 Mapping of argparse namespace variable name to augur filter flag.
 These are sent to both intermediate and final augur filter calls.
-"""
-
-
-SAMPLE_CONFIG = {
-    "group_by": "--group-by",
-    "group_by_weights": "--group-by-weights",
-    "subsample_max_sequences": "--subsample-max-sequences",
-    "sequences_per_group": "--sequences-per-group",
-    "min_date": "--min-date",
-    "max_date": "--max-date",
-    "exclude": "--exclude",
-    "exclude_where": "--exclude-where",
-    "query": "--query",
-    "query_columns": "--query-columns",
-    "exclude_ambiguous_dates_by": "--exclude-ambiguous-dates-by",
-    "min_length": "--min-length",
-    "max_length": "--max-length",
-    "probabilistic_sampling": ("--probabilistic-sampling", "--no-probabilistic-sampling"),
-    "exclude_all": ("--exclude-all", None),
-    "non_nucleotide": ("--non-nucleotide", None),
-}
-"""
-Mapping of YAML configuration key name to augur filter flag.
-These are sent to only the intermediate augur filter calls.
-"""
-
-
-# FIXME: should --include be on the CLI level (FINAL_CLI_OPTIONS)?
-FINAL_CONFIG = {
-    "include": "--include",
-    "include_where": "--include-where",
-}
-"""
-Mapping of YAML configuration key name to augur filter flag.
-These are sent to only the final augur filter call.
 """
 
 
@@ -75,6 +36,33 @@ FINAL_CLI_OPTIONS = {
 Mapping of argparse namespace variable name to augur filter flag.
 These are sent to only the final augur filter call.
 """
+
+
+SAMPLE_CONFIG = {
+    "exclude": "--exclude",
+    "exclude_all": ("--exclude-all", None),
+    "exclude_ambiguous_dates_by": "--exclude-ambiguous-dates-by",
+    "exclude_where": "--exclude-where",
+    "include": "--include",
+    "include_where": "--include-where",
+    "min_date": "--min-date",
+    "max_date": "--max-date",
+    "min_length": "--min-length",
+    "max_length": "--max-length",
+    "non_nucleotide": ("--non-nucleotide", None),
+    "query": "--query",
+    "query_columns": "--query-columns",
+    "group_by": "--group-by",
+    "group_by_weights": "--group-by-weights",
+    "probabilistic_sampling": ("--probabilistic-sampling", "--no-probabilistic-sampling"),
+    "sequences_per_group": "--sequences-per-group",
+    "subsample_max_sequences": "--subsample-max-sequences",
+}
+"""
+Mapping of YAML configuration key name to augur filter flag.
+These are sent to only the intermediate augur filter calls.
+"""
+
 
 # FIXME: document that these augur filter options are unsupported:
 # --priorities
@@ -107,15 +95,17 @@ def run(args: argparse.Namespace) -> None:
     global_filter_args: List[str] = []
 
     for cli_option, filter_flag in GLOBAL_CLI_OPTIONS.items():
-        value = getattr(args, cli_option)
-        _add_to_args(global_filter_args, filter_flag, value)
+        if (value := getattr(args, cli_option)) is not None:
+            _add_to_args(global_filter_args, filter_flag, value)
 
     config = _parse_config(args.config, args.config_root)
+    defaults = config.get("defaults")
     samples = []
     include_files = []
 
-    for sample_name, options in config.get("samples", {}).items():
-        sample = Sample(sample_name, options, global_filter_args)
+    for name, options in config.get("samples", {}).items():
+        options = _merge_options(options, defaults)
+        sample = Sample(name, options, global_filter_args)
         samples.append(sample)
         include_files.append(sample.output_strains)
 
@@ -126,13 +116,9 @@ def run(args: argparse.Namespace) -> None:
 
     combine_filter_args.extend(global_filter_args)
 
-    for config_key, filter_flag in FINAL_CONFIG.items():
-        value = config.get(config_key)
-        _add_to_args(combine_filter_args, filter_flag, value)
-
     for cli_option, filter_flag in FINAL_CLI_OPTIONS.items():
-        value = getattr(args, cli_option)
-        _add_to_args(combine_filter_args, filter_flag, value)
+        if (value := getattr(args, cli_option)) is not None:
+            _add_to_args(combine_filter_args, filter_flag, value)
 
     try:
         # 2. Run intermediate augur filter calls.
@@ -152,13 +138,31 @@ def run(args: argparse.Namespace) -> None:
             sample.cleanup()
 
 
+def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    Merge sample options with default options, with sample options taking precedence.
+    """
+    if defaults is None:
+        return sample_options
+
+    merged_options = {**defaults, **sample_options}
+
+    # Handle mutually exclusive options: if sample specifies one and defaults specify another, go with the sample-specific one.
+    if "sequences_per_group" in sample_options and "subsample_max_sequences" in defaults:
+        merged_options.pop("subsample_max_sequences", None)
+    elif "subsample_max_sequences" in sample_options and "sequences_per_group" in defaults:
+        merged_options.pop("sequences_per_group", None)
+
+    return merged_options
+
+
 class Sample:
-    def __init__(self, name: str, sample_options: Dict[str, Any], global_filter_args: List[str]) -> None:
+    def __init__(self, name: str, config: Dict[str, Any], global_filter_args: List[str]) -> None:
         self.name = name
         self.output_strains = tempfile.NamedTemporaryFile(prefix=f"sample_{self.name}_", delete=False).name
-        self.filter_args = self._construct_filter_args(sample_options, global_filter_args)
+        self.filter_args = self._construct_filter_args(config, global_filter_args)
     
-    def _construct_filter_args(self, sample_options: Dict[str, Any], global_filter_args: List[str]) -> List[str]:
+    def _construct_filter_args(self, config: Dict[str, Any], global_filter_args: List[str]) -> List[str]:
         filter_args = [
             # Checks are redundant across multiple calls with the same input.
             # Checks will run once on the final augur filter call, unless explicitly skipped.
@@ -173,8 +177,8 @@ class Sample:
 
         filter_args.extend(global_filter_args)
 
-        for config_key, filter_flag in SAMPLE_CONFIG.items():
-            value = sample_options.get(config_key)
+        for config_key, value in config.items():
+            filter_flag = SAMPLE_CONFIG[config_key]
             _add_to_args(filter_args, filter_flag, value)
 
         return filter_args
@@ -189,30 +193,33 @@ class Sample:
         os.unlink(self.output_strains)
 
 
-def _add_to_args(args_list: List[str], filter_flag: Union[str, tuple[str, Optional[str]]], value: Any) -> None:
-    """Add a filter flag and its value(s) to the arguments list."""
+def _add_to_args(args: List[str], filter_flag: Union[str, tuple[str, Optional[str]]], value: Any) -> None:
+    """Add a filter flag and its value to the arguments list."""
 
-    if value is None:
-        return
-
+    # Booleans are configured by one or two flags.
     if isinstance(value, bool):
-        # Booleans should map to (true_flag, false_flag) pairs
         assert isinstance(filter_flag, tuple) and len(filter_flag) == 2
         true_flag, false_flag = filter_flag
         if value is True:
-            args_list.append(true_flag)
-        elif value is False and false_flag is not None:
-            args_list.append(false_flag)
+            args.append(true_flag)
+        elif value is False:
+            if false_flag is not None:
+                args.append(false_flag)
+            else:
+                # No false flag implies a default value of false.
+                pass
+        return
 
-    elif isinstance(value, (list, tuple)):
-        assert isinstance(filter_flag, str)
-        args_list.extend([filter_flag, *value])
+    # Everything else is configured by one flag.
+    assert isinstance(filter_flag, str)
 
-    elif isinstance(filter_flag, str):
-        args_list.extend([filter_flag, str(value)])
+    # Lists and tuples are unpacked and given as strings.
+    if isinstance(value, (list, tuple)):
+        args.extend([filter_flag, *(str(v) for v in value)])
 
+    # Everything else is scalar and given as strings.
     else:
-        raise Exception(f"Failed to parse value {value!r} for filter flag {filter_flag!r}.")
+        args.extend([filter_flag, str(value)])
 
 
 def _run_filter(filter_args: List[str]) -> None:
@@ -252,3 +259,13 @@ def _parse_config(filename: str, config_root: Optional[str] = None) -> Dict[str,
     except Exception as e:
         raise AugurError(f"Config validation failed: {e}")
     return config
+
+
+# FIXME: list of potential performance optimizations
+#
+# - build sequence index once upfront if any sample has a sequence-based filter
+#     - or replace sequence indexing entirely
+#       (https://github.com/nextstrain/augur/issues/1846)
+# - run default options through an initial augur filter call
+#     - a proper input reuse approach such as database/parquet file would reduce the need for this
+#       (https://github.com/nextstrain/augur/issues/1574)
