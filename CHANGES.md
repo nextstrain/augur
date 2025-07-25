@@ -13,6 +13,7 @@
 
 * filter: Improved speed of using `--group-by month` on large datasets. [#1845][] (@victorlin)
 * merge: Added validation to require at least two sequence inputs for merging, consistent with metadata merging behavior. [#1865][] (@victorlin)
+* validate: Send all log messages to `stderr`. [#1869][] (@victorlin)
 
 [#1819]: https://github.com/nextstrain/augur/pull/1819
 [#1844]: https://github.com/nextstrain/augur/pull/1844
@@ -20,6 +21,7 @@
 [#1855]: https://github.com/nextstrain/augur/pull/1855
 [#1857]: https://github.com/nextstrain/augur/pull/1857
 [#1865]: https://github.com/nextstrain/augur/issues/1865
+[#1869]: https://github.com/nextstrain/augur/pull/1869
 
 ## 31.3.0 (3 July 2025)
 

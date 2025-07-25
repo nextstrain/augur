@@ -45,7 +45,7 @@ the ##sequence-region pragma.
   >  --tree $ANC_DATA/tree.nwk \
   >  --ancestral-sequences $ANC_DATA/nt_muts.ref-seq.json \
   >  --reference-sequence "reference-only.gff" \
-  >  --output-node-data "aa_muts-only.json" > /dev/null
+  >  --output-node-data "aa_muts-only.json" &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \
@@ -72,7 +72,7 @@ GFF file with 'region' removed, so the only genome information is the ##sequence
   >  --tree $ANC_DATA/tree.nwk \
   >  --ancestral-sequences $ANC_DATA/nt_muts.ref-seq.json \
   >  --reference-sequence "reference.pragma-only.gff" \
-  >  --output-node-data "aa_muts.pragma-only.json" > /dev/null
+  >  --output-node-data "aa_muts.pragma-only.json" &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \

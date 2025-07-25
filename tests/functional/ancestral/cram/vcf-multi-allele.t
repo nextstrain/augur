@@ -16,7 +16,7 @@ See <https://github.com/nextstrain/augur/issues/1380> for the bug this is testin
   >  --output-node-data nt_muts.json \
   >  --output-vcf nt_muts.vcf \
   >  --seed 314159 \
-  >  --inference marginal > /dev/null
+  >  --inference marginal &> /dev/null
 
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \

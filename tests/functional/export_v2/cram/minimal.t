@@ -9,10 +9,10 @@ Minimal export -- single input (tree) and single output (dataset JSON)
   >   --output minimal.json
   WARNING: You didn't provide information on who is maintaining this analysis.
   
-  Validating produced JSON
   Validating schema of 'minimal.json'...
-  Validating that the JSON is internally consistent...
   Validation of 'minimal.json' succeeded.
+  Validating produced JSON
+  Validating that the JSON is internally consistent...
   
 
 The above minimal.json takes divergence from the newick file. This converts newick divergences of (e.g.) '1' to `1.0`
@@ -31,10 +31,10 @@ Almost minimal export -- divergence is encoded via the node-data JSON typically 
   >   --output almost-minimal.json
   WARNING: You didn't provide information on who is maintaining this analysis.
   
-  Validating produced JSON
   Validating schema of 'almost-minimal.json'...
-  Validating that the JSON is internally consistent...
   Validation of 'almost-minimal.json' succeeded.
+  Validating produced JSON
+  Validating that the JSON is internally consistent...
   
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py"  "$TESTDIR/../data/minimal.json" almost-minimal.json \

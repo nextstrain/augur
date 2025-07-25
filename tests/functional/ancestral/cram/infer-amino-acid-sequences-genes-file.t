@@ -13,7 +13,7 @@ Infer ancestral nucleotide and amino acid sequences, using a genes file.
   >  --seed 314159 \
   >  --output-node-data ancestral_mutations.json \
   >  --output-sequences ancestral_sequences.fasta \
-  >  --output-translations ancestral_aa_sequences_%GENE.fasta > /dev/null
+  >  --output-translations ancestral_aa_sequences_%GENE.fasta &> /dev/null
 
 Check that the reference length was correctly exported as the nuc annotation
 

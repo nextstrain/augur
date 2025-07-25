@@ -16,7 +16,7 @@ but it will have the reference sequence attached.
   >  --output-node-data "nt_muts.vcf-input.ref-seq.json" \
   >  --output-vcf nt_muts.vcf \
   >  --seed 314159 \
-  >  --inference marginal > /dev/null
+  >  --inference marginal &> /dev/null
 
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" \

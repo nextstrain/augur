@@ -19,7 +19,7 @@ JSON, `augur translate` just looks at the sequence attached to each node.)
   >  --tree "$ANC_DATA/tree.nwk" \
   >  --ancestral-sequences nt_muts.json \
   >  --reference-sequence "$DATA/reference.gff" \
-  >  --output-node-data "aa_muts.json" > /dev/null
+  >  --output-node-data "aa_muts.json" &> /dev/null
 
 The output should be a gene1 reference of MPCE* (not MPCG*). The root-sequence
 is unchanged (MPCG*). There is also a mutation E4G at the root node to compensate.

@@ -21,7 +21,7 @@ Setup
   >  --vcf-reference reference.fasta \
   >  --seed 314159 \
   >  --output-node-data nt_muts.json \
-  >  --output-vcf nt_muts.vcf > /dev/null
+  >  --output-vcf nt_muts.vcf &> /dev/null
 
   $ cat > expected.json <<EOF
   > {"nodes": {
