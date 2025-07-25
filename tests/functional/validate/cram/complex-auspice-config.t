@@ -18,7 +18,7 @@ Test auspice config with invalid colorings:
 
   $ ${AUGUR} validate auspice-config-v2 invalid-colorings.json
   Validating schema of 'invalid-colorings.json'...
-    .colorings[0].key "none" failed not validation for {"const": "none"}
+    .colorings[0].key "none" failed: 'none' should not be valid under {'const': 'none'}
   FATAL ERROR: Validation of 'invalid-colorings.json' failed.
   [2]
 
@@ -39,7 +39,7 @@ Test auspice config with invalid coloring type:
 
   $ ${AUGUR} validate auspice-config-v2 invalid-coloring-type.json
   Validating schema of 'invalid-coloring-type.json'...
-    .colorings[0].type "invalid_type" failed enum validation for ["continuous", "temporal", "ordinal", "categorical", "boolean"]
+    .colorings[0].type "invalid_type" failed: 'invalid_type' is not one of ['continuous', 'temporal', 'ordinal', 'categorical', 'boolean']
   FATAL ERROR: Validation of 'invalid-coloring-type.json' failed.
   [2]
 
@@ -63,7 +63,7 @@ Test auspice config with invalid hex color:
 
   $ ${AUGUR} validate auspice-config-v2 invalid-hex-color.json
   Validating schema of 'invalid-hex-color.json'...
-    .colorings[0].scale[0][1] "#invalid" failed pattern validation for "^#[0-9A-Fa-f]{6}$"
+    .colorings[0].scale[0][1] "#invalid" failed: '#invalid' does not match '^#[0-9A-Fa-f]{6}$'
   FATAL ERROR: Validation of 'invalid-hex-color.json' failed.
   [2]
 
@@ -82,7 +82,7 @@ Test auspice config with missing required coloring key:
 
   $ ${AUGUR} validate auspice-config-v2 missing-coloring-key.json
   Validating schema of 'missing-coloring-key.json'...
-    .colorings[0] {"title": "Missing Key"} failed required validation for ["key"]
+    .colorings[0] {"title": "Missing Key"} failed: 'key' is a required property
   FATAL ERROR: Validation of 'missing-coloring-key.json' failed.
   [2]
 
@@ -116,6 +116,6 @@ Test auspice config with additional properties:
 
   $ ${AUGUR} validate auspice-config-v2 additional-properties.json
   Validating schema of 'additional-properties.json'...
-     {"title": "Test Dataset", "invalid_field": "shou\xe2\x80\xa6} failed additionalProperties validation for false (esc)
+     {"title": "Test Dataset", "invalid_field": "shou…} failed: Additional properties are not allowed ('invalid_field' was unexpected)
   FATAL ERROR: Validation of 'additional-properties.json' failed.
   [2]

@@ -70,6 +70,6 @@ Test JSON with duplicate keys:
 
   $ ${AUGUR} validate export-v2 duplicate-keys.json
   Validating schema of 'duplicate-keys.json'...
-    .version "v1" failed const validation for "v2"
+    .version "v1" failed: 'v2' was expected
   FATAL ERROR: Validation of 'duplicate-keys.json' failed.
   [2]

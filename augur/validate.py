@@ -107,10 +107,10 @@ def validate_json(jsonToValidate, schema, filename):
             path = elide_path(error.absolute_path)
             value = shorten_as_json(error.instance, 50, "…")
 
-            validator = error.validator
-            validator_value = shorten_as_json(error.validator_value, 100, "…")
-
-            print_err(indent(f"{path} {value} failed {validator} validation for {validator_value}", prefix*level))
+            if "tree" in path and error.validator == "oneOf":
+                print_err(indent(f"{path} {value} is invalid, see below.", prefix*level))
+            else:
+                print_err(indent(f"{path} {value} failed: {error.args[0]}", prefix*level))
 
             # Report sub-errors, as they're often closer to what needs fixing.
             #
