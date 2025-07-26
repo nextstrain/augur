@@ -20,6 +20,6 @@ Test with incorrect version.
 
   $ ${AUGUR} validate export-v2 wrong-version.json
   Validating schema of 'wrong-version.json'...
-    .version "v1" failed: 'v2' was expected
+    .version failed: Expected 'v2' but found 'v1'
   FATAL ERROR: Validation of 'wrong-version.json' failed.
   [2]

@@ -15,11 +15,11 @@ Test with missing node_attrs and meta.
 
   $ ${AUGUR} validate export-v2 missing-required.json
   Validating schema of 'missing-required.json'...
-    .tree {"name": "test_tree"} did not match one of the acceptable options below.
+    .tree failed: {"name": "test_tree"} did not match one of the acceptable options below.
       Option 1: {"$ref": "#/$defs/tree"}
-        .tree {"name": "test_tree"} failed: 'node_attrs' is a required property
+        .tree failed: Missing required property 'node_attrs'
       Option 2: {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/tree"}}
-        .tree {"name": "test_tree"} failed: {'name': 'test_tree'} is not of type 'array'
-     {"version": "v2", "tree": {"name": "test_tree"}} failed: 'meta' is a required property
+        .tree failed: Expected array but found dict '{"name": "test_tree"}'
+    top level failed: Missing required property 'meta'
   FATAL ERROR: Validation of 'missing-required.json' failed.
   [2]

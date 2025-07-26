@@ -54,6 +54,6 @@ Test with missing colorings reference in meta.
 
   $ ${AUGUR} validate export-v2 missing-coloring-ref.json
   Validating schema of 'missing-coloring-ref.json'...
-    .meta.colorings[0] {"key": "region", "title": "Region"} failed: 'type' is a required property
+    .meta.colorings[0] failed: Missing required property 'type'
   FATAL ERROR: Validation of 'missing-coloring-ref.json' failed.
   [2]
