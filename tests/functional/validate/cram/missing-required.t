@@ -20,11 +20,11 @@ Missing required fields error:
 
   $ ${AUGUR} validate export-v2 missing-required.json
   Validating schema of 'missing-required.json'...
-    .tree {"name": "test_tree"} is invalid, see below.
+    .tree failed: {"name": "test_tree"} is invalid, see below.
       validation for arm 0: {"$ref": "#/$defs/tree"}
-        .tree {"name": "test_tree"} failed: 'node_attrs' is a required property
+        .tree failed: Missing required field 'node_attrs'
       validation for arm 1: {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/tree"}}
-        .tree {"name": "test_tree"} failed: {'name': 'test_tree'} is not of type 'array'
-     {"version": "v2", "tree": {"name": "test_tree"}} failed: 'meta' is a required property
+        .tree failed: Expected array but found dict '{"name": "test_tree"}'
+    top level failed: Missing required field 'meta'
   FATAL ERROR: Validation of 'missing-required.json' failed.
   [2]
