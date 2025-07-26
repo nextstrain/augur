@@ -161,10 +161,8 @@ def validate_json(jsonToValidate, schema, filename):
             if error.context:
                 if error.validator in {"oneOf", "anyOf"}:
                     validator_value_idx = lambda e: e.schema_path[0]
-                    for idx, ctx in grouped(error.context, key=validator_value_idx):
-                        validator_subvalue = shorten_as_json(error.validator_value[idx], 100, "…")
-                        print_err(indent(f"validation for arm {idx}: {validator_subvalue}", prefix*(level+1)))
-                        print_errors(ctx, level+2)
+                    for _, ctx in grouped(error.context, key=validator_value_idx):
+                        print_errors(ctx, level+1)
                 else:
                     print_errors(error.context, level+1)
 
