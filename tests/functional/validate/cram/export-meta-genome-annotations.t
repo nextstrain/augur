@@ -23,10 +23,10 @@ Test with invalid genome annotations structure:
 
   $ ${AUGUR} validate export-v2 invalid-annotations.json
   Validating schema of 'invalid-annotations.json'...
-    .meta.genome_annotations.invalid_gene "not_an_object" failed oneOf validation for [{"$ref": "#/$defs/startend"}, {"$ref": "#/$defs/segments"}]
-      validation for arm 0: {"$ref": "#/$defs/startend"}
+    .meta.genome_annotations.invalid_gene "not_an_object" did not match one of the acceptable options below.
+      Option 1: {"$ref": "#/$defs/startend"}
         .meta.genome_annotations.invalid_gene "not_an_object" failed type validation for "object"
-      validation for arm 1: {"$ref": "#/$defs/segments"}
+      Option 2: {"$ref": "#/$defs/segments"}
         .meta.genome_annotations.invalid_gene "not_an_object" failed type validation for "object"
     .meta.genome_annotations.invalid_gene "not_an_object" failed type validation for "object"
     .meta.genome_annotations {"invalid_gene": "not_an_object"} failed required validation for ["nuc"]

@@ -110,7 +110,12 @@ def validate_json(jsonToValidate, schema, filename):
             validator = error.validator
             validator_value = shorten_as_json(error.validator_value, 100, "…")
 
-            print_err(indent(f"{path} {value} failed {validator} validation for {validator_value}", prefix*level))
+            if validator == "oneOf":
+                print_err(indent(f"{path} {value} did not match one of the acceptable options below.", prefix*level))
+            elif validator == "anyOf":
+                print_err(indent(f"{path} {value} did not match any of the acceptable options below.", prefix*level))
+            else:
+                print_err(indent(f"{path} {value} failed {validator} validation for {validator_value}", prefix*level))
 
             # Report sub-errors, as they're often closer to what needs fixing.
             #
@@ -129,7 +134,7 @@ def validate_json(jsonToValidate, schema, filename):
                     validator_value_idx = lambda e: e.schema_path[0]
                     for idx, ctx in grouped(error.context, key=validator_value_idx):
                         validator_subvalue = shorten_as_json(error.validator_value[idx], 100, "…")
-                        print_err(indent(f"validation for arm {idx}: {validator_subvalue}", prefix*(level+1)))
+                        print_err(indent(f"Option {idx+1}: {validator_subvalue}", prefix*(level+1)))
                         print_errors(ctx, level+2)
                 else:
                     print_errors(error.context, level+1)
