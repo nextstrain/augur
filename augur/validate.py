@@ -100,17 +100,53 @@ def validate_json(jsonToValidate, schema, filename):
     # the user isn't stuck playing whack-a-mole.
     errors = list(schema.iter_errors(jsonToValidate))
 
+    def custom_message(error):
+        """Convert technical JSON schema errors to human-readable messages."""
+        validator = error.validator
+        short_value = shorten_as_json(error.instance, 50, "…")
+
+        if validator == "oneOf":
+            return f"{short_value} did not match one of the acceptable options below."
+        if validator == "anyOf":
+            return f"{short_value} did not match any of the acceptable options below."
+
+        if validator == "required":
+            missing_property = str(error.args[0]).split("'")[1]
+            return f"Missing required property '{missing_property}'"
+
+        if validator == "additionalProperties":
+            additional_property = list(error.instance.keys() - error.schema.get('properties', {}).keys())[0]
+            return f"Unexpected property '{additional_property}'"
+
+        if validator == "type":
+            expected_type = error.validator_value
+            actual_type = type(error.instance).__name__
+            return f"Expected {expected_type} but found {actual_type} {short_value!r}"
+
+        if validator == "const":
+            expected_value = error.validator_value
+            return f"Expected '{expected_value}' but found {error.instance!r}"
+
+        if validator == "pattern":
+            pattern = error.validator_value
+            if pattern == "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$":
+                return f"Expected a date in the format YYYY-MM-DD but found {short_value}"
+            else:
+                return f"Expected a value with the pattern {pattern} but found {short_value}"
+
+        # Fallback to an error message from jsonschema.
+        if error.args:
+            return error.args[0]
+
+        return "Unknown validation error"
+
     def print_errors(errors, level=1):
         prefix = "  "
 
         for error in sorted(errors, key=jsonschema.exceptions.relevance):
             path = elide_path(error.absolute_path)
-            value = shorten_as_json(error.instance, 50, "…")
 
-            validator = error.validator
-            validator_value = shorten_as_json(error.validator_value, 100, "…")
-
-            print_err(indent(f"{path} {value} failed {validator} validation for {validator_value}", prefix*level))
+            print_err(indent(f"{path or 'top level'} failed: {custom_message(error)}", prefix*level))
 
             # Report sub-errors, as they're often closer to what needs fixing.
             #
@@ -129,7 +165,7 @@ def validate_json(jsonToValidate, schema, filename):
                     validator_value_idx = lambda e: e.schema_path[0]
                     for idx, ctx in grouped(error.context, key=validator_value_idx):
                         validator_subvalue = shorten_as_json(error.validator_value[idx], 100, "…")
-                        print_err(indent(f"validation for arm {idx}: {validator_subvalue}", prefix*(level+1)))
+                        print_err(indent(f"Option {idx+1}: {validator_subvalue}", prefix*(level+1)))
                         print_errors(ctx, level+2)
                 else:
                     print_errors(error.context, level+1)
