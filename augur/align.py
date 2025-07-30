@@ -1,5 +1,6 @@
 """
-Align multiple sequences from FASTA.
+Align multiple nucleotide sequences from FASTA. The "N" character is treated as
+missing or ambiguous sites, so aligning amino acid sequences is not supported.
 """
 
 import os
