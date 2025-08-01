@@ -30,7 +30,7 @@ Run the subsample command.
   >   --config samples.yaml \
   >   --output-metadata subsampled.tsv \
   >   --output-sequences subsampled.fasta \
-  >   --subsample-seed 0
+  >   --seed 0
   Validating schema of 'samples.yaml'...
   Sampling at 1 per group.
   11 strains were dropped during filtering
@@ -92,7 +92,7 @@ Run subsample with --config-root parameter.
   >   --config-root subsample \
   >   --output-metadata nested_subsampled.tsv \
   >   --output-sequences nested_subsampled.fasta \
-  >   --subsample-seed 0
+  >   --seed 0
   Validating schema of 'nested_config.yaml'...
   Sampling at 1 per group.
   11 strains were dropped during filtering

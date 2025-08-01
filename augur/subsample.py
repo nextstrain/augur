@@ -37,7 +37,7 @@ GLOBAL_CLI_OPTIONS = {
     "metadata_id_columns": "--metadata-id-columns",
     "sequences": "--sequences",
     "sequence_index": "--sequence-index",
-    "subsample_seed": "--subsample-seed",
+    "seed": "--subsample-seed",
 }
 """
 Mapping of argparse namespace variable name to augur filter flag.
@@ -98,7 +98,7 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     config_group.add_argument("--config", required=True, help="augur subsample config file. The expected config options must be given at the top level, or within a top level key defined by --config-root.")
     config_group.add_argument("--config-root", help="top level key in config file that contains expected config options (default: use the entire file)" + SKIP_AUTO_DEFAULT_IN_HELP)
     config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once.")
-    config_group.add_argument('--subsample-seed', type=int, help="random number generator seed for reproducible outputs (with same input data).")
+    config_group.add_argument('--seed', type=int, help="random number generator seed for reproducible outputs (with same input data).")
 
     output_group = parser.add_argument_group("outputs", "options related to output files")
     output_group.add_argument("--output-metadata", help="output metadata file")
