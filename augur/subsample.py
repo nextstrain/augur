@@ -19,6 +19,8 @@ Subsample sequences from a dataset of metadata and/or sequence files.
 
 import argparse
 import os
+import subprocess
+import sys
 import tempfile
 import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -27,6 +29,7 @@ from augur import filter as augur_filter
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
+from augur.io.print import print_err
 from augur.validate import load_json_schema, validate_json
 
 
@@ -208,7 +211,7 @@ class Sample:
         self.name = name
         self.output_strains = tempfile.NamedTemporaryFile(prefix=f"sample_{self.name}_", delete=False).name
         self.filter_args = self._construct_filter_args(config, global_filter_args)
-    
+
     def _construct_filter_args(self, config: Dict[str, Any], global_filter_args: List[str]) -> List[str]:
         filter_args = [
             # Checks are redundant across multiple calls with the same input.
@@ -229,12 +232,36 @@ class Sample:
             _add_to_args(filter_args, filter_flag, value)
 
         return filter_args
-    
+
     def run(self) -> None:
-        # print_err(f"Running sample {self.name!r} with arguments {self.filter_args!r}…")
-        _run_filter(self.filter_args)
-        # print_err(f"Finished running sample {self.name!r}.")
-    
+        # Use subprocess to run augur filter in complete isolation
+        # FIXME: move to _run_filter
+        # FIXME: use augur()
+        cmd = [sys.executable, '-m', 'augur', 'filter'] + self.filter_args
+        try:
+            # Note: We use subprocess.run directly instead of run_shell_command
+            # here because run_shell_command executes commands through bash,
+            # which can cause threading conflicts when multiple samples run
+            # concurrently. Direct subprocess calls provide better process
+            # isolation for parallel execution.
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            if result.stderr:
+                # FIXME: somehow this still interleaves outputs between samples
+                for line in result.stderr.strip().split('\n'):
+                    print_err(f"[{self.name}] {line}")
+        except subprocess.CalledProcessError as e:
+            error_msg = f"Running sample {self.name!r}…\nFailed with exit code {e.returncode}"
+            if e.stderr:
+                error_msg += f"\nStderr: {e.stderr}"
+            if e.stdout:
+                error_msg += f"\nStdout: {e.stdout}"
+            raise AugurError(error_msg) from e
+
     def cleanup(self) -> None:
         """Remove the temporary output file."""
         os.unlink(self.output_strains)
