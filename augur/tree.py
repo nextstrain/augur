@@ -281,7 +281,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
             Certain strain names have characters which cannot be written in newick format (by Bio.Python, at least).
             You should ensure these strain names are changed as early as possible in your analysis. The following
             names are unescaped and surrounded by double quotes.
-            
+
             Invalid strain names:
               - {f"{chr(10)}{' '*14}- ".join(['"' + str(name) + '"' for name in invalid_newick_names])}
 
@@ -315,8 +315,8 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     cmd = " ".join(call)
 
     print("Building a tree via:\n\t" + cmd +
-          "\n\tNguyen et al: IQ-TREE: A fast and effective stochastic algorithm for estimating maximum likelihood phylogenies."
-          "\n\tMol. Biol. Evol., 32:268-274. https://doi.org/10.1093/molbev/msu300\n")
+          "\n\tPlease use the corresponding citations according to" +
+          "\n\thttps://iqtree.github.io/doc/Home#how-to-cite-iq-tree")
     if substitution_model.lower() == "auto":
         print(f"Conducting a model test... see '{shquote(log_file)}' for the result. You can specify this with --substitution-model in future runs.")
 
