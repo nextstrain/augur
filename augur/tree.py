@@ -236,6 +236,7 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         out_file    file name to write tree to
     '''
     iqtree = find_executable([
+        "iqtree3",
         "iqtree2",
         "iqtree"
     ])
