@@ -94,6 +94,7 @@ setuptools.setup(
             "sphinx-autodoc-typehints >=1.21.4",
             "sphinx-tabs",
             "types-jsonschema >=4.18.0, ==4.*",
+            "types-PyYAML",
             "types-setuptools",
             "wheel >=0.32.3",
             "ipdb >=0.10.1"
