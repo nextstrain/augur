@@ -925,9 +925,11 @@ def register_parser(parent_subparsers):
     )
     optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action=ExtendOverwriteDefault,
         help="JSON files containing metadata for nodes in the tree. " +
+             "Keys are automatically exported as colorings unless special-cased. " +
              "URLs for a key 'X' can be stored under key 'X__url' and will be automatically exported.")
     optional_inputs.add_argument('--metadata', metavar="FILE",
         help="Additional metadata for strains in the tree. " +
+             "Columns are not typically exported by default and must be specified via arguments or within the config JSON. "
              "URLs for a column 'X' can be stored in column 'X__url' and will be automatically exported.")
     optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
