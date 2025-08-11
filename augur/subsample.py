@@ -2,6 +2,8 @@
 Subsample sequences from an input dataset.
 
 The input dataset can consist of a metadata file, a sequences file, or both.
+
+See documentation page for details on configuration.
 """
 
 import argparse
