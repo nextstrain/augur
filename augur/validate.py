@@ -53,7 +53,7 @@ def load_json_schema(path, refs=None):
         Validator.check_schema(schema)
     except jsonschema.exceptions.SchemaError as err:
         raise ValidateError(f"Schema {path} is not a valid JSON Schema ({Validator.META_SCHEMA['$schema']}). Error: {err}")
-    
+
     if refs:
         # Make the validator aware of additional schemas
         schema_store = dict()
@@ -234,8 +234,14 @@ validate = validate_json  # TODO update uses and drop this alias
 
 def auspice_config_v2(config_json: Union[str,dict], **kwargs):
     schema = load_json_schema("schema-auspice-config-v2.json")
-    config = config_json if isinstance(config_json, dict) else load_json(config_json)
-    validate(config, schema, config_json)
+    if isinstance(config_json, dict):
+        config = config_json
+        filename = "merged config"
+    else:
+        config = load_json(config_json)
+        filename = config_json
+
+    validate(config, schema, filename)
 
 def export_v2(main_json, **kwargs):
     # The main_schema uses references to other schemas, and the suggested use is
