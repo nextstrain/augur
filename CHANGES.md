@@ -15,6 +15,7 @@
 * filter: Improved speed of using `--group-by month` on large datasets. [#1845][] (@victorlin)
 * merge: Added validation to require at least two sequence inputs for merging, consistent with metadata merging behavior. [#1865][] (@victorlin)
 * validate: Send all log messages to `stderr`. [#1869][] (@victorlin)
+* validate: only print the entire merged Auspice config to `stderr` when there's a validation error. [#1878][](@joverlee521)
 
 [#1819]: https://github.com/nextstrain/augur/pull/1819
 [#1844]: https://github.com/nextstrain/augur/pull/1844
@@ -24,6 +25,7 @@
 [#1865]: https://github.com/nextstrain/augur/issues/1865
 [#1869]: https://github.com/nextstrain/augur/pull/1869
 [#1875]: https://github.com/nextstrain/augur/pull/1875
+[#1878]: https://github.com/nextstrain/augur/pull/1878
 
 ## 31.3.0 (3 July 2025)
 
