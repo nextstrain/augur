@@ -46,7 +46,7 @@ GLOBAL_CLI_OPTIONS: Dict[str, AugurFilterOption] = {
     "metadata_id_columns": "--metadata-id-columns",
     "sequences": "--sequences",
     "sequence_index": "--sequence-index",
-    "subsample_seed": "--subsample-seed",
+    "seed": "--subsample-seed",
 }
 """
 Mapping of argparse namespace variable name to augur filter option.
@@ -83,7 +83,7 @@ SAMPLE_CONFIG: Dict[str, AugurFilterOption] = {
     "group_by_weights": "--group-by-weights",
     "probabilistic_sampling": ("--probabilistic-sampling", "--no-probabilistic-sampling"),
     "sequences_per_group": "--sequences-per-group",
-    "subsample_max_sequences": "--subsample-max-sequences",
+    "max_sequences": "--subsample-max-sequences",
 }
 """
 Mapping of YAML configuration key name to augur filter option.
@@ -107,7 +107,7 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file. The expected config options must be defined at the top level, or within a specific section using --config-section." + SKIP_AUTO_DEFAULT_IN_HELP)
     config_group.add_argument("--config-section", metavar="KEY", nargs="+", action=ExtendOverwriteDefault, help="Use a section of the file given to --config by listing the keys leading to the section. Provide one or more keys. (default: use the entire file)" + SKIP_AUTO_DEFAULT_IN_HELP)
     config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this means the number of samples to run simultaneously. Individual samples are limited to a single thread. The final augur filter call can take advantage of multiple threads.")
-    config_group.add_argument('--subsample-seed', metavar="N", type=int, help="random number generator seed for reproducible outputs (with same input data)." + SKIP_AUTO_DEFAULT_IN_HELP)
+    config_group.add_argument('--seed', metavar="N", type=int, help="random number generator seed for reproducible outputs (with same input data)." + SKIP_AUTO_DEFAULT_IN_HELP)
 
     output_group = parser.add_argument_group("Output options", "options related to output files")
     output_group.add_argument("--output-metadata", metavar="FILE", help="output metadata file" + SKIP_AUTO_DEFAULT_IN_HELP)
