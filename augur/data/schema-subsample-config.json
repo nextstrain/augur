@@ -94,6 +94,7 @@
         }
     },
     "properties": {
+        "defaults": {"$ref": "#/$defs/sampleProperties"},
         "samples": {
             "type": "object",
             "minProperties": 1,
