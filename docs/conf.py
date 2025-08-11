@@ -13,6 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('_ext'))
 
 
 # -- Project information -----------------------------------------------------
@@ -66,6 +67,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_tabs.tabs',
     'nextstrain.sphinx.theme',
+    'augur_subsample_helpers',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
