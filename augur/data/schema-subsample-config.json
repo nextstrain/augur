@@ -1,0 +1,121 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://nextstrain.org/schemas/augur/subsample-config",
+    "title": "Configuration file to be supplied to `augur subsample --config`",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "samples"
+    ],
+    "$defs": {
+        "sampleProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "exclude": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                },
+                "exclude_all": {
+                    "type": "boolean"
+                },
+                "exclude_ambiguous_dates_by": {
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "day",
+                        "month",
+                        "year"
+                    ]
+                },
+                "exclude_where": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "include": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                },
+                "include_where": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "min_date": {
+                    "type": "string"
+                },
+                "max_date": {
+                    "type": "string"
+                },
+                "min_length": {
+                    "type": "integer"
+                },
+                "max_length": {
+                    "type": "integer"
+                },
+                "non_nucleotide": {
+                    "type": "boolean"
+                },
+                "query": {
+                    "type": "string"
+                },
+                "query_columns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "group_by": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "group_by_weights": {
+                    "type": "string"
+                },
+                "probabilistic_sampling": {
+                    "type": "boolean"
+                },
+                "sequences_per_group": {
+                    "type": "integer"
+                },
+                "subsample_max_sequences": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "properties": {
+        "samples": {
+            "type": "object",
+            "minProperties": 1,
+            "patternProperties": {
+                "^.+$": {
+                    "$ref": "#/$defs/sampleProperties"
+                }
+            }
+        }
+    }
+}
