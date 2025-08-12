@@ -255,6 +255,33 @@ class Sample:
         self.filter_args = self._construct_filter_args(config, global_filter_args)
 
     def _construct_filter_args(self, config: Dict[str, Any], global_filter_args: FilterArgs) -> FilterArgs:
+        """
+        Construct filter arguments from YAML config and global arguments.
+
+        Extends global filter arguments:
+
+        >>> global_args = {"--metadata": "test.tsv", "--sequences": "test.fasta"}
+        >>> sample = Sample("test_sample", {}, global_args)
+        >>> sample.filter_args["--metadata"]
+        'test.tsv'
+        >>> sample.filter_args["--sequences"]
+        'test.fasta'
+
+        Maps YAML config to filter arguments:
+
+        >>> config = {"min_date": "2020-01-01", "group_by": ["region", "year"], "sequences_per_group": 5, "non_nucleotide": True, "probabilistic_sampling": False}
+        >>> sample = Sample("test_sample", config, {})
+        >>> sample.filter_args["--min-date"]
+        '2020-01-01'
+        >>> sample.filter_args["--group-by"]
+        ['region', 'year']
+        >>> sample.filter_args["--sequences-per-group"]
+        5
+        >>> "--non-nucleotide" in sample.filter_args
+        True
+        >>> "--no-probabilistic-sampling" in sample.filter_args
+        True
+        """
         filter_args = {
             # Checks are redundant across multiple calls with the same input.
             # Checks will run once on the final augur filter call, unless explicitly skipped.
@@ -313,7 +340,58 @@ class Sample:
 
 
 def _add_to_args(args: FilterArgs, filter_option: AugurFilterOption, value: Any) -> None:
-    """Add a filter option and its value to the arguments dictionary."""
+    """
+    Add a filter option and its value to the arguments dictionary.
+
+    Scalar values are added directly:
+
+    >>> args = {}
+    >>> _add_to_args(args, "--option", "value")
+    >>> args
+    {'--option': 'value'}
+
+    List and tuple values are preserved:
+
+    >>> args = {}
+    >>> _add_to_args(args, "--option", ["a", "b", "c"])
+    >>> args
+    {'--option': ['a', 'b', 'c']}
+
+    >>> args = {}
+    >>> _add_to_args(args, "--option", ("a", "b"))
+    >>> args
+    {'--option': ('a', 'b')}
+
+    Boolean true adds the true flag:
+
+    >>> args = {}
+    >>> _add_to_args(args, ("--enable", "--disable"), True)
+    >>> args
+    {'--enable': None}
+
+    Boolean false adds the false flag if available:
+
+    >>> args = {}
+    >>> _add_to_args(args, ("--enable", "--disable"), False)
+    >>> args
+    {'--disable': None}
+
+    Boolean false with no false flag adds nothing:
+
+    >>> args = {}
+    >>> _add_to_args(args, ("--enable", None), False)
+    >>> args
+    {}
+
+    Multiple calls preserve all arguments:
+
+    >>> args = {}
+    >>> _add_to_args(args, "--option1", "a")
+    >>> _add_to_args(args, "--option2", ["b", "c"])
+    >>> _add_to_args(args, ("--option3", None), True)
+    >>> args == {"--option1": "a", "--option2": ["b", "c"], "--option3": None}
+    True
+    """
 
     # Booleans are configured by one or two flags.
     if isinstance(value, bool):
@@ -337,7 +415,37 @@ def _add_to_args(args: FilterArgs, filter_option: AugurFilterOption, value: Any)
 
 
 def _args_dict_to_list(args: FilterArgs) -> List[str]:
-    """Convert an arguments dictionary to a list suitable for argparse and subprocesses."""
+    """
+    Convert an arguments dictionary to a list suitable for argparse and subprocesses.
+
+    Options with no value are added as boolean flags:
+
+    >>> _args_dict_to_list({"--option": None})
+    ['--option']
+
+    Scalar values are converted to strings and added with their option:
+
+    >>> _args_dict_to_list({"--option": "value"})
+    ['--option', 'value']
+
+    >>> _args_dict_to_list({"--option": 5})
+    ['--option', '5']
+
+    List values are unpacked with the option followed by all values:
+
+    >>> _args_dict_to_list({"--option": [1, 2, 3]})
+    ['--option', '1', '2', '3']
+
+    Tuple values are handled the same as lists:
+
+    >>> _args_dict_to_list({"--option": (1, 2, 3)})
+    ['--option', '1', '2', '3']
+
+    Empty lists result in just the option name:
+
+    >>> _args_dict_to_list({"--option": []})
+    ['--option']
+    """
     args_list: List[str] = []
 
     for filter_option, value in args.items():
