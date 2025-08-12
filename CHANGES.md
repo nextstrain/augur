@@ -9,6 +9,7 @@
 * support numpy v2 in addition to v1. [#1855][] (@corneliusroemer)
 * support for Python 3.13. [#1857][] (@corneliusroemer)
 * tree: Prefer `iqtree3` binary over `iqtree2` and `iqtree` when available. [#1875][] (@joverlee521)
+* export v2: URLs encoded in metadata (both TSV and node-data JSONs) will be associated with the value in the exported JSON. Given a column/key `<X>` then a valid URL in a column/key named `<X>__url` will be automatically used. This allows values to be a clickable link when viewed in Auspice. [#1852][] (@jameshadfield)
 
 ### Bug fixes
 
@@ -19,6 +20,7 @@
 [#1819]: https://github.com/nextstrain/augur/pull/1819
 [#1844]: https://github.com/nextstrain/augur/pull/1844
 [#1845]: https://github.com/nextstrain/augur/pull/1845
+[#1852]: https://github.com/nextstrain/augur/pull/1852
 [#1855]: https://github.com/nextstrain/augur/pull/1855
 [#1857]: https://github.com/nextstrain/augur/pull/1857
 [#1865]: https://github.com/nextstrain/augur/issues/1865
