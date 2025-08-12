@@ -12,7 +12,7 @@ import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Tuple, Union
 from augur import filter as augur_filter
-from augur.argparse_ import ExtendOverwriteDefault
+from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
 from augur.io.print import print_err
@@ -90,7 +90,8 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     input_group.add_argument('--skip-checks', action='store_true', help="use this option to skip checking for duplicates in sequences and whether ids in metadata have a sequence entry. Can improve performance on large files. Note that this should only be used if you are sure there are no duplicate sequences or mismatched ids since they can lead to errors in downstream Augur commands.")
 
     config_group = parser.add_argument_group("Configuration options", "options related to configuration")
-    config_group.add_argument("--config", required=True, help="augur subsample config file. The expected config options must be given at the top level.")
+    config_group.add_argument("--config", required=True, help="augur subsample config file. The expected config options must be given at the top level, or within a top level key defined by --config-root.")
+    config_group.add_argument("--config-root", help="top level key in config file that contains expected config options (default: use the entire file)" + SKIP_AUTO_DEFAULT_IN_HELP)
     config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this means the number of samples to run simultaneously. Individual samples are limited to a single thread. The final augur filter call can take advantage of multiple threads.")
     config_group.add_argument('--subsample-seed', type=int, help="random number generator seed for reproducible outputs (with same input data).")
 
@@ -130,7 +131,7 @@ def run(args: argparse.Namespace) -> None:
     """
 
     # 1. Parse and validate config.
-    config = _parse_config(args.config)
+    config = _parse_config(args.config, args.config_root)
 
     # 2. Construct argument lists for augur filter.
 
@@ -194,7 +195,7 @@ def run(args: argparse.Namespace) -> None:
                 sample.cleanup()
 
 
-def _parse_config(filename: str) -> Dict[str, Any]:
+def _parse_config(filename: str, config_root: Optional[str] = None) -> Dict[str, Any]:
     # Create a custom YAML loader to treat timestamps as strings.
     class CustomLoader(yaml.SafeLoader):
         pass
@@ -208,6 +209,12 @@ def _parse_config(filename: str) -> Dict[str, Any]:
         except yaml.YAMLError as e:
             print(e)
             raise AugurError(f"Error parsing subsampling scheme {filename!r}")
+
+    # Handle --config-root.
+    if config_root:
+        if config_root not in config:
+            raise AugurError(f"Config root key {config_root!r} not found in {filename!r}")
+        config = config[config_root]
 
     # Validate against schema.
     try:
