@@ -87,7 +87,7 @@
                 "sequences_per_group": {
                     "type": "integer"
                 },
-                "max_sequences": {
+                "subsample_max_sequences": {
                     "type": "integer"
                 }
             }
