@@ -149,7 +149,6 @@ def run(args: argparse.Namespace) -> None:
 
     # 2. Construct argument lists for augur filter.
 
-    defaults = config.get("defaults")
     samples: List[Sample] = []
     global_filter_args: FilterArgs = {}
     for cli_option, filter_option in GLOBAL_CLI_OPTIONS.items():
@@ -157,7 +156,6 @@ def run(args: argparse.Namespace) -> None:
             _add_to_args(global_filter_args, filter_option, value)
 
     for name, options in config.get("samples", {}).items():
-        options = _merge_options(options, defaults)
         sample = Sample(name, options, global_filter_args)
         samples.append(sample)
 
@@ -239,24 +237,6 @@ def _parse_config(filename: str, config_root: Optional[str] = None) -> Dict[str,
     except Exception as e:
         raise AugurError(f"Config validation failed: {e}")
     return config
-
-
-def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """
-    Merge sample options with default options, with sample options taking precedence.
-    """
-    if defaults is None:
-        return sample_options
-
-    merged_options = {**defaults, **sample_options}
-
-    # Handle mutually exclusive options: if sample specifies one and defaults specify another, go with the sample-specific one.
-    if "sequences_per_group" in sample_options and "subsample_max_sequences" in defaults:
-        merged_options.pop("subsample_max_sequences", None)
-    elif "subsample_max_sequences" in sample_options and "sequences_per_group" in defaults:
-        merged_options.pop("sequences_per_group", None)
-
-    return merged_options
 
 
 class Sample:
