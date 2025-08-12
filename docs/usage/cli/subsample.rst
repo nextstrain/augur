@@ -58,9 +58,6 @@ samples
      <sample-2>:
        # sample options (see below)
 
-.. FIXME: document some requirements from augur filter:
-.. - when using group_by, at least one of sequences_per_group and subsample_max_sequences is required
-
 .. sample-options-schema-table:: augur/data/schema-subsample-config.json
 
 Implementation details
