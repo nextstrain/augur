@@ -65,6 +65,8 @@ These are sent to only the final augur filter call.
 """
 
 
+# NOTE: If you edit any of these values, please re-run
+# scripts/generate_subsample_schema.py and commit the schema changes too.
 SAMPLE_CONFIG: Dict[str, AugurFilterOption] = {
     "exclude": "--exclude",
     "exclude_all": ("--exclude-all", None),
