@@ -60,14 +60,14 @@
                             }
                         }
                     ],
-                    "description": "file(s) with list of strains to include regardless of priorities,\nsubsampling, or absence of an entry in --sequences."
+                    "description": "file(s) with list of strains to include regardless of priorities,\nsubsampling, or absence of an entry in sequences."
                 },
                 "include_where": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "description": "Include samples with these values. ex: host=rat. Multiple values are\nprocessed as OR (having any of those specified will be included), not\nAND. This rule is applied last and ensures any strains matching these\nrules will be included regardless of priorities, subsampling, or absence\nof an entry in --sequences."
+                    "description": "Include samples with these values. ex: host=rat. Multiple values are\nprocessed as OR (having any of those specified will be included), not\nAND. This rule is applied last and ensures any strains matching these\nrules will be included regardless of priorities, subsampling, or absence\nof an entry in sequences."
                 },
                 "min_date": {
                     "type": "string",
@@ -91,29 +91,29 @@
                 },
                 "query": {
                     "type": "string",
-                    "description": "Filter samples by attribute. Uses Pandas Dataframe querying, see\nhttps://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query\nfor syntax. (e.g., --query \"country == 'Colombia'\" or --query \"(country\n== 'USA' & (division == 'Washington'))\")"
+                    "description": "Filter samples by attribute. Uses Pandas Dataframe querying, see\nhttps://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query\nfor syntax. (e.g., \"country == 'Colombia'\" or \"(country == 'USA' &\n(division == 'Washington'))\")"
                 },
                 "query_columns": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "description": "Use alongside --query to specify columns and data types in the format\n'column:type', where type is one of\n(bool,float,int,str). Automatic type inference will be\nattempted on all unspecified columns used in the query. Example:\nregion:str coverage:float."
+                    "description": "Use alongside query to specify columns and data types in the format\n'column:type', where type is one of\n(bool,float,int,str). Automatic type inference will be\nattempted on all unspecified columns used in the query. Example:\nregion:str coverage:float."
                 },
                 "group_by": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "description": "categories with respect to subsample.\nNotes:\n(1) Grouping by ['month', 'week', 'year'] is only\n    supported when there is a 'date' column in the\n    metadata.\n(2) 'week' uses the ISO week numbering system, where a week starts on a\n    Monday and ends on a Sunday.\n(3) 'month' and 'week' grouping cannot be used together.\n(4) Custom columns ['month', 'week', 'year'] in the\n    metadata are ignored for grouping. Please rename them if you want to\n    use their values for grouping."
+                    "description": "Grouping columns for subsampling.\nNotes:\n(1) Grouping by ['month', 'week', 'year'] is only\n    supported when there is a 'date' column in the\n    metadata.\n(2) 'week' uses the ISO week numbering system, where a week starts on a\n    Monday and ends on a Sunday.\n(3) 'month' and 'week' grouping cannot be used together.\n(4) Custom columns ['month', 'week', 'year'] in the\n    metadata are ignored for grouping. Please rename them if you want to\n    use their values for grouping."
                 },
                 "group_by_weights": {
                     "type": "string",
-                    "description": "TSV file defining weights for grouping. Requirements:\n\n(1) Lines starting with '#' are treated as comment lines.\n(2) The first non-comment line must be a header row.\n(3) There must be a numeric ``weight`` column (weights can take on any\n    non-negative values).\n(4) Other columns must be a subset of columns used in ``--group-by``,\n    with combinations of values covering all combinations present in the\n    metadata.\n(5) This option only applies when ``--group-by`` and\n    ``--subsample-max-sequences`` are provided.\n(6) This option cannot be used with ``--no-probabilistic-sampling``.\n\nNotes:\n\n(1) Any ``--group-by`` columns absent from this file will be given equal\n    weighting across all values *within* groups defined by the other\n    weighted columns.\n(2) An entry with the value ``default`` under all columns will be\n    treated as the default weight for specific groups present in the\n    metadata but missing from the weights file. If there is no default\n    weight and the metadata contains rows that are not covered by the\n    given weights, augur filter will exit with an error."
+                    "description": "TSV file defining weights for grouping. Requirements:\n\n(1) Lines starting with '#' are treated as comment lines.\n(2) The first non-comment line must be a header row.\n(3) There must be a numeric ``weight`` column (weights can take on any\n    non-negative values).\n(4) Other columns must be a subset of grouping columns, with\n    combinations of values covering all combinations present in the\n    metadata.\n(5) This option only applies when grouping columns and a total sample\n    size are provided.\n(6) This option can only be used when probabilistic sampling is allowed.\n\nNotes:\n\n(1) Any grouping columns absent from this file will be given equal\n    weighting across all values *within* groups defined by the other\n    weighted columns.\n(2) An entry with the value ``default`` under all columns will be\n    treated as the default weight for specific groups present in the\n    metadata but missing from the weights file. If there is no default\n    weight and the metadata contains rows that are not covered by the\n    given weights, augur filter will exit with an error."
                 },
                 "probabilistic_sampling": {
                     "type": "boolean",
-                    "description": "Allow probabilistic sampling during subsampling. This is useful when\nthere are more groups than requested sequences. This option only applies\nwhen `--subsample-max-sequences` is provided."
+                    "description": "Allow probabilistic sampling during subsampling. This is useful when\nthere are more groups than requested sequences. This option only applies\nwhen a total sample size is provided."
                 },
                 "sequences_per_group": {
                     "type": "integer",
@@ -121,7 +121,7 @@
                 },
                 "max_sequences": {
                     "type": "integer",
-                    "description": "subsample to no more than this number of sequences (i.e. total sample\nsize); can be used without the group_by argument"
+                    "description": "subsample to no more than this number of sequences (i.e. total sample\nsize); can be used without grouping columns"
                 }
             }
         }
