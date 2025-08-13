@@ -43,7 +43,7 @@ def register_arguments(parser):
         (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""
     )
     metadata_filter_group.add_argument('--query-columns', type=column_type_pair, nargs="+", action=ExtendOverwriteDefault, help=f"""
-        Use alongside --query to specify columns and data types in the format 'column:type', where type is one of ({','.join(ACCEPTED_TYPES)}).
+        Use alongside --query to specify columns and data types in the format 'column:type', where type is one of ({','.join(sorted(ACCEPTED_TYPES))}).
         Automatic type inference will be attempted on all unspecified columns used in the query.
         Example: region:str coverage:float.
     """)
