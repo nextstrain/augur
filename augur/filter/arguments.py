@@ -13,11 +13,11 @@ descriptions = {
     "query": dedent("""\
         Filter samples by attribute. Uses Pandas Dataframe querying, see
         https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query
-        for syntax. (e.g., --query "country == 'Colombia'" or --query "(country
-        == 'USA' & (division == 'Washington'))")"""),
+        for syntax. (e.g., "country == 'Colombia'" or "(country == 'USA' &
+        (division == 'Washington'))")"""),
 
     "query_columns": dedent(f"""\
-        Use alongside --query to specify columns and data types in the format
+        Use alongside query to specify columns and data types in the format
         'column:type', where type is one of
         ({','.join(sorted(ACCEPTED_TYPES))}). Automatic type inference will be
         attempted on all unspecified columns used in the query. Example:
@@ -53,14 +53,14 @@ descriptions = {
 
     "include": dedent("""\
         file(s) with list of strains to include regardless of priorities,
-        subsampling, or absence of an entry in --sequences."""),
+        subsampling, or absence of an entry in sequences."""),
 
     "include_where": dedent("""\
         Include samples with these values. ex: host=rat. Multiple values are
         processed as OR (having any of those specified will be included), not
         AND. This rule is applied last and ensures any strains matching these
         rules will be included regardless of priorities, subsampling, or absence
-        of an entry in --sequences."""),
+        of an entry in sequences."""),
 
     "min_length": dedent("""\
         minimal length of the sequences, only counting standard nucleotide
@@ -74,7 +74,7 @@ descriptions = {
         exclude sequences that contain illegal characters"""),
 
     "group_by": dedent(f"""\
-        categories with respect to subsample.
+        Grouping columns for subsampling.
         Notes:
         (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only
             supported when there is a {METADATA_DATE_COLUMN!r} column in the
@@ -91,12 +91,12 @@ descriptions = {
 
     "subsample_max_sequences": dedent("""\
         subsample to no more than this number of sequences (i.e. total sample
-        size); can be used without the group_by argument"""),
+        size); can be used without grouping columns"""),
 
     "probabilistic_sampling": dedent("""\
         Allow probabilistic sampling during subsampling. This is useful when
         there are more groups than requested sequences. This option only applies
-        when `--subsample-max-sequences` is provided."""),
+        when a total sample size is provided."""),
 
     "group_by_weights": dedent("""\
         TSV file defining weights for grouping. Requirements:
@@ -105,16 +105,16 @@ descriptions = {
         (2) The first non-comment line must be a header row.
         (3) There must be a numeric ``weight`` column (weights can take on any
             non-negative values).
-        (4) Other columns must be a subset of columns used in ``--group-by``,
-            with combinations of values covering all combinations present in the
+        (4) Other columns must be a subset of grouping columns, with
+            combinations of values covering all combinations present in the
             metadata.
-        (5) This option only applies when ``--group-by`` and
-            ``--subsample-max-sequences`` are provided.
-        (6) This option cannot be used with ``--no-probabilistic-sampling``.
+        (5) This option only applies when grouping columns and a total sample
+            size are provided.
+        (6) This option can only be used when probabilistic sampling is allowed.
 
         Notes:
 
-        (1) Any ``--group-by`` columns absent from this file will be given equal
+        (1) Any grouping columns absent from this file will be given equal
             weighting across all values *within* groups defined by the other
             weighted columns.
         (2) An entry with the value ``default`` under all columns will be
