@@ -2,6 +2,7 @@
 Descriptions for augur filter arguments are stored here for reuse by other commands.
 """
 
+from textwrap import dedent
 from augur.dates import SUPPORTED_DATE_HELP_TEXT
 from augur.filter.io import ACCEPTED_TYPES
 from augur.io.metadata import METADATA_DATE_COLUMN
@@ -9,15 +10,15 @@ from . import constants
 
 
 descriptions = {
-    "query": """Filter samples by attribute.
+    "query": dedent("""\
+        Filter samples by attribute.
         Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.
-        (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")""",
+        (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""),
 
-    "query_columns": f"""
+    "query_columns": dedent(f"""\
         Use alongside --query to specify columns and data types in the format 'column:type', where type is one of ({','.join(sorted(ACCEPTED_TYPES))}).
         Automatic type inference will be attempted on all unspecified columns used in the query.
-        Example: region:str coverage:float.
-    """,
+        Example: region:str coverage:float."""),
 
     "min_date": f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}",
 
@@ -33,12 +34,12 @@ descriptions = {
 
     "include": "file(s) with list of strains to include regardless of priorities, subsampling, or absence of an entry in --sequences.",
 
-    "include_where": """
+    "include_where": dedent("""\
         Include samples with these values. ex: host=rat. Multiple values are
         processed as OR (having any of those specified will be included), not
         AND. This rule is applied last and ensures any strains matching these
         rules will be included regardless of priorities, subsampling, or absence
-        of an entry in --sequences.""",
+        of an entry in --sequences."""),
 
     "min_length": "minimal length of the sequences, only counting standard nucleotide characters A, C, G, or T (case-insensitive)",
 
@@ -46,13 +47,13 @@ descriptions = {
 
     "non_nucleotide": "exclude sequences that contain illegal characters",
 
-    "group_by": f"""
+    "group_by": dedent(f"""\
         categories with respect to subsample.
         Notes:
         (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a {METADATA_DATE_COLUMN!r} column in the metadata.
         (2) 'week' uses the ISO week numbering system, where a week starts on a Monday and ends on a Sunday.
         (3) 'month' and 'week' grouping cannot be used together.
-        (4) Custom columns {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping.""",
+        (4) Custom columns {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping."""),
 
     "sequences_per_group": "subsample to no more than this number of sequences per category",
 
@@ -60,7 +61,7 @@ descriptions = {
 
     "probabilistic_sampling": "Allow probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.",
 
-    "group_by_weights": """
+    "group_by_weights": dedent("""\
         TSV file defining weights for grouping. Requirements:
 
         (1) Lines starting with '#' are treated as comment lines.
@@ -83,6 +84,5 @@ descriptions = {
             treated as the default weight for specific groups present in the
             metadata but missing from the weights file. If there is no default
             weight and the metadata contains rows that are not covered by the
-            given weights, augur filter will exit with an error.
-    """
+            given weights, augur filter will exit with an error.""")
 }

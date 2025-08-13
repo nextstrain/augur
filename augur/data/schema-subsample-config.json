@@ -67,15 +67,15 @@
                     "items": {
                         "type": "string"
                     },
-                    "description": "\n        Include samples with these values. ex: host=rat. Multiple values are\n        processed as OR (having any of those specified will be included), not\n        AND. This rule is applied last and ensures any strains matching these\n        rules will be included regardless of priorities, subsampling, or absence\n        of an entry in --sequences."
+                    "description": "Include samples with these values. ex: host=rat. Multiple values are\nprocessed as OR (having any of those specified will be included), not\nAND. This rule is applied last and ensures any strains matching these\nrules will be included regardless of priorities, subsampling, or absence\nof an entry in --sequences."
                 },
                 "min_date": {
                     "type": "string",
-                    "description": "minimal cutoff for date, the cutoff date is inclusive; may be specified as: 1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')\n"
+                    "description": "minimal cutoff for date, the cutoff date is inclusive; may be specified as: 1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')"
                 },
                 "max_date": {
                     "type": "string",
-                    "description": "maximal cutoff for date, the cutoff date is inclusive; may be specified as: 1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')\n"
+                    "description": "maximal cutoff for date, the cutoff date is inclusive; may be specified as: 1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')"
                 },
                 "min_length": {
                     "type": "integer",
@@ -91,25 +91,25 @@
                 },
                 "query": {
                     "type": "string",
-                    "description": "Filter samples by attribute.\n        Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.\n        (e.g., --query \"country == 'Colombia'\" or --query \"(country == 'USA' & (division == 'Washington'))\")"
+                    "description": "Filter samples by attribute.\nUses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.\n(e.g., --query \"country == 'Colombia'\" or --query \"(country == 'USA' & (division == 'Washington'))\")"
                 },
                 "query_columns": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "description": "\n        Use alongside --query to specify columns and data types in the format 'column:type', where type is one of (bool,float,int,str).\n        Automatic type inference will be attempted on all unspecified columns used in the query.\n        Example: region:str coverage:float.\n    "
+                    "description": "Use alongside --query to specify columns and data types in the format 'column:type', where type is one of (bool,float,int,str).\nAutomatic type inference will be attempted on all unspecified columns used in the query.\nExample: region:str coverage:float."
                 },
                 "group_by": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "description": "\n        categories with respect to subsample.\n        Notes:\n        (1) Grouping by ['month', 'week', 'year'] is only supported when there is a 'date' column in the metadata.\n        (2) 'week' uses the ISO week numbering system, where a week starts on a Monday and ends on a Sunday.\n        (3) 'month' and 'week' grouping cannot be used together.\n        (4) Custom columns ['month', 'week', 'year'] in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping."
+                    "description": "categories with respect to subsample.\nNotes:\n(1) Grouping by ['month', 'week', 'year'] is only supported when there is a 'date' column in the metadata.\n(2) 'week' uses the ISO week numbering system, where a week starts on a Monday and ends on a Sunday.\n(3) 'month' and 'week' grouping cannot be used together.\n(4) Custom columns ['month', 'week', 'year'] in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping."
                 },
                 "group_by_weights": {
                     "type": "string",
-                    "description": "\n        TSV file defining weights for grouping. Requirements:\n\n        (1) Lines starting with '#' are treated as comment lines.\n        (2) The first non-comment line must be a header row.\n        (3) There must be a numeric ``weight`` column (weights can take on any\n            non-negative values).\n        (4) Other columns must be a subset of columns used in ``--group-by``,\n            with combinations of values covering all combinations present in the\n            metadata.\n        (5) This option only applies when ``--group-by`` and\n            ``--subsample-max-sequences`` are provided.\n        (6) This option cannot be used with ``--no-probabilistic-sampling``.\n\n        Notes:\n\n        (1) Any ``--group-by`` columns absent from this file will be given equal\n            weighting across all values *within* groups defined by the other\n            weighted columns.\n        (2) An entry with the value ``default`` under all columns will be\n            treated as the default weight for specific groups present in the\n            metadata but missing from the weights file. If there is no default\n            weight and the metadata contains rows that are not covered by the\n            given weights, augur filter will exit with an error.\n    "
+                    "description": "TSV file defining weights for grouping. Requirements:\n\n(1) Lines starting with '#' are treated as comment lines.\n(2) The first non-comment line must be a header row.\n(3) There must be a numeric ``weight`` column (weights can take on any\n    non-negative values).\n(4) Other columns must be a subset of columns used in ``--group-by``,\n    with combinations of values covering all combinations present in the\n    metadata.\n(5) This option only applies when ``--group-by`` and\n    ``--subsample-max-sequences`` are provided.\n(6) This option cannot be used with ``--no-probabilistic-sampling``.\n\nNotes:\n\n(1) Any ``--group-by`` columns absent from this file will be given equal\n    weighting across all values *within* groups defined by the other\n    weighted columns.\n(2) An entry with the value ``default`` under all columns will be\n    treated as the default weight for specific groups present in the\n    metadata but missing from the weights file. If there is no default\n    weight and the metadata contains rows that are not covered by the\n    given weights, augur filter will exit with an error."
                 },
                 "probabilistic_sampling": {
                     "type": "boolean",

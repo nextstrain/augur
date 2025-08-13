@@ -15,8 +15,7 @@ from .ambiguous_date import AmbiguousDate
 SUPPORTED_DATE_HELP_TEXT = dedent("""\
     1. an Augur-style numeric date with the year as the integer part (e.g. 2020.42) or
     2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or
-    3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')
-""")
+    3. a backwards-looking relative date in ISO 8601 duration format with optional P prefix (e.g. '1W', 'P1W')""")
 
 def date_to_numeric(date: datetime.date) -> float:
     """Wrapper around treetime.utils.numeric_date that ensures a float is returned."""
