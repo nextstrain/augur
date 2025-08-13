@@ -384,6 +384,26 @@ jobs:
             exit 1
           fi
 
+  check-subsample-config-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+
+      - uses: actions/checkout@v5
+
+      - run: pip install .[dev]
+
+      - run: ./devel/regenerate-subsample-schema
+
+      - name: Check for changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git add .
+            git diff --staged >&2
+            echo "There are changes that affect the augur subsample config schema. Please regenerate by running devel/regenerate-subsample-schema." >&2
+            exit 1
+          fi
+
   release:
     # Only run when called by the release workflow on the default branch
     if: github.workflow_ref == format('{0}/.github/workflows/release.yaml@refs/heads/{1}', github.repository, github.event.repository.default_branch)
