@@ -11,28 +11,49 @@ from . import constants
 
 descriptions = {
     "query": dedent("""\
-        Filter samples by attribute.
-        Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.
-        (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""),
+        Filter samples by attribute. Uses Pandas Dataframe querying, see
+        https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query
+        for syntax. (e.g., --query "country == 'Colombia'" or --query "(country
+        == 'USA' & (division == 'Washington'))")"""),
 
     "query_columns": dedent(f"""\
-        Use alongside --query to specify columns and data types in the format 'column:type', where type is one of ({','.join(sorted(ACCEPTED_TYPES))}).
-        Automatic type inference will be attempted on all unspecified columns used in the query.
-        Example: region:str coverage:float."""),
+        Use alongside --query to specify columns and data types in the format
+        'column:type', where type is one of
+        ({','.join(sorted(ACCEPTED_TYPES))}). Automatic type inference will be
+        attempted on all unspecified columns used in the query. Example:
+        region:str coverage:float."""),
 
-    "min_date": f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}",
+    "min_date": dedent(f"""\
+        minimal cutoff for date, the cutoff date is inclusive; may be specified
+        as: {SUPPORTED_DATE_HELP_TEXT}"""),
 
-    "max_date": f"maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}",
+    "max_date": dedent(f"""\
+        maximal cutoff for date, the cutoff date is inclusive; may be specified
+        as: {SUPPORTED_DATE_HELP_TEXT}"""),
 
-    "exclude_ambiguous_dates_by": 'Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous year makes the corresponding month and day ambiguous, too, even if those fields have unambiguous values (e.g., "201X-10-01"). Similarly, an ambiguous month makes the corresponding day ambiguous (e.g., "2010-XX-01").',
+    "exclude_ambiguous_dates_by": dedent("""\
+        Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g.,
+        2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous
+        year makes the corresponding month and day ambiguous, too, even if those
+        fields have unambiguous values (e.g., "201X-10-01"). Similarly, an
+        ambiguous month makes the corresponding day ambiguous (e.g.,
+        "2010-XX-01")."""),
 
-    "exclude": "file(s) with list of strains to exclude",
+    "exclude": dedent("""\
+        file(s) with list of strains to exclude"""),
 
-    "exclude_where": "Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND",
+    "exclude_where": dedent("""\
+        Exclude samples matching these conditions. Ex: "host=rat" or
+        "host!=rat". Multiple values are processed as OR (matching any of those
+        specified will be excluded), not AND"""),
 
-    "exclude_all": "exclude all strains by default. Use this with the include arguments to select a specific subset of strains.",
+    "exclude_all": dedent("""\
+        exclude all strains by default. Use this with the include arguments to
+        select a specific subset of strains."""),
 
-    "include": "file(s) with list of strains to include regardless of priorities, subsampling, or absence of an entry in --sequences.",
+    "include": dedent("""\
+        file(s) with list of strains to include regardless of priorities,
+        subsampling, or absence of an entry in --sequences."""),
 
     "include_where": dedent("""\
         Include samples with these values. ex: host=rat. Multiple values are
@@ -41,25 +62,41 @@ descriptions = {
         rules will be included regardless of priorities, subsampling, or absence
         of an entry in --sequences."""),
 
-    "min_length": "minimal length of the sequences, only counting standard nucleotide characters A, C, G, or T (case-insensitive)",
+    "min_length": dedent("""\
+        minimal length of the sequences, only counting standard nucleotide
+        characters A, C, G, or T (case-insensitive)"""),
 
-    "max_length": "maximum length of the sequences, only counting standard nucleotide characters A, C, G, or T (case-insensitive)",
+    "max_length": dedent("""\
+        maximum length of the sequences, only counting standard nucleotide
+        characters A, C, G, or T (case-insensitive)"""),
 
-    "non_nucleotide": "exclude sequences that contain illegal characters",
+    "non_nucleotide": dedent("""\
+        exclude sequences that contain illegal characters"""),
 
     "group_by": dedent(f"""\
         categories with respect to subsample.
         Notes:
-        (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a {METADATA_DATE_COLUMN!r} column in the metadata.
-        (2) 'week' uses the ISO week numbering system, where a week starts on a Monday and ends on a Sunday.
+        (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only
+            supported when there is a {METADATA_DATE_COLUMN!r} column in the
+            metadata.
+        (2) 'week' uses the ISO week numbering system, where a week starts on a
+            Monday and ends on a Sunday.
         (3) 'month' and 'week' grouping cannot be used together.
-        (4) Custom columns {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping."""),
+        (4) Custom columns {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} in the
+            metadata are ignored for grouping. Please rename them if you want to
+            use their values for grouping."""),
 
-    "sequences_per_group": "subsample to no more than this number of sequences per category",
+    "sequences_per_group": dedent("""\
+        subsample to no more than this number of sequences per category"""),
 
-    "subsample_max_sequences": "subsample to no more than this number of sequences; can be used without the group_by argument",
+    "subsample_max_sequences": dedent("""\
+        subsample to no more than this number of sequences (i.e. total sample
+        size); can be used without the group_by argument"""),
 
-    "probabilistic_sampling": "Allow probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.",
+    "probabilistic_sampling": dedent("""\
+        Allow probabilistic sampling during subsampling. This is useful when
+        there are more groups than requested sequences. This option only applies
+        when `--subsample-max-sequences` is provided."""),
 
     "group_by_weights": dedent("""\
         TSV file defining weights for grouping. Requirements:
