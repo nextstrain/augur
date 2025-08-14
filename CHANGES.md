@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 31.4.0 (14 August 2025)
+
 ### Features
 
 * schema: Allow parentheses (`()`) in gene names. [#1819][] (@kimandrews)
