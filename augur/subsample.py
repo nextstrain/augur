@@ -160,38 +160,53 @@ def run(args: argparse.Namespace) -> None:
         samples.append(sample)
 
     final_filter_args: FilterArgs = {}
-    final_filter_args.update(global_filter_args)
-    final_filter_args.update({
-        "--exclude-all": None,
-        "--include": [s.output_strains for s in samples],
-        "--nthreads": args.nthreads,
-    })
     for cli_option, filter_option in FINAL_CLI_OPTIONS.items():
         if (value := getattr(args, cli_option)) is not None:
             _add_to_args(final_filter_args, filter_option, value)
 
     # 3. Run augur filter.
-    try:
-        # Run intermediate augur filter calls in parallel.
-        with ThreadPoolExecutor(max_workers=args.nthreads) as executor:
-            futures = [executor.submit(s.run) for s in samples]
-            try:
-                for future in as_completed(futures):
-                    future.result()
-            except Exception:
-                # Note: There is a race condition where samples may start before
-                # failures in other samples are detected. On failure, we cancel
-                # remaining queued samples but already-running samples will
-                # complete. This provides partial fail-fast behavior while
-                # maintaining parallelism.
-                executor.shutdown(cancel_futures=True)
-                raise
 
-        # Run the final augur filter call to combine the intermediate samples.
-        _run_final_filter(final_filter_args)
-    finally:
-        for sample in samples:
-            sample.remove_output_strains()
+    if len(samples) == 1:
+        # A single sample is translated to a single augur filter call.
+
+        # The list of ids is useless in this case.
+        samples[0].remove_output_strains()
+
+        filter_args = {
+            **samples[0].filter_args,
+            **final_filter_args,
+            "--nthreads": args.nthreads,
+        }
+        _run_final_filter(filter_args)
+    else:
+        # Multiple samples require multiple augur filter calls.
+        try:
+            # Run intermediate augur filter calls in parallel.
+            with ThreadPoolExecutor(max_workers=args.nthreads) as executor:
+                futures = [executor.submit(s.run) for s in samples]
+                try:
+                    for future in as_completed(futures):
+                        future.result()
+                except Exception:
+                    # Note: There is a race condition where samples may start before
+                    # failures in other samples are detected. On failure, we cancel
+                    # remaining queued samples but already-running samples will
+                    # complete. This provides partial fail-fast behavior while
+                    # maintaining parallelism.
+                    executor.shutdown(cancel_futures=True)
+                    raise
+
+            # Run the final augur filter call to combine the intermediate samples.
+            final_filter_args.update(global_filter_args)
+            final_filter_args.update({
+                "--exclude-all": None,
+                "--include": [s.output_strains for s in samples],
+                "--nthreads": args.nthreads,
+            })
+            _run_final_filter(final_filter_args)
+        finally:
+            for sample in samples:
+                sample.remove_output_strains()
 
 
 def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> Dict[str, Any]:
