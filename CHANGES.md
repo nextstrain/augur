@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+* A new command, `augur subsample`, supports complex subsampling using file-based configuration. See the updated [Filtering and Subsampling guide][] for a comparison with `augur filter`. [#635][] (@victorlin)
+
+[#635]: https://github.com/nextstrain/augur/issues/635
+[Filtering and Subsampling guide]: https://docs.nextstrain.org/en/latest/guides/bioinformatics/filtering-and-subsampling.html
 
 ## 31.4.0 (14 August 2025)
 
