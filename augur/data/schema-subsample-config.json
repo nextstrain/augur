@@ -71,11 +71,11 @@
                 },
                 "min_date": {
                     "type": "string",
-                    "description": "        minimal cutoff for date, the cutoff date is inclusive; may be specified\n        as: 1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
+                    "description": "minimal cutoff for date, the cutoff date is inclusive; may be specified\nas:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
                 },
                 "max_date": {
                     "type": "string",
-                    "description": "        maximal cutoff for date, the cutoff date is inclusive; may be specified\n        as: 1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
+                    "description": "maximal cutoff for date, the cutoff date is inclusive; may be specified\nas:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
                 },
                 "min_length": {
                     "type": "integer",
@@ -91,7 +91,7 @@
                 },
                 "query": {
                     "type": "string",
-                    "description": "Filter samples by attribute. Uses Pandas Dataframe querying, see\nhttps://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query\nfor syntax. (e.g., \"country == 'Colombia'\" or \"(country == 'USA' &\n(division == 'Washington'))\")"
+                    "description": "Filter samples by attribute. Uses `Pandas DataFrame query syntax`__.\n(e.g., \"country == 'Colombia'\" or \"(country == 'USA' & (division ==\n'Washington'))\")\n\n__ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query"
                 },
                 "query_columns": {
                     "type": "array",
@@ -105,7 +105,7 @@
                     "items": {
                         "type": "string"
                     },
-                    "description": "Grouping columns for subsampling.\nNotes:\n(1) Grouping by ['month', 'week', 'year'] is only\n    supported when there is a 'date' column in the\n    metadata.\n(2) 'week' uses the ISO week numbering system, where a week starts on a\n    Monday and ends on a Sunday.\n(3) 'month' and 'week' grouping cannot be used together.\n(4) Custom columns ['month', 'week', 'year'] in the\n    metadata are ignored for grouping. Please rename them if you want to\n    use their values for grouping."
+                    "description": "Grouping columns for subsampling. Notes:\n\n(1) Grouping by ['month', 'week', 'year'] is only\n    supported when there is a 'date' column in the\n    metadata.\n(2) 'week' uses the ISO week numbering system, where a week starts on a\n    Monday and ends on a Sunday.\n(3) 'month' and 'week' grouping cannot be used together.\n(4) Custom columns ['month', 'week', 'year'] in the\n    metadata are ignored for grouping. Please rename them if you want to\n    use their values for grouping."
                 },
                 "group_by_weights": {
                     "type": "string",

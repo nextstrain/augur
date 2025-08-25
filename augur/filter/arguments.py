@@ -11,10 +11,11 @@ from . import constants
 
 descriptions = {
     "query": dedent("""\
-        Filter samples by attribute. Uses Pandas Dataframe querying, see
-        https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query
-        for syntax. (e.g., "country == 'Colombia'" or "(country == 'USA' &
-        (division == 'Washington'))")"""),
+        Filter samples by attribute. Uses `Pandas DataFrame query syntax`__.
+        (e.g., "country == 'Colombia'" or "(country == 'USA' & (division ==
+        'Washington'))")
+
+        __ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query"""),
 
     "query_columns": dedent(f"""\
         Use alongside query to specify columns and data types in the format
@@ -25,11 +26,15 @@ descriptions = {
 
     "min_date": dedent(f"""\
         minimal cutoff for date, the cutoff date is inclusive; may be specified
-        as: {SUPPORTED_DATE_HELP_TEXT}"""),
+        as:
+
+        """) + SUPPORTED_DATE_HELP_TEXT,
 
     "max_date": dedent(f"""\
         maximal cutoff for date, the cutoff date is inclusive; may be specified
-        as: {SUPPORTED_DATE_HELP_TEXT}"""),
+        as:
+
+        """) + SUPPORTED_DATE_HELP_TEXT,
 
     "exclude_ambiguous_dates_by": dedent("""\
         Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g.,
@@ -74,8 +79,8 @@ descriptions = {
         exclude sequences that contain illegal characters"""),
 
     "group_by": dedent(f"""\
-        Grouping columns for subsampling.
-        Notes:
+        Grouping columns for subsampling. Notes:
+
         (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only
             supported when there is a {METADATA_DATE_COLUMN!r} column in the
             metadata.
