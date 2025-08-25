@@ -3,6 +3,7 @@ Custom Sphinx directives for augur subsample documentation.
 """
 from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
+from docutils.statemachine import StringList
 import importlib
 import json
 import os
@@ -234,10 +235,12 @@ class SampleOptionsSchemaTableDirective(SphinxDirective):
 
             # Description column
             description_entry = nodes.entry()
+            description_entry['classes'].append('wrap-children-60ch')
             description = prop_def.get('description', '')
-            # Render newlines by creating a paragraph per line.
-            for line in description.split('\n'):
-                description_entry.append(nodes.paragraph('', line.strip()))
+            container = nodes.container()
+            self.state.nested_parse(StringList(description.split('\n')), 0, container)
+            for child in container.children:
+                description_entry += child
             row.append(description_entry)
 
         return [table]
