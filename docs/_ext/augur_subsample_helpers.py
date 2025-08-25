@@ -250,13 +250,14 @@ class SampleOptionsSchemaTableDirective(SphinxDirective):
             items_type = prop_def.get('items', {}).get('type', 'unknown')
             return nodes.paragraph('', f"list of {items_type}s")
         elif prop_type == 'string' and 'enum' in prop_def:
-            paragraph = nodes.paragraph()
-            paragraph += nodes.Text("exact string: ")
-            enum_values = prop_def['enum']
-            for i, value in enumerate(enum_values):
-                if i > 0:
-                    paragraph += nodes.Text(", ")
-                paragraph += nodes.literal('', value)
-            return paragraph
+            container = nodes.container()
+            container += nodes.paragraph('', 'exact string options:')
+            bullet_list = nodes.bullet_list()
+            for value in prop_def['enum']:
+                list_item = nodes.list_item()
+                list_item += nodes.literal('', value)
+                bullet_list += list_item
+            container += bullet_list
+            return container
         else:
             return nodes.paragraph('', prop_type)
