@@ -12,6 +12,7 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   augur.filter.arguments
    augur.filter.constants
    augur.filter.include_exclude_rules
    augur.filter.io
