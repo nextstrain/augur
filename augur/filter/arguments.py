@@ -25,14 +25,12 @@ descriptions = {
         region:str coverage:float."""),
 
     "min_date": dedent(f"""\
-        minimal cutoff for date, the cutoff date is inclusive; may be specified
-        as:
+        Minimal cutoff for date (inclusive). Supported formats:
 
         """) + SUPPORTED_DATE_HELP_TEXT,
 
     "max_date": dedent(f"""\
-        maximal cutoff for date, the cutoff date is inclusive; may be specified
-        as:
+        Maximal cutoff for date (inclusive). Supported formats:
 
         """) + SUPPORTED_DATE_HELP_TEXT,
 
@@ -45,20 +43,20 @@ descriptions = {
         "2010-XX-01")."""),
 
     "exclude": dedent("""\
-        file(s) with list of strains to exclude. Paths must be relative to the
+        File(s) with list of strains to exclude. Paths must be relative to the
         working directory."""),
 
     "exclude_where": dedent("""\
         Exclude sequences matching these conditions. Ex: "host=rat" or
         "host!=rat". Multiple values are processed as OR (matching any of those
-        specified will be excluded), not AND"""),
+        specified will be excluded), not AND."""),
 
     "exclude_all": dedent("""\
-        exclude all strains by default. Use this with the include arguments to
+        Exclude all strains by default. Use this with the include arguments to
         select a specific subset of strains."""),
 
     "include": dedent("""\
-        file(s) with list of strains to include regardless of priorities,
+        File(s) with list of strains to include regardless of priorities,
         subsampling, or absence of an entry in sequences. Paths must be relative
         to the working directory."""),
 
@@ -70,15 +68,15 @@ descriptions = {
         of an entry in sequences."""),
 
     "min_length": dedent("""\
-        minimal length of the sequences, only counting standard nucleotide
-        characters A, C, G, or T (case-insensitive)"""),
+        Minimal length of the sequences, only counting standard nucleotide
+        characters A, C, G, or T (case-insensitive)."""),
 
     "max_length": dedent("""\
-        maximum length of the sequences, only counting standard nucleotide
-        characters A, C, G, or T (case-insensitive)"""),
+        Maximum length of the sequences, only counting standard nucleotide
+        characters A, C, G, or T (case-insensitive)."""),
 
     "non_nucleotide": dedent("""\
-        exclude sequences that contain illegal characters"""),
+        Exclude sequences that contain illegal characters."""),
 
     "group_by": dedent(f"""\
         Grouping columns for subsampling. Notes:
@@ -94,11 +92,11 @@ descriptions = {
             use their values for grouping."""),
 
     "sequences_per_group": dedent("""\
-        select no more than this number of sequences per category"""),
+        Select no more than this number of sequences per category."""),
 
     "subsample_max_sequences": dedent("""\
-        select no more than this number of sequences (i.e. total sample
-        size); can be used without grouping columns"""),
+        Select no more than this number of sequences (i.e. total sample
+        size). Can be used without grouping columns."""),
 
     "probabilistic_sampling": dedent("""\
         Allow probabilistic sampling during subsampling. This is useful when

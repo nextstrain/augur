@@ -25,11 +25,11 @@
                             }
                         }
                     ],
-                    "description": "file(s) with list of strains to exclude. Paths must be relative to the\nworking directory."
+                    "description": "File(s) with list of strains to exclude. Paths must be relative to the\nworking directory."
                 },
                 "exclude_all": {
                     "type": "boolean",
-                    "description": "exclude all strains by default. Use this with the include arguments to\nselect a specific subset of strains."
+                    "description": "Exclude all strains by default. Use this with the include arguments to\nselect a specific subset of strains."
                 },
                 "exclude_ambiguous_dates_by": {
                     "type": "string",
@@ -46,7 +46,7 @@
                     "items": {
                         "type": "string"
                     },
-                    "description": "Exclude sequences matching these conditions. Ex: \"host=rat\" or\n\"host!=rat\". Multiple values are processed as OR (matching any of those\nspecified will be excluded), not AND"
+                    "description": "Exclude sequences matching these conditions. Ex: \"host=rat\" or\n\"host!=rat\". Multiple values are processed as OR (matching any of those\nspecified will be excluded), not AND."
                 },
                 "include": {
                     "oneOf": [
@@ -60,7 +60,7 @@
                             }
                         }
                     ],
-                    "description": "file(s) with list of strains to include regardless of priorities,\nsubsampling, or absence of an entry in sequences. Paths must be relative\nto the working directory."
+                    "description": "File(s) with list of strains to include regardless of priorities,\nsubsampling, or absence of an entry in sequences. Paths must be relative\nto the working directory."
                 },
                 "include_where": {
                     "type": "array",
@@ -71,23 +71,23 @@
                 },
                 "min_date": {
                     "type": "string",
-                    "description": "minimal cutoff for date, the cutoff date is inclusive; may be specified\nas:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
+                    "description": "Minimal cutoff for date (inclusive). Supported formats:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
                 },
                 "max_date": {
                     "type": "string",
-                    "description": "maximal cutoff for date, the cutoff date is inclusive; may be specified\nas:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
+                    "description": "Maximal cutoff for date (inclusive). Supported formats:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
                 },
                 "min_length": {
                     "type": "integer",
-                    "description": "minimal length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)"
+                    "description": "Minimal length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)."
                 },
                 "max_length": {
                     "type": "integer",
-                    "description": "maximum length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)"
+                    "description": "Maximum length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)."
                 },
                 "non_nucleotide": {
                     "type": "boolean",
-                    "description": "exclude sequences that contain illegal characters"
+                    "description": "Exclude sequences that contain illegal characters."
                 },
                 "query": {
                     "type": "string",
@@ -117,11 +117,11 @@
                 },
                 "sequences_per_group": {
                     "type": "integer",
-                    "description": "select no more than this number of sequences per category"
+                    "description": "Select no more than this number of sequences per category."
                 },
                 "max_sequences": {
                     "type": "integer",
-                    "description": "select no more than this number of sequences (i.e. total sample\nsize); can be used without grouping columns"
+                    "description": "Select no more than this number of sequences (i.e. total sample\nsize). Can be used without grouping columns."
                 }
             }
         }
