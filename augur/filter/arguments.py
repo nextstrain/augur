@@ -11,7 +11,7 @@ from . import constants
 
 descriptions = {
     "query": dedent("""\
-        Filter samples by attribute. Uses `Pandas DataFrame query syntax`__.
+        Filter sequences by attribute. Uses `Pandas DataFrame query syntax`__.
         (e.g., "country == 'Colombia'" or "(country == 'USA' & (division ==
         'Washington'))")
 
@@ -49,7 +49,7 @@ descriptions = {
         working directory."""),
 
     "exclude_where": dedent("""\
-        Exclude samples matching these conditions. Ex: "host=rat" or
+        Exclude sequences matching these conditions. Ex: "host=rat" or
         "host!=rat". Multiple values are processed as OR (matching any of those
         specified will be excluded), not AND"""),
 
@@ -63,7 +63,7 @@ descriptions = {
         to the working directory."""),
 
     "include_where": dedent("""\
-        Include samples with these values. ex: host=rat. Multiple values are
+        Include sequences with these values. ex: host=rat. Multiple values are
         processed as OR (having any of those specified will be included), not
         AND. This rule is applied last and ensures any strains matching these
         rules will be included regardless of priorities, subsampling, or absence
@@ -94,10 +94,10 @@ descriptions = {
             use their values for grouping."""),
 
     "sequences_per_group": dedent("""\
-        subsample to no more than this number of sequences per category"""),
+        select no more than this number of sequences per category"""),
 
     "subsample_max_sequences": dedent("""\
-        subsample to no more than this number of sequences (i.e. total sample
+        select no more than this number of sequences (i.e. total sample
         size); can be used without grouping columns"""),
 
     "probabilistic_sampling": dedent("""\

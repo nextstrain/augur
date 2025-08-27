@@ -46,7 +46,7 @@
                     "items": {
                         "type": "string"
                     },
-                    "description": "Exclude samples matching these conditions. Ex: \"host=rat\" or\n\"host!=rat\". Multiple values are processed as OR (matching any of those\nspecified will be excluded), not AND"
+                    "description": "Exclude sequences matching these conditions. Ex: \"host=rat\" or\n\"host!=rat\". Multiple values are processed as OR (matching any of those\nspecified will be excluded), not AND"
                 },
                 "include": {
                     "oneOf": [
@@ -67,7 +67,7 @@
                     "items": {
                         "type": "string"
                     },
-                    "description": "Include samples with these values. ex: host=rat. Multiple values are\nprocessed as OR (having any of those specified will be included), not\nAND. This rule is applied last and ensures any strains matching these\nrules will be included regardless of priorities, subsampling, or absence\nof an entry in sequences."
+                    "description": "Include sequences with these values. ex: host=rat. Multiple values are\nprocessed as OR (having any of those specified will be included), not\nAND. This rule is applied last and ensures any strains matching these\nrules will be included regardless of priorities, subsampling, or absence\nof an entry in sequences."
                 },
                 "min_date": {
                     "type": "string",
@@ -91,7 +91,7 @@
                 },
                 "query": {
                     "type": "string",
-                    "description": "Filter samples by attribute. Uses `Pandas DataFrame query syntax`__.\n(e.g., \"country == 'Colombia'\" or \"(country == 'USA' & (division ==\n'Washington'))\")\n\n__ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query"
+                    "description": "Filter sequences by attribute. Uses `Pandas DataFrame query syntax`__.\n(e.g., \"country == 'Colombia'\" or \"(country == 'USA' & (division ==\n'Washington'))\")\n\n__ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query"
                 },
                 "query_columns": {
                     "type": "array",
@@ -117,11 +117,11 @@
                 },
                 "sequences_per_group": {
                     "type": "integer",
-                    "description": "subsample to no more than this number of sequences per category"
+                    "description": "select no more than this number of sequences per category"
                 },
                 "max_sequences": {
                     "type": "integer",
-                    "description": "subsample to no more than this number of sequences (i.e. total sample\nsize); can be used without grouping columns"
+                    "description": "select no more than this number of sequences (i.e. total sample\nsize); can be used without grouping columns"
                 }
             }
         }
