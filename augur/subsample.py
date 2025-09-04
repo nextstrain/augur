@@ -104,7 +104,8 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     input_group.add_argument('--skip-checks', action='store_true', help="use this option to skip checking for duplicates in sequences and whether ids in metadata have a sequence entry. Can improve performance on large files. Note that this should only be used if you are sure there are no duplicate sequences or mismatched ids since they can lead to errors in downstream Augur commands.")
 
     config_group = parser.add_argument_group("Configuration options", "options related to configuration")
-    config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file. The expected config options must be defined at the top level." + SKIP_AUTO_DEFAULT_IN_HELP)
+    config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file. The expected config options must be defined at the top level, or within a specific section using --config-section." + SKIP_AUTO_DEFAULT_IN_HELP)
+    config_group.add_argument("--config-section", metavar="KEY", nargs="+", action=ExtendOverwriteDefault, help="Use a section of the file given to --config by listing the keys leading to the section. Provide one or more keys. (default: use the entire file)" + SKIP_AUTO_DEFAULT_IN_HELP)
     config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this means the number of samples to run simultaneously. Individual samples are limited to a single thread. The final augur filter call can take advantage of multiple threads.")
     config_group.add_argument('--subsample-seed', metavar="N", type=int, help="random number generator seed for reproducible outputs (with same input data)." + SKIP_AUTO_DEFAULT_IN_HELP)
 
@@ -144,7 +145,7 @@ def run(args: argparse.Namespace) -> None:
     """
 
     # 1. Parse and validate config.
-    config = _parse_config(args.config)
+    config = _parse_config(args.config, args.config_section)
 
     # 2. Construct argument lists for augur filter.
 
@@ -193,7 +194,7 @@ def run(args: argparse.Namespace) -> None:
             sample.remove_output_strains()
 
 
-def _parse_config(filename: str) -> Dict[str, Any]:
+def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> Dict[str, Any]:
     # Create a custom YAML loader to treat timestamps as strings.
     class CustomLoader(yaml.SafeLoader):
         pass
@@ -206,6 +207,18 @@ def _parse_config(filename: str) -> Dict[str, Any]:
             config = yaml.load(f, Loader=CustomLoader)
         except yaml.YAMLError as e:
             raise AugurError(f"The configuration file {filename!r} is not valid YAML.\n" + str(e)) from e
+
+    # Handle --config-section.
+    if config_section is not None:
+        traversed_section = config
+
+        for i, key in enumerate(config_section):
+            if not isinstance(traversed_section, dict) or key not in traversed_section:
+                traversed_path = ' → '.join(repr(key) for key in config_section[:i+1])
+                raise AugurError(f"Config section {traversed_path} not found in {filename!r}")
+            traversed_section = traversed_section[key]
+
+        config = traversed_section
 
     # Validate against schema.
     try:
