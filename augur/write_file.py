@@ -1,5 +1,6 @@
 r"""
 Write a file like Augur, with transparent optimized compression and universal newlines.
+Supported compression formats: gzip (.gz), bzip2 (.bz2), xz (.xz), zstandard (.zst).
 
 Input is always from stdin.
 
