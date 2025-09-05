@@ -5,7 +5,7 @@ Input is always from stdin.
 
 Output is to the given file path, as the compression format detection require
 it.  The given path may be "-" to explicitly write to stdout, but no
-decompression will be done.
+compression will be done.
 
 Universal newline translation is always performed, so \n, \r\n, and \r in the
 input are all translated to the system's native newlines (e.g. \n on Unix, \r\n
