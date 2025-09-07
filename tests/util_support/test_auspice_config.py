@@ -1,8 +1,9 @@
-from augur.util_support.auspice_config import merge_configs
+from augur.util_support.auspice_config import merge_configs, _rename_deprecated_colorings
 from augur.errors import AugurError
 from augur.types import ValidationMode
 
 import pytest
+import warnings
 
 SKIP = ValidationMode.SKIP
 
@@ -172,3 +173,96 @@ class TestDictMergeDisplayDefaults:
         ]
         with pytest.raises(AugurError):
             merged = merge_configs(configs, SKIP)
+
+
+class TestDeprecatedColoringRename:
+
+    def test_deprecated_authors_warning_message(self):
+        """Test that the deprecation warning for 'authors' -> 'author' has a clear, actionable message."""
+        colorings = [
+            {'key': 'authors', 'title': 'Authors', 'type': 'categorical'},
+            {'key': 'country', 'title': 'Country', 'type': 'categorical'},
+        ]
+        
+        with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered
+            warnings.simplefilter("always")
+            
+            # Call the function that should produce the warning
+            result = _rename_deprecated_colorings(colorings)
+            
+            # Verify a warning was issued
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)
+            
+            # Verify the warning message is clear and actionable
+            warning_message = str(w[0].message)
+            expected_elements = [
+                "[config file]",
+                "Found deprecated coloring key 'authors'",
+                "automatically renamed to 'author'", 
+                "Please update your auspice config file",
+                "use 'author' instead of 'authors'",
+                "to avoid this warning"
+            ]
+            
+            for element in expected_elements:
+                assert element in warning_message, f"Warning message missing: '{element}'. Full message: '{warning_message}'"
+        
+        # Verify that the coloring was actually renamed
+        assert len(result) == 2
+        keys = [c['key'] for c in result]
+        assert 'author' in keys
+        assert 'authors' not in keys
+
+    def test_deprecated_numdate_warning_message(self):
+        """Test that the deprecation warning for 'numdate' -> 'num_date' has a clear, actionable message."""
+        colorings = [
+            {'key': 'numdate', 'title': 'Numerical Date', 'type': 'temporal'},
+            {'key': 'country', 'title': 'Country', 'type': 'categorical'},
+        ]
+        
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            
+            result = _rename_deprecated_colorings(colorings)
+            
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)
+            
+            warning_message = str(w[0].message)
+            expected_elements = [
+                "[config file]",
+                "Found deprecated coloring key 'numdate'",
+                "automatically renamed to 'num_date'", 
+                "Please update your auspice config file",
+                "use 'num_date' instead of 'numdate'",
+                "to avoid this warning"
+            ]
+            
+            for element in expected_elements:
+                assert element in warning_message, f"Warning message missing: '{element}'. Full message: '{warning_message}'"
+        
+        # Verify that the coloring was actually renamed
+        assert len(result) == 2
+        keys = [c['key'] for c in result]
+        assert 'num_date' in keys
+        assert 'numdate' not in keys
+
+    def test_no_deprecated_colorings_no_warning(self):
+        """Test that no warning is issued when there are no deprecated colorings."""
+        colorings = [
+            {'key': 'author', 'title': 'Author', 'type': 'categorical'},
+            {'key': 'country', 'title': 'Country', 'type': 'categorical'},
+        ]
+        
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            
+            result = _rename_deprecated_colorings(colorings)
+            
+            # Verify no warnings were issued
+            assert len(w) == 0
+        
+        # Verify that the colorings are unchanged
+        assert result == colorings
