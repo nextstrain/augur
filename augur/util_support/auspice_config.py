@@ -151,7 +151,7 @@ def _rename_deprecated_colorings(colorings: list):
                 deprecated(f"[config file] ignoring deprecated {old_key!r} because a coloring for {new_key!r} already exists")
                 colorings = [c for [idx, c] in enumerate(colorings) if idx!=old_coloring['index']]
             else:
-                deprecated(f"[config file] Found deprecated coloring key {old_key!r}. This has been automatically renamed to {new_key!r}. Please update your auspice config file to use {new_key!r} instead of {old_key!r} to avoid this warning.")
+                deprecated(f"[config file] The deprecated coloring key {old_key!r} has been automatically renamed to {new_key!r}. Update your auspice config file to use {new_key!r} instead of {old_key!r} to remove this warning.")
                 colorings[old_coloring['index']]['key'] = new_key
     return colorings
 
