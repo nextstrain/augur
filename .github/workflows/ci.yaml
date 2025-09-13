@@ -23,7 +23,7 @@ jobs:
   mypy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
     - uses: actions/checkout@v5
     - run: pip install .[dev]
     - run: mypy
@@ -31,7 +31,7 @@ jobs:
   pyright:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
     - uses: actions/checkout@v5
     - run: npx pyright --stats
 
@@ -340,7 +340,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
       - run: pip install coverage
 
       - uses: actions/download-artifact@v5
@@ -364,7 +364,7 @@ jobs:
   check-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           # This should match the python version in .readthedocs.yml
           python-version: '3.11'
@@ -395,7 +395,7 @@ jobs:
         with:
           # Fetch all branches and tags.
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
       - name: Set Nextstrain bot as git user
