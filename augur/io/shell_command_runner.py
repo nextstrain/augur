@@ -8,7 +8,7 @@ try:
     from signal import SIGKILL
 except ImportError:
     # A non-POSIX platform
-    SIGKILL = None  # type: ignore[assignment]
+    SIGKILL = None  # type: ignore[misc]
 
 
 def run_shell_command(cmd, raise_errors=False, extra_env=None):
