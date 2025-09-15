@@ -77,7 +77,7 @@ setuptools.setup(
             "deepdiff >=4.3.2, <8.0.0",
             "flake8 >=7.0.0, <8",
             "freezegun >=0.3.15",
-            "mypy",
+            "mypy >=1.18.1",
             "nextstrain-sphinx-theme >=2022.5",
             "pandas-stubs >=1.4.0, <3",
             "pylint >=1.7.6",
