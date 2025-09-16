@@ -25,6 +25,7 @@ command_strings = [
     "merge",
     "index",
     "filter",
+    "subsample",
     "mask",
     "align",
     "tree",

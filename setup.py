@@ -67,6 +67,7 @@ setuptools.setup(
         "phylo-treetime >=0.11.2, <0.12",
         "pyfastx >=1.0.0, <3.0",
         "python_calamine >=0.2.0",
+        "pyyaml",
         "referencing >=0.29.1, <1.0",
         "scipy ==1.*",
         "xopen[zstd] >=2.0.0, <3"
@@ -93,6 +94,7 @@ setuptools.setup(
             "sphinx-autodoc-typehints >=1.21.4",
             "sphinx-tabs",
             "types-jsonschema >=4.18.0, ==4.*",
+            "types-PyYAML",
             "types-setuptools",
             "wheel >=0.32.3",
             "ipdb >=0.10.1"
