@@ -41,26 +41,46 @@ Configuration
 The ``--config`` option expects a YAML-formatted configuration file. This
 section describes how the file should be structured.
 
+.. code:: yaml
+
+   defaults:
+     # default sample options
+   samples:
+     <sample 1>:
+       # sample options
+     <sample 2>:
+       # sample options
+     …
+
 .. tip::
 
     Use ``--config-section`` to read from a configuration file that puts these
     options under a specific section.
 
+
+defaults
+--------
+
+The ``defaults`` section is optional and allows you to specify common options
+that apply to all samples. This reduces repetition when multiple samples share
+the same criteria.
+
+Options specified in the ``defaults`` section can be overridden by individual
+samples. If both defaults and a specific sample define the same option, the
+sample-specific value takes precedence.
+
+Note that some options are only available at the sample level and cannot be
+specified in defaults.
+
+.. schema-options-table:: augur/data/schema-subsample-config.json defaultProperties
+
 samples
 -------
 
-``samples`` must contain at least one sample.
+``samples`` must contain at least one sample. Sample-specific options override
+any values set in the ``defaults`` section.
 
-.. code:: yaml
-
-   samples:
-     <sample 1>:
-       # sample options (see below)
-     <sample 2>:
-       # sample options (see below)
-     …
-
-.. sample-options-schema-table:: augur/data/schema-subsample-config.json
+.. schema-options-table:: augur/data/schema-subsample-config.json sampleProperties
 
 Implementation details
 ======================

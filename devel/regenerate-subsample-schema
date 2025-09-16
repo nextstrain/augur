@@ -43,11 +43,8 @@ def create_schema():
         "required": ["samples"],
     }
 
-    # Define sample options as properties in the schema.
-    # Note: these map directly to augur filter options¹, but that is an
-    # implementation detail that may change in the future.
-    # ¹ augur/subsample.py:SAMPLE_CONFIG
-    sample_options = {
+    # Define default options that can be used at top-level or sample-level.
+    default_options = {
         "exclude": {
             "oneOf": [
                 {"type": "string"},
@@ -130,7 +127,15 @@ def create_schema():
                 }
             ],
             "description": descriptions["query_columns"]
-        },
+        }
+    }
+
+    # Define sample options as properties in the schema.
+    # Note: these map directly to augur filter options¹, but that is an
+    # implementation detail that may change in the future.
+    # ¹ augur/subsample.py:SAMPLE_CONFIG
+    sample_options = {
+        **default_options,
         "group_by": {
             "oneOf": [
                 {"type": "string"},
@@ -161,8 +166,13 @@ def create_schema():
 
     validate(sample_options)
 
-    # Add a definition for sample options.
+    # Add definitions for default and sample options.
     schema["$defs"] = {
+        "defaultProperties": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": default_options
+        },
         "sampleProperties": {
             "type": "object",
             "additionalProperties": False,
@@ -172,6 +182,7 @@ def create_schema():
 
     # Define the schema structure.
     schema["properties"] = {
+        "defaults": {"$ref": "#/$defs/defaultProperties"},
         "samples": {
             "type": "object",
             "minProperties": 1,

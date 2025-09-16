@@ -4,6 +4,9 @@ Setup
 
 YAML anchors and aliases are supported.
 
+Note: this example is an old workaround before adding support for defaults.
+Keeping it around as a valid test for advanced YAML syntax.
+
   $ cat >include.txt <<~~
   > ZKC2/2016
   > VEN/UF_1/2016

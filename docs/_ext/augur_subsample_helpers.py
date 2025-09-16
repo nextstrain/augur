@@ -12,7 +12,7 @@ import os
 def setup(app):
     app.add_directive('yaml-option-table', YAMLOptionTableDirective)
     app.add_directive('cli-option-table', CLIOptionTableDirective)
-    app.add_directive('sample-options-schema-table', SampleOptionsSchemaTableDirective)
+    app.add_directive('schema-options-table', SchemaOptionsTableDirective)
 
     return {
         'version': '0.1',
@@ -165,24 +165,27 @@ class CLIOptionTableDirective(SphinxDirective):
         return [table]
 
 
-class SampleOptionsSchemaTableDirective(SphinxDirective):
+class SchemaOptionsTableDirective(SphinxDirective):
     """
-    A directive to generate a table with sample options from the JSON schema.
+    A directive to generate a table with options from the JSON schema.
 
     Creates a table with columns:
-    1. Property - YAML key name
+    1. Option - YAML config option
     2. Type - Data type information
     3. Description - Human-readable description
 
     Usage:
-        .. sample-options-schema-table:: path/to/schema.json
+        .. schema-options-table:: path/to/schema.json schema_def_name
+
+    Where schema_def_name is either 'sampleProperties' or 'defaultProperties'
     """
-    required_arguments = 1
+    required_arguments = 2
     optional_arguments = 0
     has_content = False
 
     def run(self):
         schema_path = self.arguments[0]
+        schema_def_name = self.arguments[1]
 
         # Open the schema file relative to the augur root
         base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -190,8 +193,12 @@ class SampleOptionsSchemaTableDirective(SphinxDirective):
         with open(full_schema_path, 'r') as f:
             schema = json.load(f)
 
-        # Extract sample options from schema
-        sample_options = schema['$defs']['sampleProperties']['properties']
+        # Validate that the requested schema definition exists
+        if '$defs' not in schema or schema_def_name not in schema['$defs']:
+            raise ValueError(f"Schema definition '{schema_def_name}' not found in {schema_path}")
+
+        # Extract options from the specified schema definition
+        options = schema['$defs'][schema_def_name]['properties']
 
         # Create the table structure
         table = nodes.table()
@@ -217,8 +224,8 @@ class SampleOptionsSchemaTableDirective(SphinxDirective):
         tbody = nodes.tbody()
         tgroup.append(tbody)
 
-        for prop_name in sample_options.keys():
-            prop_def = sample_options[prop_name]
+        for prop_name in options.keys():
+            prop_def = options[prop_name]
             row = nodes.row()
             tbody.append(row)
 
