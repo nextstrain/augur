@@ -88,11 +88,11 @@ def create_schema():
             "description": descriptions["include_where"]
         },
         "min_date": {
-            "type": "string",
+            "type": ["string", "integer"],
             "description": descriptions["min_date"]
         },
         "max_date": {
-            "type": "string",
+            "type": ["string", "integer"],
             "description": descriptions["max_date"]
         },
         "min_length": {

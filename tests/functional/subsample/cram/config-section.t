@@ -65,10 +65,10 @@ Test config nested under multiple keys.
   >       samples:
   >         early:
   >           max_sequences: 1
-  >           max_date: 2016-02-29
+  >           max_date: 2016-01-01
   >         recent:
   >           max_sequences: 1
-  >           min_date: 2016-03-01
+  >           min_date: 2016
   > ~~
 
   $ ${AUGUR} subsample \
@@ -81,12 +81,12 @@ Test config nested under multiple keys.
   >   --seed 0
   Validating schema of 'nested_config.yaml'...
   [early] 11 strains were dropped during filtering
-  [early] 	7 were dropped because they were later than 2016.16 or missing a date
-  [early] 	4 were dropped because of subsampling criteria
+  [early] 	9 were dropped because they were later than 2016.0 or missing a date
+  [early] 	2 were dropped because of subsampling criteria
   [early] 1 strain passed all filters
   [recent] 11 strains were dropped during filtering
-  [recent] 	5 were dropped because they were earlier than 2016.17 or missing a date
-  [recent] 	6 were dropped because of subsampling criteria
+  [recent] 	3 were dropped because they were earlier than 2016.0 or missing a date
+  [recent] 	8 were dropped because of subsampling criteria
   [recent] 1 strain passed all filters
   11 strains were dropped during filtering
   	1 had no metadata

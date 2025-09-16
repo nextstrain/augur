@@ -70,11 +70,17 @@
                     "description": "Include sequences with these values. ex: host=rat. Multiple values are\nprocessed as OR (having any of those specified will be included), not\nAND. This rule is applied last and ensures any strains matching these\nrules will be included regardless of priorities, subsampling, or absence\nof an entry in sequences."
                 },
                 "min_date": {
-                    "type": "string",
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
                     "description": "Minimal cutoff for date (inclusive). Supported formats:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
                 },
                 "max_date": {
-                    "type": "string",
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
                     "description": "Maximal cutoff for date (inclusive). Supported formats:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
                 },
                 "min_length": {
