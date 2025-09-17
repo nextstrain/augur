@@ -153,6 +153,7 @@ def run(args: argparse.Namespace) -> None:
 
     # 2. Construct argument lists for augur filter.
 
+    defaults = config.get("defaults")
     samples: List[Sample] = []
     global_filter_args: FilterArgs = {}
     for cli_option, filter_option in GLOBAL_CLI_OPTIONS.items():
@@ -160,6 +161,7 @@ def run(args: argparse.Namespace) -> None:
             _add_to_args(global_filter_args, filter_option, value)
 
     for name, options in config.get("samples", {}).items():
+        options = _merge_options(options, defaults)
         sample = Sample(name, options, global_filter_args)
         samples.append(sample)
 
@@ -246,6 +248,16 @@ def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> 
     except ValidateError as e:
         raise AugurError(e)
     return config
+
+
+def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Merge sample options with default options, with sample options taking precedence.
+    """
+    if defaults is None:
+        return sample_options
+
+    return {**defaults, **sample_options}
 
 
 class Sample:

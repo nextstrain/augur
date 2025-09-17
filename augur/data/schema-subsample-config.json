@@ -9,6 +9,126 @@
         "samples"
     ],
     "$defs": {
+        "defaultProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "exclude": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "File(s) with list of strains to exclude. Paths must be relative to the\nworking directory."
+                },
+                "exclude_all": {
+                    "type": "boolean",
+                    "description": "Exclude all strains by default. Use this with the include arguments to\nselect a specific subset of strains."
+                },
+                "exclude_ambiguous_dates_by": {
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "day",
+                        "month",
+                        "year"
+                    ],
+                    "description": "Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g.,\n2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous\nyear makes the corresponding month and day ambiguous, too, even if those\nfields have unambiguous values (e.g., \"201X-10-01\"). Similarly, an\nambiguous month makes the corresponding day ambiguous (e.g.,\n\"2010-XX-01\")."
+                },
+                "exclude_where": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "Exclude sequences matching these conditions. Ex: \"host=rat\" or\n\"host!=rat\". Multiple values are processed as OR (matching any of those\nspecified will be excluded), not AND."
+                },
+                "include": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "File(s) with list of strains to include regardless of priorities,\nsubsampling, or absence of an entry in sequences. Paths must be relative\nto the working directory."
+                },
+                "include_where": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "Include sequences with these values. ex: host=rat. Multiple values are\nprocessed as OR (having any of those specified will be included), not\nAND. This rule is applied last and ensures any strains matching these\nrules will be included regardless of priorities, subsampling, or absence\nof an entry in sequences."
+                },
+                "min_date": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
+                    "description": "Minimal cutoff for date (inclusive). Supported formats:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
+                },
+                "max_date": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
+                    "description": "Maximal cutoff for date (inclusive). Supported formats:\n\n1. an Augur-style numeric date with the year as the integer part (e.g.\n   2020.42) or\n2. a date in ISO 8601 date format (i.e. YYYY-MM-DD) (e.g. '2020-06-04') or\n3. a backwards-looking relative date in ISO 8601 duration format with\n   optional P prefix (e.g. '1W', 'P1W')"
+                },
+                "min_length": {
+                    "type": "integer",
+                    "description": "Minimal length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)."
+                },
+                "max_length": {
+                    "type": "integer",
+                    "description": "Maximum length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)."
+                },
+                "non_nucleotide": {
+                    "type": "boolean",
+                    "description": "Exclude sequences that contain illegal characters."
+                },
+                "query": {
+                    "type": "string",
+                    "description": "Filter sequences by attribute. Uses `Pandas DataFrame query syntax`__.\n(e.g., \"country == 'Colombia'\" or \"(country == 'USA' & (division ==\n'Washington'))\")\n\n__ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query"
+                },
+                "query_columns": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "Use alongside query to specify columns and data types in the format\n'column:type', where type is one of\n(bool,float,int,str). Automatic type inference will be\nattempted on all unspecified columns used in the query. Example:\nregion:str coverage:float."
+                }
+            }
+        },
         "sampleProperties": {
             "type": "object",
             "additionalProperties": false,
@@ -161,6 +281,9 @@
         }
     },
     "properties": {
+        "defaults": {
+            "$ref": "#/$defs/defaultProperties"
+        },
         "samples": {
             "type": "object",
             "minProperties": 1,
