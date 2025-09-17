@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 31.5.0 (17 September 2025)
+
 * A new command, `augur subsample`, supports complex subsampling using file-based configuration. See the updated [Filtering and Subsampling guide][] for a comparison with `augur filter`. [#635][] (@victorlin)
 
 [#635]: https://github.com/nextstrain/augur/issues/635
