@@ -95,7 +95,6 @@ Implementation details
    Note that the following ``augur filter`` options are not supported:
 
    - ``--priority``
-   - ``--output-log``
    - ``--output-group-by-sizes``
    - ``--output-strains``
    - ``--empty-output-reporting``

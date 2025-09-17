@@ -59,6 +59,7 @@ These are sent to both intermediate and final augur filter calls.
 FINAL_CLI_OPTIONS: Dict[str, AugurFilterOption] = {
     "output_metadata": "--output-metadata",
     "output_sequences": "--output-sequences",
+    "output_log": "--output-log",
     "skip_checks": ("--skip-checks", None),
 }
 """
@@ -116,6 +117,7 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     output_group = parser.add_argument_group("Output options", "options related to output files")
     output_group.add_argument("--output-metadata", metavar="FILE", help="output metadata file" + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument("--output-sequences", metavar="FILE", help="output sequences file" + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--output-log', help="Tab-delimited file to debug sequence inclusion in samples. All sequences have a row with filter=filter_by_exclude_all. The sequences included in the output each have an additional row per sample that included it (there may be multiple). These rows have filter=force_include_strains with kwargs pointing to a temporary file that hints at the intermediate sample it came from." + SKIP_AUTO_DEFAULT_IN_HELP)
     return parser
 
 
