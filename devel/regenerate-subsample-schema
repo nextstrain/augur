@@ -68,8 +68,13 @@ def create_schema():
             "description": descriptions["exclude_ambiguous_dates_by"]
         },
         "exclude_where": {
-            "type": "array",
-            "items": {"type": "string"},
+            "oneOf": [
+                {"type": "string"},
+                {
+                    "type": "array",
+                    "items": {"type": "string"}
+                }
+            ],
             "description": descriptions["exclude_where"]
         },
         "include": {
@@ -83,16 +88,21 @@ def create_schema():
             "description": descriptions["include"]
         },
         "include_where": {
-            "type": "array",
-            "items": {"type": "string"},
+            "oneOf": [
+                {"type": "string"},
+                {
+                    "type": "array",
+                    "items": {"type": "string"}
+                }
+            ],
             "description": descriptions["include_where"]
         },
         "min_date": {
-            "type": "string",
+            "type": ["string", "integer"],
             "description": descriptions["min_date"]
         },
         "max_date": {
-            "type": "string",
+            "type": ["string", "integer"],
             "description": descriptions["max_date"]
         },
         "min_length": {
@@ -112,13 +122,23 @@ def create_schema():
             "description": descriptions["query"]
         },
         "query_columns": {
-            "type": "array",
-            "items": {"type": "string"},
+            "oneOf": [
+                {"type": "string"},
+                {
+                    "type": "array",
+                    "items": {"type": "string"}
+                }
+            ],
             "description": descriptions["query_columns"]
         },
         "group_by": {
-            "type": "array",
-            "items": {"type": "string"},
+            "oneOf": [
+                {"type": "string"},
+                {
+                    "type": "array",
+                    "items": {"type": "string"}
+                }
+            ],
             "description": descriptions["group_by"]
         },
         "group_by_weights": {

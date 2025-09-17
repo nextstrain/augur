@@ -247,12 +247,23 @@ class SampleOptionsSchemaTableDirective(SphinxDirective):
 
     def _format_type_info(self, prop_def):
         """Format type information from JSON schema property definition."""
-        prop_type = prop_def.get('type', 'unknown')
 
-        if prop_type == 'array':
-            items_type = prop_def.get('items', {}).get('type', 'unknown')
-            return nodes.paragraph('', f"list of {items_type}s")
-        elif prop_type == 'string' and 'enum' in prop_def:
+        # Multiple types via oneOf
+        if 'oneOf' in prop_def:
+            # Special case: string or array of strings
+            one_of_options = prop_def['oneOf']
+            if (len(one_of_options) == 2 and
+                one_of_options[0] == {"type": "string"} and
+                one_of_options[1] == {"type": "array", "items": {"type": "string"}}):
+                return nodes.paragraph('', 'string(s)')
+
+        # Multiple types via list
+        if isinstance(prop_def.get('type'), list):
+            types = prop_def['type']
+            return nodes.paragraph('', ' or '.join(types))
+
+        # Enum type
+        if prop_def.get('type') == 'string' and 'enum' in prop_def:
             container = nodes.container()
             container += nodes.paragraph('', 'one of:')
             bullet_list = nodes.bullet_list()
@@ -262,5 +273,10 @@ class SampleOptionsSchemaTableDirective(SphinxDirective):
                 bullet_list += list_item
             container += bullet_list
             return container
-        else:
-            return nodes.paragraph('', prop_type)
+
+        # Basic types
+        if prop_def.get('type') in ('boolean', 'integer', 'string'):
+            return nodes.paragraph('', prop_def['type'])
+
+        # Fail the build if something new comes up so the code can be updated.
+        raise Exception(f'Failed to infer type from {prop_def}')
