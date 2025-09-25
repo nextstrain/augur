@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+* `augur curate apply-record-annotations` will now warn if an annotation was unnecessary, often indicative of the upstream data being updated. [#1893][] (@jameshadfield)
+
+[#1893]: https://github.com/nextstrain/augur/pull/1893
 
 ## 31.5.0 (17 September 2025)
 
