@@ -12,7 +12,8 @@ import subprocess
 import tempfile
 import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Dict, List, Optional, Tuple, Union
+from textwrap import dedent
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from augur import filter as augur_filter
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
@@ -111,6 +112,14 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     config_group = parser.add_argument_group("Configuration options", "options related to configuration")
     config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file. The expected config options must be defined at the top level, or within a specific section using --config-section." + SKIP_AUTO_DEFAULT_IN_HELP)
     config_group.add_argument("--config-section", metavar="KEY", nargs="+", action=ExtendOverwriteDefault, help="Use a section of the file given to --config by listing the keys leading to the section. Provide one or more keys. (default: use the entire file)" + SKIP_AUTO_DEFAULT_IN_HELP)
+    config_group.add_argument("--config-filepath-location", metavar="DIR", nargs="+", action=ExtendOverwriteDefault,
+        help=dedent(f"""\
+            Directory to search for relative filepaths specified in the config
+            file. More than one can be specified. If a file exists in multiple
+            directories, only the file from the first directory will be used.
+            Default:
+            (1) directory containing the config file
+            (2) current working directory""" + SKIP_AUTO_DEFAULT_IN_HELP))
     config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this means the number of samples to run simultaneously. Individual samples are limited to a single thread. The final augur filter call can take advantage of multiple threads.")
     config_group.add_argument('--seed', metavar="N", type=int, help="random number generator seed for reproducible outputs (with same input data)." + SKIP_AUTO_DEFAULT_IN_HELP)
 
@@ -150,8 +159,17 @@ def run(args: argparse.Namespace) -> None:
       support is adopted: <https://github.com/nextstrain/augur/issues/1574>
     """
 
+    # default
+    search_locations = [
+        os.path.dirname(os.path.abspath(args.config)),  # config file directory
+        os.getcwd(),
+    ]
+    if args.config_filepath_location:
+        search_locations = args.config_filepath_location
+
     # 1. Load schema, parse and validate config.
     schema_validator = load_json_schema("schema-subsample-config.json")
+    filepath_options = _extract_filepath_options(schema_validator.schema)
     config = _parse_config(args.config, args.config_section, schema_validator)
 
     # 2. Construct argument lists for augur filter.
@@ -165,7 +183,7 @@ def run(args: argparse.Namespace) -> None:
 
     for name, options in config.get("samples", {}).items():
         options = _merge_options(options, defaults)
-        sample = Sample(name, options, global_filter_args)
+        sample = Sample(name, options, global_filter_args, search_locations, filepath_options)
         samples.append(sample)
 
     final_filter_args: FilterArgs = {}
@@ -218,6 +236,26 @@ def run(args: argparse.Namespace) -> None:
                 sample.remove_output_strains()
 
 
+def _extract_filepath_options(schema) -> Set[str]:
+    """
+    Extract property names that have "format": "filepath" from the schema.
+    """
+    filepath_options = set()
+
+    for prop_name, prop_def in schema["$defs"]["sampleProperties"]["properties"].items():
+        # Check for "format: filepath" on a property that accepts only a single type.
+        if prop_def.get("format") == "filepath":
+            filepath_options.add(prop_name)
+
+        # Check for any "format: filepath" on a property that accepts multiple types.
+        elif "oneOf" in prop_def:
+            for variant in prop_def["oneOf"]:
+                if variant.get("format") == "filepath":
+                    filepath_options.add(prop_name)
+
+    return filepath_options
+
+
 def _parse_config(filename: str, config_section: Optional[List[str]], schema) -> Dict[str, Any]:
     # Create a custom YAML loader to treat timestamps as strings.
     class CustomLoader(yaml.SafeLoader):
@@ -262,20 +300,73 @@ def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, 
     return {**defaults, **sample_options}
 
 
+def _resolve_filepath(path: str, search_locations: List[str]) -> str:
+    """
+    Resolve a filepath by searching through multiple directories.
+
+    If the path is already absolute, verify it exists and return it.
+
+    >>> import tempfile, os
+    >>> tmpdir1 = tempfile.mkdtemp()
+    >>> tmpdir2 = tempfile.mkdtemp()
+    >>> absolute_path = os.path.join(tmpdir1, "file.txt")
+    >>> with open(absolute_path, "w") as f: _ = f.write("test")
+    >>> _resolve_filepath(absolute_path, ["/dir1", "/dir2"]) == absolute_path
+    True
+
+    Otherwise, try resolving it relative to each directory in search_locations, in order.
+    Return the first path that exists.
+
+    >>> with open(os.path.join(tmpdir2, "file.txt"), "w") as f: _ = f.write("test")
+    >>> result = _resolve_filepath("file.txt", [tmpdir1, tmpdir2])
+    >>> result == os.path.join(tmpdir1, "file.txt")
+    True
+
+    If an absolute path doesn't exist, raise an error.
+
+    >>> _resolve_filepath("/nonexistent/file.txt", ["/dir1", "/dir2"])
+    Traceback (most recent call last):
+        ...
+    augur.errors.AugurError: File '/nonexistent/file.txt' does not exist
+    
+    If the file doesn't exist in any location, raise an error.
+
+    >>> _resolve_filepath("nonexistent.txt", [tmpdir1, tmpdir2])
+    Traceback (most recent call last):
+        ...
+    augur.errors.AugurError: File 'nonexistent.txt' not found in any of the locations: ...
+    """
+    if os.path.isabs(path):
+        if not os.path.exists(path):
+            raise AugurError(f"File {path!r} does not exist.")
+        return path
+
+    for search_dir in search_locations:
+        resolved_path = os.path.abspath(os.path.join(search_dir, path))
+        if os.path.exists(resolved_path):
+            return resolved_path
+
+    # File not found
+    search_locations_str = ", ".join(repr(p) for p in search_locations)
+    raise AugurError(f"File {path!r} not found in any of the locations: {search_locations_str}")
+
+
 class Sample:
-    def __init__(self, name: str, config: Dict[str, Any], global_filter_args: FilterArgs) -> None:
+    def __init__(self, name: str, config: Dict[str, Any], global_filter_args: FilterArgs, search_locations: List[str], filepath_options: Set[str]) -> None:
         self.name = name
         self.output_strains = tempfile.NamedTemporaryFile(prefix=f"sample_{self.name}_", delete=False).name
-        self.filter_args = self._construct_filter_args(config, global_filter_args)
+        self.filter_args = self._construct_filter_args(config, global_filter_args, search_locations, filepath_options)
 
-    def _construct_filter_args(self, config: Dict[str, Any], global_filter_args: FilterArgs) -> FilterArgs:
+    def _construct_filter_args(self, config: Dict[str, Any], global_filter_args: FilterArgs, search_locations: List[str], filepath_options: Set[str]) -> FilterArgs:
         """
         Construct filter arguments from YAML config and global arguments.
 
         Extends global filter arguments:
 
+        >>> import tempfile, shutil
+        >>> tmpdir = tempfile.mkdtemp()
         >>> global_args = {"--metadata": "test.tsv", "--sequences": "test.fasta"}
-        >>> sample = Sample("test_sample", {}, global_args)
+        >>> sample = Sample("test_sample", {}, global_args, [tmpdir], set())
         >>> sample.filter_args["--metadata"]
         'test.tsv'
         >>> sample.filter_args["--sequences"]
@@ -284,7 +375,7 @@ class Sample:
         Maps YAML config to filter arguments:
 
         >>> config = {"min_date": "2020-01-01", "group_by": ["region", "year"], "sequences_per_group": 5, "non_nucleotide": True, "probabilistic_sampling": False}
-        >>> sample = Sample("test_sample", config, {})
+        >>> sample = Sample("test_sample", config, {}, [tmpdir], set())
         >>> sample.filter_args["--min-date"]
         '2020-01-01'
         >>> sample.filter_args["--group-by"]
@@ -295,6 +386,8 @@ class Sample:
         True
         >>> "--no-probabilistic-sampling" in sample.filter_args
         True
+
+        >>> shutil.rmtree(tmpdir)
         """
         filter_args = {
             # Checks are redundant across multiple calls with the same input.
@@ -312,6 +405,14 @@ class Sample:
 
         for config_key, value in config.items():
             filter_option = SAMPLE_CONFIG[config_key]
+
+            # Resolve filepaths
+            if config_key in filepath_options:
+                if isinstance(value, list):
+                    value = [_resolve_filepath(path, search_locations) for path in value]
+                elif isinstance(value, str):
+                    value = _resolve_filepath(value, search_locations)
+
             _add_to_args(filter_args, filter_option, value)
 
         return filter_args
