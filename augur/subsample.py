@@ -150,8 +150,9 @@ def run(args: argparse.Namespace) -> None:
       support is adopted: <https://github.com/nextstrain/augur/issues/1574>
     """
 
-    # Parse and validate config.
-    config = _parse_config(args.config, args.config_section)
+    # Load schema, parse and validate config.
+    schema_validator = load_json_schema("schema-subsample-config.json")
+    config = _parse_config(args.config, args.config_section, schema_validator)
 
     # Construct argument lists for augur filter.
 
@@ -217,7 +218,7 @@ def run(args: argparse.Namespace) -> None:
                 sample.remove_output_strains()
 
 
-def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> Dict[str, Any]:
+def _parse_config(filename: str, config_section: Optional[List[str]], schema) -> Dict[str, Any]:
     # Create a custom YAML loader to treat timestamps as strings.
     class CustomLoader(yaml.SafeLoader):
         pass
@@ -245,7 +246,6 @@ def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> 
 
     # Validate against schema.
     try:
-        schema = load_json_schema("schema-subsample-config.json")
         validate_json(config, schema, filename)
     except ValidateError as e:
         raise AugurError(e)
