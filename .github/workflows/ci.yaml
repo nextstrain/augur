@@ -268,7 +268,7 @@ jobs:
               pathogen: ncov,
               build-args: all_regions -j 2 --profile nextstrain_profiles/nextstrain-ci,
             }
-          - { pathogen: rsv }
+          - { pathogen: rsv,             build-args: --configfile config/ci.yaml }
           - {
               pathogen: seasonal-flu,
               build-args: --configfile profiles/ci/builds.yaml -p,
