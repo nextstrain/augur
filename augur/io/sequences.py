@@ -252,7 +252,7 @@ def validate_features(features):
         # Error if feature length is not a multiple of 3.
         length = len(feat.location)
         if length % 3:
-            yield f"Gene length of {feature_name!r} is not a multiple of 3."
+            yield f"{feature_name!r} has length {length} which is not a multiple of 3."
 
 
 def _read_nuc_annotation_from_gff(record, reference):
