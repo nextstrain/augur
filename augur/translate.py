@@ -13,10 +13,10 @@ mutations are output to a node-data JSON file.
     The mutation positions in the node-data JSON are one-based.
 """
 
-import sys
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.sequences import load_features, write_VCF_translation, is_vcf as is_filename_vcf
+from .io.print import print_err
 from .utils import parse_genes_argument, read_node_data, \
     write_json, get_json_name, genome_features_to_auspice_annotation
 from treetime.vcf_utils import read_vcf
@@ -159,7 +159,7 @@ def translate_vcf_feature(sequences, ref, feature, feature_name):
     # Need to get ref translation to store. check if multiple of 3 for sanity.
     # will be padded in safe_translate if not
     if len(refNuc)%3:
-        print(f"Gene length of {feature_name!r} is not a multiple of 3. will pad with N", file=sys.stderr)
+        print_err(f"Gene length of {feature_name!r} is not a multiple of 3. will pad with N")
 
     ref_aa_seq = safe_translate(refNuc)
     prot['reference'] = ref_aa_seq
@@ -219,12 +219,12 @@ def assign_aa_vcf(tree, translations):
     aa_muts[root.name]={"aa_muts":{}}
     #If has no root node name, exit with error
     if root.name is None:
-        print("\n*** Can't find node name for the tree root!")
+        print_err("\n*** Can't find node name for the tree root!")
         raise MissingNodeError()
 
     for fname, prot in translations.items():
         if root.name not in prot['sequences']:
-            print("\n*** Can't find %s in the alignment provided!"%(root.name))
+            print_err("\n*** Can't find %s in the alignment provided!"%(root.name))
             raise MismatchNodeError()
         root_muts = prot['sequences'][root.name]
         tmp = []
@@ -238,13 +238,13 @@ def assign_aa_vcf(tree, translations):
             aa_muts[c.name]={"aa_muts":{}}
         for fname, prot in translations.items():
             if n.name not in prot['sequences']:
-                print("\n*** Can't find %s in the alignment provided!"%(root.name))
+                print_err("\n*** Can't find %s in the alignment provided!"%(root.name))
                 raise MismatchNodeError()
             n_muts = prot['sequences'][n.name]
             for c in n:
                 tmp = []
                 if c.name is None:
-                    print("\n*** Internal node missing a node name!")
+                    print_err("\n*** Internal node missing a node name!")
                     raise MissingNodeError()
                 c_muts = prot['sequences'][c.name]
                 for pos in prot['positions']:
@@ -281,7 +281,7 @@ def assign_aa_fasta(tree, translations, reference_translations):
 
     for n in tree.get_nonterminals():
         if n.name is None:
-            print("\n*** Tree is missing node names!")
+            print_err("\n*** Tree is missing node names!")
             raise MissingNodeError()
         for c in n:
             aa_muts[c.name]={"aa_muts":{}}
@@ -292,10 +292,10 @@ def assign_aa_fasta(tree, translations, reference_translations):
                             enumerate(zip(aln[n.name], aln[c.name])) if a!=d]
                     aa_muts[c.name]["aa_muts"][fname] = tmp
                 elif c.name not in aln and n.name not in aln:
-                    print("\n*** Can't find %s OR %s in the alignment provided!"%(c.name, n.name))
+                    print_err("\n*** Can't find %s OR %s in the alignment provided!"%(c.name, n.name))
                     raise MismatchNodeError()
                 else:
-                    print("no sequence pair for nodes %s-%s"%(c.name, n.name))
+                    print_err("no sequence pair for nodes %s-%s"%(c.name, n.name))
 
         if n==tree.root:
             # The aa_sequences at the root are simply the translation from the root-node input data
@@ -409,7 +409,7 @@ def run(args):
 
     ## load features; only requested features if genes given
     features = load_features(args.reference_sequence, genes)
-    print("Read in {} features from reference sequence file".format(len(features)))
+    print_err("Read in {} features from reference sequence file".format(len(features)))
 
     ## Read in sequences & for each sequence translate each feature _except for_ the 'nuc' feature name
     ## Note that except for the 'nuc' annotation, `load_features` _only_ looks for 'gene' (GFF files) or 'CDS' (GenBank files)
@@ -430,7 +430,7 @@ def run(args):
             except NoVariationError:
                 features_without_variation.append(fname)
         if len(features_without_variation):
-            print("{} genes had no mutations and so have been be excluded.".format(len(features_without_variation)))  
+            print_err("{} genes had no mutations and so have been be excluded.".format(len(features_without_variation)))  
     else:
         (reference, sequences) = sequences_json(args.ancestral_sequences, tree, args.validation_mode)
         translations = {fname: translate_feature(sequences, feat) for fname, feat in features.items() if fname!='nuc'}
@@ -448,16 +448,16 @@ def run(args):
         else:
             aa_muts = assign_aa_fasta(tree, translations, reference_translations)
     except MissingNodeError as err:
-        print("\n*** ERROR: Some/all nodes have no node names!")
-        print("*** Please check you are providing the tree output by 'augur refine'.")
-        print("*** If you haven't run 'augur refine', please add node names to your tree by running:")
-        print("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree) )
-        print("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
+        print_err("\n*** ERROR: Some/all nodes have no node names!")
+        print_err("*** Please check you are providing the tree output by 'augur refine'.")
+        print_err("*** If you haven't run 'augur refine', please add node names to your tree by running:")
+        print_err("*** augur refine --tree %s --output-tree <filename>.nwk"%(args.tree))
+        print_err("*** And use <filename>.nwk as the tree when running 'ancestral', 'translate', and 'traits'")
         return 1
     except MismatchNodeError as err:
-        print("\n*** ERROR: Mismatch between node names in %s and in %s"%(args.tree, args.ancestral_sequences))
-        print("*** Ensure you are using the same tree you used to run 'ancestral' as input here.")
-        print("*** Or, re-run 'ancestral' using %s, then use the new %s as input here."%(args.tree, args.ancestral_sequences))
+        print_err("\n*** ERROR: Mismatch between node names in %s and in %s"%(args.tree, args.ancestral_sequences))
+        print_err("*** Ensure you are using the same tree you used to run 'ancestral' as input here.")
+        print_err("*** Or, re-run 'ancestral' using %s, then use the new %s as input here."%(args.tree, args.ancestral_sequences))
         return 1
 
     output_data = {'annotations':annotations, 'nodes':aa_muts, 'reference': reference_translations}
@@ -466,7 +466,7 @@ def run(args):
     NodeDataObject(output_data, out_name, args.validation_mode)
 
     write_json(output_data, out_name)
-    print("amino acid mutations written to", out_name, file=sys.stdout)
+    print_err("amino acid mutations written to", out_name)
 
     ## write alignments to file if requested
     if args.alignment_output:
@@ -482,4 +482,4 @@ def run(args):
                                  for sname, s in seqs.items()],
                                  args.alignment_output.replace('%GENE', fname), 'fasta')
             else:
-                print("ERROR: alignment output file does not contain '%GENE', so will not be written.")
+                print_err("ERROR: alignment output file does not contain '%GENE', so will not be written.")

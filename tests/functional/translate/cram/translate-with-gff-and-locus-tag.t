@@ -17,9 +17,9 @@ This is an identical test setup as `translate-with-gff-and-gene.t` but using loc
   >   --ancestral-sequences "${DATA}/zika/nt_muts.json" \
   >   --reference-sequence genemap.gff \
   >   --output-node-data aa_muts.json
+  Read in 3 features from reference sequence file
   Validating schema of '.+/nt_muts.json'... (re)
   Validating schema of .* (re)
-  Read in 3 features from reference sequence file
   amino acid mutations written to .* (re)
 
   $ python3 "${SCRIPTS}/diff_jsons.py" \
