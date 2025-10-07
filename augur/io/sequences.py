@@ -223,7 +223,10 @@ def load_features(reference, feature_names=None):
     else:
         features = _read_genbank(reference, feature_names)
 
-    validate_features(features)
+    if errors := list(validate_features(features)):
+        raise AugurError(dedent(f"""\
+            Reference file {reference!r} failed validation:
+                {indented_list(errors, "                ")}"""))
 
     return features
 
@@ -236,15 +239,20 @@ def validate_features(features):
     ----------
     features : dict
         keys: feature names, values: :py:class:`Bio.SeqFeature.SeqFeature`
+
+    Yields
+    ------
+    error: str
+        Message describing a validation error.
     """
     for feature_name, feat in features.items():
         if feature_name == 'nuc':
             continue
 
-        # Warn if feature length is not a multiple of 3.
+        # Error if feature length is not a multiple of 3.
         length = len(feat.location)
         if length % 3:
-            print_err(f"Gene length of {feature_name!r} is not a multiple of 3. will pad with N")
+            yield f"Gene length of {feature_name!r} is not a multiple of 3."
 
 
 def _read_nuc_annotation_from_gff(record, reference):
