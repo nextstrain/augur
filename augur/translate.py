@@ -34,12 +34,9 @@ class MismatchNodeError(Exception):
 class NoVariationError(Exception):
     pass
 
-def safe_translate(sequence, report_exceptions=False):
+def safe_translate(sequence):
     """Returns an amino acid translation of the given nucleotide sequence accounting
     for gaps in the given sequence.
-
-    Optionally, returns a tuple of the translated sequence and whether an
-    exception was raised during initial translation.
 
     Examples
     --------
@@ -55,14 +52,9 @@ def safe_translate(sequence, report_exceptions=False):
     ''
     >>> safe_translate("ATGT")
     'MX'
-    >>> safe_translate("ATG", report_exceptions=True)
-    ('M', False)
-    >>> safe_translate("ATGA-G", report_exceptions=True)
-    ('MX', True)
     """
     from Bio.Data.CodonTable import TranslationError
     from Bio.Seq import CodonTable
-    translation_exception = False
 
     #sequences not mod 3 give messy BiopythonWarning, so avoid by padding.
     if len(sequence)%3:
@@ -74,7 +66,6 @@ def safe_translate(sequence, report_exceptions=False):
         # BioPhython SeqFeature in frame gaps of three will translate as '-'
         translated_sequence = str(Seq.Seq(sequence_padded).translate(gap='-'))
     except TranslationError:
-        translation_exception = True
         # Any other codon like '-AA' or 'NNT' etc will fail. Translate codons
         # one by one.
         codon_table  = CodonTable.ambiguous_dna_by_name['Standard'].forward_table
@@ -100,10 +91,7 @@ def safe_translate(sequence, report_exceptions=False):
 
         translated_sequence = "".join(aas)
 
-    if report_exceptions:
-        return translated_sequence, translation_exception
-    else:
-        return translated_sequence
+    return translated_sequence
 
 
 def translate_feature(aln, feature):
