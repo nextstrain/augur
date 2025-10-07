@@ -120,7 +120,7 @@ def translate_feature(aln, feature):
     return translations
 
 
-def translate_vcf_feature(sequences, ref, feature, feature_name):
+def translate_vcf_feature(sequences, ref, feature):
     '''Translates a subsequence of input nucleotide sequences.
 
     Parameters
@@ -156,11 +156,6 @@ def translate_vcf_feature(sequences, ref, feature, feature_name):
     prot['positions'] = []
 
     refNuc = str(feature.extract( SeqRecord(seq=Seq(ref)) ).seq)
-    # Need to get ref translation to store. check if multiple of 3 for sanity.
-    # will be padded in safe_translate if not
-    if len(refNuc)%3:
-        print_err(f"Gene length of {feature_name!r} is not a multiple of 3. will pad with N")
-
     ref_aa_seq = safe_translate(refNuc)
     prot['reference'] = ref_aa_seq
 
@@ -425,7 +420,7 @@ def run(args):
             if fname=='nuc':
                 continue
             try:
-                translations[fname] = translate_vcf_feature(sequences, ref, feat, fname)
+                translations[fname] = translate_vcf_feature(sequences, ref, feat)
                 reference_translations[fname] = translations[fname]['reference']
             except NoVariationError:
                 features_without_variation.append(fname)
