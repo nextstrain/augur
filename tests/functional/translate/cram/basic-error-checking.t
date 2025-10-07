@@ -30,8 +30,8 @@ Gene length not divisible by 3
   >  --reference-sequence invalid.gff \
   >  --output-node-data "aa_muts.json"
   ERROR: Reference file 'invalid.gff' has errors:
-      Gene length of 'gene1' is not a multiple of 3.
-      Gene length of 'gene2' is not a multiple of 3.
+      'gene1' has length 14 which is not a multiple of 3.
+      'gene2' has length 13 which is not a multiple of 3.
   [2]
 
 Gene with compound location not divisible by 3
@@ -60,5 +60,5 @@ Gene with compound location not divisible by 3
   .* (re)
   .* (re)
   ERROR: Reference file 'invalid.gb' has errors:
-      Gene length of 'test_gene' is not a multiple of 3.
+      'test_gene' has length 26 which is not a multiple of 3.
   [2]

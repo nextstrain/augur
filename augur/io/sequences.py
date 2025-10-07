@@ -255,7 +255,7 @@ def find_feature_errors(features):
         # Error if feature length is not a multiple of 3.
         length = len(feat.location)
         if length % 3:
-            errors.append(f"Gene length of {feature_name!r} is not a multiple of 3.")
+            errors.append(f"{feature_name!r} has length {length} which is not a multiple of 3.")
 
     return errors
 
