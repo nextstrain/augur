@@ -5,20 +5,22 @@ Adds a 'strain' field to the record if it does not already exist.
 
 import argparse
 import re
-from typing import Generator, List
+from typing import Generator, List, Optional
+
 from augur.argparse_ import ExtendOverwriteDefault
 from augur.io.print import print_err
 from augur.utils import first_line
 
 
 def transform_name(
-    record: dict,
+    record: dict[str, Optional[str]],
     index: int,
     strain_name_pattern: re.Pattern,
     backup_fields: List[str],
-) -> dict:
+) -> dict[str, Optional[str]]:
+    strain_value = record.get("strain", "")
     # Verify strain name matches the strain regex pattern
-    if strain_name_pattern.match(record.get("strain", "")) is None:
+    if strain_value is None or strain_name_pattern.match(strain_value) is None:
         # Default to empty string if not matching pattern
         record["strain"] = ""
 
@@ -65,7 +67,7 @@ def register_parser(
     return parser
 
 
-def run(args: argparse.Namespace, records: List[dict]) -> Generator[dict, None, None]:
+def run(args: argparse.Namespace, records: List[dict[str, Optional[str]]]) -> Generator[dict[str, Optional[str]], None, None]:
     strain_name_pattern = re.compile(args.strain_regex)
 
     for index, record in enumerate(records):
