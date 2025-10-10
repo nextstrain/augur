@@ -312,20 +312,12 @@ def run(args):
         terminal_names = {n.name for n in T.get_terminals()}
         matched_ids = terminal_names & set(dates.keys())
 
-        if len(matched_ids) == 0:
-            print("\nWARNING: No matches found between sequence IDs in the tree and metadata IDs!", file=sys.stderr)
-            print(f"  - Tree has {len(terminal_names)} sequences", file=sys.stderr)
-            print(f"  - Metadata has {len(dates)} entries", file=sys.stderr)
-            print(f"  - Metadata is using '{metadata_object.id_column}' as the ID column", file=sys.stderr)
-            print(f"\nThis will prevent time tree inference from working correctly.", file=sys.stderr)
-            print(f"You may need to explicitly set the metadata ID column using --metadata-id-columns.", file=sys.stderr)
-            print(f"By default, the columns {DEFAULT_ID_COLUMNS} are tried in order.\n", file=sys.stderr)
-        elif len(matched_ids) < len(terminal_names) * 0.5:
-            print(f"\nWARNING: Only {len(matched_ids)}/{len(terminal_names)} sequence IDs match metadata IDs!", file=sys.stderr)
-            print(f"  - Metadata is using '{metadata_object.id_column}' as the ID column", file=sys.stderr)
-            print(f"\nThis may prevent time tree inference from working correctly.", file=sys.stderr)
-            print(f"You may need to explicitly set the metadata ID column using --metadata-id-columns.", file=sys.stderr)
-            print(f"By default, the columns {DEFAULT_ID_COLUMNS} are tried in order.\n", file=sys.stderr)
+        if len(matched_ids) < len(terminal_names) * 0.5:
+            print(f"\nWARNING: For {len(terminal_names)} sequence IDs, only {len(matched_ids)} corresponding metadata rows could be matched.", file=sys.stderr)
+            print(f"  Metadata has {len(dates)} entries in total.", file=sys.stderr)
+            print(f"  Metadata is using '{metadata_object.id_column}' as the ID column.", file=sys.stderr)
+            print(f"  You may need to explicitly set the metadata ID column using --metadata-id-columns.", file=sys.stderr)
+            print(f"  By default, the columns {DEFAULT_ID_COLUMNS} are tried in order.\n", file=sys.stderr)
 
         # save input state string for later export
         for n in T.get_terminals():
