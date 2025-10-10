@@ -209,7 +209,7 @@ def run(args):
                 "This can be changed with --metadata-delimiters."
             )
     elif not sys.stdin.isatty():
-        records = load_ndjson(sys.stdin)
+        records = load_ndjson(sys.stdin, error_on_null=True, error_on_nested=True, error_on_array=True)
     else:
         raise AugurError(dedent("""\
             No valid inputs were provided.
