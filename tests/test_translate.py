@@ -15,7 +15,7 @@ from augur import translate
 class TestTranslate:
     def test_safe_translate(self):
         '''
-        Test safe_translate from a given nucleotide sequence with no gaps to amino acid, accounting for reporting_exceptions
+        Test safe_translate from a given nucleotide sequence with no gaps to amino acid
         '''
         # initialize input and output tuples (tuple of params, expected outputs)
         params_and_outs = [(('ATG',), 'M'),
@@ -24,8 +24,7 @@ class TestTranslate:
                            (('ATGTAG',), 'M*'),
                            (('',), ''),
                            (('ATGT',), 'MX'),
-                           (('ATG', True), ('M', False)),
-                           (('ATGA-G', True), ('MX', True))]
+                           (('ATGA-G',), 'MX')]
 
         # input each pair into the function and check
         for pair in params_and_outs:
