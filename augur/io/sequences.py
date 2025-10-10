@@ -219,9 +219,40 @@ def load_features(reference, feature_names=None):
         raise AugurError(f"reference sequence file {reference!r} not found")
 
     if '.gff' in reference.lower():
-        return _read_gff(reference, feature_names)
+        features = _read_gff(reference, feature_names)
     else:
-        return _read_genbank(reference, feature_names)
+        features = _read_genbank(reference, feature_names)
+
+    if errors := list(validate_features(features)):
+        raise AugurError(dedent(f"""\
+            Reference file {reference!r} failed validation:
+                {indented_list(errors, "                ")}"""))
+
+    return features
+
+
+def validate_features(features):
+    """
+    Validate features parsed from a GFF/GenBank reference file.
+
+    Parameters
+    ----------
+    features : dict
+        keys: feature names, values: :py:class:`Bio.SeqFeature.SeqFeature`
+
+    Yields
+    ------
+    error: str
+        Message describing a validation error.
+    """
+    for feature_name, feat in features.items():
+        if feature_name == 'nuc':
+            continue
+
+        # Error if feature length is not a multiple of 3.
+        length = len(feat.location)
+        if length % 3:
+            yield f"{feature_name!r} has length {length} which is not a multiple of 3."
 
 
 def _read_nuc_annotation_from_gff(record, reference):
