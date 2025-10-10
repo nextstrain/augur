@@ -309,7 +309,6 @@ def run(args):
         except InvalidYearBounds as error:
             raise AugurError(f"Invalid value for --year-bounds: {error}")
 
-        # Check for mismatches between sequence IDs and metadata IDs
         terminal_names = {n.name for n in T.get_terminals()}
         matched_ids = terminal_names & set(dates.keys())
 
