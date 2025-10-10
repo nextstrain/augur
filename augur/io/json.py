@@ -90,17 +90,37 @@ def dump_ndjson(iterable: Iterable) -> None:
         print(as_json(item))
 
 
-def load_ndjson(file: Iterable[str], ignore_empty_lines = True) -> Iterable:
+def load_ndjson(
+    file: Iterable[str],
+    ignore_empty_lines = True,
+    error_on_null = False,
+    error_on_nested = False,
+    error_on_array = False
+) -> Iterable:
     """
-    Load newline-delimited JSON records from *file*. Ignore empty lines
-    in the file by default.
+    Load newline-delimited JSON records from *file*.
+    Ignore empty lines in the file by default.
+    If *error_on_null* is True (default False), error if any line contains a JSON null value.
+    If *error_on_nested* is True (default False), error if any line contains a nested JSON structure (list or dict).
+    If *error_on_array* is True (default False), error if any line contains a JSON array.
     """
-    for line in file:
+    for line_number, line in enumerate(file, start=1):
         # Skip empty lines when requested
         if ignore_empty_lines and not line.strip():
             continue
 
-        yield load_json(line)
+        record = load_json(line)
+
+        if error_on_array and isinstance(record, list):
+            raise ValueError(f"JSON array found in line {line_number}")
+
+        if error_on_nested and any(isinstance(value, (list, dict)) for value in record.values()):
+            raise ValueError(f"Nested JSON structure found in line {line_number}")
+
+        if error_on_null and any(value is None for value in record.values()):
+            raise ValueError(f"Null JSON value found in line {line_number}")
+        
+        yield record
 
 
 class JsonEncoder(json.JSONEncoder):

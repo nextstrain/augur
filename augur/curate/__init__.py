@@ -10,11 +10,28 @@ from typing import Iterable, Set
 from augur.argparse_ import ExtendOverwriteDefault, add_command_subparsers
 from augur.errors import AugurError
 from augur.io.json import dump_ndjson, load_ndjson
-from augur.io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
+from augur.io.metadata import (
+    DEFAULT_DELIMITERS,
+    InvalidDelimiter,
+    read_metadata_with_sequences,
+    read_table_to_dict,
+    write_records_to_tsv,
+)
 from augur.io.sequences import write_records_to_fasta
 from augur.types import DataErrorMethod
-from . import format_dates, normalize_strings, passthru, titlecase, apply_geolocation_rules, apply_record_annotations, abbreviate_authors, parse_genbank_location, transform_strain_name, rename
 
+from . import (
+    abbreviate_authors,
+    apply_geolocation_rules,
+    apply_record_annotations,
+    format_dates,
+    normalize_strings,
+    parse_genbank_location,
+    passthru,
+    rename,
+    titlecase,
+    transform_strain_name,
+)
 
 SUBCOMMAND_ATTRIBUTE = '_curate_subcommand'
 SUBCOMMANDS = [
@@ -209,7 +226,7 @@ def run(args):
                 "This can be changed with --metadata-delimiters."
             )
     elif not sys.stdin.isatty():
-        records = load_ndjson(sys.stdin)
+        records = load_ndjson(sys.stdin, error_on_null=True, error_on_nested=True, error_on_array=True)
     else:
         raise AugurError(dedent("""\
             No valid inputs were provided.
