@@ -2,10 +2,10 @@
 
 ## __NEXT__
 
-* `augur refine` will now warn when building a time tree if sequence IDs in the tree don't match metadata IDs, suggesting the use of `--metadata-id-columns` to explicitly set the correct ID column. [#XXXX][] (@corneliusroemer)
+* `augur refine` will now warn when building a time tree if sequence IDs in the tree don't match metadata IDs, suggesting the use of `--metadata-id-columns` to explicitly set the correct ID column. [#1902][] (@corneliusroemer)
 * `augur curate apply-record-annotations` will now warn if an annotation was unnecessary, often indicative of the upstream data being updated. [#1893][] (@jameshadfield)
 
-[#XXXX]: https://github.com/nextstrain/augur/pull/XXXX
+[#1902]: https://github.com/nextstrain/augur/pull/1902
 [#1893]: https://github.com/nextstrain/augur/pull/1893
 
 ## 31.5.0 (17 September 2025)
