@@ -51,14 +51,16 @@ def safe_translate(sequence):
     >>> safe_translate("")
     ''
     >>> safe_translate("ATGT")
-    'MX'
+    Traceback (most recent call last):
+    ...
+    ValueError: Sequence not divisible by 3.
     """
     from Bio.Data.CodonTable import TranslationError
     from Bio.Seq import CodonTable
 
-    #sequences not mod 3 give messy BiopythonWarning, so avoid by padding.
     if len(sequence)%3:
-        sequence_padded = sequence + "N"*(3-len(sequence)%3)
+        raise ValueError("Sequence not divisible by 3.")
+        # FIXME: handle this elsewhere since a proper error message needs more context - which sequence from which file?
     else:
         sequence_padded = sequence
     try:
