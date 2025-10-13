@@ -212,7 +212,7 @@ def load_features(reference, feature_names=None):
     Raises
     ------
     AugurError
-        If the reference file doesn't exist, or is malformed / empty
+        If the reference file doesn't exist, is malformed / empty, or has errors
     """
     #checks explicitly for GFF otherwise assumes Genbank
     if not os.path.isfile(reference):
@@ -223,28 +223,41 @@ def load_features(reference, feature_names=None):
     else:
         features = _read_genbank(reference, feature_names)
 
-    validate_features(features)
+    if errors := find_feature_errors(features):
+        raise AugurError(dedent(f"""\
+            Reference file {reference!r} has errors:
+                {indented_list(errors, "                ")}"""))
 
     return features
 
 
-def validate_features(features):
+def find_feature_errors(features):
     """
-    Validate features parsed from a GFF/GenBank reference file.
+    Find and return errors for features parsed from a GFF/GenBank reference
+    file.
 
     Parameters
     ----------
     features : dict
         keys: feature names, values: :py:class:`Bio.SeqFeature.SeqFeature`
+
+    Returns
+    -------
+    list of str
+        Error messages
     """
+    errors = []
+
     for feature_name, feat in features.items():
         if feature_name == 'nuc':
             continue
 
-        # Warn if feature length is not a multiple of 3.
+        # Error if feature length is not a multiple of 3.
         length = len(feat.location)
         if length % 3:
-            print_err(f"Gene length of {feature_name!r} is not a multiple of 3. will pad with N")
+            errors.append(f"Gene length of {feature_name!r} is not a multiple of 3.")
+
+    return errors
 
 
 def _read_nuc_annotation_from_gff(record, reference):
