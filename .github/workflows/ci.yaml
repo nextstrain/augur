@@ -273,7 +273,7 @@ jobs:
               pathogen: seasonal-flu,
               build-args: --configfile profiles/ci/builds.yaml -p,
             }
-          - { pathogen: tb }
+          - { pathogen: vcf-input-tutorial }
 
     name: pathogen-repo-ci-v0 (${{ matrix.pathogen }})
     defaults:
