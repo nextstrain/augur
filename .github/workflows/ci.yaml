@@ -263,16 +263,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - { pathogen: avian-flu, build-args: --snakefile segment-focused/Snakefile -pf test_target }
-          - {
-              pathogen: ncov,
-              build-args: all_regions -j 2 --profile nextstrain_profiles/nextstrain-ci,
-            }
+          - { pathogen: avian-flu,       build-args: --snakefile segment-focused/Snakefile -pf test_target }
+          - { pathogen: ncov,            build-args: all_regions -j 2 --profile nextstrain_profiles/nextstrain-ci }
           - { pathogen: rsv,             build-args: --configfile config/ci.yaml }
-          - {
-              pathogen: seasonal-flu,
-              build-args: --configfile profiles/ci/builds.yaml -p,
-            }
+          - { pathogen: seasonal-flu,    build-args: --configfile profiles/ci/builds.yaml -p }
           - { pathogen: vcf-input-tutorial }
 
     name: pathogen-repo-ci-v0 (${{ matrix.pathogen }})
