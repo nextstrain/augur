@@ -309,6 +309,16 @@ def run(args):
         except InvalidYearBounds as error:
             raise AugurError(f"Invalid value for --year-bounds: {error}")
 
+        terminal_names = {n.name for n in T.get_terminals()}
+        matched_ids = terminal_names & set(dates.keys())
+
+        if len(matched_ids) < len(terminal_names) * 0.5:
+            print(f"\nWARNING: For {len(terminal_names)} sequence IDs, only {len(matched_ids)} corresponding metadata rows could be matched.", file=sys.stderr)
+            print(f"  Metadata has {len(dates)} entries in total.", file=sys.stderr)
+            print(f"  Metadata is using '{metadata_object.id_column}' as the ID column.", file=sys.stderr)
+            print(f"  You may need to explicitly set the metadata ID column using --metadata-id-columns.", file=sys.stderr)
+            print(f"  By default, the columns {DEFAULT_ID_COLUMNS} are tried in order.\n", file=sys.stderr)
+
         # save input state string for later export
         for n in T.get_terminals():
             if n.name in metadata.index and METADATA_DATE_COLUMN in metadata.columns:
