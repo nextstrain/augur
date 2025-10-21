@@ -51,25 +51,25 @@ def safe_translate(sequence):
     >>> safe_translate("")
     ''
     >>> safe_translate("ATGT")
-    'MX'
+    Traceback (most recent call last):
+    ...
+    ValueError: Sequence length 4 is not divisible by 3.
     """
     from Bio.Data.CodonTable import TranslationError
     from Bio.Seq import CodonTable
 
-    #sequences not mod 3 give messy BiopythonWarning, so avoid by padding.
     if len(sequence)%3:
-        sequence_padded = sequence + "N"*(3-len(sequence)%3)
-    else:
-        sequence_padded = sequence
+        raise ValueError(f"Sequence length {len(sequence)} is not divisible by 3.")
+
     try:
         # Attempt translation by extracting the sequence according to the
         # BioPhython SeqFeature in frame gaps of three will translate as '-'
-        translated_sequence = str(Seq.Seq(sequence_padded).translate(gap='-'))
+        translated_sequence = str(Seq.Seq(sequence).translate(gap='-'))
     except TranslationError:
         # Any other codon like '-AA' or 'NNT' etc will fail. Translate codons
         # one by one.
         codon_table  = CodonTable.ambiguous_dna_by_name['Standard'].forward_table
-        str_seq = str(sequence_padded)
+        str_seq = str(sequence)
         codons = np.frombuffer(str_seq[:len(str_seq) - len(str_seq) % 3].encode(), dtype='S3').astype("U")
         assert len(codons) > 0
         aas = []
