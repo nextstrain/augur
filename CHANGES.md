@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 32.0.0 (21 October 2025)
+
 ### Major Changes
 
 * ancestral, translate: These will now error when the length of any reference gene is indivisible by 3, instead of silently padding with N to translate to 'X'. [#1895][] (@victorlin)
