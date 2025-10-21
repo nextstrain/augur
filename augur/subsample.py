@@ -118,8 +118,9 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
             One or more directories to search for relative filepaths specified
             in the config file. If a file exists in multiple directories, only
             the file from the first directory will be used. Specified
-            directories will be considered before the default (current working
-            directory)""" + SKIP_AUTO_DEFAULT_IN_HELP))
+            directories will be considered before the defaults:
+            (1) directory containing the config file
+            (2) current working directory""" + SKIP_AUTO_DEFAULT_IN_HELP))
     config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this means the number of samples to run simultaneously. Individual samples are limited to a single thread. The final augur filter call can take advantage of multiple threads.")
     config_group.add_argument('--seed', metavar="N", type=int, help="random number generator seed for reproducible outputs (with same input data)." + SKIP_AUTO_DEFAULT_IN_HELP)
 
@@ -158,7 +159,7 @@ def run(args: argparse.Namespace) -> None:
       worth it if a proper input reuse approach such as database/parquet file
       support is adopted: <https://github.com/nextstrain/augur/issues/1574>
     """
-    search_paths = _get_search_paths(args.search_paths)
+    search_paths = _get_search_paths(args.config, args.search_paths)
 
     # 1. Load schema, parse and validate config.
     schema_validator = load_json_schema("schema-subsample-config.json")
@@ -230,11 +231,12 @@ def run(args: argparse.Namespace) -> None:
                 sample.remove_output_strains()
 
 
-def _get_search_paths(from_cli: List[str]):
+def _get_search_paths(config_file: str, from_cli: List[str]):
     """
     Returns the paths to search for relative filepaths in config.
     """
     default = [
+        Path(config_file).parent,
         Path.cwd(),
     ]
 
