@@ -117,7 +117,8 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
         help=dedent(f"""\
             One or more directories to search for relative filepaths specified
             in the config file. If a file exists in multiple directories, only
-            the file from the first directory will be used. Specified
+            the file from the first directory will be used. This can also be set
+            via the environment variable 'AUGUR_SEARCH_PATHS'. Specified
             directories will be considered before the defaults, which are:
             (1) directory containing the config file
             (2) current working directory""" + SKIP_AUTO_DEFAULT_IN_HELP))
@@ -278,12 +279,25 @@ def _get_search_paths(
         Path.cwd(),
     ]
 
+    from_env = os.environ.get('AUGUR_SEARCH_PATHS')
+
     if from_cli:
+        if from_env:
+            print_err(dedent(f"""\
+                WARNING: Both the command line argument --search-paths
+                and the environment variable AUGUR_SEARCH_PATHS are set.
+                Only the command line argument will be used."""))
         return [
             *(Path(p) for p in from_cli),
             *default,
         ]
-    
+
+    if from_env:
+        return [
+            *(Path(p) for p in from_env.split(':')),
+            *default,
+        ]
+
     return default
 
 
