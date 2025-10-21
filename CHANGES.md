@@ -2,9 +2,16 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* ancestral, translate: These will now error when the length of any reference gene is indivisible by 3, instead of silently padding with N to translate to 'X'. [#1895][] (@victorlin)
+
+### Features
+
 * `augur curate apply-record-annotations` will now warn if an annotation was unnecessary, often indicative of the upstream data being updated. [#1893][] (@jameshadfield)
 
 [#1893]: https://github.com/nextstrain/augur/pull/1893
+[#1895]: https://github.com/nextstrain/augur/issues/1895
 
 ## 31.5.0 (17 September 2025)
 
