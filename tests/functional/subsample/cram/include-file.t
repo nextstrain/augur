@@ -135,3 +135,43 @@ Error when file not found in any search path
     config
     .*/include-file.t (re)
   [2]
+
+AUGUR_SEARCH_PATHS env var overrides --search-paths
+
+  $ mkdir -p env_dir/
+  $ cat >env_dir/include.txt <<~~
+  > SG_018
+  > ~~
+
+  $ mkdir -p cli_dir/
+  $ cat >cli_dir/include.txt <<~~
+  > EcEs062_16
+  > ~~
+
+  $ cat >config/config.yaml <<~~
+  > samples:
+  >   test:
+  >     max_sequences: 2
+  >     include:
+  >     - include.txt
+  > ~~
+
+  $ AUGUR_SEARCH_PATHS=env_dir ${AUGUR} subsample \
+  >   --metadata "$TESTDIR"/../../filter/data/metadata.tsv \
+  >   --config config/config.yaml \
+  >   --search-paths cli_dir \
+  >   --output-metadata output_metadata.tsv \
+  >   --seed 0
+  WARNING: Both the environment variable AUGUR_SEARCH_PATHS
+  and the command line argument --search-paths are set.
+  Only the environment variable will be used.
+  Validating schema of 'config/config.yaml'...
+  9 strains were dropped during filtering
+  \\t1 was added back because it was in .*/env_dir/include.txt.* (re)
+  	10 were dropped because of subsampling criteria
+  3 strains passed all filters
+
+Verify the file from env_dir was used (contains SG_018, not EcEs062_16 from cli_dir)
+
+  $ grep "SG_018" output_metadata.tsv | cut -f1
+  SG_018
