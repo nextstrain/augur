@@ -118,8 +118,9 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
             One or more directories to search for relative filepaths specified
             in the config file. If a file exists in multiple directories, only
             the file from the first directory will be used. Specified
-            directories will be considered before the default (current working
-            directory)""" + SKIP_AUTO_DEFAULT_IN_HELP))
+            directories will be considered before the defaults, which are:
+            (1) directory containing the config file
+            (2) current working directory""" + SKIP_AUTO_DEFAULT_IN_HELP))
     config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this means the number of samples to run simultaneously. Individual samples are limited to a single thread. The final augur filter call can take advantage of multiple threads.")
     config_group.add_argument('--seed', metavar="N", type=int, help="random number generator seed for reproducible outputs (with same input data)." + SKIP_AUTO_DEFAULT_IN_HELP)
 
@@ -164,7 +165,7 @@ def run(args: argparse.Namespace) -> None:
     config = _parse_config(args.config, args.config_section, schema_validator)
 
     # Resolve filepaths.
-    search_paths = _get_search_paths(args.search_paths)
+    search_paths = _get_search_paths(args.config, args.search_paths)
     config = _resolve_filepaths(config, search_paths, schema_validator.schema)
 
     # Construct argument lists for augur filter.
@@ -265,11 +266,15 @@ def _parse_config(filename: str, config_section: Optional[List[str]], schema) ->
     return config
 
 
-def _get_search_paths(from_cli: List[str]) -> List[Path]:
+def _get_search_paths(
+    config_file: str,
+    from_cli: List[str],
+) -> List[Path]:
     """
     Returns the paths to search for relative filepaths in config.
     """
     default = [
+        Path(config_file).parent,
         Path.cwd(),
     ]
 
