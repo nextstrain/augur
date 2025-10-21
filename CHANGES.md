@@ -5,6 +5,7 @@
 ### Major Changes
 
 * ancestral, translate: These will now error when the length of any reference gene is indivisible by 3, instead of silently padding with N to translate to 'X'. [#1895][] (@victorlin)
+* `augur.utils.load_features` is deprecated and will be removed in a future major version. Users should use `augur.io.load_features` instead. [#1912][] (@victorlin)
 
 ### Features
 
@@ -12,6 +13,7 @@
 
 [#1893]: https://github.com/nextstrain/augur/pull/1893
 [#1895]: https://github.com/nextstrain/augur/issues/1895
+[#1912]: https://github.com/nextstrain/augur/pull/1912
 
 ## 31.5.0 (17 September 2025)
 

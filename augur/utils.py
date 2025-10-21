@@ -197,7 +197,7 @@ class AugurJSONEncoder(json.JSONEncoder):
 
 
 def load_features(*args, **kwargs):
-    print_err("WARNING: augur.utils.load_features has been moved to augur.io.sequences.load_features.")
+    print_err("DEPRECATION WARNING: augur.utils.load_features has been moved to augur.io.load_features. The old alias will be removed in a future major version.")
     from augur.io.sequences import load_features as new_location
     return new_location(*args, **kwargs)
 
