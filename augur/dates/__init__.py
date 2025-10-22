@@ -161,6 +161,12 @@ Matches an Augur-style ambiguous date with 'XX' used to mask unknown parts of th
 Note that this can support any date format, not just YYYY-MM-DD.
 """
 
+RE_AUGUR_MISSING_DATE = re.compile(r'^XXXX-XX-XX$')
+"""
+Matches an Augur-style ambiguous date with all parts masked.
+This only supports YYYY-MM-DD format.
+"""
+
 RE_DATE_RANGE = re.compile(r'^\d{4}-\d{2}-\d{2}/\d{4}-\d{2}-\d{2}$')
 """
 Matches a date range in YYYY-MM-DD/YYYY-MM-DD format.
@@ -170,6 +176,10 @@ Note that this is a subset of the ISO 8601 time interval format.
 @cache
 def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float, Tuple[float, float], None]:
     value = str(value)
+
+    # Check if value is a missing date.
+    if RE_AUGUR_MISSING_DATE.match(value):
+        return None
 
     # Check if value is an exact date in the specified format (fmt).
     try:
