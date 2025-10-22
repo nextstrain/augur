@@ -165,23 +165,22 @@ Note that this can support any date format, not just YYYY-MM-DD.
 def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float, Tuple[float, float], None]:
     value = str(value)
 
-    # 1. Check if value is an exact date in the specified format (fmt).
-
+    # Check if value is an exact date in the specified format (fmt).
     try:
         return date_to_numeric(datetime.datetime.strptime(value, fmt))
     except:
         pass
     
-    # 2. Check if value is an ambiguous date in the specified format (fmt).
-
+    # Check if value is an ambiguous date in the specified format (fmt).
     if RE_AUGUR_AMBIGUOUS_DATE.match(value):
         start, end = AmbiguousDate(value, fmt=fmt).range(min_max_year=min_max_year)
         return (date_to_numeric(start), date_to_numeric(end))
 
-    # 3. Check formats that are always supported.
-
+    # Check if value is a numeric date.
     if RE_NUMERIC_DATE.match(value):
         return float(value)
+
+    # Check if value is an ISO 8601-like date.
 
     if RE_YEAR_ONLY.match(value):
         start, end = AmbiguousDate(f"{value}-XX-XX", fmt="%Y-%m-%d").range(min_max_year=min_max_year)
@@ -200,7 +199,7 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
             # closest in-bound value.
             raise InvalidDate(value, str(error)) from error
 
-    # 4. Return none (silent error) if the date does not match any of the checked formats.
+    # Return none (silent error) if the date does not match any of the checked formats.
 
     return None
 
