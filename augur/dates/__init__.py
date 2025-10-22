@@ -228,6 +228,14 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
 
         return (date_to_numeric(start), date_to_numeric(end))
 
+    # Check if value is an ISO 8601 duration treated as a backwards-looking relative date
+    try:
+        if not value.startswith('P'):
+            value = 'P' + value
+        return date_to_numeric(datetime.date.today() - isodate.parse_duration(value))
+    except (ValueError, isodate.ISO8601Error):
+        pass
+
     # Return none (silent error) if the date does not match any of the checked formats.
 
     return None
