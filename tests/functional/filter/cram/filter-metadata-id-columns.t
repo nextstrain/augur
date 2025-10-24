@@ -23,7 +23,7 @@ Test `augur filter` with `--metadata-id-columns`, `--exclude-where`, and `--incl
   >   --metadata metadata.tsv \
   >   --metadata-id-columns accession \
   >   --sequences sequences.fasta \
-  >   --exclude-where accession=acc2 clade=B\
+  >   --exclude-where accession=acc2 clade=B \
   >   --include-where accession=acc3 \
   >   --output-sequences output-sequences.fasta \
   >   --output-metadata output-metadata.tsv
