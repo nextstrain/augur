@@ -180,6 +180,12 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     >>> sorted(filter_by_exclude_where(metadata, "missing_column=value"))
     ['strain1', 'strain2']
 
+    Can also filter on the metadata index column when it has a name.
+
+    >>> metadata_with_named_index = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=pd.Index(["strain1", "strain2"], name="accession"))
+    >>> sorted(filter_by_exclude_where(metadata_with_named_index, "accession=strain1"))
+    ['strain2']
+
     """
     # Get strains that match the exclusion query
     # If column is missing, return empty set (nothing matches, so nothing to exclude)
@@ -587,6 +593,12 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
 
     >>> force_include_where(metadata, "missing_column=value")
     set()
+
+    Can also filter on the metadata index column when it has a name.
+
+    >>> metadata_with_named_index = pd.DataFrame([{"region": "Africa"}, {"region": "Europe"}], index=pd.Index(["strain1", "strain2"], name="accession"))
+    >>> force_include_where(metadata_with_named_index, "accession=strain2")
+    {'strain2'}
 
     """
     return _filter_where(metadata, include_where, return_when_missing='none')
