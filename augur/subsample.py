@@ -14,7 +14,7 @@ import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from augur import filter as augur_filter
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
@@ -167,7 +167,7 @@ def run(args: argparse.Namespace) -> None:
 
     # Resolve filepaths.
     search_paths = _get_search_paths(args.config, args.search_paths)
-    config = _resolve_filepaths(config, search_paths, schema_validator.schema)
+    config, _ = _resolve_filepaths(config, search_paths, schema_validator.schema)
 
     # Construct argument lists for augur filter.
 
@@ -231,6 +231,49 @@ def run(args: argparse.Namespace) -> None:
         finally:
             for sample in samples:
                 sample.remove_output_strains()
+
+
+def get_referenced_files(
+    config_file: str,
+    config_section: Optional[List[str]] = None,
+    search_paths: Optional[List[str]] = None,
+) -> Set[str]:
+    """Get the files referenced in a subsample config file.
+
+    Extracts and resolves all filepath values referenced in the config,
+    including defaults and individual sample options.
+
+    Parameters
+    ----------
+    config_file
+        Path to the subsample config file.
+
+    config_section
+        Optional list of keys to navigate to a specific section of the config file.
+
+    search_paths
+        Optional list of directories to search for relative filepaths specified
+        in the config file. If a file exists in multiple directories, only
+        the file from the first directory will be used. This can also be set
+        via the environment variable 'AUGUR_SEARCH_PATHS'. Specified
+        directories will be considered before the defaults, which are:
+        (1) directory containing the config file
+        (2) current working directory
+
+    Returns
+    -------
+    set
+        Resolved filepaths
+    """
+    # Load schema, parse and validate config.
+    schema_validator = load_json_schema("schema-subsample-config.json")
+    config = _parse_config(config_file, config_section, schema_validator)
+
+    # Resolve filepaths.
+    search_path_objs = _get_search_paths(config_file, search_paths)
+    config, filepaths = _resolve_filepaths(config, search_path_objs, schema_validator.schema)
+
+    return set(filepaths)
 
 
 def _parse_config(filename: str, config_section: Optional[List[str]], schema) -> Dict[str, Any]:
@@ -306,15 +349,17 @@ def _resolve_filepaths(
     search_paths: List[Path],
     schema: Dict[str, Any],
     root_schema: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+) -> Tuple[Dict[str, Any], List[str]]:
     """
     Resolve filepaths in config.
 
     Recursively walks the config alongside the schema to determine which fields
-    contain filepaths and resolves them.
+    contain filepaths, resolves them, and collects the resolved filepaths.
     """
     if root_schema is None:
         root_schema = schema
+
+    filepaths = []
 
     # Get properties schema for current section
     properties = schema.get("properties", {})
@@ -335,14 +380,19 @@ def _resolve_filepaths(
         if _is_filepath(prop_schema):
             if isinstance(value, list):
                 config[key] = [str(_resolve_filepath(Path(v), search_paths)) for v in value]
+                filepaths.extend(config[key])
             elif isinstance(value, str):
                 config[key] = str(_resolve_filepath(Path(value), search_paths))
+                filepaths.append(config[key])
 
         # Recurse into config section
         elif isinstance(value, dict):
-            config[key] = _resolve_filepaths(value, search_paths, prop_schema, root_schema)
+            config[key], downstream_filepaths = _resolve_filepaths(
+                value, search_paths, prop_schema, root_schema
+            )
+            filepaths.extend(downstream_filepaths)
 
-    return config
+    return config, filepaths
 
 
 def _get_referenced_schema(
