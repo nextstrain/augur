@@ -5,14 +5,18 @@
 ### Features
 
 * augur.io.read_metadata: Added a new parameter `keep_id_as_column` to keep the resolved id column as a column in addition to setting it as the DataFrame index. [#1917][] (@victorlin)
+* subsample: Filepaths in the config file can now be relative to the config file's parent directory in addition to the current working directory. Custom directories can also be specified using a new command line option `--search-paths` or environment variable `AUGUR_SEARCH_PATHS`. [#1897][] (@victorlin)
+* A helper function – `augur.subsample.get_referenced_files` – has been added to optimize usage of `augur subsample` in Snakemake workflows. This is experimental and not yet part of the public API. [#1918][] (@victorlin)
 
 ### Bug fixes
 
 * filter: Previously, `--query`, `--exclude-where`, and `--include-where` did not work for the id column (`strain`, `name`, or other from `--metadata-id-columns`). This has been fixed. [#1915][] (@corneliusroemer, @victorlin)
 * export v2: Support export of URLs for non-string values. [#1926][] (@joverlee521)
 
+[#1897]: https://github.com/nextstrain/augur/issues/1897
 [#1915]: https://github.com/nextstrain/augur/issues/1915
 [#1917]: https://github.com/nextstrain/augur/pull/1917
+[#1918]: https://github.com/nextstrain/augur/pull/1918
 [#1926]: https://github.com/nextstrain/augur/pull/1926
 
 ## 32.0.0 (21 October 2025)
