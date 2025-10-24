@@ -4,8 +4,9 @@
 
 ### Bug fixes
 
-* filter: Fixed `--include-where` and `--exclude-where` to properly filter on the column specified by `--metadata-id-columns`. [#1916][] (@corneliusroemer)
+* filter: Fixed a bug [#1915][] where `--include-where` and `--exclude-where` ignored filters applied to the metadata ID column (when specified via `--metadata-id-columns`). These options now correctly filter on the metadata ID column in addition to regular metadata columns. [#1916][] (@corneliusroemer)
 
+[#1915]: https://github.com/nextstrain/augur/issues/1915
 [#1916]: https://github.com/nextstrain/augur/pull/1916
 
 ## 32.0.0 (21 October 2025)
