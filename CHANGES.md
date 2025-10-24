@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* filter: Fixed `--include-where` and `--exclude-where` to properly filter on the column specified by `--metadata-id-columns`. [#1916][] (@corneliusroemer)
+
+[#1916]: https://github.com/nextstrain/augur/pull/1916
 
 ## 32.0.0 (21 October 2025)
 
