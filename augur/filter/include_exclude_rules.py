@@ -113,6 +113,43 @@ def parse_filter_query(query):
     return column, op, value
 
 
+def _filter_where(metadata, query, return_when_missing='all') -> FilterFunctionReturn:
+    """Shared helper function for include/exclude where filtering.
+
+    Parameters
+    ----------
+    metadata : pandas.DataFrame
+        Metadata indexed by strain name
+    query : str
+        Filter query following the pattern of `"property=value"` or `"property!=value"`
+    return_when_missing : str
+        What to return when the column doesn't exist: 'all' or 'none'
+
+    Returns
+    -------
+    set
+        Set of strain names that match the query
+    """
+    column, op, value = parse_filter_query(query)
+
+    if column == metadata.index.name:
+        values_to_filter = metadata.index.to_series()
+    elif column in metadata.columns:
+        values_to_filter = metadata[column]
+    else:
+        # Column doesn't exist - return all strains or none based on caller's needs
+        return set(metadata.index.values) if return_when_missing == 'all' else set()
+
+    # Apply the operator to values from the column in the query.
+    # This produces an array of boolean values we can index with.
+    matched = op(
+        values_to_filter.astype('string').str.lower(),
+        value.lower()
+    )
+
+    return set(metadata[matched].index.values)
+
+
 def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     """Exclude all strains from the given metadata that match the given exclusion query.
 
@@ -144,29 +181,11 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
     ['strain1', 'strain2']
 
     """
-    column, op, value = parse_filter_query(exclude_where)
-    if column == metadata.index.name:
-        values_to_filter = metadata.index.to_series()
-    elif column in metadata.columns:
-        values_to_filter = metadata[column]
-    else:
-        # Skip the filter, if the requested column does not exist.
-        return set(metadata.index.values)
-
-    # Apply a test operator (equality or inequality) to values from the
-    # column in the given query. This produces an array of boolean values we
-    # can index with.
-    excluded = op(
-        values_to_filter.astype('string').str.lower(),
-        value.lower()
-    )
-
-    # Negate the boolean index of excluded strains to get the index of
-    # strains that passed the filter.
-    included = ~excluded
-    filtered = set(metadata[included].index.values)
-
-    return filtered
+    # Get strains that match the exclusion query
+    # If column is missing, return empty set (nothing matches, so nothing to exclude)
+    excluded = _filter_where(metadata, exclude_where, return_when_missing='none')
+    # Return strains that were NOT excluded
+    return set(metadata.index.values) - excluded
 
 
 def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[Dict[str, str]] = None) -> FilterFunctionReturn:
@@ -570,26 +589,7 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
     set()
 
     """
-    column, op, value = parse_filter_query(include_where)
-
-    if column == metadata.index.name:
-        values_to_filter = metadata.index.to_series()
-    elif column in metadata.columns:
-        values_to_filter = metadata[column]
-    else:
-        # Skip the inclusion filter if the requested column does not exist.
-        return set()
-
-    # Apply a test operator (equality or inequality) to values from the
-    # column in the given query. This produces an array of boolean values we
-    # can index with.
-    included_index = op(
-        values_to_filter.astype('string').str.lower(),
-        value.lower()
-    )
-    included = set(metadata[included_index].index.values)
-
-    return included
+    return _filter_where(metadata, include_where, return_when_missing='none')
 
 
 def construct_filters(args, sequence_index, sequence_ids: Set[str]) -> Tuple[List[FilterOption], List[FilterOption]]:
