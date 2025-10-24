@@ -145,22 +145,26 @@ def filter_by_exclude_where(metadata, exclude_where) -> FilterFunctionReturn:
 
     """
     column, op, value = parse_filter_query(exclude_where)
-    if column in metadata.columns:
-        # Apply a test operator (equality or inequality) to values from the
-        # column in the given query. This produces an array of boolean values we
-        # can index with.
-        excluded = op(
-            metadata[column].astype('string').str.lower(),
-            value.lower()
-        )
-
-        # Negate the boolean index of excluded strains to get the index of
-        # strains that passed the filter.
-        included = ~excluded
-        filtered = set(metadata[included].index.values)
+    if column == metadata.index.name:
+        values_to_filter = metadata.index.to_series()
+    elif column in metadata.columns:
+        values_to_filter = metadata[column]
     else:
         # Skip the filter, if the requested column does not exist.
-        filtered = set(metadata.index.values)
+        return set(metadata.index.values)
+
+    # Apply a test operator (equality or inequality) to values from the
+    # column in the given query. This produces an array of boolean values we
+    # can index with.
+    excluded = op(
+        values_to_filter.astype('string').str.lower(),
+        value.lower()
+    )
+
+    # Negate the boolean index of excluded strains to get the index of
+    # strains that passed the filter.
+    included = ~excluded
+    filtered = set(metadata[included].index.values)
 
     return filtered
 
@@ -568,18 +572,22 @@ def force_include_where(metadata, include_where) -> FilterFunctionReturn:
     """
     column, op, value = parse_filter_query(include_where)
 
-    if column in metadata.columns:
-        # Apply a test operator (equality or inequality) to values from the
-        # column in the given query. This produces an array of boolean values we
-        # can index with.
-        included_index = op(
-            metadata[column].astype('string').str.lower(),
-            value.lower()
-        )
-        included = set(metadata[included_index].index.values)
+    if column == metadata.index.name:
+        values_to_filter = metadata.index.to_series()
+    elif column in metadata.columns:
+        values_to_filter = metadata[column]
     else:
         # Skip the inclusion filter if the requested column does not exist.
-        included = set()
+        return set()
+
+    # Apply a test operator (equality or inequality) to values from the
+    # column in the given query. This produces an array of boolean values we
+    # can index with.
+    included_index = op(
+        values_to_filter.astype('string').str.lower(),
+        value.lower()
+    )
+    included = set(metadata[included_index].index.values)
 
     return included
 
