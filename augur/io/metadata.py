@@ -26,7 +26,14 @@ class InvalidDelimiter(Exception):
     pass
 
 
-def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None, dtype=None):
+def read_metadata(
+        metadata_file,
+        delimiters=DEFAULT_DELIMITERS,
+        columns=None,
+        id_columns=DEFAULT_ID_COLUMNS,
+        chunk_size=None,
+        dtype=None,
+    ):
     r"""Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
