@@ -1157,10 +1157,9 @@ def run(args):
             metadata_df = read_metadata(
                 args.metadata,
                 delimiters=args.metadata_delimiters,
-                id_columns=args.metadata_id_columns)
-
-            # Add the index as a column.
-            metadata_df[metadata_df.index.name] = metadata_df.index
+                id_columns=args.metadata_id_columns,
+                keep_id_as_column=True,
+            )
 
             metadata_file = metadata_df.to_dict(orient="index")
         except FileNotFoundError:
