@@ -2,6 +2,13 @@
 
 ## __NEXT__
 
+### Features
+
+* subsample: Filepaths in the config file can now be relative to the config file's parent directory in addition to the current working directory. Custom directories can also be specified using a new command line option `--search-paths` or environment variable `AUGUR_SEARCH_PATHS`. [#1897][] (@victorlin)
+* A helper function – `augur.subsample.get_referenced_files` – has been added to optimize usage of `augur subsample` in Snakemake workflows. This is experimental and not yet part of the public API. [#1918][] (@victorlin)
+
+[#1897]: https://github.com/nextstrain/augur/issues/1897
+[#1918]: https://github.com/nextstrain/augur/pull/1918
 
 ## 32.0.0 (21 October 2025)
 
