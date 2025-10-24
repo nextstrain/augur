@@ -2,6 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* augur.io.read_metadata: Added a new parameter `keep_id_as_column` to keep the resolved id column as a column in addition to setting it as the DataFrame index. [#1917][] (@victorlin)
+
+### Bug fixes
+
+* filter: Previously, `--query`, `--exclude-where`, and `--include-where` did not work for the id column (`strain`, `name`, or other from `--metadata-id-columns`). This has been fixed. [#1915][] (@corneliusroemer, @victorlin)
+
+[#1915]: https://github.com/nextstrain/augur/issues/1915
+[#1917]: https://github.com/nextstrain/augur/pull/1917
 
 ## 32.0.0 (21 October 2025)
 
