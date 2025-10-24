@@ -43,8 +43,7 @@ descriptions = {
         "2010-XX-01")."""),
 
     "exclude": dedent("""\
-        File(s) with list of strains to exclude. Paths must be relative to the
-        working directory."""),
+        File(s) with list of strains to exclude."""),
 
     "exclude_where": dedent("""\
         Exclude sequences matching these conditions. Ex: "host=rat" or
@@ -57,8 +56,7 @@ descriptions = {
 
     "include": dedent("""\
         File(s) with list of strains to include regardless of priorities,
-        subsampling, or absence of an entry in sequences. Paths must be relative
-        to the working directory."""),
+        subsampling, or absence of an entry in sequences."""),
 
     "include_where": dedent("""\
         Include sequences with these values. ex: host=rat. Multiple values are
@@ -104,8 +102,7 @@ descriptions = {
         when a total sample size is provided."""),
 
     "group_by_weights": dedent("""\
-        TSV file defining weights for grouping. Path must be relative to the
-        working directory. Requirements:
+        TSV file defining weights for grouping. Requirements:
 
         (1) Lines starting with '#' are treated as comment lines.
         (2) The first non-comment line must be a header row.

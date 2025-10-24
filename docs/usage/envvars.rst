@@ -5,6 +5,14 @@ Environment variables
 Augur's behaviour can be globally modified by the values of some specific environment variables.
 These can be especially useful in the context of an entire pipeline or workflow which uses Augur, as the environment variables can be set once for all Augur commands at the start of the pipeline.
 
+.. envvar:: AUGUR_SEARCH_PATHS
+
+    Colon-separated directory paths.
+    If set, ``augur subsample`` will search these directories for relative filepaths specified in the config file.
+    Multiple directories can be set by separating them with colons (e.g., ``/path/one:/path/two``).
+
+    This takes precedence over the ``--search-paths`` command line argument.
+
 .. envvar:: AUGUR_DEBUG
 
     Boolean.
