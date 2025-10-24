@@ -232,6 +232,58 @@ def run(args: argparse.Namespace) -> None:
                 sample.remove_output_strains()
 
 
+def get_referenced_files(
+    config_file: str,
+    config_section: Optional[List[str]] = None,
+    search_paths: Optional[List[str]] = None,
+) -> Set[str]:
+    """Get the files referenced in a subsample config file.
+
+    Extracts and resolves all filepath values referenced in the config,
+    including defaults and individual sample options.
+
+    Parameters
+    ----------
+    config_file
+        Path to the subsample config file.
+
+    config_section
+        Optional list of keys to navigate to a specific section of the config file.
+
+    search_paths
+        Optional list of directories to search for relative filepaths specified
+        in the config file. If a file exists in multiple directories, only
+        the file from the first directory will be used. This can also be set
+        via the environment variable 'AUGUR_SEARCH_PATHS'. Specified
+        directories will be considered before the defaults:
+        (1) directory containing the config file
+        (2) current working directory
+
+    Returns
+    -------
+    set
+        Resolved filepaths
+    """
+    schema_validator = load_json_schema("schema-subsample-config.json")
+    filepath_options = _get_filepath_options(schema_validator.schema)
+    config = _parse_config(config_file, config_section, schema_validator)
+
+    all_search_paths = _get_search_paths(config_file, search_paths)
+    referenced_files: Set[str] = set()
+
+    for sample_options in config.get("samples", {}).values():
+        options = _merge_options(sample_options, config.get("defaults"))
+        for key, value in options.items():
+            if key in filepath_options:
+                if isinstance(value, list):
+                    for path in value:
+                        referenced_files.add(_resolve_filepath_str(path, all_search_paths))
+                elif isinstance(value, str):
+                    referenced_files.add(_resolve_filepath_str(value, all_search_paths))
+
+    return referenced_files
+
+
 def _get_search_paths(config_file: str, from_cli: List[str]):
     """
     Returns the paths to search for relative filepaths in config.
