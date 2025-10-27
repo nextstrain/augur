@@ -303,9 +303,9 @@ def get_probabilistic_group_sizes(groups, target_group_size, random_seed=None):
     return max_sizes_per_group
 
 
-TARGET_SIZE_COLUMN = '_augur_filter_target_size'
-INPUT_SIZE_COLUMN = '_augur_filter_input_size'
-OUTPUT_SIZE_COLUMN = '_augur_filter_subsampling_output_size'
+TARGET_SIZE_COLUMN = 'augur_filter_target_size'
+INPUT_SIZE_COLUMN = 'augur_filter_input_size'
+OUTPUT_SIZE_COLUMN = 'augur_filter_subsampling_output_size'
 
 
 def get_weighted_group_sizes(
@@ -349,11 +349,12 @@ def get_weighted_group_sizes(
     weights[OUTPUT_SIZE_COLUMN] = weights[[INPUT_SIZE_COLUMN, TARGET_SIZE_COLUMN]].min(axis=1)
 
     # Warn on any under-sampled groups
-    for _, row in weights.iterrows():
+    for row in weights.itertuples():
+        row = row._asdict()
         if row[INPUT_SIZE_COLUMN] < row[TARGET_SIZE_COLUMN]:
             sequences = _n('sequence', 'sequences', int(row[TARGET_SIZE_COLUMN]))
             are = _n('is', 'are', int(row[INPUT_SIZE_COLUMN]))
-            group = list(f'{col}={value!r}' for col, value in row[group_by].items())
+            group = list(f'{col}={row[col]!r}' for col in group_by)
             print_err(f"WARNING: Targeted {row[TARGET_SIZE_COLUMN]} {sequences} for group {group} but only {row[INPUT_SIZE_COLUMN]} {are} available.")
 
     if output_sizes_file:
