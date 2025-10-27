@@ -137,6 +137,12 @@ nitpick_ignore = [
      # This class can't be referenced.
      # <https://github.com/python/cpython/issues/101503>
      ("py:class", "argparse._SubParsersAction"),
+
+     # sphinx-autodoc-typehints resolves pd.DataFrame to the internal path
+     # pandas.core.frame.DataFrame, which is not in pandas' intersphinx
+     # inventory (only pandas.DataFrame is).
+     # <https://github.com/tox-dev/sphinx-autodoc-typehints/issues/47#issuecomment-401403609>
+     ("py:class", "pandas.core.frame.DataFrame"),
 ]
 
 # -- Cross-project references ------------------------------------------------
