@@ -19,7 +19,6 @@
   "reportArgumentType": false,
   "reportAttributeAccessIssue": false,
   "reportCallIssue": false,
-  "reportGeneralTypeIssues": false,
   "reportIncompatibleMethodOverride": false,
   "reportMissingImports": false,
   "reportMissingModuleSource": false,
