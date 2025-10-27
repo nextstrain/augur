@@ -20,6 +20,9 @@ TreeAttrs = DefaultDict[str, AttrInfo]
 Mapping from attribute name to object with values and statistics.
 """
 
+def _new_attr_info() -> AttrInfo:
+    return {"count": 0, "values": set(), "onAllNodes": False}
+
 
 def ensure_no_duplicate_names(root, ValidateError):
     """
@@ -49,7 +52,7 @@ def collectTreeAttrsV2(root, warn) -> Tuple[TreeAttrs, int]:
     :py:class:`int`
         Number of terminal nodes in tree
     """
-    seen: TreeAttrs = defaultdict(lambda: {"count": 0, "values": set(), "onAllNodes": False})
+    seen = defaultdict(_new_attr_info)
     num_nodes, num_terminal = (0, 0)
     def recurse(node):
         nonlocal num_nodes, num_terminal
@@ -198,7 +201,7 @@ def collectTreeAttrsV1(root) -> Tuple[TreeAttrs, int]:
     Collect all keys specified on node->attr (or node->traits) throughout the tree
     If the values of these keys are strings, then also collect the values
     """
-    seen: TreeAttrs = defaultdict(lambda: {"count": 0, "values": set(), "onAllNodes": False})
+    seen = defaultdict(_new_attr_info)
     num_nodes, num_terminal = (0, 0)
     def recurse(node):
         nonlocal num_nodes, num_terminal
