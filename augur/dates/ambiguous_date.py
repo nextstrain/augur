@@ -29,7 +29,7 @@ def resolve_uncertain_int(uncertain_string, min_or_max):
     elif min_or_max == "max":
         result = int(uncertain_string.replace("X", "9"))
     else:
-        raise "Tried to resolve an uncertain integer to something other than `min` or `max`."
+        raise ValueError("Tried to resolve an uncertain integer to something other than `min` or `max`.")
 
     if result == 0:
         # A date component cannot be 0. Well, year can, but...
