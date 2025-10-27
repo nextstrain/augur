@@ -350,7 +350,7 @@ def get_weighted_group_sizes(
 
     # Warn on any under-sampled groups
     for row in weights.itertuples():
-        row = row._asdict()
+        row = row._asdict()  # type: ignore[operator]
         if row[INPUT_SIZE_COLUMN] < row[TARGET_SIZE_COLUMN]:
             sequences = _n('sequence', 'sequences', int(row[TARGET_SIZE_COLUMN]))
             are = _n('is', 'are', int(row[INPUT_SIZE_COLUMN]))
