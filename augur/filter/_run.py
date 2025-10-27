@@ -200,6 +200,7 @@ def run(args):
         delimiters=[metadata_object.delimiter],
         columns=useful_metadata_columns,
         id_columns=[metadata_object.id_column],
+        keep_id_as_column=True,
         chunk_size=args.metadata_chunk_size,
         dtype="string",
     )

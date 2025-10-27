@@ -26,7 +26,15 @@ class InvalidDelimiter(Exception):
     pass
 
 
-def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id_columns=DEFAULT_ID_COLUMNS, chunk_size=None, dtype=None):
+def read_metadata(
+        metadata_file,
+        delimiters=DEFAULT_DELIMITERS,
+        columns=None,
+        id_columns=DEFAULT_ID_COLUMNS,
+        keep_id_as_column=False,
+        chunk_size=None,
+        dtype=None,
+    ):
     r"""Read metadata from a given filename and into a pandas `DataFrame` or
     `TextFileReader` object.
 
@@ -42,6 +50,8 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id
     id_columns : list of str
         List of possible id column names to check for, ordered by priority.
         Only one id column will be inferred.
+    keep_id_as_column : bool
+        If true, keep the resolved id column as a column in addition to setting it as the DataFrame index.
     chunk_size : int
         Size of chunks to stream from disk with an iterator instead of loading the entire input file into memory.
     dtype : dict or str
@@ -154,11 +164,67 @@ def read_metadata(metadata_file, delimiters=DEFAULT_DELIMITERS, columns=None, id
 
     kwargs["dtype"] = dtype
 
-    return pd.read_csv(
-        metadata_file,
-        **kwargs,
-        **PANDAS_READ_CSV_OPTIONS,
-    )
+    if keep_id_as_column:
+        return read_csv_with_index_col(
+            metadata_file,
+            **kwargs,
+            **PANDAS_READ_CSV_OPTIONS,
+        )
+    else:
+        return pd.read_csv(
+            metadata_file,
+            **kwargs,
+            **PANDAS_READ_CSV_OPTIONS,
+        )
+
+
+def read_csv_with_index_col(filepath_or_buffer, **kwargs):
+    """
+    Wrapper around pd.read_csv() to retain index_col as a column in addition
+    to setting it as the DataFrame index.
+
+    Examples
+    --------
+
+    'strain' is available as both the index and a column.
+
+    >>> from io import StringIO
+    >>> csv_data = StringIO("strain,col\\nA,val\\nB,val")
+    >>> df = read_csv_with_index_col(csv_data, index_col='strain')
+    >>> df.index.name
+    'strain'
+    >>> 'strain' in df.columns
+    True
+
+    Chunked reading also works.
+
+    >>> csv_data.seek(0)
+    0
+    >>> chunks = read_csv_with_index_col(csv_data, index_col='strain', chunksize=1)
+    >>> chunk = next(chunks)
+    >>> chunk.index.name
+    'strain'
+    >>> 'strain' in chunk.columns
+    True
+
+    Without index_col, an error is shown.
+
+    >>> read_csv_with_index_col(csv_data)
+    Traceback (most recent call last):
+        ...
+    Exception: index_col is required.
+    """
+    index_col = kwargs.pop("index_col", None)
+    if index_col is None:
+        raise Exception("index_col is required.")
+
+    result = pd.read_csv(filepath_or_buffer, **kwargs)
+
+    if isinstance(result, pd.DataFrame):
+        return result.set_index(index_col, drop=False)
+    else:
+        # Chunked iterator
+        return (chunk.set_index(index_col, drop=False) for chunk in result)
 
 
 def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ERROR_FIRST, id_column=None):
