@@ -6,6 +6,20 @@ and refactored over time.
 
 import sys
 from collections import defaultdict
+from typing import Any, DefaultDict, Set, Tuple, TypedDict
+
+
+class AttrInfo(TypedDict):
+    count: int
+    values: Set[Any]
+    onAllNodes: bool
+
+
+TreeAttrs = DefaultDict[str, AttrInfo]
+"""
+Mapping from attribute name to object with values and statistics.
+"""
+
 
 def ensure_no_duplicate_names(root, ValidateError):
     """
@@ -21,19 +35,21 @@ def ensure_no_duplicate_names(root, ValidateError):
     recurse(root)
 
 
-def collectTreeAttrsV2(root, warn):
+def collectTreeAttrsV2(root, warn) -> Tuple[TreeAttrs, int]:
     """
     Collect all keys specified on `node["node_attrs"]` throughout the tree
     and the values associated with them. Note that this will only look at
     attributes which are themselves objects with a `value` property.
     I.e. a node attribute `node["node_attrs"]["div"] -> numeric` will not
     be collected.
-    Returns a tuple.
-    return[0]: dict of `node_attr_property` -> x, where x is a dict with
-    keys `count` -> INT, `values` -> SET, `onAllNodes` -> BOOL.
-    return[1]: INT of number of terminal nodes in tree
+
+    Returns
+    -------
+    :py:class:`TreeAttrs`
+    :py:class:`int`
+        Number of terminal nodes in tree
     """
-    seen = defaultdict(lambda: {"count": 0, "values": set(), "onAllNodes": False})
+    seen: TreeAttrs = defaultdict(lambda: {"count": 0, "values": set(), "onAllNodes": False})
     num_nodes, num_terminal = (0, 0)
     def recurse(node):
         nonlocal num_nodes, num_terminal
@@ -177,12 +193,12 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
     return not warnings
 
 
-def collectTreeAttrsV1(root):
+def collectTreeAttrsV1(root) -> Tuple[TreeAttrs, int]:
     """
     Collect all keys specified on node->attr (or node->traits) throughout the tree
     If the values of these keys are strings, then also collect the values
     """
-    seen = defaultdict(lambda: {"count": 0, "values": set(), "onAllNodes": False})
+    seen: TreeAttrs = defaultdict(lambda: {"count": 0, "values": set(), "onAllNodes": False})
     num_nodes, num_terminal = (0, 0)
     def recurse(node):
         nonlocal num_nodes, num_terminal
