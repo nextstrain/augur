@@ -1,7 +1,8 @@
 import csv
 import os
-from typing import Iterable, Sequence
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Union
 import pandas as pd
+from pandas._typing import FilePath, ReadCsvBuffer
 import pyfastx
 import python_calamine as calamine
 import sys
@@ -27,39 +28,36 @@ class InvalidDelimiter(Exception):
 
 
 def read_metadata(
-        metadata_file,
-        delimiters=DEFAULT_DELIMITERS,
-        columns=None,
-        id_columns=DEFAULT_ID_COLUMNS,
-        keep_id_as_column=False,
-        chunk_size=None,
-        dtype=None,
-    ):
+        metadata_file: str,
+        delimiters: Sequence[str] = DEFAULT_DELIMITERS,
+        columns: Optional[List[str]] = None,
+        id_columns: Sequence[str] = DEFAULT_ID_COLUMNS,
+        keep_id_as_column: bool = False,
+        chunk_size: Optional[int] = None,
+        dtype: Optional[Union[Dict[str, Any], str]] = None,
+    ) -> Union[pd.DataFrame, Iterator[pd.DataFrame]]:
     r"""Read metadata from a given filename and into a pandas `DataFrame` or
-    `TextFileReader` object.
+    iterator of DataFrames when `chunk_size` is specified.
 
     Parameters
     ----------
-    metadata_file : str
+    metadata_file
         Path to a metadata file to load.
-    delimiters : list of str
+    delimiters
         List of possible delimiters to check for between columns in the metadata.
         Only one delimiter will be inferred.
-    columns : list of str
+    columns
         List of columns to read. If unspecified, read all columns.
-    id_columns : list of str
+    id_columns
         List of possible id column names to check for, ordered by priority.
         Only one id column will be inferred.
-    keep_id_as_column : bool
+    keep_id_as_column
         If true, keep the resolved id column as a column in addition to setting it as the DataFrame index.
-    chunk_size : int
+    chunk_size
         Size of chunks to stream from disk with an iterator instead of loading the entire input file into memory.
-    dtype : dict or str
+    dtype
         Data types to apply to columns in metadata. If unspecified, pandas data type inference will be used.
         See documentation for an argument of the same name to `pandas.read_csv()`.
-    Returns
-    -------
-    pandas.DataFrame or `pandas.io.parsers.TextFileReader`
 
     Raises
     ------
@@ -97,6 +95,7 @@ def read_metadata(
         "skipinitialspace": True,
         "na_filter": False,
         "low_memory": False,
+        **PANDAS_READ_CSV_OPTIONS,
     }
 
     if chunk_size:
@@ -107,7 +106,6 @@ def read_metadata(
         metadata_file,
         iterator=True,
         **kwargs,
-        **PANDAS_READ_CSV_OPTIONS,
     )
     chunk = metadata.read(nrows=1)
     metadata.close()
@@ -168,17 +166,18 @@ def read_metadata(
         return read_csv_with_index_col(
             metadata_file,
             **kwargs,
-            **PANDAS_READ_CSV_OPTIONS,
         )
     else:
         return pd.read_csv(
             metadata_file,
             **kwargs,
-            **PANDAS_READ_CSV_OPTIONS,
         )
 
 
-def read_csv_with_index_col(filepath_or_buffer, **kwargs):
+def read_csv_with_index_col(
+    filepath_or_buffer: Union[FilePath, ReadCsvBuffer[bytes], ReadCsvBuffer[str]],
+    **kwargs: Any,
+) -> Union[pd.DataFrame, Iterator[pd.DataFrame]]:
     """
     Wrapper around pd.read_csv() to retain index_col as a column in addition
     to setting it as the DataFrame index.
