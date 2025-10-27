@@ -97,6 +97,7 @@ def read_metadata(
         "skipinitialspace": True,
         "na_filter": False,
         "low_memory": False,
+        **PANDAS_READ_CSV_OPTIONS,
     }
 
     if chunk_size:
@@ -107,7 +108,6 @@ def read_metadata(
         metadata_file,
         iterator=True,
         **kwargs,
-        **PANDAS_READ_CSV_OPTIONS,
     )
     chunk = metadata.read(nrows=1)
     metadata.close()
@@ -168,13 +168,11 @@ def read_metadata(
         return read_csv_with_index_col(
             metadata_file,
             **kwargs,
-            **PANDAS_READ_CSV_OPTIONS,
         )
     else:
         return pd.read_csv(
             metadata_file,
             **kwargs,
-            **PANDAS_READ_CSV_OPTIONS,
         )
 
 
