@@ -1,7 +1,8 @@
 import csv
 import os
-from typing import Iterable, Sequence
+from typing import Any, Iterable, Iterator, Sequence, Union
 import pandas as pd
+from pandas._typing import FilePath, ReadCsvBuffer
 import pyfastx
 import python_calamine as calamine
 import sys
@@ -178,7 +179,10 @@ def read_metadata(
         )
 
 
-def read_csv_with_index_col(filepath_or_buffer, **kwargs):
+def read_csv_with_index_col(
+    filepath_or_buffer: Union[FilePath, ReadCsvBuffer[bytes], ReadCsvBuffer[str]],
+    **kwargs: Any,
+) -> Union[pd.DataFrame, Iterator[pd.DataFrame]]:
     """
     Wrapper around pd.read_csv() to retain index_col as a column in addition
     to setting it as the DataFrame index.
