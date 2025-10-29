@@ -112,7 +112,7 @@ jobs:
         AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
     # Only upload coverage for one job
     - if: matrix.python-version == '3.11' && matrix.biopython-version == '' && matrix.numpy-version == ''
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: coverage
         include-hidden-files: true
@@ -200,7 +200,7 @@ jobs:
         run: nextstrain build --ambient ./pathogen-repo/nextclade --configfile build-configs/ci/config.yaml
 
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: output-${{ matrix.pathogen }}
           if-no-files-found: ignore
@@ -317,7 +317,7 @@ jobs:
       - run: nextstrain build --ambient ./pathogen-repo ${{ matrix.build-args }}
 
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: output-${{ matrix.pathogen }}
           path: |
@@ -417,7 +417,7 @@ jobs:
           git config --global user.name "Nextstrain bot"
       - run: python3 -m pip install --upgrade build twine
       - run: devel/release ${{ github.event.inputs.version }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: dist
           path: dist/
