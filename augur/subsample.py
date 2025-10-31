@@ -150,10 +150,10 @@ def run(args: argparse.Namespace) -> None:
       support is adopted: <https://github.com/nextstrain/augur/issues/1574>
     """
 
-    # 1. Parse and validate config.
+    # Parse and validate config.
     config = _parse_config(args.config, args.config_section)
 
-    # 2. Construct argument lists for augur filter.
+    # Construct argument lists for augur filter.
 
     defaults = config.get("defaults")
     samples: List[Sample] = []
@@ -172,7 +172,7 @@ def run(args: argparse.Namespace) -> None:
         if (value := getattr(args, cli_option)) is not None:
             _add_to_args(final_filter_args, filter_option, value)
 
-    # 3. Run augur filter.
+    # Run augur filter.
 
     if len(samples) == 1:
         # A single sample is translated to a single augur filter call.
