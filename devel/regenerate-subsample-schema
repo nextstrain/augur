@@ -47,10 +47,10 @@ def create_schema():
     default_options = {
         "exclude": {
             "oneOf": [
-                {"type": "string"},
+                {"type": "string", "format": "filepath"},
                 {
                     "type": "array",
-                    "items": {"type": "string"}
+                    "items": {"type": "string", "format": "filepath"}
                 }
             ],
             "description": descriptions["exclude"]
@@ -76,10 +76,10 @@ def create_schema():
         },
         "include": {
             "oneOf": [
-                {"type": "string"},
+                {"type": "string", "format": "filepath"},
                 {
                     "type": "array",
-                    "items": {"type": "string"}
+                    "items": {"type": "string", "format": "filepath"}
                 }
             ],
             "description": descriptions["include"]
@@ -148,6 +148,7 @@ def create_schema():
         },
         "group_by_weights": {
             "type": "string",
+            "format": "filepath",
             "description": descriptions["group_by_weights"]
         },
         "probabilistic_sampling": {

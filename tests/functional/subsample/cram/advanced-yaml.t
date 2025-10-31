@@ -38,12 +38,12 @@ Keeping it around as a valid test for advanced YAML syntax.
   Validating schema of 'config.yaml'...
   [south_america] 9 strains were dropped during filtering
   [south_america] 	6 were filtered out by the query: "region == 'South America'"
-  [south_america] 	2 were added back because they were in include.txt
+  \[south_america\] \\t2 were added back because they were in .*/include.txt.* (re)
   [south_america] 	5 were dropped because of subsampling criteria
   [south_america] 3 strains passed all filters
   [oceania] 10 strains were dropped during filtering
   [oceania] 	11 were filtered out by the query: "region == 'Oceania'"
-  [oceania] 	2 were added back because they were in include.txt
+  \[oceania\] \\t2 were added back because they were in .*/include.txt.* (re)
   [oceania] 	0 were dropped because of subsampling criteria
   [oceania] 2 strains passed all filters
   9 strains were dropped during filtering
