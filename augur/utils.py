@@ -7,7 +7,7 @@ import pandas as pd
 from collections import OrderedDict
 from io import RawIOBase
 from shlex import quote as shquote
-from typing import List, Union
+from typing import List, Optional, Union
 from .__version__ import __version__
 
 from augur.data import as_file
@@ -459,7 +459,7 @@ def read_bed_file(bed_file):
         Sorted list of unique zero-indexed sites
     """
     in_header = True
-    initial_chrom_value: str | None = None
+    initial_chrom_value: Optional[str] = None
     mask_sites: list[int] = []
 
     bed_file_size = os.path.getsize(bed_file)
