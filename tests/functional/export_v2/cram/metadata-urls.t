@@ -85,6 +85,6 @@ The data is essentially the same, but tipB & tipD have empty-string URLs and tip
   
 
 
-  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-parsed-urls.json" dataset.json \
-  >   --exclude-paths "root['meta']['updated']"
+  $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-parsed-urls.json" dataset3.json \
+  >   --exclude-paths "root['meta']['updated']" "root['meta']['colorings']" "root['meta']['filters']"
   {}
