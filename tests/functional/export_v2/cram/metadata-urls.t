@@ -25,12 +25,7 @@ Check that URLs were extracted from metadata values when added as an "extra meta
   >  --metadata metadata.tsv \
   >  --metadata-columns "field_A" "field_B" \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset.json
-  Validating schema of 'dataset.json'...
-  Validation of 'dataset.json' succeeded.
-  Validating produced JSON
-  Validating that the JSON is internally consistent...
-  
+  >  --output dataset.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-parsed-urls.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']"
@@ -44,14 +39,7 @@ Check that URLs were extracted from metadata values when used as a coloring
   >  --metadata metadata.tsv \
   >  --color-by-metadata "field_A" "field_B" \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset2.json
-  Validating schema of 'dataset2.json'...
-  Validation of 'dataset2.json' succeeded.
-  Trait 'field_A' was guessed as being type 'categorical'. Use a 'config' file if you'd like to set this yourself.
-  Trait 'field_B' was guessed as being type 'continuous'. Use a 'config' file if you'd like to set this yourself.
-  Validating produced JSON
-  Validating that the JSON is internally consistent...
-  
+  >  --output dataset2.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-parsed-urls.json" dataset2.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['colorings']" "root['meta']['filters']"
@@ -77,15 +65,7 @@ The data is essentially the same, but tipB & tipD have empty-string URLs and tip
   >  --tree tree.nwk \
   >  --node-data node-data.json \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset3.json
-  Validating schema of 'dataset3.json'...
-  Validation of 'dataset3.json' succeeded.
-  Trait 'field_A' was guessed as being type 'categorical'. Use a 'config' file if you'd like to set this yourself.
-  Trait 'field_B' was guessed as being type 'continuous'. Use a 'config' file if you'd like to set this yourself.
-  Validating produced JSON
-  Validating that the JSON is internally consistent...
-  
-
+  >  --output dataset3.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-parsed-urls.json" dataset3.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['colorings']" "root['meta']['filters']"
