@@ -9,9 +9,11 @@
 ### Bug fixes
 
 * filter: Previously, `--query`, `--exclude-where`, and `--include-where` did not work for the id column (`strain`, `name`, or other from `--metadata-id-columns`). This has been fixed. [#1915][] (@corneliusroemer, @victorlin)
+* export v2: Support export of URLs for non-string values. [#1926][] (@joverlee521)
 
 [#1915]: https://github.com/nextstrain/augur/issues/1915
 [#1917]: https://github.com/nextstrain/augur/pull/1917
+[#1926]: https://github.com/nextstrain/augur/pull/1926
 
 ## 32.0.0 (21 October 2025)
 
