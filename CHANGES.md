@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 32.1.0 (18 November 2025)
+
 ### Features
 
 * augur.io.read_metadata: Added a new parameter `keep_id_as_column` to keep the resolved id column as a column in addition to setting it as the DataFrame index. [#1917][] (@victorlin)
