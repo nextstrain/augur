@@ -260,8 +260,8 @@ class SchemaOptionsTableDirective(SphinxDirective):
             # Special case: string or array of strings
             one_of_options = prop_def['oneOf']
             if (len(one_of_options) == 2 and
-                one_of_options[0] == {"type": "string"} and
-                one_of_options[1] == {"type": "array", "items": {"type": "string"}}):
+                one_of_options[0]["type"] == "string" and
+                (one_of_options[1]["type"] == "array" and one_of_options[1]["items"]["type"] == "string")):
                 return nodes.paragraph('', 'string(s)')
 
         # Multiple types via list

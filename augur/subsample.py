@@ -12,12 +12,14 @@ import subprocess
 import tempfile
 import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Dict, List, Optional, Tuple, Union
+from pathlib import Path
+from textwrap import dedent
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from augur import filter as augur_filter
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
-from augur.io.print import print_err
+from augur.io.print import print_err, indented_list
 from augur.utils import augur
 from augur.validate import load_json_schema, validate_json, ValidateError
 
@@ -111,6 +113,15 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     config_group = parser.add_argument_group("Configuration options", "options related to configuration")
     config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file. The expected config options must be defined at the top level, or within a specific section using --config-section." + SKIP_AUTO_DEFAULT_IN_HELP)
     config_group.add_argument("--config-section", metavar="KEY", nargs="+", action=ExtendOverwriteDefault, help="Use a section of the file given to --config by listing the keys leading to the section. Provide one or more keys. (default: use the entire file)" + SKIP_AUTO_DEFAULT_IN_HELP)
+    config_group.add_argument("--search-paths", "--search-path", metavar="DIR", nargs="+", action=ExtendOverwriteDefault,
+        help=dedent(f"""\
+            One or more directories to search for relative filepaths specified
+            in the config file. If a file exists in multiple directories, only
+            the file from the first directory will be used. This can also be set
+            via the environment variable 'AUGUR_SEARCH_PATHS'. Specified
+            directories will be considered before the defaults, which are:
+            (1) directory containing the config file
+            (2) current working directory""" + SKIP_AUTO_DEFAULT_IN_HELP))
     config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this means the number of samples to run simultaneously. Individual samples are limited to a single thread. The final augur filter call can take advantage of multiple threads.")
     config_group.add_argument('--seed', metavar="N", type=int, help="random number generator seed for reproducible outputs (with same input data)." + SKIP_AUTO_DEFAULT_IN_HELP)
 
@@ -150,10 +161,15 @@ def run(args: argparse.Namespace) -> None:
       support is adopted: <https://github.com/nextstrain/augur/issues/1574>
     """
 
-    # 1. Parse and validate config.
-    config = _parse_config(args.config, args.config_section)
+    # Load schema, parse and validate config.
+    schema_validator = load_json_schema("schema-subsample-config.json")
+    config = _parse_config(args.config, args.config_section, schema_validator)
 
-    # 2. Construct argument lists for augur filter.
+    # Resolve filepaths.
+    search_paths = _get_search_paths(args.config, args.search_paths)
+    config, _ = _resolve_filepaths(config, search_paths, schema_validator.schema)
+
+    # Construct argument lists for augur filter.
 
     defaults = config.get("defaults")
     samples: List[Sample] = []
@@ -172,7 +188,7 @@ def run(args: argparse.Namespace) -> None:
         if (value := getattr(args, cli_option)) is not None:
             _add_to_args(final_filter_args, filter_option, value)
 
-    # 3. Run augur filter.
+    # Run augur filter.
 
     if len(samples) == 1:
         # A single sample is translated to a single augur filter call.
@@ -217,7 +233,50 @@ def run(args: argparse.Namespace) -> None:
                 sample.remove_output_strains()
 
 
-def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> Dict[str, Any]:
+def get_referenced_files(
+    config_file: str,
+    config_section: Optional[List[str]] = None,
+    search_paths: Optional[List[str]] = None,
+) -> Set[str]:
+    """Get the files referenced in a subsample config file.
+
+    Extracts and resolves all filepath values referenced in the config,
+    including defaults and individual sample options.
+
+    Parameters
+    ----------
+    config_file
+        Path to the subsample config file.
+
+    config_section
+        Optional list of keys to navigate to a specific section of the config file.
+
+    search_paths
+        Optional list of directories to search for relative filepaths specified
+        in the config file. If a file exists in multiple directories, only
+        the file from the first directory will be used. This can also be set
+        via the environment variable 'AUGUR_SEARCH_PATHS'. Specified
+        directories will be considered before the defaults, which are:
+        (1) directory containing the config file
+        (2) current working directory
+
+    Returns
+    -------
+    set
+        Resolved filepaths
+    """
+    # Load schema, parse and validate config.
+    schema_validator = load_json_schema("schema-subsample-config.json")
+    config = _parse_config(config_file, config_section, schema_validator)
+
+    # Resolve filepaths.
+    search_path_objs = _get_search_paths(config_file, search_paths)
+    config, filepaths = _resolve_filepaths(config, search_path_objs, schema_validator.schema)
+
+    return set(filepaths)
+
+
+def _parse_config(filename: str, config_section: Optional[List[str]], schema) -> Dict[str, Any]:
     # Create a custom YAML loader to treat timestamps as strings.
     class CustomLoader(yaml.SafeLoader):
         pass
@@ -245,11 +304,187 @@ def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> 
 
     # Validate against schema.
     try:
-        schema = load_json_schema("schema-subsample-config.json")
         validate_json(config, schema, filename)
     except ValidateError as e:
         raise AugurError(e)
     return config
+
+
+def _get_search_paths(
+    config_file: str,
+    from_cli: List[str],
+) -> List[Path]:
+    """
+    Returns the paths to search for relative filepaths in config.
+    """
+    default = [
+        Path(config_file).parent,
+        Path.cwd(),
+    ]
+
+    from_env = os.environ.get('AUGUR_SEARCH_PATHS')
+
+    if from_cli:
+        if from_env:
+            print_err(dedent(f"""\
+                WARNING: Both the command line argument --search-paths
+                and the environment variable AUGUR_SEARCH_PATHS are set.
+                Only the command line argument will be used."""))
+        return [
+            *(Path(p) for p in from_cli),
+            *default,
+        ]
+
+    if from_env:
+        return [
+            *(Path(p) for p in from_env.split(':')),
+            *default,
+        ]
+
+    return default
+
+
+def _resolve_filepaths(
+    config: Dict[str, Any],
+    search_paths: List[Path],
+    schema: Dict[str, Any],
+    root_schema: Optional[Dict[str, Any]] = None,
+) -> Tuple[Dict[str, Any], List[str]]:
+    """
+    Resolve filepaths in config.
+
+    Recursively walks the config alongside the schema to determine which fields
+    contain filepaths, resolves them, and collects the resolved filepaths.
+    """
+    if root_schema is None:
+        root_schema = schema
+
+    filepaths = []
+
+    # Get properties schema for current section
+    properties = schema.get("properties", {})
+    pattern_properties = schema.get("patternProperties", {})
+
+    for key, value in config.items():
+        prop_schema = properties.get(key)
+
+        if not prop_schema and pattern_properties:
+            # Use first pattern property schema (for dynamic keys like samples)
+            prop_schema = next(iter(pattern_properties.values()))
+
+        # Get referenced property schema
+        if ref := prop_schema.get("$ref"):
+            prop_schema = _get_referenced_schema(ref, root_schema)
+
+        # Resolve filepath
+        if _is_filepath(prop_schema):
+            if isinstance(value, list):
+                config[key] = [str(_resolve_filepath(Path(v), search_paths)) for v in value]
+                filepaths.extend(config[key])
+            elif isinstance(value, str):
+                config[key] = str(_resolve_filepath(Path(value), search_paths))
+                filepaths.append(config[key])
+
+        # Recurse into config section
+        elif isinstance(value, dict):
+            config[key], downstream_filepaths = _resolve_filepaths(
+                value, search_paths, prop_schema, root_schema
+            )
+            filepaths.extend(downstream_filepaths)
+
+    return config, filepaths
+
+
+def _get_referenced_schema(
+    ref: str,
+    root_schema: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Resolve a JSON schema reference. Example: '#/$defs/sampleProperties'
+    """
+    keys = ref.lstrip("#/").split("/")
+    schema = root_schema
+    for key in keys:
+        schema = schema[key]
+    return schema
+
+
+def _is_filepath(prop_schema: Dict[str, Any]) -> bool:
+    """
+    Check if the property schema declares it is a filepath.
+    """
+    # Direct 'format: filepath'
+    if prop_schema.get("format") == "filepath":
+        return True
+
+    # Check oneOf variants for 'format: filepath'
+    if "oneOf" in prop_schema:
+        for variant in prop_schema["oneOf"]:
+            if variant.get("format") == "filepath":
+                return True
+
+    return False
+
+
+def _resolve_filepath(
+    path: Path,
+    search_paths: List[Path],
+) -> Path:
+    """
+    Resolve a filepath by searching through multiple directories.
+
+    If the path is already absolute, verify it exists and return it.
+
+    >>> import tempfile
+    >>> from pathlib import Path
+    >>> tmpdir1 = Path(tempfile.mkdtemp()).resolve()
+    >>> tmpdir2 = Path(tempfile.mkdtemp()).resolve()
+    >>> absolute_path = tmpdir1 / "file.txt"
+    >>> with open(absolute_path, "w") as f: _ = f.write("test")
+    >>> _resolve_filepath(absolute_path, []) == absolute_path
+    True
+
+    Otherwise, try resolving it relative to each directory in search_paths, in order.
+    Return the first path that exists.
+
+    >>> with open(tmpdir2 / "file.txt", "w") as f: _ = f.write("test")
+    >>> result = _resolve_filepath(Path("file.txt"), [tmpdir1, tmpdir2])
+    >>> result == tmpdir1 / "file.txt"
+    True
+
+    If an absolute path doesn't exist, raise an error.
+
+    >>> _resolve_filepath(Path("/nonexistent/file.txt"), [tmpdir1, tmpdir2])
+    Traceback (most recent call last):
+      ...
+    augur.errors.AugurError: File '/nonexistent/file.txt' does not exist.
+
+    If the relative path doesn't exist anywhere, raise an error.
+
+    >>> _resolve_filepath(Path("nonexistent.txt"), [tmpdir1, tmpdir2])
+    Traceback (most recent call last):
+      ...
+    augur.errors.AugurError: File 'nonexistent.txt' not resolvable from any of the following paths:
+    <BLANKLINE>
+      ...
+    """
+    # Absolute path
+    if path.is_absolute():
+        if not path.exists():
+            raise AugurError(f"File {str(path)!r} does not exist.")
+        return path
+
+    # Relative path
+    for search_path in search_paths:
+        resolved_path = (search_path / path).resolve()
+        if resolved_path.exists():
+            return resolved_path
+
+    # File not found
+    raise AugurError(dedent(f"""\
+        File {str(path)!r} not resolvable from any of the following paths:
+
+          {indented_list([str(p) for p in search_paths], '        ' + '  ')}"""))
 
 
 def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, Any]]) -> Dict[str, Any]:

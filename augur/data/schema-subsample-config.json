@@ -16,16 +16,18 @@
                 "exclude": {
                     "oneOf": [
                         {
-                            "type": "string"
+                            "type": "string",
+                            "format": "filepath"
                         },
                         {
                             "type": "array",
                             "items": {
-                                "type": "string"
+                                "type": "string",
+                                "format": "filepath"
                             }
                         }
                     ],
-                    "description": "File(s) with list of strains to exclude. Paths must be relative to the\nworking directory."
+                    "description": "File(s) with list of strains to exclude."
                 },
                 "exclude_all": {
                     "type": "boolean",
@@ -58,16 +60,18 @@
                 "include": {
                     "oneOf": [
                         {
-                            "type": "string"
+                            "type": "string",
+                            "format": "filepath"
                         },
                         {
                             "type": "array",
                             "items": {
-                                "type": "string"
+                                "type": "string",
+                                "format": "filepath"
                             }
                         }
                     ],
-                    "description": "File(s) with list of strains to include regardless of priorities,\nsubsampling, or absence of an entry in sequences. Paths must be relative\nto the working directory."
+                    "description": "File(s) with list of strains to include regardless of priorities,\nsubsampling, or absence of an entry in sequences."
                 },
                 "include_where": {
                     "oneOf": [
@@ -136,16 +140,18 @@
                 "exclude": {
                     "oneOf": [
                         {
-                            "type": "string"
+                            "type": "string",
+                            "format": "filepath"
                         },
                         {
                             "type": "array",
                             "items": {
-                                "type": "string"
+                                "type": "string",
+                                "format": "filepath"
                             }
                         }
                     ],
-                    "description": "File(s) with list of strains to exclude. Paths must be relative to the\nworking directory."
+                    "description": "File(s) with list of strains to exclude."
                 },
                 "exclude_all": {
                     "type": "boolean",
@@ -178,16 +184,18 @@
                 "include": {
                     "oneOf": [
                         {
-                            "type": "string"
+                            "type": "string",
+                            "format": "filepath"
                         },
                         {
                             "type": "array",
                             "items": {
-                                "type": "string"
+                                "type": "string",
+                                "format": "filepath"
                             }
                         }
                     ],
-                    "description": "File(s) with list of strains to include regardless of priorities,\nsubsampling, or absence of an entry in sequences. Paths must be relative\nto the working directory."
+                    "description": "File(s) with list of strains to include regardless of priorities,\nsubsampling, or absence of an entry in sequences."
                 },
                 "include_where": {
                     "oneOf": [
@@ -263,7 +271,8 @@
                 },
                 "group_by_weights": {
                     "type": "string",
-                    "description": "TSV file defining weights for grouping. Path must be relative to the\nworking directory. Requirements:\n\n(1) Lines starting with '#' are treated as comment lines.\n(2) The first non-comment line must be a header row.\n(3) There must be a numeric ``weight`` column (weights can take on any\n    non-negative values).\n(4) Other columns must be a subset of grouping columns, with\n    combinations of values covering all combinations present in the\n    metadata.\n(5) This option only applies when grouping columns and a total sample\n    size are provided.\n(6) This option can only be used when probabilistic sampling is allowed.\n\nNotes:\n\n(1) Any grouping columns absent from this file will be given equal\n    weighting across all values *within* groups defined by the other\n    weighted columns.\n(2) An entry with the value ``default`` under all columns will be\n    treated as the default weight for specific groups present in the\n    metadata but missing from the weights file. If there is no default\n    weight and the metadata contains rows that are not covered by the\n    given weights, augur filter will exit with an error."
+                    "format": "filepath",
+                    "description": "TSV file defining weights for grouping. Requirements:\n\n(1) Lines starting with '#' are treated as comment lines.\n(2) The first non-comment line must be a header row.\n(3) There must be a numeric ``weight`` column (weights can take on any\n    non-negative values).\n(4) Other columns must be a subset of grouping columns, with\n    combinations of values covering all combinations present in the\n    metadata.\n(5) This option only applies when grouping columns and a total sample\n    size are provided.\n(6) This option can only be used when probabilistic sampling is allowed.\n\nNotes:\n\n(1) Any grouping columns absent from this file will be given equal\n    weighting across all values *within* groups defined by the other\n    weighted columns.\n(2) An entry with the value ``default`` under all columns will be\n    treated as the default weight for specific groups present in the\n    metadata but missing from the weights file. If there is no default\n    weight and the metadata contains rows that are not covered by the\n    given weights, augur filter will exit with an error."
                 },
                 "probabilistic_sampling": {
                     "type": "boolean",

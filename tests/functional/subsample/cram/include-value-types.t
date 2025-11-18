@@ -25,7 +25,7 @@ Create an include file.
   >   --seed 0
   Validating schema of 'config.yaml'...
   9 strains were dropped during filtering
-  	1 was added back because it was in include.txt
+  \\t1 was added back because it was in .*/include.txt.* (re)
   	10 were dropped because of subsampling criteria
   3 strains passed all filters
 
@@ -45,6 +45,6 @@ Create an include file.
   >   --seed 0
   Validating schema of 'config.yaml'...
   9 strains were dropped during filtering
-  	1 was added back because it was in include.txt
+  \\t1 was added back because it was in .*/include.txt.* (re)
   	10 were dropped because of subsampling criteria
   3 strains passed all filters
