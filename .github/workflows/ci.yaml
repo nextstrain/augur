@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-python@v6
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - run: pip install .[dev]
     - run: mypy
 
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-python@v6
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - run: npx pyright --stats
 
   pytest-cram:
@@ -76,7 +76,7 @@ jobs:
       COVERAGE_FILE: ${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }},numpy=${{ matrix.numpy-version || 'latest' }}
       COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Set cache key
       run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
@@ -146,7 +146,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: ./augur
 
@@ -171,7 +171,7 @@ jobs:
       # Replace the Conda Augur installation with the local version.
       - run: pip install ./augur
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           repository: nextstrain/${{ matrix.pathogen }}
           path: ./pathogen-repo
@@ -274,7 +274,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: ./augur
 
@@ -299,7 +299,7 @@ jobs:
       # Replace the Conda Augur installation with the local version.
       - run: pip install ./augur
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           repository: nextstrain/${{ matrix.pathogen }}
           path: ./pathogen-repo
@@ -332,7 +332,7 @@ jobs:
     needs: [pytest-cram]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
       - run: pip install coverage
 
@@ -362,7 +362,7 @@ jobs:
           # This should match the python version in .readthedocs.yml
           python-version: '3.11'
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - run: pip install .[dev]
 
@@ -383,7 +383,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v6
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - run: pip install .[dev]
 
@@ -404,7 +404,7 @@ jobs:
     needs: [pytest-cram]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           # Fetch all branches and tags.
           fetch-depth: 0
