@@ -73,6 +73,15 @@ def load_geolocation_rules(geolocation_rules_file, case_sensitive):
 
             geolocation_rules[raw[0]][raw[1]][raw[2]][raw[3]] = annot
 
+            # We want to match '?' values to the empty string as well to allow them to be used as empty values
+            # but if they are used it's expected they are used for all "empty" fields
+            if raw[1]=='' and raw[2]=='' and raw[3]=='':
+                geolocation_rules[raw[0]]['?']['?']['?'] = annot
+            elif raw[2]=='' and raw[3]=='':
+                geolocation_rules[raw[0]][raw[1]]['?']['?'] = annot
+            elif raw[3]=='':
+                geolocation_rules[raw[0]][raw[1]][raw[2]]['?'] = annot
+
     return geolocation_rules
 
 
