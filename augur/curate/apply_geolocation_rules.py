@@ -8,6 +8,9 @@ from augur.io.print import print_err
 from augur.utils import first_line
 from augur.version import __version__
 
+RULE_NULL_VALUE = ''
+DATA_NULL_VALUES = ['', '?']
+
 
 class NoGeolocationRulesProvidedError(AugurError):
     pass
@@ -73,20 +76,23 @@ def load_geolocation_rules(geolocation_rules_file, case_sensitive):
 
             geolocation_rules[raw[0]][raw[1]][raw[2]][raw[3]] = annot
 
-            # We want to match '?' values to the empty string as well to allow them to be used as empty values
-            # but if they are used it's expected they are used for all "empty" fields
-            annot_using_question_marks = tuple(['?' if x=='' else x for x in annot])
-            if raw[1]=='' and raw[2]=='' and raw[3]=='':
-                geolocation_rules[raw[0]]['?']['?']['?'] = annot_using_question_marks
-            elif raw[2]=='' and raw[3]=='':
-                geolocation_rules[raw[0]][raw[1]]['?']['?'] = annot_using_question_marks
-            elif raw[3]=='':
-                geolocation_rules[raw[0]][raw[1]][raw[2]]['?'] = annot_using_question_marks
-
     return geolocation_rules
 
 
-def get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, rule_traversal = None):
+def detect_null_value(geolocation):
+    """
+    Detect which null value (if any) is used consistently in a geolocation record.
+
+    Returns the null value if exactly one type is used consistently across all null fields,
+    otherwise returns None (indicating mixed null values or no null values).
+    """
+    null_values_in_record = set(v for v in geolocation if v in DATA_NULL_VALUES)
+    if len(null_values_in_record) == 1:
+        return null_values_in_record.pop()
+    return None
+
+
+def get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, data_null_value, rule_traversal = None):
     """
     Gets the annotated geolocation for the *raw_geolocation* in the provided
     *geolocation_rules*.
@@ -121,8 +127,11 @@ def get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive
     # so try to traverse the rules with the next target in raw_geolocation
     if isinstance(current_rules, dict):
         next_traversal_target = raw_geolocation[len(rule_traversal)]
+        # Normalize the detected null value
+        if next_traversal_target == data_null_value:
+            next_traversal_target = RULE_NULL_VALUE
         rule_traversal.append(next_traversal_target)
-        return get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, rule_traversal)
+        return get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, data_null_value, rule_traversal)
 
     # We did not find any matching rule for the last traversal target
     if current_rules is None:
@@ -155,7 +164,7 @@ def get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive
         # we can find a matching rule.
         rule_traversal[-1] = '*'
 
-        return get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, rule_traversal)
+        return get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, data_null_value, rule_traversal)
 
 
 def transform_geolocations(geolocation_rules, geolocation, case_sensitive):
@@ -171,12 +180,13 @@ def transform_geolocations(geolocation_rules, geolocation, case_sensitive):
     Raises a `CyclicGeolocationRulesError` if more than 1000 rules have
     been applied to the raw geolocation.
     """
+    data_null_value = detect_null_value(geolocation)
     transformed_values = geolocation
     rules_applied = 0
     continue_to_apply = True
 
     while continue_to_apply:
-        annotated_values = get_annotated_geolocation(geolocation_rules, transformed_values, case_sensitive)
+        annotated_values = get_annotated_geolocation(geolocation_rules, transformed_values, case_sensitive, data_null_value)
 
         # Stop applying rules if no annotated values were found
         if annotated_values is None:
@@ -192,8 +202,8 @@ def transform_geolocations(geolocation_rules, geolocation, case_sensitive):
             # Create a new list of values for comparison to previous values
             new_values = list(transformed_values)
             for index, value in enumerate(annotated_values):
-                # Keep original value if annotated value is '*'
-                if value != '*':
+                # Keep original value if annotated value is '*' or any null value
+                if value != '*' and value not in DATA_NULL_VALUES:
                     new_values[index] = value
 
             # Stop applying rules if this rule did not change the values,
