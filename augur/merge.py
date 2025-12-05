@@ -384,6 +384,9 @@ def merge_metadata(args):
 
 
 def merge_sequences(args):
+    if not len(args.sequences) >= 2:
+        raise AugurError(f"At least two sequence inputs are required for merging.")
+
     if not args.skip_input_sequences_validation:
         for s in args.sequences:
             print_info(f"Validating {s!r}…")

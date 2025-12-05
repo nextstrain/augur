@@ -1,0 +1,125 @@
+{
+  "version": "v2",
+  "meta": {
+    "updated": "2025-07-14",
+    "maintainers": [
+      {
+        "name": "Nextstrain Team"
+      }
+    ],
+    "colorings": [],
+    "filters": [],
+    "panels": [
+      "tree"
+    ]
+  },
+  "tree": {
+    "name": "ROOT",
+    "node_attrs": {
+      "div": 0
+    },
+    "branch_attrs": {},
+    "children": [
+      {
+        "name": "tipA",
+        "node_attrs": {
+          "div": 1.0,
+          "field_A": {
+            "value": "nextstrain",
+            "url": "https://nextstrain.org"
+          },
+          "field_B": {
+            "value": 1,
+            "url": "https://nextstrain.org"
+          }
+        },
+        "branch_attrs": {}
+      },
+      {
+        "name": "internalBC",
+        "node_attrs": {
+          "div": 2.0
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "tipB",
+            "node_attrs": {
+              "div": 3.0,
+              "field_A": {
+                "value": "BB: not-a-url"
+              },
+              "field_B": {
+                "value": 2
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipC",
+            "node_attrs": {
+              "div": 3.0,
+              "field_A": {
+                "value": "github",
+                "url": "https://github.com"
+              },
+              "field_B": {
+                "value": 3,
+                "url": "https://github.com"
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      },
+      {
+        "name": "internalDEF",
+        "node_attrs": {
+          "div": 5.0
+        },
+        "branch_attrs": {},
+        "children": [
+          {
+            "name": "tipD",
+            "node_attrs": {
+              "div": 8.0,
+              "field_A": {
+                "value": "DD <not-a-url>"
+              },
+              "field_B": {
+                "value": 4
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipE",
+            "node_attrs": {
+              "div": 9.0,
+              "field_A": {
+                "value": "EE"
+              },
+              "field_B": {
+                "value": 5
+              }
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipF",
+            "node_attrs": {
+              "div": 6.0,
+              "field_A": {
+                "value": "FF"
+              },
+              "field_B": {
+                "value": 6
+              }
+            },
+            "branch_attrs": {}
+          }
+        ]
+      }
+    ]
+  }
+}

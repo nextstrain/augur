@@ -30,6 +30,9 @@ This is expected to fail.
   >   --jsons measurements_concat/single_collection_measurements_1.json measurements_concat/single_collection_measurements_1.json \
   >   --default-collection collection_1 \
   >   --output-json "$TMP/multiple_collections_measurements.json" 1>/dev/null
+  Validating schema of 'measurements_concat/single_collection_measurements_1.json'...
+  Validating schema of 'measurements_concat/single_collection_measurements_1.json'...
+  Validating schema of '.*multiple_collections_measurements.json'... (re)
   ERROR: Collections at indexes [0, 1] share the same collection key 'collection_1'.
   ERROR: Validation of output JSON failed. See detailed errors above.
   [1]
@@ -41,6 +44,9 @@ This is expected to fail.
   >   --jsons measurements_concat/single_collection_measurements_1.json measurements_concat/single_collection_measurements_2.json \
   >   --default-collection collection_3 \
   >   --output-json "$TMP/multiple_collections_measurements.json" 1>/dev/null
+  Validating schema of 'measurements_concat/single_collection_measurements_1.json'...
+  Validating schema of 'measurements_concat/single_collection_measurements_2.json'...
+  Validating schema of '.*multiple_collections_measurements.json'... (re)
   ERROR: The default collection key 'collection_3' does not match any of the collections' keys.
   ERROR: Validation of output JSON failed. See detailed errors above.
   [1]

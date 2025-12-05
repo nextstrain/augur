@@ -13,7 +13,7 @@ Infer ancestral nucleotide and amino acid sequences.
   >  --seed 314159 \
   >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations.json" \
   >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences.fasta" \
-  >  --output-translations "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_%GENE.fasta" > /dev/null
+  >  --output-translations "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_%GENE.fasta" &> /dev/null
 
 Check that the reference length was correctly exported as the nuc annotation
 

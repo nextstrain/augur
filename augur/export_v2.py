@@ -11,6 +11,7 @@ import math
 import re
 from Bio import Phylo
 from typing import Dict, Union, TypedDict, Any, Tuple
+from urllib.parse import urlparse
 
 from .argparse_ import ExtendOverwriteDefault, add_validation_arguments
 from .errors import AugurError
@@ -740,7 +741,17 @@ def attr_confidence(
     warn(f"[confidence] {key+'_confidence'!r} is of an unknown format. Skipping.")
     return {}
 
+def valid_url(url: str) -> bool:
+    # <https://stackoverflow.com/questions/7160737/how-to-validate-a-url-in-python-malformed-or-not>
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except AttributeError:
+        return False
 
+def url_name(name):
+    """For column/key *name* what column/key would the associated URL be found in?"""
+    return f"{name}__url"
 
 def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
     '''
@@ -759,8 +770,10 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
 
     def _transfer_additional_metadata_columns(node, raw_data):
         for col in additional_metadata_columns:
-            if is_valid(raw_data.get(col, None)):
-                node["node_attrs"][col] = {"value": raw_data[col]}
+            if is_valid(value:=raw_data.get(col, None)):
+                node["node_attrs"][col] = {"value": value}
+                if valid_url(url:=raw_data.get(url_name(col), None)):
+                    node["node_attrs"][col]['url'] = url
 
     def _transfer_vaccine_info(node, raw_data):
         if raw_data.get("vaccine"):
@@ -808,6 +821,10 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
             value = raw_data.get(key, None)
             if is_valid(value):
                 node["node_attrs"][key] = {"value": format_number(value) if is_numeric(value) else value}
+
+                if valid_url(url:=raw_data.get(url_name(key), None)):
+                    node["node_attrs"][key]['url'] = url
+
                 node["node_attrs"][key].update(attr_confidence(node["name"], raw_data, key))
 
     def _transfer_author_data(node):
@@ -864,6 +881,9 @@ def node_data_prop_is_normal_trait(name):
     if '_confidence' in name or '_entropy' in name:
         return False
 
+    if name.endswith('__url'):
+        return False
+
     return True
 
 
@@ -902,8 +922,14 @@ def register_parser(parent_subparsers):
     optional_inputs = parser.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
-    optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action=ExtendOverwriteDefault, help="JSON files containing metadata for nodes in the tree")
-    optional_inputs.add_argument('--metadata', metavar="FILE", help="Additional metadata for strains in the tree")
+    optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action=ExtendOverwriteDefault,
+        help="JSON files containing metadata for nodes in the tree. " +
+             "Keys are automatically exported as colorings unless special-cased. " +
+             "URLs for a key 'X' can be stored under key 'X__url' and will be automatically exported.")
+    optional_inputs.add_argument('--metadata', metavar="FILE",
+        help="Additional metadata for strains in the tree. " +
+             "Columns are not typically exported by default and must be specified via arguments or within the config JSON. "
+             "URLs for a column 'X' can be stored in column 'X__url' and will be automatically exported.")
     optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
@@ -1130,10 +1156,9 @@ def run(args):
             metadata_df = read_metadata(
                 args.metadata,
                 delimiters=args.metadata_delimiters,
-                id_columns=args.metadata_id_columns)
-
-            # Add the index as a column.
-            metadata_df[metadata_df.index.name] = metadata_df.index
+                id_columns=args.metadata_id_columns,
+                keep_id_as_column=True,
+            )
 
             metadata_file = metadata_df.to_dict(orient="index")
         except FileNotFoundError:

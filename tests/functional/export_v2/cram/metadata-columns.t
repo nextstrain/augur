@@ -43,7 +43,7 @@ Run export with tree and metadata with additional columns.
   >  --metadata metadata.tsv \
   >  --metadata-columns "field_A" "field_B" \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset.json > /dev/null
+  >  --output dataset.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
@@ -59,6 +59,8 @@ Missing columns are skipped with a warning.
   >  --output dataset.json > /dev/null
   WARNING: Requested metadata column 'missing_field' does not exist and will not be exported
   \s{0} (re)
+  Validating schema of 'dataset.json'...
+  Validation of 'dataset.json' succeeded.
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
@@ -72,7 +74,7 @@ Specifying a fields with both --metadata-columns and --colory-by-metadata should
   >  --metadata-columns "field_A" "field_B" \
   >  --color-by-metadata "field_B" \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset.json > /dev/null
+  >  --output dataset.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
@@ -91,6 +93,8 @@ Missing columns are skipped with a warning when specified by both --metadata-col
   \s{0} (re)
   WARNING: Requested color-by field 'missing_field' does not exist and will not be used as a coloring or exported.
   \s{0} (re)
+  Validating schema of 'dataset.json'...
+  Validation of 'dataset.json' succeeded.
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
@@ -103,7 +107,7 @@ Specifying additional metadata columns via the Auspice configuration file.
   >  --metadata metadata.tsv \
   >  --auspice-config auspice-config.json \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset.json > /dev/null
+  >  --output dataset.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"
@@ -117,7 +121,7 @@ Specifying additional metadata columns via command line overrides the Auspice co
   >  --auspice-config auspice-config-overridden.json \
   >  --metadata-columns "field_A" "field_B" \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset.json > /dev/null
+  >  --output dataset.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-additional-metadata-columns.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"

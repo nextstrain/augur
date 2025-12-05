@@ -70,3 +70,12 @@ A missing input file shows a meaningful error during validation…
   WARNING: Metadata merge was successful but sequence merge has failed, so --output-metadata has no corresponding sequence output.
   ERROR: Merging failed, see error(s) above. The command may have already written data to stdout. You may want to clean up any partial outputs.
   [2]
+
+At least two sequence inputs are required.
+
+  $ ${AUGUR} merge \
+  >   --sequences x.fasta \
+  >   --output-sequences -
+  WARNING: Metadata merge was successful but sequence merge has failed, so --output-metadata has no corresponding sequence output.
+  ERROR: At least two sequence inputs are required for merging.
+  [2]

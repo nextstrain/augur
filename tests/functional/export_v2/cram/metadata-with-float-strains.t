@@ -27,7 +27,7 @@ because we force the index column to be strings.
   >  --metadata metadata.tsv \
   >  --metadata-columns "field_A" "field_B" \
   >  --maintainers "Nextstrain Team" \
-  >  --output dataset.json > /dev/null
+  >  --output dataset.json &> /dev/null
 
   $ python3 "$TESTDIR/../../../../scripts/diff_jsons.py" "$TESTDIR/../data/dataset-with-float-strains.json" dataset.json \
   >   --exclude-paths "root['meta']['updated']" "root['meta']['maintainers']"

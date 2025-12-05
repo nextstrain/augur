@@ -67,6 +67,7 @@ setuptools.setup(
         "phylo-treetime >=0.11.2, <0.12",
         "pyfastx >=1.0.0, <3.0",
         "python_calamine >=0.2.0",
+        "pyyaml",
         "referencing >=0.29.1, <1.0",
         "scipy ==1.*",
         "xopen[zstd] >=2.0.0, <3"
@@ -77,7 +78,7 @@ setuptools.setup(
             "deepdiff >=4.3.2, <8.0.0",
             "flake8 >=7.0.0, <8",
             "freezegun >=0.3.15",
-            "mypy",
+            "mypy >=1.18.1",
             "nextstrain-sphinx-theme >=2022.5",
             "pandas-stubs >=1.4.0, <3",
             "pylint >=1.7.6",
@@ -93,6 +94,7 @@ setuptools.setup(
             "sphinx-autodoc-typehints >=1.21.4",
             "sphinx-tabs",
             "types-jsonschema >=4.18.0, ==4.*",
+            "types-PyYAML",
             "types-setuptools",
             "wheel >=0.32.3",
             "ipdb >=0.10.1"
@@ -109,6 +111,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
     # Install an "augur" program which calls augur.__main__.main()
     #   https://setuptools.readthedocs.io/en/latest/setuptools.html#automatic-script-creation

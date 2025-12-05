@@ -13,6 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('_ext'))
 
 
 # -- Project information -----------------------------------------------------
@@ -66,6 +67,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_tabs.tabs',
     'nextstrain.sphinx.theme',
+    'augur_subsample_helpers',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -143,7 +145,9 @@ intersphinx_mapping = {
     'Bio': ('https://biopython.org/docs/latest/', None),
     'docs.nextstrain.org': ('https://docs.nextstrain.org/en/latest/', None),
     'cli': ('https://docs.nextstrain.org/projects/cli/en/stable', None),
-    'python': ('https://docs.python.org/3', None),
+    # Use Python 3.13 to prevent typing.Union warnings
+    # <https://github.com/nextstrain/augur/issues/1903>
+    'python': ('https://docs.python.org/3.13', None),
     'numpy': ('https://numpy.org/doc/stable', None),
     'pandas': ('https://pandas.pydata.org/docs', None),
     'treetime': ('https://treetime.readthedocs.io/en/stable/', None),

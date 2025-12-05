@@ -20,7 +20,7 @@ from .validate_export import verifyMainJSONIsInternallyConsistent, verifyMetaAnd
 from .types import ValidationMode
 
 def fatal(message):
-    print("FATAL ERROR: {}".format(message))
+    print_err("FATAL ERROR: {}".format(message))
     sys.exit(2)
 
 class ValidateError(Exception):
@@ -30,7 +30,7 @@ def validation_failure(mode: ValidationMode):
     if mode is ValidationMode.ERROR:
         sys.exit(2)
     elif mode is ValidationMode.WARN:
-        print(f"Continuing due to --validation-mode={mode.value} even though there were validation errors.")
+        print_err(f"Continuing due to --validation-mode={mode.value} even though there were validation errors.")
     elif mode is ValidationMode.SKIP:
         # Shouldn't be doing validation under skip, but if we're called anyway just do nothing.
         return
@@ -53,7 +53,7 @@ def load_json_schema(path, refs=None):
         Validator.check_schema(schema)
     except jsonschema.exceptions.SchemaError as err:
         raise ValidateError(f"Schema {path} is not a valid JSON Schema ({Validator.META_SCHEMA['$schema']}). Error: {err}")
-    
+
     if refs:
         # Make the validator aware of additional schemas
         schema_store = dict()
@@ -93,24 +93,60 @@ def validate_json(jsonToValidate, schema, filename):
     # See <https://python-jsonschema.readthedocs.io/en/v3.2.0/errors/> and
     # <https://python-jsonschema.readthedocs.io/en/v3.2.0/validate/> for the
     # jsonschema APIs we use here.
-    print("Validating schema of {!r}...".format(filename))
+    print_err("Validating schema of {!r}...".format(filename))
 
     # Find all errors.  This is what schema.validate() uses internally, before
     # raising just one "best" error.  We want to report ~everything at once, so
     # the user isn't stuck playing whack-a-mole.
     errors = list(schema.iter_errors(jsonToValidate))
 
+    def custom_message(error):
+        """Convert technical JSON schema errors to human-readable messages."""
+        validator = error.validator
+        short_value = shorten_as_json(error.instance, 50, "…")
+
+        if validator == "oneOf":
+            return f"{short_value} did not match one of the acceptable options below."
+        if validator == "anyOf":
+            return f"{short_value} did not match any of the acceptable options below."
+
+        if validator == "required":
+            missing_property = str(error.args[0]).split("'")[1]
+            return f"Missing required property '{missing_property}'"
+
+        if validator == "additionalProperties":
+            additional_property = list(error.instance.keys() - error.schema.get('properties', {}).keys())[0]
+            return f"Unexpected property '{additional_property}'"
+
+        if validator == "type":
+            expected_type = error.validator_value
+            actual_type = type(error.instance).__name__
+            return f"Expected {expected_type} but found {actual_type} {short_value!r}"
+
+        if validator == "const":
+            expected_value = error.validator_value
+            return f"Expected '{expected_value}' but found {error.instance!r}"
+
+        if validator == "pattern":
+            pattern = error.validator_value
+            if pattern == "^[0-9X]{4}-[0-9X]{2}-[0-9X]{2}$":
+                return f"Expected a date in the format YYYY-MM-DD but found {short_value}"
+            else:
+                return f"Expected a value with the pattern {pattern} but found {short_value}"
+
+        # Fallback to an error message from jsonschema.
+        if error.args:
+            return error.args[0]
+
+        return "Unknown validation error"
+
     def print_errors(errors, level=1):
         prefix = "  "
 
         for error in sorted(errors, key=jsonschema.exceptions.relevance):
             path = elide_path(error.absolute_path)
-            value = shorten_as_json(error.instance, 50, "…")
 
-            validator = error.validator
-            validator_value = shorten_as_json(error.validator_value, 100, "…")
-
-            print_err(indent(f"{path} {value} failed {validator} validation for {validator_value}", prefix*level))
+            print_err(indent(f"{path or 'top level'} failed: {custom_message(error)}", prefix*level))
 
             # Report sub-errors, as they're often closer to what needs fixing.
             #
@@ -129,7 +165,7 @@ def validate_json(jsonToValidate, schema, filename):
                     validator_value_idx = lambda e: e.schema_path[0]
                     for idx, ctx in grouped(error.context, key=validator_value_idx):
                         validator_subvalue = shorten_as_json(error.validator_value[idx], 100, "…")
-                        print_err(indent(f"validation for arm {idx}: {validator_subvalue}", prefix*(level+1)))
+                        print_err(indent(f"Option {idx+1}: {validator_subvalue}", prefix*(level+1)))
                         print_errors(ctx, level+2)
                 else:
                     print_errors(error.context, level+1)
@@ -198,8 +234,14 @@ validate = validate_json  # TODO update uses and drop this alias
 
 def auspice_config_v2(config_json: Union[str,dict], **kwargs):
     schema = load_json_schema("schema-auspice-config-v2.json")
-    config = config_json if isinstance(config_json, dict) else load_json(config_json)
-    validate(config, schema, config_json)
+    if isinstance(config_json, dict):
+        config = config_json
+        filename = "merged config"
+    else:
+        config = load_json(config_json)
+        filename = config_json
+
+    validate(config, schema, filename)
 
 def export_v2(main_json, **kwargs):
     # The main_schema uses references to other schemas, and the suggested use is
@@ -221,9 +263,9 @@ def export_v2(main_json, **kwargs):
     validate(main, main_schema, main_json)
 
     if verifyMainJSONIsInternallyConsistent(main, ValidateError):
-        print("Validation of {!r} succeeded.".format(main_json))
+        print_err("Validation of {!r} succeeded.".format(main_json))
     else:
-        print("Validation of {!r} succeeded, but there were warnings you may want to resolve.".format(main_json))
+        print_err("Validation of {!r} succeeded, but there were warnings you may want to resolve.".format(main_json))
 
 
 def export_v1(meta_json, tree_json, **kwargs):
@@ -243,9 +285,9 @@ def export_v1(meta_json, tree_json, **kwargs):
     validate(tree, tree_schema, tree_json)
 
     if verifyMetaAndOrTreeJSONsAreInternallyConsistent(meta, tree, ValidateError):
-        print("Validation of {!r} and {!r} succeeded.".format(meta_json, tree_json))
+        print_err("Validation of {!r} and {!r} succeeded.".format(meta_json, tree_json))
     else:
-        print("Validation of {!r} and {!r} succeeded, but there were warnings you may want to resolve.".format(meta_json, tree_json))
+        print_err("Validation of {!r} and {!r} succeeded, but there were warnings you may want to resolve.".format(meta_json, tree_json))
 
 
 def get_unique_keys(list_of_dicts):
@@ -299,10 +341,9 @@ def validate_collection_config_fields(collection, index=None):
         if invalid_fields:
             valid_collection_config_fields = False
             include_index = f"(at index {index}) " if index is not None else ""
-            print(
+            print_err(
                 f"ERROR: Collection {include_index}includes {config_field} that",
-                f"do not exist as fields in measurements: {invalid_fields}.",
-                file=sys.stderr
+                f"do not exist as fields in measurements: {invalid_fields}."
             )
 
     return valid_collection_config_fields
@@ -336,10 +377,9 @@ def validate_collection_display_defaults(collection, index=None):
     if default_grouping and default_grouping not in grouping_fields:
         valid_display_defaults = False
         include_index = f"(at index {index}) " if index is not None else ""
-        print(
+        print_err(
             f"ERROR: Collection {include_index}has a default group-by field",
-            f"'{default_grouping}' that is not included in the groupings' fields.",
-            file=sys.stderr
+            f"'{default_grouping}' that is not included in the groupings' fields."
         )
 
     return valid_display_defaults
@@ -384,18 +424,16 @@ def validate_measurements_config(measurements):
     for collection_key, collection_indexes in collection_keys.items():
         if len(collection_indexes) > 1:
             valid_measurements_config = False
-            print(
-                f"ERROR: Collections at indexes {collection_indexes} share the same collection key '{collection_key}'.",
-                file=sys.stderr
+            print_err(
+                f"ERROR: Collections at indexes {collection_indexes} share the same collection key '{collection_key}'."
             )
 
     # Check the default collection value matches a collection's key value
     default_collection = measurements.get('default_collection')
     if default_collection and default_collection not in collection_keys.keys():
         valid_measurements_config = False
-        print(
-            f"ERROR: The default collection key {default_collection!r} does not match any of the collections' keys.",
-            file=sys.stderr
+        print_err(
+            f"ERROR: The default collection key {default_collection!r} does not match any of the collections' keys."
         )
 
     return valid_measurements_config

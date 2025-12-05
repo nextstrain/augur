@@ -13,3 +13,9 @@ h3 {
 h4 {
     font-size: 18px;
 }
+
+/* Wrap long content and limit column width to ~60 characters */
+.wrap-children-60ch > * {
+    max-width: 60ch;
+    white-space: normal;
+}

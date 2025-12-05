@@ -13,7 +13,7 @@ which validate the output will fail as it's missing a 'nuc' annotation.
   >  --tree "$ANC_DATA/tree.nwk" \
   >  --ancestral-sequences "$ANC_DATA/nt_muts.ref-seq.json" \
   >  --reference-sequence "$DATA/reference.gff" \
-  >  --output-node-data "aa_muts.json" > /dev/null
+  >  --output-node-data "aa_muts.json" &> /dev/null
 
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \
@@ -28,7 +28,7 @@ but this is irrelevant for Auspice's use and simply reflects the reference sourc
   >  --tree "$ANC_DATA/tree.nwk" \
   >  --ancestral-sequences "$ANC_DATA/nt_muts.ref-seq.json" \
   >  --reference-sequence "$DATA/reference.gb" \
-  >  --output-node-data "aa_muts.genbank.json" > /dev/null
+  >  --output-node-data "aa_muts.genbank.json" &> /dev/null
 
   $ python3 "$SCRIPTS/diff_jsons.py" \
   >   "$DATA/aa_muts.json" \

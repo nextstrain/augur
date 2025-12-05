@@ -12,12 +12,12 @@ considered an implementation detail that may change in the future.  The CLI
 program vcftools must be available on PATH.
 """
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
-from augur.dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT
-from augur.filter.io import ACCEPTED_TYPES, column_type_pair
-from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN
+from augur.dates import numeric_date_type
+from augur.filter.arguments import descriptions
+from augur.filter.io import column_type_pair
+from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
 from augur.io.print import print_err
 from augur.types import EmptyOutputReportingMethod
-from . import constants
 
 
 def register_arguments(parser):
@@ -36,77 +36,32 @@ def register_arguments(parser):
     input_group.add_argument('--skip-checks', action='store_true', help="use this option to skip checking for duplicates in sequences and whether ids in metadata have a sequence entry. Can improve performance on large files. Note that this should only be used if you are sure there are no duplicate sequences or mismatched ids since they can lead to errors in downstream Augur commands.")
 
     metadata_filter_group = parser.add_argument_group("metadata filters", "filters to apply to metadata")
-    metadata_filter_group.add_argument(
-        '--query',
-        help="""Filter samples by attribute.
-        Uses Pandas Dataframe querying, see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query for syntax.
-        (e.g., --query "country == 'Colombia'" or --query "(country == 'USA' & (division == 'Washington'))")"""
-    )
-    metadata_filter_group.add_argument('--query-columns', type=column_type_pair, nargs="+", action=ExtendOverwriteDefault, help=f"""
-        Use alongside --query to specify columns and data types in the format 'column:type', where type is one of ({','.join(ACCEPTED_TYPES)}).
-        Automatic type inference will be attempted on all unspecified columns used in the query.
-        Example: region:str coverage:float.
-    """)
-    metadata_filter_group.add_argument('--min-date', type=numeric_date_type, help=f"minimal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
-    metadata_filter_group.add_argument('--max-date', type=numeric_date_type, help=f"maximal cutoff for date, the cutoff date is inclusive; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
-    metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'],
-                                help='Exclude ambiguous dates by day (e.g., 2020-09-XX), month (e.g., 2020-XX-XX), year (e.g., 200X-10-01), or any date fields. An ambiguous year makes the corresponding month and day ambiguous, too, even if those fields have unambiguous values (e.g., "201X-10-01"). Similarly, an ambiguous month makes the corresponding day ambiguous (e.g., "2010-XX-01").')
-    metadata_filter_group.add_argument('--exclude', type=str, nargs="+", action=ExtendOverwriteDefault, help="file(s) with list of strains to exclude")
-    metadata_filter_group.add_argument('--exclude-where', nargs='+', action=ExtendOverwriteDefault,
-                                help="Exclude samples matching these conditions. Ex: \"host=rat\" or \"host!=rat\". Multiple values are processed as OR (matching any of those specified will be excluded), not AND")
-    metadata_filter_group.add_argument('--exclude-all', action="store_true", help="exclude all strains by default. Use this with the include arguments to select a specific subset of strains.")
-    metadata_filter_group.add_argument('--include', type=str, nargs="+", action=ExtendOverwriteDefault, help="file(s) with list of strains to include regardless of priorities, subsampling, or absence of an entry in --sequences.")
-    metadata_filter_group.add_argument('--include-where', nargs='+', action=ExtendOverwriteDefault, help="""
-        Include samples with these values. ex: host=rat. Multiple values are
-        processed as OR (having any of those specified will be included), not
-        AND. This rule is applied last and ensures any strains matching these
-        rules will be included regardless of priorities, subsampling, or absence
-        of an entry in --sequences.""")
+
+    metadata_filter_group.add_argument('--query', help=descriptions['query'])
+    metadata_filter_group.add_argument('--query-columns', type=column_type_pair, nargs="+", action=ExtendOverwriteDefault, help=descriptions['query_columns'])
+    metadata_filter_group.add_argument('--min-date', type=numeric_date_type, help=descriptions['min_date'])
+    metadata_filter_group.add_argument('--max-date', type=numeric_date_type, help=descriptions['max_date'])
+    metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'], help=descriptions['exclude_ambiguous_dates_by'])
+    metadata_filter_group.add_argument('--exclude', type=str, nargs="+", action=ExtendOverwriteDefault, help=descriptions['exclude'])
+    metadata_filter_group.add_argument('--exclude-where', nargs='+', action=ExtendOverwriteDefault, help=descriptions['exclude_where'])
+    metadata_filter_group.add_argument('--exclude-all', action="store_true", help=descriptions['exclude_all'])
+    metadata_filter_group.add_argument('--include', type=str, nargs="+", action=ExtendOverwriteDefault, help=descriptions['include'])
+    metadata_filter_group.add_argument('--include-where', nargs='+', action=ExtendOverwriteDefault, help=descriptions['include_where'])
 
     sequence_filter_group = parser.add_argument_group("sequence filters", "filters to apply to sequence data")
-    sequence_filter_group.add_argument('--min-length', type=int, help="minimal length of the sequences, only counting standard nucleotide characters A, C, G, or T (case-insensitive)")
-    sequence_filter_group.add_argument('--max-length', type=int, help="maximum length of the sequences, only counting standard nucleotide characters A, C, G, or T (case-insensitive)")
-    sequence_filter_group.add_argument('--non-nucleotide', action='store_true', help="exclude sequences that contain illegal characters")
+    sequence_filter_group.add_argument('--min-length', type=int, help=descriptions['min_length'])
+    sequence_filter_group.add_argument('--max-length', type=int, help=descriptions['max_length'])
+    sequence_filter_group.add_argument('--non-nucleotide', action='store_true', help=descriptions['non_nucleotide'])
 
     subsample_group = parser.add_argument_group("subsampling", "options to subsample filtered data")
-    subsample_group.add_argument('--group-by', nargs='+', action=ExtendOverwriteDefault, default=[], help=f"""
-        categories with respect to subsample.
-        Notes:
-        (1) Grouping by {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} is only supported when there is a {METADATA_DATE_COLUMN!r} column in the metadata.
-        (2) 'week' uses the ISO week numbering system, where a week starts on a Monday and ends on a Sunday.
-        (3) 'month' and 'week' grouping cannot be used together.
-        (4) Custom columns {sorted(constants.GROUP_BY_GENERATED_COLUMNS)} in the metadata are ignored for grouping. Please rename them if you want to use their values for grouping.""")
+    subsample_group.add_argument('--group-by', nargs='+', action=ExtendOverwriteDefault, default=[], help=descriptions['group_by'])
     subsample_limits_group = subsample_group.add_mutually_exclusive_group()
-    subsample_limits_group.add_argument('--sequences-per-group', type=int, help="subsample to no more than this number of sequences per category")
-    subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help="subsample to no more than this number of sequences; can be used without the group_by argument")
+    subsample_limits_group.add_argument('--sequences-per-group', type=int, help=descriptions['sequences_per_group'])
+    subsample_limits_group.add_argument('--subsample-max-sequences', type=int, help=descriptions['subsample_max_sequences'])
     probabilistic_sampling_group = subsample_group.add_mutually_exclusive_group()
-    probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help="Allow probabilistic sampling during subsampling. This is useful when there are more groups than requested sequences. This option only applies when `--subsample-max-sequences` is provided.")
+    probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help=descriptions['probabilistic_sampling'])
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')
-    subsample_group.add_argument('--group-by-weights', type=str, metavar="FILE", help="""
-        TSV file defining weights for grouping. Requirements:
-
-        (1) Lines starting with '#' are treated as comment lines.
-        (2) The first non-comment line must be a header row.
-        (3) There must be a numeric ``weight`` column (weights can take on any
-            non-negative values).
-        (4) Other columns must be a subset of columns used in ``--group-by``,
-            with combinations of values covering all combinations present in the
-            metadata.
-        (5) This option only applies when ``--group-by`` and
-            ``--subsample-max-sequences`` are provided.
-        (6) This option cannot be used with ``--no-probabilistic-sampling``.
-
-        Notes:
-
-        (1) Any ``--group-by`` columns absent from this file will be given equal
-            weighting across all values *within* groups defined by the other
-            weighted columns.
-        (2) An entry with the value ``default`` under all columns will be
-            treated as the default weight for specific groups present in the
-            metadata but missing from the weights file. If there is no default
-            weight and the metadata contains rows that are not covered by the
-            given weights, augur filter will exit with an error.
-    """)
+    subsample_group.add_argument('--group-by-weights', type=str, metavar="FILE", help=descriptions['group_by_weights'])
     subsample_group.add_argument('--priority', type=str, help="""tab-delimited file with list of priority scores for strains (e.g., "<strain>\\t<priority>") and no header.
     When scores are provided, Augur converts scores to floating point values, sorts strains within each subsampling group from highest to lowest priority, and selects the top N strains per group where N is the calculated or requested number of strains per group.
     Higher numbers indicate higher priority.
