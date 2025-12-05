@@ -29,6 +29,16 @@ not designed to load large metadata files.
 
 Users who have both 'name' and 'strain' fields in their data, and want to favor using the 'name' field should add the following `augur parse` parameter `--output-id-field 'name'`.
 
+## `augur.utils.load_features`
+
+*Deprecated in version 32.0.0 (October 2025). Planned for removal April 2026 or after.*
+
+This is part of a [larger effort](https://github.com/nextstrain/augur/issues/1011)
+to formalize Augur's Python API.
+
+We recognize the existing usage of this function, so it has been moved to
+`augur.io.load_features`.
+
 ## `augur.utils.read_strains`
 
 *Deprecated in version 24.0.0 (January 2024). Removed in version 29.0.0 (February 2025).*

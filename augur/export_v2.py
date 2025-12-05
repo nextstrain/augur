@@ -772,7 +772,7 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
         for col in additional_metadata_columns:
             if is_valid(value:=raw_data.get(col, None)):
                 node["node_attrs"][col] = {"value": value}
-                if type(value) is str and valid_url(url:=raw_data.get(url_name(col), None)):
+                if valid_url(url:=raw_data.get(url_name(col), None)):
                     node["node_attrs"][col]['url'] = url
 
     def _transfer_vaccine_info(node, raw_data):
@@ -820,12 +820,11 @@ def set_node_attrs_on_tree(data_json, node_attrs, additional_metadata_columns):
         for key in trait_keys:
             value = raw_data.get(key, None)
             if is_valid(value):
-                if is_numeric(value):
-                    node["node_attrs"][key] = {"value": format_number(value)}
-                else:
-                    node["node_attrs"][key] = {"value": value}
-                    if valid_url(url:=raw_data.get(url_name(key), None)):
-                        node["node_attrs"][key]['url'] = url
+                node["node_attrs"][key] = {"value": format_number(value) if is_numeric(value) else value}
+
+                if valid_url(url:=raw_data.get(url_name(key), None)):
+                    node["node_attrs"][key]['url'] = url
+
                 node["node_attrs"][key].update(attr_confidence(node["name"], raw_data, key))
 
     def _transfer_author_data(node):
@@ -1157,10 +1156,9 @@ def run(args):
             metadata_df = read_metadata(
                 args.metadata,
                 delimiters=args.metadata_delimiters,
-                id_columns=args.metadata_id_columns)
-
-            # Add the index as a column.
-            metadata_df[metadata_df.index.name] = metadata_df.index
+                id_columns=args.metadata_id_columns,
+                keep_id_as_column=True,
+            )
 
             metadata_file = metadata_df.to_dict(orient="index")
         except FileNotFoundError:

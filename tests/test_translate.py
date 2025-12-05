@@ -4,6 +4,7 @@ Unit tests for nucleotide to acid translation
 from pathlib import Path
 import sys
 
+import pytest
 from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 
@@ -15,7 +16,7 @@ from augur import translate
 class TestTranslate:
     def test_safe_translate(self):
         '''
-        Test safe_translate from a given nucleotide sequence with no gaps to amino acid, accounting for reporting_exceptions
+        Test safe_translate from a given nucleotide sequence with no gaps to amino acid
         '''
         # initialize input and output tuples (tuple of params, expected outputs)
         params_and_outs = [(('ATG',), 'M'),
@@ -23,14 +24,28 @@ class TestTranslate:
                            (('ATG---',), 'M-'),
                            (('ATGTAG',), 'M*'),
                            (('',), ''),
-                           (('ATGT',), 'MX'),
-                           (('ATG', True), ('M', False)),
-                           (('ATGA-G', True), ('MX', True))]
+                           (('ATGA-G',), 'MX')]
 
         # input each pair into the function and check
         for pair in params_and_outs:
             params, out = pair
             assert translate.safe_translate(*params) == out
+
+    def test_safe_translate_errors(self):
+        '''
+        Test that safe_translate raises ValueError when sequence length is not divisible by 3
+        '''
+        invalid_sequences = [
+            'A',
+            'AT',
+            'ATGT',
+            'ATGTA',
+            'ATGTAGA',
+        ]
+
+        for seq in invalid_sequences:
+            with pytest.raises(ValueError, match="not divisible by 3"):
+                translate.safe_translate(seq)
 
     def test_translate_feature(self):
         '''

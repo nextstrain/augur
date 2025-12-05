@@ -3,6 +3,47 @@
 ## __NEXT__
 
 
+## 32.1.0 (18 November 2025)
+
+### Features
+
+* augur.io.read_metadata: Added a new parameter `keep_id_as_column` to keep the resolved id column as a column in addition to setting it as the DataFrame index. [#1917][] (@victorlin)
+* subsample: Filepaths in the config file can now be relative to the config file's parent directory in addition to the current working directory. Custom directories can also be specified using a new command line option `--search-paths` or environment variable `AUGUR_SEARCH_PATHS`. [#1897][] (@victorlin)
+* A helper function – `augur.subsample.get_referenced_files` – has been added to optimize usage of `augur subsample` in Snakemake workflows. This is experimental and not yet part of the public API. [#1918][] (@victorlin)
+
+### Bug fixes
+
+* filter: Previously, `--query`, `--exclude-where`, and `--include-where` did not work for the id column (`strain`, `name`, or other from `--metadata-id-columns`). This has been fixed. [#1915][] (@corneliusroemer, @victorlin)
+* export v2: Support export of URLs for non-string values. [#1926][] (@joverlee521)
+
+[#1897]: https://github.com/nextstrain/augur/issues/1897
+[#1915]: https://github.com/nextstrain/augur/issues/1915
+[#1917]: https://github.com/nextstrain/augur/pull/1917
+[#1918]: https://github.com/nextstrain/augur/pull/1918
+[#1926]: https://github.com/nextstrain/augur/pull/1926
+
+## 32.0.0 (21 October 2025)
+
+### Major Changes
+
+* ancestral, translate: These will now error when the length of any reference gene is indivisible by 3, instead of silently padding with N to translate to 'X'. [#1895][] (@victorlin)
+* `augur.utils.load_features` is deprecated and will be removed in a future major version. Users should use `augur.io.load_features` instead. [#1912][] (@victorlin)
+
+### Features
+
+* `augur curate apply-record-annotations` will now warn if an annotation was unnecessary, often indicative of the upstream data being updated. [#1893][] (@jameshadfield)
+
+[#1893]: https://github.com/nextstrain/augur/pull/1893
+[#1895]: https://github.com/nextstrain/augur/issues/1895
+[#1912]: https://github.com/nextstrain/augur/pull/1912
+
+## 31.5.0 (17 September 2025)
+
+* A new command, `augur subsample`, supports complex subsampling using file-based configuration. See the updated [Filtering and Subsampling guide][] for a comparison with `augur filter`. [#635][] (@victorlin)
+
+[#635]: https://github.com/nextstrain/augur/issues/635
+[Filtering and Subsampling guide]: https://docs.nextstrain.org/en/latest/guides/bioinformatics/filtering-and-subsampling.html
+
 ## 31.4.0 (14 August 2025)
 
 ### Features

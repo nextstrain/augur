@@ -27,6 +27,10 @@
           "field_A": {
             "value": "nextstrain",
             "url": "https://nextstrain.org"
+          },
+          "field_B": {
+            "value": 1,
+            "url": "https://nextstrain.org"
           }
         },
         "branch_attrs": {}
@@ -44,6 +48,9 @@
               "div": 3.0,
               "field_A": {
                 "value": "BB: not-a-url"
+              },
+              "field_B": {
+                "value": 2
               }
             },
             "branch_attrs": {}
@@ -54,6 +61,10 @@
               "div": 3.0,
               "field_A": {
                 "value": "github",
+                "url": "https://github.com"
+              },
+              "field_B": {
+                "value": 3,
                 "url": "https://github.com"
               }
             },
@@ -74,6 +85,9 @@
               "div": 8.0,
               "field_A": {
                 "value": "DD <not-a-url>"
+              },
+              "field_B": {
+                "value": 4
               }
             },
             "branch_attrs": {}
@@ -84,6 +98,9 @@
               "div": 9.0,
               "field_A": {
                 "value": "EE"
+              },
+              "field_B": {
+                "value": 5
               }
             },
             "branch_attrs": {}
@@ -94,6 +111,9 @@
               "div": 6.0,
               "field_A": {
                 "value": "FF"
+              },
+              "field_B": {
+                "value": 6
               }
             },
             "branch_attrs": {}

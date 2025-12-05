@@ -1,6 +1,7 @@
 r"""
 Read one or more files like Augur, with transparent optimized decompression and
-universal newlines.
+universal newlines. Supported compression formats: gzip (.gz), bzip2 (.bz2),
+xz (.xz), zstandard (.zst).
 
 Input is read from each given file path, as the compression format detection
 requires a seekable stream. A path may be "-" to explicitly read from stdin, but

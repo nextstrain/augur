@@ -45,12 +45,13 @@ def run(args, records):
         if record_id is None:
             raise AugurError(f"ID field {args.id_field!r} does not exist in record")
 
-        record_annotations = annotations.get(record_id, {})
-        for field in list(record_annotations.keys()):
+        for field, new_value in annotations.get(record_id, {}).items():
             if field not in record:
                 print_err(f"WARNING: Skipping annotation for field {field!r} that does not exist in record")
-                del record_annotations[field]
-
-        record.update(record_annotations)
+                continue
+            if record[field] == new_value:
+                print_err(f"WARNING: Unnecessary annotation for {record_id!r} field {field!r}: value was already {new_value!r}")
+                continue
+            record[field] = new_value
 
         yield record
