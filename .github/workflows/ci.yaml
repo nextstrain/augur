@@ -72,9 +72,7 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-    env:
-      COVERAGE_FILE: ${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }},numpy=${{ matrix.numpy-version || 'latest' }}
-      COVERAGE_RCFILE: ${{ github.workspace }}/.coveragerc
+
     steps:
     - uses: actions/checkout@v6
 
@@ -104,14 +102,44 @@ jobs:
 
     # Replace the Conda Augur installation with the local version.
     - run: pip install .[dev]
+    - run: pip list
     - run: conda info
     - run: conda list
-    - run: pytest --cov=augur
-    - run: cram tests/
-      env:
-        AUGUR: coverage run -a ${{ github.workspace }}/bin/augur
-    # Only upload coverage for one job
-    - if: matrix.python-version == '3.11' && matrix.biopython-version == '' && matrix.numpy-version == ''
+
+    # Set coverage environment variables only for the coverage job
+    - name: Set coverage environment variables
+      if: matrix.python-version == '3.11' && matrix.biopython-version == ''
+      run: |
+        echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
+        echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"
+        if python3 -c 'import sys; print(sys.version_info >= (3, 14))' | grep -q True; then
+            echo "Using sysmon for coverage to reduce overhead"
+            echo COVERAGE_CORE=sysmon >> "$GITHUB_ENV"
+        else
+            echo "Using default coverage collection method"
+        fi
+
+    - name: Run pytest
+      run: |
+        if [[ -n "${COVERAGE_FILE:-}" ]]; then
+          echo "Running pytest with coverage enabled"
+          pytest --cov=augur
+        else
+          echo "Running pytest without coverage"
+          pytest --no-cov
+        fi
+    - name: Run cram tests
+      run: |
+        if [[ -n "${COVERAGE_FILE:-}" ]]; then
+          echo "Running cram tests with coverage enabled"
+          export AUGUR="coverage run -a ${{ github.workspace }}/bin/augur"
+        else
+          echo "Running cram tests without coverage"
+          export AUGUR="${{ github.workspace }}/bin/augur"
+        fi
+        cram tests/
+    - name: Upload coverage
+      if: env.COVERAGE_FILE
       uses: actions/upload-artifact@v5
       with:
         name: coverage
