@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* export v2: Improved the error message that is displayed when a deprecated coloring key is used. [#1882][] (@corneliusroemer)
+
+[#1882]: https://github.com/nextstrain/augur/issues/1882
 
 ## 32.1.0 (18 November 2025)
 
