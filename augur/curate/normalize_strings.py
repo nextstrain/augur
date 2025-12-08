@@ -2,7 +2,7 @@
 Normalize strings to a Unicode normalization form and strip leading and trailing whitespaces.
 
 Strings need to be normalized for predictable string comparisons, especially
-in cases where strings contain diacritics (see https://unicode.org/faq/normalization.html).
+in cases where strings contain diacritics (see https://web.archive.org/web/20250922031915/https://unicode.org/faq/normalization.html).
 """
 import unicodedata
 
