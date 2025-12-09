@@ -134,6 +134,15 @@ class TestDates:
             == pytest.approx(2000.138, abs=1e-3)
         )
 
+    def test_get_numerical_date_from_value_range(self):
+        assert dates.get_numerical_date_from_value("2019-01-02/2019-03-04", fmt="unused") == (
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=1, day=2)), abs=1e-3),
+            pytest.approx(dates.numeric_date(datetime.date(year=2019, month=3, day=4)), abs=1e-3),
+        )
+
+        # Using a numeric date as a bound is not valid.
+        assert dates.get_numerical_date_from_value("2019.0/2019-06-01", fmt="unused") == None
+
     def test_is_date_ambiguous(self):
         """is_date_ambiguous should return true for ambiguous dates and false for valid dates."""
         # Test complete date strings with ambiguous values.
