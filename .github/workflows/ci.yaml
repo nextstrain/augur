@@ -364,7 +364,7 @@ jobs:
       - uses: actions/setup-python@v6
       - run: pip install coverage
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: coverage
 
