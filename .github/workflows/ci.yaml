@@ -140,7 +140,7 @@ jobs:
         cram tests/
     - name: Upload coverage
       if: env.COVERAGE_FILE
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: coverage
         include-hidden-files: true
@@ -228,7 +228,7 @@ jobs:
         run: nextstrain build --ambient ./pathogen-repo/nextclade --configfile build-configs/ci/config.yaml
 
       - if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: output-${{ matrix.pathogen }}
           if-no-files-found: ignore
@@ -345,7 +345,7 @@ jobs:
       - run: nextstrain build --ambient ./pathogen-repo ${{ matrix.build-args }}
 
       - if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: output-${{ matrix.pathogen }}
           path: |
@@ -445,7 +445,7 @@ jobs:
           git config --global user.name "Nextstrain bot"
       - run: python3 -m pip install --upgrade build twine
       - run: devel/release ${{ github.event.inputs.version }}
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: dist
           path: dist/
