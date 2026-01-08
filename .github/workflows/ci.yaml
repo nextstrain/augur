@@ -45,7 +45,6 @@ jobs:
           # of Biopython¹ and Numpy²
           # ¹ <https://github.com/biopython/biopython/blob/master/NEWS.rst>
           # ² <https://numpy.org/doc/stable/release>
-          - { python-version: '3.9',  biopython-version: '1.79', numpy-version: '1.19.4' }
           - { python-version: '3.10', biopython-version: '1.80', numpy-version: '1.21.3' }
           - { python-version: '3.11', biopython-version: '1.80', numpy-version: '1.23.4' }  # numpy 1.23.2-3 did not declare support in conda
           - { python-version: '3.12', biopython-version: '1.82', numpy-version: '1.26.0' }
@@ -94,7 +93,7 @@ jobs:
 
     # Run with coverage on the earliest supported Python version
     - name: Set coverage environment variables
-      if: matrix.python-version == '3.9'
+      if: matrix.python-version == '3.10'
       run: |
         echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
         echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"

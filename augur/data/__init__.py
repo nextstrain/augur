@@ -11,7 +11,7 @@ Resource files.
 # backwards compatible with importers only providing the original path() /
 # ResourceReader API.  The PyPI backport, on the other hand, contains the full
 # adapter since 5.3.0, which we declare as our minimum version in setup.py, so
-# we use that even on 3.9 and 3.10.
+# we use that even on 3.10.
 #
 # We're using the new API at all because the original one is being deprecated
 # and we want to avoid warnings both from the stdlib implementation on 3.11 and
