@@ -92,9 +92,9 @@ jobs:
     - run: conda info
     - run: conda list
 
-    # Set coverage environment variables only for the coverage job
+    # Run with coverage on the earliest supported Python version
     - name: Set coverage environment variables
-      if: matrix.python-version == '3.11' && matrix.biopython-version == ''
+      if: matrix.python-version == '3.9'
       run: |
         echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
         echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"
