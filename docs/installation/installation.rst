@@ -45,7 +45,7 @@ There are several ways to install Augur, ordered from least to most complex.
       .. warning::
          Installing other Python packages after Augur may cause dependency incompatibilities. If this happens, re-install Augur using the command in step 1.
 
-      Augur is written in Python 3 and requires at least Python 3.9. It's published on `PyPI <https://pypi.org>`__ as `nextstrain-augur <https://pypi.org/project/nextstrain-augur>`__.
+      Augur is written in Python 3 and requires at least Python 3.10. It's published on `PyPI <https://pypi.org>`__ as `nextstrain-augur <https://pypi.org/project/nextstrain-augur>`__.
 
       1. Install Augur along with Python dependencies.
 
