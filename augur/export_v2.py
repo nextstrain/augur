@@ -954,7 +954,7 @@ def register_parser(parent_subparsers):
     minify_group.add_argument('--minify-json', action="store_true", help="always export JSONs without indentation or line returns.")
     minify_group.add_argument('--no-minify-json', action="store_true", help="always export JSONs to be human readable.")
 
-    root_sequence_group = parser.add_argument_group(
+    root_sequence = parser.add_argument_group(
             title="OPTIONAL ROOT-SEQUENCE SETTINGS",
             description=f"""
                 The root-sequences describe the sequences (nuc + aa) for the parent of the tree's root-node. They may represent a
@@ -963,7 +963,6 @@ def register_parser(parent_subparsers):
                 These arguments are mutually exclusive.
                 """
         ).add_mutually_exclusive_group()
-    root_sequence = root_sequence_group.add_mutually_exclusive_group()
     root_sequence.add_argument('--include-root-sequence', action="store_true", help="Export as an additional JSON. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
     root_sequence.add_argument('--include-root-sequence-inline', action="store_true", help="Export the root sequence within the dataset JSON. This should only be used for small genomes for file size reasons.")
 
