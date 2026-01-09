@@ -36,39 +36,25 @@ jobs:
     - run: npx pyright --stats
 
   pytest-cram:
-    name: test (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }} numpy=${{ matrix.numpy-version || 'latest' }})
+    name: pytest-cram (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }} numpy=${{ matrix.numpy-version || 'latest' }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version:
-          - '3.9'
-          - '3.10'
-          - '3.11'
-          - '3.12'
-          - '3.13'
-        biopython-version:
-          # list of Biopython versions with support for a new Python version
-          # from https://github.com/biopython/biopython/blob/master/NEWS.rst
-          - '1.80' # first to support Python 3.10 and 3.11
-          - '1.82' # first to support Python 3.12
-          - '1.85' # first to support Python 3.13
-          - ''     # latest
-        numpy-version:
-          - ''        # latest (numpy 2.x) - test with all combinations
         include:
-          # Python 3.9 automatically uses numpy v1, so no need to specify here
-          - python-version: '3.10'
-            biopython-version: '1.80'
-            numpy-version: '1.26.4'
-          - python-version: '3.12'
-            biopython-version: ''
-            numpy-version: '1.26.4'
-        exclude:
-          # some older Biopython versions are incompatible with later Python versions
-          - { biopython-version: '1.80', python-version: '3.12' }
-          - { biopython-version: '1.80', python-version: '3.13' }
-          - { biopython-version: '1.82', python-version: '3.13' }
-          - { biopython-version: '', python-version: '3.9' } # once 1.86 is released, 3.9 not supported
+          # All supported Python versions with the earliest compatible versions
+          # of Biopython¹ and Numpy²
+          # ¹ <https://github.com/biopython/biopython/blob/master/NEWS.rst>
+          # ² <https://numpy.org/doc/stable/release>
+          - { python-version: '3.9',  biopython-version: '1.79', numpy-version: '1.19.4' }
+          - { python-version: '3.10', biopython-version: '1.80', numpy-version: '1.21.3' }
+          - { python-version: '3.11', biopython-version: '1.80', numpy-version: '1.23.4' }  # numpy 1.23.2-3 did not declare support in conda
+          - { python-version: '3.12', biopython-version: '1.82', numpy-version: '1.26.0' }
+          - { python-version: '3.13', biopython-version: '1.85', numpy-version: '2.1.0'  }
+          # Latest versions of Biopython and Numpy
+          - { python-version: '3.13', biopython-version: ''    , numpy-version: ''       }
+          # Latest Biopython with Numpy v1
+          - { python-version: '3.12', biopython-version: ''    , numpy-version: '1'      }
+
     defaults:
       run:
         shell: bash -l {0}
@@ -106,9 +92,9 @@ jobs:
     - run: conda info
     - run: conda list
 
-    # Set coverage environment variables only for the coverage job
+    # Run with coverage on the earliest supported Python version
     - name: Set coverage environment variables
-      if: matrix.python-version == '3.11' && matrix.biopython-version == ''
+      if: matrix.python-version == '3.9'
       run: |
         echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
         echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"
