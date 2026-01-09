@@ -9,6 +9,7 @@ from .argparse_ import ExtendOverwriteDefault
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
+from .io.strains import read_strains
 from .utils import read_tree, write_json, InvalidTreeError
 from .errors import AugurError
 from treetime.vcf_utils import read_vcf
@@ -17,8 +18,11 @@ from treetime.seq_utils import profile_maps
 def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='auto',
              confidence=False, resolve_polytomies=True, stochastic_resolve=False, max_iter=2, precision='auto',
              infer_gtr=True, Tc=0.01, reroot=None, use_marginal='always', fixed_pi=None, use_fft=True,
-             clock_rate=None, clock_std=None, clock_filter_iqd=None, verbosity=1, covariance=True, rng_seed=None, **kwarks):
+             clock_rate=None, clock_std=None, clock_filter_iqd=None, keep_ids=None, verbosity=1, covariance=True, rng_seed=None, **kwarks):
     from treetime import TreeTime
+
+    if keep_ids is None:
+        keep_ids = set()
 
     try: #Tc could be a number or  'opt' or 'skyline'. TreeTime expects a float or int if a number.
         Tc = float(Tc)
@@ -49,7 +53,7 @@ def refine(tree=None, aln=None, ref=None, dates=None, branch_length_inference='a
         # remove them explicitly
         leaves = [x for x in tt.tree.get_terminals()]
         for n in leaves:
-            if n.bad_branch:
+            if n.bad_branch and n.name not in keep_ids:
                 tt.tree.prune(n)
                 print('pruning leaf ', n.name)
         # fix treetime set-up for new tree topology
@@ -203,6 +207,7 @@ def register_parser(parent_subparsers):
                                 help='branch length mode of treetime to use')
     parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
                                 'interquartile ranges from the root-to-tip vs time regression')
+    parser.add_argument('--keep-ids', metavar="FILE", help="file containing ids to keep in tree regardless of clock filtering (one per line)")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--year-bounds', type=int, nargs='+', action=ExtendOverwriteDefault, help='specify min or max & min prediction bounds for samples with XX in year')
     parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
@@ -319,6 +324,10 @@ def run(args):
         else:
             time_inference_mode = 'always' if args.date_inference=='marginal' else 'never'
 
+        keep_ids = set()
+        if args.keep_ids:
+            keep_ids = read_strains(args.keep_ids)
+
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                     reroot=treetime_reroot,
                     Tc=0.01 if args.coalescent is None else args.coalescent, #use 0.01 as default coalescent time scale
@@ -326,7 +335,7 @@ def run(args):
                     branch_length_inference = args.branch_length_inference or 'auto',
                     precision = 'auto' if args.precision is None else args.precision,
                     clock_rate=args.clock_rate, clock_std=args.clock_std_dev,
-                    clock_filter_iqd=args.clock_filter_iqd, max_iter=args.max_iter,
+                    clock_filter_iqd=args.clock_filter_iqd, keep_ids=keep_ids, max_iter=args.max_iter,
                     covariance=args.covariance, resolve_polytomies=(not args.keep_polytomies),
                     stochastic_resolve=args.stochastic_resolve, verbosity=args.verbosity, rng_seed=args.seed)
 

@@ -5,12 +5,14 @@
 ### Features
 
 * filter, frequencies, refine: Added support in metadata for precise date ranges in `YYYY-MM-DD/YYYY-MM-DD` format. [#1304][] (@victorlin)
+* refine: Added a new option `--keep-ids` to keep certain tips in the tree regardless of clock filtering. This allows force-inclusion similar to `augur filter`'s `--include` option, and the same file can be used for both. [#1768][] (@victorlin)
 
 ### Bug fixes
 
 * export v2: Improved the error message that is displayed when a deprecated coloring key is used. [#1882][] (@corneliusroemer)
 
 [#1304]: https://github.com/nextstrain/augur/issues/1304
+[#1768]: https://github.com/nextstrain/augur/issues/1768
 [#1882]: https://github.com/nextstrain/augur/issues/1882
 
 ## 32.1.0 (18 November 2025)
