@@ -86,7 +86,8 @@ setuptools.setup(
             "pytest-cov >=2.8.1",
             "pytest-mock >= 2.0.0",
             "recommonmark >=0.5.0",
-            "Sphinx >=2.0.1",
+            # TODO: Remove upper limit once upstream issue is fixed: https://github.com/executablebooks/sphinx-tabs/issues/206
+            "Sphinx >=2.0.1, <9.0.0",
             "sphinx-autobuild >=2021.3.14",
             "sphinx-argparse >=0.2.5, !=0.5.0",
             "sphinx-markdown-tables >= 0.0.9",
