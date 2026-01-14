@@ -1,0 +1,3 @@
+# Intended for use with actions/setup-python
+# Target the earliest supported Python version
+3.10
