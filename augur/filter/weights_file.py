@@ -57,7 +57,7 @@ def get_default_weight(weights: pd.DataFrame, weighted_columns: List[str]) -> Op
     # 2. Multiple default rows specified in the weights file.
     #    This is a user error.
     mask = (
-        weights[weighted_columns].eq(COLUMN_VALUE_FOR_DEFAULT_WEIGHT).all(axis=1) &
+        weights[weighted_columns].eq(COLUMN_VALUE_FOR_DEFAULT_WEIGHT).all(axis=1) &  # type: ignore[arg-type]
         weights[weighted_columns].notna().all(axis=1)
     )
     default_weight_values = weights.loc[mask, WEIGHTS_COLUMN].unique()  # type: ignore[operator]
