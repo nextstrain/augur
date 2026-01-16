@@ -133,7 +133,7 @@ class TestUtils:
             'series': pd.Series([6,7,8])
         }
         file = Path(tmpdir) / Path("data.json")
-        utils.write_json(data, file, include_version=False)
+        utils.write_json(data, file)
         with open(file) as f:
             assert json.load(f) == {
                 'int': 1,

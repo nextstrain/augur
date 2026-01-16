@@ -46,7 +46,7 @@ def run(args):
         output['collections'].extend(measurements['collections'])
 
     indent = {"indent": None} if args.minify_json else {}
-    write_json(output, args.output_json, include_version=False, **indent)
+    write_json(output, args.output_json, **indent)
     try:
         read_measurements_json(measurements_json=args.output_json)
     except ValidateError:

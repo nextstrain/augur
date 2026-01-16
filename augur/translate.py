@@ -18,7 +18,7 @@ from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.sequences import load_features, write_VCF_translation, is_vcf as is_filename_vcf
 from .io.print import print_err
 from .utils import parse_genes_argument, read_node_data, \
-    write_json, get_json_name, genome_features_to_auspice_annotation
+    write_augur_json, get_json_name, genome_features_to_auspice_annotation
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
 from textwrap import dedent
@@ -460,7 +460,7 @@ def run(args):
     # use NodeDataObject to perform validation on the file before it's written
     NodeDataObject(output_data, out_name, args.validation_mode)
 
-    write_json(output_data, out_name)
+    write_augur_json(output_data, out_name)
     print_err("amino acid mutations written to", out_name)
 
     ## write alignments to file if requested

@@ -22,7 +22,7 @@ from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
 from .io.file import PANDAS_READ_CSV_OPTIONS
 from argparse import SUPPRESS
-from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_json, get_json_name
+from .utils import get_parent_name_by_child_name_for_tree, read_node_data, write_augur_json, get_json_name
 from .argparse_ import add_validation_arguments
 
 UNASSIGNED = 'unassigned'
@@ -383,5 +383,5 @@ def run(args):
         print(f"Clade labels stored on branches → <node_name> → labels → {label_key}", file=sys.stdout)
 
     out_name = get_json_name(args)
-    write_json(node_data_json, out_name)
+    write_augur_json(node_data_json, out_name)
     print(f"Clades written to {out_name}", file=sys.stdout)

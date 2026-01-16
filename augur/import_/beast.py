@@ -12,7 +12,7 @@ import numpy as np
 from Bio import Phylo
 from treetime import TreeAnc
 from augur.io.file import open_file
-from augur.utils import write_json
+from augur.utils import write_augur_json
 
 def register_parser(parent_subparsers):
     """
@@ -588,6 +588,6 @@ def run(args):
     node_data['nodes'] = collect_node_data(tree, root_date_offset, most_recent_tip)
 
     tree_success = Phylo.write(tree, args.output_tree, 'newick', format_branch_length='%1.8f')
-    json_success = write_json(node_data, args.output_node_data)
+    json_success = write_augur_json(node_data, args.output_node_data)
 
     print_what_to_do_next(nodes=node_data['nodes'], mcc_path=args.mcc, tree_path=args.output_tree, node_data_path=args.output_node_data)

@@ -8,7 +8,7 @@ from treetime.vcf_utils import read_vcf
 from collections import defaultdict
 from .io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from .io.sequences import read_sequences
-from .utils import write_json, get_json_name
+from .utils import write_augur_json, get_json_name
 
 def read_in_translate_vcf(vcf_file, ref_file):
     """
@@ -340,5 +340,5 @@ def run(args):
 
     #write out json
     out_name = get_json_name(args)
-    write_json({"nodes":seq_features},out_name)
+    write_augur_json({"nodes":seq_features},out_name)
     print("sequence traits written to", out_name, file=sys.stdout)

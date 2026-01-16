@@ -7,7 +7,7 @@ import json
 import numpy as np
 from .argparse_ import ExtendOverwriteDefault
 from .io.file import open_file
-from .utils import write_json
+from .utils import write_augur_json
 
 
 def select_nodes_in_season(tree, timepoint, time_window=0.6):
@@ -128,4 +128,4 @@ def run(args):
             lbi_by_node[node.name][attribute_name] = node.attr[attribute_name]
 
     # Export LBI to JSON.
-    write_json({"nodes": lbi_by_node}, args.output)
+    write_augur_json({"nodes": lbi_by_node}, args.output)

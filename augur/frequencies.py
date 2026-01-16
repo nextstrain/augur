@@ -13,7 +13,7 @@ from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, T
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
-from .utils import write_json
+from .utils import write_augur_json
 
 REGION_COLUMN = 'region'
 DEFAULT_REGION = 'global'
@@ -218,7 +218,7 @@ def run(args):
                     "frequencies": format_frequencies(frequencies[node_name])
                 }
 
-        write_json(frequency_dict, args.output)
+        write_augur_json(frequency_dict, args.output)
         print("tree frequencies written to", args.output, file=sys.stdout)
     elif args.alignments:
         frequencies = None
@@ -265,5 +265,5 @@ def run(args):
                 frequencies["%s:counts" % gene] = [int(observations_per_pivot)
                                                    for observations_per_pivot in freqs.counts]
 
-        write_json(frequencies, args.output)
+        write_augur_json(frequencies, args.output)
         print("mutation frequencies written to", args.output, file=sys.stdout)

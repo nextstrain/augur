@@ -246,7 +246,7 @@ def run(args):
     # Set indentation to None to create compact JSON if specified
     indent = {"indent": None} if args.minify_json else {}
     # Create output JSON
-    write_json(output, args.output_json, include_version=False, **indent)
+    write_json(output, args.output_json, **indent)
     # Verify the produced output is a valid measurements JSON
     try:
         read_measurements_json(measurements_json=args.output_json)

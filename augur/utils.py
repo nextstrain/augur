@@ -122,10 +122,21 @@ def read_node_data(fnames, tree=None, validation_mode=ValidationMode.ERROR):
     return NodeDataReader(fnames, tree, validation_mode).read()
 
 
-def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):
+def write_augur_json(data, file):
+    """
+    Write ``data`` as JSON to the given ``file`` with Augur version info.
+
+    This is a simplified wrapper around :py:func:`write_json` that adds the
+    Augur version as a top-level key "generated_by".
+    """
+    data["generated_by"] = {"program": "augur", "version": get_augur_version()}
+    write_json(data, file)
+
+
+def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2)):
     """
     Write ``data`` as JSON to the given ``file``, creating parent directories
-    if necessary. The augur version is included as a top-level key "generated_by".
+    if necessary.
 
     Parameters
     ----------
@@ -136,8 +147,6 @@ def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") e
     indent : int or None, optional
         JSON indentation level. Default is `None` if the environment variable :envvar:`AUGUR_MINIFY_JSON`
         is truthy, else 2
-    include_version : bool, optional
-        Include the augur version. Default: `True`.
 
     Raises
     ------
@@ -153,8 +162,6 @@ def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") e
                 if not os.path.isdir(parent_directory):
                     raise
 
-    if include_version:
-        data["generated_by"] = {"program": "augur", "version": get_augur_version()}
     with open_file(file, 'w', encoding='utf-8') as handle:
         sort_keys = False if isinstance(data, OrderedDict) else True
         json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
@@ -175,7 +182,7 @@ class BytesWrittenCounterIO(RawIOBase):
 def json_size(data):
     """Return size in bytes of a Python object in JSON string form."""
     with BytesWrittenCounterIO() as counter:
-        write_json(data, counter, include_version=False)
+        write_json(data, counter)
     return counter.written
 
 

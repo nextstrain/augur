@@ -10,7 +10,7 @@ from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .io.strains import read_strains
-from .utils import read_tree, write_json, InvalidTreeError
+from .utils import read_tree, write_augur_json, InvalidTreeError
 from .errors import AugurError
 from treetime.vcf_utils import read_vcf
 from treetime.seq_utils import profile_maps
@@ -437,7 +437,7 @@ def run(args):
     else:
         node_data_fname = '.'.join(args.tree.split('.')[:-1]) + '.node_data.json'
 
-    write_json(node_data, node_data_fname)
+    write_augur_json(node_data, node_data_fname)
     print("node attributes written to",node_data_fname, file=sys.stdout)
 
     return 0 if tree_success else 1
