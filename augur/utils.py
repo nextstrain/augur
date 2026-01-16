@@ -125,7 +125,7 @@ def read_node_data(fnames, tree=None, validation_mode=ValidationMode.ERROR):
 def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):
     """
     Write ``data`` as JSON to the given ``file``, creating parent directories
-    if necessary. The augur version is included as a top-level key "augur_version".
+    if necessary. The augur version is included as a top-level key "generated_by".
 
     Parameters
     ----------
@@ -135,7 +135,7 @@ def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") e
         file path or handle to write to
     indent : int or None, optional
         JSON indentation level. Default is `None` if the environment variable :envvar:`AUGUR_MINIFY_JSON`
-        is truthy, else 1
+        is truthy, else 2
     include_version : bool, optional
         Include the augur version. Default: `True`.
 
