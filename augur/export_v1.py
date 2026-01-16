@@ -352,11 +352,6 @@ def run(args):
     node_data = read_node_data(args.node_data) # args.node_data is an array of multiple files (or a single file)
     nodes = node_data["nodes"] # this is the per-node metadata produced by various augur modules
 
-    if args.minify_json:
-        json_indent = None
-    else:
-        json_indent = 2
-
     # export reference sequence data including translations. This is either the
     # inferred sequence of the root, or the reference sequence with respect to
     # which mutations are made on the tree (including possible mutations leading
@@ -368,7 +363,7 @@ def run(args):
         else:
             root_sequence = {}
 
-        write_json(root_sequence, args.output_sequence)
+        write_json(root_sequence, args.output_sequence, minify=args.minify_json)
 
     meta_json = read_config(args.auspice_config)
     ensure_config_is_v1(meta_json)
@@ -401,7 +396,7 @@ def run(args):
         tree_decorations.append({"key": trait, "is_attr": True})
 
     recursively_decorate_tree_json_v1_schema(tree_json, nodes, decorations=tree_decorations)
-    write_json(tree_json, args.output_tree, indent=json_indent)
+    write_json(tree_json, args.output_tree, minify=args.minify_json)
 
     # Export the metadata JSON
     lat_long_mapping = read_lat_longs(args.lat_longs)
@@ -420,5 +415,5 @@ def run(args):
         meta_json["annotations"] = annotations
     meta_json["panels"] = process_panels(None, meta_json)
 
-    write_json(meta_json, args.output_meta, indent=json_indent)
+    write_json(meta_json, args.output_meta, minify=args.minify_json)
     return 0

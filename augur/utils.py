@@ -128,12 +128,21 @@ def write_augur_json(data, file):
 
     This is a simplified wrapper around :py:func:`write_json` that adds the
     Augur version as a top-level key "generated_by".
+
+    Unlike :py:func:`write_json`, output is not minified by default to preserve
+    backwards-compatible behavior for commands that produce node data JSONs.
+    Minification can be forced via the :envvar:`AUGUR_MINIFY_JSON` environment
+    variable.
     """
     data["generated_by"] = {"program": "augur", "version": get_augur_version()}
-    write_json(data, file)
+    minify = True if os.environ.get("AUGUR_MINIFY_JSON") else False
+    write_json(data, file, minify=minify)
 
 
-def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2)):
+MINIFY_THRESHOLD_MB = 5
+
+
+def write_json(data, file, minify=None, minify_threshold_mb=MINIFY_THRESHOLD_MB, indent=2):
     """
     Write ``data`` as JSON to the given ``file``, creating parent directories
     if necessary.
@@ -144,9 +153,17 @@ def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") e
         data to write out to JSON
     file
         file path or handle to write to
+    minify : bool or None, optional
+        Control output minification. ``True`` forces minified output, ``False``
+        forces non-minified output, ``None`` (default) uses auto-detection based
+        on *minify_threshold_mb*.
+        A truthy value in the environment variable :envvar:`AUGUR_MINIFY_JSON`
+        also forces minified output.
+    minify_threshold_mb : int or float, optional
+        Threshold in megabytes above which output is automatically minified.
+        Only applies when *minify* is None.
     indent : int or None, optional
-        JSON indentation level. Default is `None` if the environment variable :envvar:`AUGUR_MINIFY_JSON`
-        is truthy, else 2
+        JSON indentation level when not minifying.
 
     Raises
     ------
@@ -162,9 +179,25 @@ def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") e
                 if not os.path.isdir(parent_directory):
                     raise
 
+    # Should output be minified?
+    # Order of precedence:
+    # 1. 'minify' parameter
+    # 2. 'AUGUR_MINIFY_JSON' environment variable
+    # 3. Automatically determine based on size of data
+    if minify is True:
+        effective_indent = None
+    elif minify is False:
+        effective_indent = indent
+    elif os.environ.get("AUGUR_MINIFY_JSON"):
+        effective_indent = None
+    elif json_size(data) > minify_threshold_mb * 10**6:
+        effective_indent = None
+    else:
+        effective_indent = indent
+
     with open_file(file, 'w', encoding='utf-8') as handle:
         sort_keys = False if isinstance(data, OrderedDict) else True
-        json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
+        json.dump(data, handle, indent=effective_indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
 
 
 class BytesWrittenCounterIO(RawIOBase):
@@ -182,7 +215,7 @@ class BytesWrittenCounterIO(RawIOBase):
 def json_size(data):
     """Return size in bytes of a Python object in JSON string form."""
     with BytesWrittenCounterIO() as counter:
-        write_json(data, counter)
+        write_json(data, counter, minify=False)
     return counter.written
 
 

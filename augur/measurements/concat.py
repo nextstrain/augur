@@ -1,6 +1,7 @@
 """
 Concatenate multiple measurements JSONs into a single JSON file
 """
+import os
 import sys
 
 from augur.argparse_ import ExtendOverwriteDefault
@@ -45,8 +46,8 @@ def run(args):
         measurements = read_measurements_json(json)
         output['collections'].extend(measurements['collections'])
 
-    indent = {"indent": None} if args.minify_json else {}
-    write_json(output, args.output_json, **indent)
+    minify = True if args.minify_json or os.environ.get("AUGUR_MINIFY_JSON") else False
+    write_json(output, args.output_json, minify=minify)
     try:
         read_measurements_json(measurements_json=args.output_json)
     except ValidateError:

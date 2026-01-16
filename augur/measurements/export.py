@@ -243,10 +243,10 @@ def run(args):
         'collections': [collection_output]
     }
 
-    # Set indentation to None to create compact JSON if specified
-    indent = {"indent": None} if args.minify_json else {}
+    # Compact JSON if specified
+    minify = True if args.minify_json or os.environ.get("AUGUR_MINIFY_JSON") else False
     # Create output JSON
-    write_json(output, args.output_json, **indent)
+    write_json(output, args.output_json, minify=minify)
     # Verify the produced output is a valid measurements JSON
     try:
         read_measurements_json(measurements_json=args.output_json)
