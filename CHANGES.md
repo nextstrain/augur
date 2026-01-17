@@ -4,6 +4,7 @@
 
 ### Major Changes
 
+* Dropped support for Python 3.9. [#1938][] (@victorlin)
 * `augur.utils.write_json` is deprecated and will be removed in a future major version. Users should use `augur.io.write_json` instead. [#1943][] (@victorlin)
 
 ### Features
@@ -21,6 +22,7 @@
 [#1304]: https://github.com/nextstrain/augur/issues/1304
 [#1768]: https://github.com/nextstrain/augur/issues/1768
 [#1882]: https://github.com/nextstrain/augur/issues/1882
+[#1938]: https://github.com/nextstrain/augur/pull/1938
 [#1943]: https://github.com/nextstrain/augur/pull/1943
 [#1948]: https://github.com/nextstrain/augur/pull/1948
 
