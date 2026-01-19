@@ -25,6 +25,13 @@ from .io.sequences import read_sequences
 from .io.shell_command_runner import run_shell_command
 from .utils import nthreads_value, load_mask_sites, read_tree
 
+try:
+    import piqtree  # noqa: F401
+
+    has_piqtree = True
+except ImportError:
+    has_piqtree = False
+
 DEFAULT_ARGS = {
     "fasttree": "-nt -nosupport",
     "raxml": "-f d -m GTRCAT -c 25 -p 235813",
@@ -228,18 +235,21 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
     return T
 
 
-def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=1, tree_builder_args=None):
-    '''
+def _build_iqtree(
+    aln_file,
+    out_file,
+    substitution_model="GTR",
+    clean_up=True,
+    nthreads=1,
+    tree_builder_args=None,
+):
+    """
     build tree using IQ-Tree
     arguments:
         aln_file    file name of input aligment
         out_file    file name to write tree to
-    '''
-    iqtree = find_executable([
-        "iqtree3",
-        "iqtree2",
-        "iqtree"
-    ])
+    """
+    iqtree = find_executable(["iqtree3", "iqtree2", "iqtree"])
     # create a dictionary for characters that IQ-tree changes.
     # we remove those prior to tree-building and reinstantiate later
     # Note: See <https://github.com/nextstrain/augur/pull/1085> for an alternate
@@ -345,6 +355,43 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         T=None
 
     return (T, input_sequence_names)
+
+
+def _build_piqtree(
+    aln_file,
+    out_file,
+    substitution_model="GTR",
+    clean_up=True,
+    nthreads=1,
+    tree_builder_args=None,
+):
+    """
+    build tree using IQ-Tree via piqtree
+    arguments:
+        aln_file    file name of input aligment
+        out_file    file name to write tree to
+    """
+    import cogent3 as c3
+
+    aln = c3.load_aligned_seqs(aln_file, moltype="dna")
+    # make sure the seq names won't cause problems with IQ-TREE algorithms
+    seqname_aliases = {n: f"s{i}" for i, n in enumerate(aln.names)}
+    rn_aln = aln.rename_seqs(lambda x: seqname_aliases[x])
+    build_tree = c3.get_app(
+        "piq_build_tree",
+        model=substitution_model,
+        num_threads=nthreads,
+        other_options=tree_builder_args,
+    )
+    tree = build_tree(rn_aln)
+    # revert back to the original sequence names
+    rn_tree = tree.renamed_nodes({a: n for n, a in seqname_aliases.items()})
+    rn_tree.write(out_file)
+    return rn_tree, aln.names
+
+
+# Once the minimum supported version is Python 3.12+, we can default to piqtree
+build_iqtree = _build_piqtree if has_piqtree else _build_iqtree
 
 
 def write_out_informative_fasta(compress_seq, alignment, stripFile=None):

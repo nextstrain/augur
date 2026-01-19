@@ -53,6 +53,14 @@ There are several ways to install Augur, ordered from least to most complex.
 
             python3 -m pip install nextstrain-augur
 
+         OR
+
+         .. code:: bash
+
+            python3 -m pip install "nextstrain-augur[piqtree]"
+
+         This installs ` piqtree <https://piqtree.readthedocs.io/>`_, which provides python bindings to IQ-TREE, and negates the need to install IQ-TREE separately. Note that piqtree requires python 3.12 or above.
+
       2. Install other dependencies.
 
          .. include:: non-python-dependencies.rst

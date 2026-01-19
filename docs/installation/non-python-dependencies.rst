@@ -4,7 +4,7 @@ Augur uses some external bioinformatics programs that are not available on PyPI:
 
 - ``augur tree`` requires at least one of:
 
-   - `IQ-TREE <http://www.iqtree.org/>`__ (used by default)
+   - `IQ-TREE <http://www.iqtree.org/>`__ (used by default, but note their new piqtree tool)
    - `RAxML <https://cme.h-its.org/exelixis/web/software/raxml/>`__ (optional alternative)
    - `FastTree <http://www.microbesonline.org/fasttree/>`__ (optional alternative)
 

@@ -1,4 +1,4 @@
-from pathlib    import Path
+from pathlib import Path
 import setuptools
 import sys
 
@@ -99,7 +99,11 @@ setuptools.setup(
             "types-setuptools",
             "wheel >=0.32.3",
             "ipdb >=0.10.1"
-        ]
+        ],
+        "piqtree": [
+            'piqtree >=0.8.0; python_version >= "3.12" and python_version < "3.15"',
+            "cogent3 >= 26.1.7",
+        ],
     },
     classifiers = [
         "Development Status :: 5 - Production/Stable",
