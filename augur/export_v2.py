@@ -13,7 +13,7 @@ from Bio import Phylo
 from typing import Dict, Union, TypedDict, Any, Tuple
 from urllib.parse import urlparse
 
-from .argparse_ import ExtendOverwriteDefault, add_validation_arguments
+from .argparse_ import SKIP_AUTO_DEFAULT_IN_HELP, ExtendOverwriteDefault, add_validation_arguments
 from .errors import AugurError
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
@@ -951,8 +951,16 @@ def register_parser(parent_subparsers):
                 these options to override that behavior.
                 """
         ).add_mutually_exclusive_group()
-    minify_group.add_argument('--minify-json', action="store_true", help="always export JSONs without indentation or line returns.")
-    minify_group.add_argument('--no-minify-json', action="store_true", help="always export JSONs to be human readable.")
+    minify_group.add_argument(
+        '--minify-json',
+        action="store_true",
+        help="Always export JSONs without indentation or line returns. A truthy value (e.g. 1) in :envvar:`AUGUR_MINIFY_JSON` has the same effect, but it can be overridden by ``--no-minify-json``." + SKIP_AUTO_DEFAULT_IN_HELP,
+    )
+    minify_group.add_argument(
+        '--no-minify-json',
+        action="store_true",
+        help="Always export JSONs to be human readable. This overrides :envvar:`AUGUR_MINIFY_JSON`." + SKIP_AUTO_DEFAULT_IN_HELP,
+    )
 
     root_sequence = parser.add_argument_group(
             title="OPTIONAL ROOT-SEQUENCE SETTINGS",
@@ -1236,12 +1244,16 @@ def run(args):
         data_json["meta"]["extensions"] = config["extensions"]
 
     # Should output be minified?
-    # User-specified arguments take precedence before determining behavior based
-    # on the size of the tree.
-    if args.minify_json or os.environ.get("AUGUR_MINIFY_JSON"):
+    # Order of precedence:
+    # 1. Command-line arguments
+    # 2. Environment variable
+    # 3. Automatically determine based on the size of the tree
+    if args.minify_json:
         minify = True
     elif args.no_minify_json:
         minify = False
+    elif os.environ.get("AUGUR_MINIFY_JSON"):
+        minify = True
     else:
         if json_size(data_json) > MINIFY_THRESHOLD_MB * 10**6:
             minify = True
