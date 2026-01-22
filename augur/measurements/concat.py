@@ -5,7 +5,8 @@ import os
 import sys
 
 from augur.argparse_ import ExtendOverwriteDefault
-from augur.utils import first_line, write_json
+from augur.io.json import write_json
+from augur.utils import first_line
 from augur.validate import (
     measurements as read_measurements_json,
     ValidateError

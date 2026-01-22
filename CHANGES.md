@@ -2,10 +2,15 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* `augur.utils.write_json` is deprecated and will be removed in a future major version. Users should use `augur.io.write_json` instead. [#1943][] (@victorlin)
+
 ### Features
 
 * filter, frequencies, refine: Added support in metadata for precise date ranges in `YYYY-MM-DD/YYYY-MM-DD` format. [#1304][] (@victorlin)
 * refine: Added a new option `--keep-ids` to keep certain tips in the tree regardless of clock filtering. This allows force-inclusion similar to `augur filter`'s `--include` option, and the same file can be used for both. [#1768][] (@victorlin)
+* `augur.io.write_json` is a new function serving as a replacement for `augur.utils.write_json`. Output minification is controlled by two new parameters `minify` and `minify_threshold_mb`. [#1943][] (@victorlin)
 
 ### Bug fixes
 

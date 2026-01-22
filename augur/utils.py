@@ -2,16 +2,14 @@ import argparse
 import Bio
 import Bio.Phylo
 import numpy as np
-import os, json, sys
-import pandas as pd
-from collections import OrderedDict
-from io import RawIOBase
+import os, sys
 from shlex import quote as shquote
 from typing import List, Union
 from .__version__ import __version__
 
 from augur.data import as_file
 from augur.io.file import open_file
+from augur.io.json import write_json as io_write_json
 from augur.io.print import print_err
 
 from augur.types import ValidationMode
@@ -136,104 +134,12 @@ def write_augur_json(data, file):
     """
     data["generated_by"] = {"program": "augur", "version": get_augur_version()}
     minify = True if os.environ.get("AUGUR_MINIFY_JSON") else False
-    write_json(data, file, minify=minify)
+    io_write_json(data, file, minify=minify)
 
 
-MINIFY_THRESHOLD_MB = 5
-
-
-def write_json(data, file, minify=None, minify_threshold_mb=MINIFY_THRESHOLD_MB, indent=2):
-    """
-    Write ``data`` as JSON to the given ``file``, creating parent directories
-    if necessary.
-
-    Parameters
-    ----------
-    data : dict
-        data to write out to JSON
-    file
-        file path or handle to write to
-    minify : bool or None, optional
-        Control output minification. ``True`` forces minified output, ``False``
-        forces non-minified output, ``None`` (default) uses auto-detection based
-        on *minify_threshold_mb*.
-        A truthy value in the environment variable :envvar:`AUGUR_MINIFY_JSON`
-        also forces minified output.
-    minify_threshold_mb : int or float, optional
-        Threshold in megabytes above which output is automatically minified.
-        Only applies when *minify* is None.
-    indent : int or None, optional
-        JSON indentation level when not minifying.
-
-    Raises
-    ------
-    OSError
-    """
-    if isinstance(file, (str, os.PathLike)):
-        #in case parent folder does not exist yet
-        parent_directory = os.path.dirname(file)
-        if parent_directory and not os.path.exists(parent_directory):
-            try:
-                os.makedirs(parent_directory)
-            except OSError: #Guard against race condition
-                if not os.path.isdir(parent_directory):
-                    raise
-
-    # Should output be minified?
-    # Order of precedence:
-    # 1. 'minify' parameter
-    # 2. 'AUGUR_MINIFY_JSON' environment variable
-    # 3. Automatically determine based on size of data
-    if minify is True:
-        effective_indent = None
-    elif minify is False:
-        effective_indent = indent
-    elif os.environ.get("AUGUR_MINIFY_JSON"):
-        effective_indent = None
-    elif json_size(data) > minify_threshold_mb * 10**6:
-        effective_indent = None
-    else:
-        effective_indent = indent
-
-    with open_file(file, 'w', encoding='utf-8') as handle:
-        sort_keys = False if isinstance(data, OrderedDict) else True
-        json.dump(data, handle, indent=effective_indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
-
-
-class BytesWrittenCounterIO(RawIOBase):
-    """Binary stream to count the number of bytes sent via write()."""
-    def __init__(self):
-        self.written = 0
-        """Number of bytes written."""
-
-    def write(self, b):
-        n = len(b)
-        self.written += n
-        return n
-
-
-def json_size(data):
-    """Return size in bytes of a Python object in JSON string form."""
-    with BytesWrittenCounterIO() as counter:
-        write_json(data, counter, minify=False)
-    return counter.written
-
-
-class AugurJSONEncoder(json.JSONEncoder):
-    """
-    A custom JSONEncoder subclass to serialize data types used for various data
-    stored in dictionary format.
-    """
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, pd.Series):
-            return obj.tolist()
-        return super().default(obj)
+def write_json(*args, **kwargs):
+    print_err("DEPRECATION WARNING: augur.utils.write_json has been moved to augur.io.write_json. The old alias will be removed in a future major version.")
+    return io_write_json(*args, **kwargs)
 
 
 def load_features(*args, **kwargs):

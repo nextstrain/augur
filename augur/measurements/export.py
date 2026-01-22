@@ -7,7 +7,8 @@ import sys
 
 from augur.argparse_ import ExtendOverwriteDefault, HideAsFalseAction
 from augur.io.file import PANDAS_READ_CSV_OPTIONS
-from augur.utils import first_line, write_json
+from augur.io.json import write_json
+from augur.utils import first_line
 from augur.validate import (
     measurements as read_measurements_json,
     measurements_collection_config as read_collection_config_json,

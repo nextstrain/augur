@@ -11,9 +11,10 @@ from argparse import SUPPRESS
 from collections import defaultdict
 from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
+from .io.json import write_json
 from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
 from .io.sequences import read_sequences, read_single_sequence
-from .utils import read_node_data, write_json, read_lat_longs, read_colors
+from .utils import read_node_data, read_lat_longs, read_colors
 from .util_support.auspice_config import read_json as read_config
 
 def convert_tree_to_json_structure(node, metadata, div=0, strains=None):

@@ -16,9 +16,10 @@ from urllib.parse import urlparse
 from .argparse_ import SKIP_AUTO_DEFAULT_IN_HELP, ExtendOverwriteDefault, add_validation_arguments
 from .errors import AugurError
 from .io.file import open_file
+from .io.json import MINIFY_THRESHOLD_MB, write_json
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
-from .utils import read_node_data, write_json, read_lat_longs, read_colors, MINIFY_THRESHOLD_MB
+from .utils import read_node_data, read_lat_longs, read_colors
 from .util_support.warnings import configure_warnings, warn, deprecated, deprecationWarningsEmitted
 from .util_support.auspice_config import read_auspice_configs, remove_unused_metadata_columns, update_deprecated_names
 from .validate import export_v2 as validate_v2, ValidateError, validation_failure
