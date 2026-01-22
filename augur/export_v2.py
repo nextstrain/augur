@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import time
 from collections import defaultdict, deque, OrderedDict
+from collections.abc import Hashable
 import numbers
 import math
 import re
@@ -168,8 +169,14 @@ def is_node_attr_defined(node_attrs, attr_name):
 def get_values_across_nodes(node_attrs, key):
     vals = set()
     for data in node_attrs.values():
-        if is_valid(data.get(key)):
-            vals.add(data.get(key))
+        value = data.get(key)
+        # Skip unhashable values, e.g. dict or lists,
+        # since they are not supported as node_attr values
+        if not isinstance(value, Hashable):
+            warn(f"Skipping key {key!r} with unexpected value type {type(value)!r}")
+            continue
+        if is_valid(value):
+            vals.add(value)
     return vals
 
 def is_valid(value):
