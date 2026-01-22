@@ -1,0 +1,37 @@
+{
+  "nodes": {
+    "tipA": {
+      "test_str": "abc",
+      "test_bool": "False",
+      "test_int": 1,
+      "test_float": 1.0,
+      "test_null": null,
+      "test_array": [0,1,2],
+      "test_obj": {
+        "obj": "abc"
+      }
+    },
+    "tipB": {
+      "test_str": "abc",
+      "test_bool": "False",
+      "test_int": 1,
+      "test_float": 1.0,
+      "test_null": null,
+      "test_array": [0,1,2],
+      "test_obj": {
+        "obj": "abc"
+      }
+    },
+    "tipC": {
+      "test_str": "abc",
+      "test_bool": "False",
+      "test_int": 1,
+      "test_float": 1.0,
+      "test_null": null,
+      "test_array": [0,1,2],
+      "test_obj": {
+        "obj": "abc"
+      }
+    }
+  }
+}
