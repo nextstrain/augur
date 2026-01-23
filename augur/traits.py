@@ -9,7 +9,7 @@ from .argparse_ import ExtendOverwriteDefault
 from .errors import AugurError
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
-from .utils import write_json, get_json_name
+from .utils import write_augur_json, get_json_name
 TINY = 1e-12
 
 def mugration_inference(tree=None, seq_meta=None, field='country', confidence=True,
@@ -308,7 +308,7 @@ def run(args):
     json_data = OrderedDict([["models", models], ["nodes", mugration_states]])
     if branch_states:
         json_data['branches'] = branch_states
-    write_json(json_data, out_name)
+    write_augur_json(json_data, out_name)
 
     print("\nInferred ancestral states of discrete character using TreeTime:"
           "\n\tSagulenko et al. TreeTime: Maximum-likelihood phylodynamic analysis"

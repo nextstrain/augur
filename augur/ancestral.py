@@ -29,7 +29,7 @@ import numpy as np
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_json, get_json_name, \
+from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_augur_json, get_json_name, \
     genome_features_to_auspice_annotation
 from .io.file import open_file
 from .io.sequences import read_single_sequence, is_vcf as is_filename_vcf
@@ -482,7 +482,7 @@ def run(args):
     # use NodeDataObject to perform validation on the file before it's written
     NodeDataObject(anc_seqs, out_name, args.validation_mode)
 
-    write_json(anc_seqs, out_name)
+    write_augur_json(anc_seqs, out_name)
     print("ancestral mutations written to", out_name, file=sys.stdout)
 
     if args.output_sequences:

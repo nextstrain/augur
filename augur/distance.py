@@ -189,7 +189,7 @@ from .argparse_ import ExtendOverwriteDefault
 from .frequency_estimators import timestamp_to_float
 from .io.file import open_file
 from .reconstruct_sequences import load_alignments
-from .utils import annotate_parents_for_tree, first_line, read_node_data, write_json
+from .utils import annotate_parents_for_tree, first_line, read_node_data, write_augur_json
 
 
 def read_distance_map(map_file):
@@ -785,4 +785,4 @@ def run(args):
     }
 
     # Export distances to JSON.
-    write_json({"params": params, "nodes": final_distances_by_node}, args.output)
+    write_augur_json({"params": params, "nodes": final_distances_by_node}, args.output)

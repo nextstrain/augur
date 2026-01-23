@@ -7,7 +7,7 @@ from Bio import Phylo
 
 from .reconstruct_sequences import load_alignments
 from .titer_model import InsufficientDataException
-from .utils import write_json
+from .utils import write_augur_json
 from .argparse_ import add_default_command, ExtendOverwriteDefault
 
 
@@ -83,7 +83,7 @@ class infer_substitution_model():
             subs_model["nodes"] = nodes
 
         # export the substitution model
-        write_json(subs_model, args.output)
+        write_augur_json(subs_model, args.output)
 
         print("\nInferred titer model of type 'SubstitutionModel' using augur:"
               "\n\tNeher et al. Prediction, dynamics, and visualization of antigenic phenotypes of seasonal influenza viruses."
@@ -125,7 +125,7 @@ class infer_tree_model():
                 sys.exit(1)
 
         # export the tree model
-        write_json(tree_model, args.output)
+        write_augur_json(tree_model, args.output)
         print("\nInferred titer model of type 'TreeModel' using augur:"
               "\n\tNeher et al. Prediction, dynamics, and visualization of antigenic phenotypes of seasonal influenza viruses."
               "\n\tPNAS, vol 113, 10.1073/pnas.1525578113\n")

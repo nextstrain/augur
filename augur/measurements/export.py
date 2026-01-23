@@ -7,7 +7,8 @@ import sys
 
 from augur.argparse_ import ExtendOverwriteDefault, HideAsFalseAction
 from augur.io.file import PANDAS_READ_CSV_OPTIONS
-from augur.utils import first_line, write_json
+from augur.io.json import write_json
+from augur.utils import first_line
 from augur.validate import (
     measurements as read_measurements_json,
     measurements_collection_config as read_collection_config_json,
@@ -243,10 +244,10 @@ def run(args):
         'collections': [collection_output]
     }
 
-    # Set indentation to None to create compact JSON if specified
-    indent = {"indent": None} if args.minify_json else {}
+    # Compact JSON if specified
+    minify = True if args.minify_json or os.environ.get("AUGUR_MINIFY_JSON") else False
     # Create output JSON
-    write_json(output, args.output_json, include_version=False, **indent)
+    write_json(output, args.output_json, minify=minify)
     # Verify the produced output is a valid measurements JSON
     try:
         read_measurements_json(measurements_json=args.output_json)

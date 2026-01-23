@@ -49,6 +49,16 @@ to formalize Augur's Python API.
 We recognize the existing usage of this function, so it has been moved to
 `augur.io.read_strains`.
 
+## `augur.utils.write_json`
+
+*Deprecated in version 33.0.0 (January 2026). Planned for removal July 2026 or after.*
+
+This is part of a [larger effort](https://github.com/nextstrain/augur/issues/1011)
+to formalize Augur's Python API.
+
+We recognize the existing usage of this function, so it has been moved to
+`augur.io.write_json`.
+
 ## `augur export v1`
 
 *Deprecated in version 22.2.0 (July 2023). Planned for [removal](https://github.com/nextstrain/augur/issues/1266)

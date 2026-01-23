@@ -13,18 +13,17 @@ from Bio import Phylo
 from typing import Dict, Union, TypedDict, Any, Tuple
 from urllib.parse import urlparse
 
-from .argparse_ import ExtendOverwriteDefault, add_validation_arguments
+from .argparse_ import SKIP_AUTO_DEFAULT_IN_HELP, ExtendOverwriteDefault, add_validation_arguments
 from .errors import AugurError
 from .io.file import open_file
+from .io.json import MINIFY_THRESHOLD_MB, write_json
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
-from .utils import read_node_data, write_json, json_size, read_lat_longs, read_colors
+from .utils import read_node_data, read_lat_longs, read_colors
 from .util_support.warnings import configure_warnings, warn, deprecated, deprecationWarningsEmitted
 from .util_support.auspice_config import read_auspice_configs, remove_unused_metadata_columns, update_deprecated_names
 from .validate import export_v2 as validate_v2, ValidateError, validation_failure
 from .version import __version__
-
-MINIFY_THRESHOLD_MB = 5
 
 # Invalid metadata columns because they are used internally by Auspice
 INVALID_METADATA_COLUMNS = ("none")
@@ -951,8 +950,16 @@ def register_parser(parent_subparsers):
                 these options to override that behavior.
                 """
         ).add_mutually_exclusive_group()
-    minify_group.add_argument('--minify-json', action="store_true", help="always export JSONs without indentation or line returns.")
-    minify_group.add_argument('--no-minify-json', action="store_true", help="always export JSONs to be human readable.")
+    minify_group.add_argument(
+        '--minify-json',
+        action="store_true",
+        help="Always export JSONs without indentation or line returns. A truthy value (e.g. 1) in :envvar:`AUGUR_MINIFY_JSON` has the same effect, but it can be overridden by ``--no-minify-json``." + SKIP_AUTO_DEFAULT_IN_HELP,
+    )
+    minify_group.add_argument(
+        '--no-minify-json',
+        action="store_true",
+        help="Always export JSONs to be human readable. This overrides :envvar:`AUGUR_MINIFY_JSON`." + SKIP_AUTO_DEFAULT_IN_HELP,
+    )
 
     root_sequence = parser.add_argument_group(
             title="OPTIONAL ROOT-SEQUENCE SETTINGS",
@@ -1236,20 +1243,14 @@ def run(args):
         data_json["meta"]["extensions"] = config["extensions"]
 
     # Should output be minified?
-    # User-specified arguments take precedence before determining behavior based
-    # on the size of the tree.
-    if args.minify_json or os.environ.get("AUGUR_MINIFY_JSON"):
+    if args.minify_json:
         minify = True
     elif args.no_minify_json:
         minify = False
     else:
-        if json_size(data_json) > MINIFY_THRESHOLD_MB * 10**6:
-            minify = True
-        else:
-            minify = False
+        minify = None
 
     # Write outputs - the (unified) dataset JSON intended for auspice & perhaps the ref root-sequence JSON
-    indent = {"indent": None} if minify else {}
     if args.include_root_sequence or args.include_root_sequence_inline:
         # Note - argparse enforces that only one of these args will be true
         if 'reference' in node_data:
@@ -1262,10 +1263,10 @@ def run(args):
                 # "auspice/zika_root-sequence.json".
                 output_path = Path(args.output)
                 root_sequence_path = output_path.parent / Path(output_path.stem + "_root-sequence" + output_path.suffix)
-                write_json(data=node_data['reference'], file=root_sequence_path, include_version=False, **indent)
+                write_json(data=node_data['reference'], file=root_sequence_path, minify=minify)
         else:
             raise AugurError("Root sequence output was requested, but the node data provided is missing a 'reference' key.")
-    write_json(data=orderKeys(data_json), file=args.output, include_version=False, **indent)
+    write_json(data=orderKeys(data_json), file=args.output, minify=minify)
 
     # validate outputs
     validate_data_json(args.output, args.validation_mode)

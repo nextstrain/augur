@@ -2,16 +2,14 @@ import argparse
 import Bio
 import Bio.Phylo
 import numpy as np
-import os, json, sys
-import pandas as pd
-from collections import OrderedDict
-from io import RawIOBase
+import os, sys
 from shlex import quote as shquote
 from typing import List, Union
 from .__version__ import __version__
 
 from augur.data import as_file
 from augur.io.file import open_file
+from augur.io.json import write_json as io_write_json
 from augur.io.print import print_err
 
 from augur.types import ValidationMode
@@ -122,78 +120,26 @@ def read_node_data(fnames, tree=None, validation_mode=ValidationMode.ERROR):
     return NodeDataReader(fnames, tree, validation_mode).read()
 
 
-def write_json(data, file, indent=(None if os.environ.get("AUGUR_MINIFY_JSON") else 2), include_version=True):
+def write_augur_json(data, file):
     """
-    Write ``data`` as JSON to the given ``file``, creating parent directories
-    if necessary. The augur version is included as a top-level key "augur_version".
+    Write ``data`` as JSON to the given ``file`` with Augur version info.
 
-    Parameters
-    ----------
-    data : dict
-        data to write out to JSON
-    file
-        file path or handle to write to
-    indent : int or None, optional
-        JSON indentation level. Default is `None` if the environment variable :envvar:`AUGUR_MINIFY_JSON`
-        is truthy, else 1
-    include_version : bool, optional
-        Include the augur version. Default: `True`.
+    This is a simplified wrapper around :py:func:`write_json` that adds the
+    Augur version as a top-level key "generated_by".
 
-    Raises
-    ------
-    OSError
+    Unlike :py:func:`write_json`, output is not minified by default to preserve
+    backwards-compatible behavior for commands that produce node data JSONs.
+    Minification can be forced via the :envvar:`AUGUR_MINIFY_JSON` environment
+    variable.
     """
-    if isinstance(file, (str, os.PathLike)):
-        #in case parent folder does not exist yet
-        parent_directory = os.path.dirname(file)
-        if parent_directory and not os.path.exists(parent_directory):
-            try:
-                os.makedirs(parent_directory)
-            except OSError: #Guard against race condition
-                if not os.path.isdir(parent_directory):
-                    raise
-
-    if include_version:
-        data["generated_by"] = {"program": "augur", "version": get_augur_version()}
-    with open_file(file, 'w', encoding='utf-8') as handle:
-        sort_keys = False if isinstance(data, OrderedDict) else True
-        json.dump(data, handle, indent=indent, sort_keys=sort_keys, cls=AugurJSONEncoder)
+    data["generated_by"] = {"program": "augur", "version": get_augur_version()}
+    minify = True if os.environ.get("AUGUR_MINIFY_JSON") else False
+    io_write_json(data, file, minify=minify)
 
 
-class BytesWrittenCounterIO(RawIOBase):
-    """Binary stream to count the number of bytes sent via write()."""
-    def __init__(self):
-        self.written = 0
-        """Number of bytes written."""
-
-    def write(self, b):
-        n = len(b)
-        self.written += n
-        return n
-
-
-def json_size(data):
-    """Return size in bytes of a Python object in JSON string form."""
-    with BytesWrittenCounterIO() as counter:
-        write_json(data, counter, include_version=False)
-    return counter.written
-
-
-class AugurJSONEncoder(json.JSONEncoder):
-    """
-    A custom JSONEncoder subclass to serialize data types used for various data
-    stored in dictionary format.
-    """
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, pd.Series):
-            return obj.tolist()
-        return super().default(obj)
+def write_json(*args, **kwargs):
+    print_err("DEPRECATION WARNING: augur.utils.write_json has been moved to augur.io.write_json. The old alias will be removed in a future major version.")
+    return io_write_json(*args, **kwargs)
 
 
 def load_features(*args, **kwargs):
