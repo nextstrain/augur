@@ -1,10 +1,9 @@
 """
 Concatenate multiple measurements JSONs into a single JSON file
 """
-import os
 import sys
 
-from augur.argparse_ import ExtendOverwriteDefault
+from augur.argparse_ import ExtendOverwriteDefault, add_minify_arguments
 from augur.io.json import write_json
 from augur.utils import first_line
 from augur.validate import (
@@ -30,8 +29,8 @@ def register_parser(parent_subparsers):
     optional.add_argument("--default-collection", type=str,
         help="The key of the default collection to display. " +
              "If not provided, the first collection of the first JSON file will be displayed")
-    optional.add_argument("--minify-json", action="store_true",
-        help="Concatenate JSONs without indentation or line returns.")
+
+    add_minify_arguments(parser)
 
     return parser
 
@@ -47,7 +46,12 @@ def run(args):
         measurements = read_measurements_json(json)
         output['collections'].extend(measurements['collections'])
 
-    minify = True if args.minify_json or os.environ.get("AUGUR_MINIFY_JSON") else False
+    if args.minify_json:
+        minify = True
+    elif args.no_minify_json:
+        minify = False
+    else:
+        minify = None
     write_json(output, args.output_json, minify=minify)
     try:
         read_measurements_json(measurements_json=args.output_json)

@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import sys
 
-from augur.argparse_ import ExtendOverwriteDefault, HideAsFalseAction
+from augur.argparse_ import ExtendOverwriteDefault, HideAsFalseAction, add_minify_arguments
 from augur.io.file import PANDAS_READ_CSV_OPTIONS
 from augur.io.json import write_json
 from augur.utils import first_line
@@ -94,8 +94,8 @@ def register_parser(parent_subparsers):
         help="The columns to include from the collection TSV in the measurements JSON. " +
              "Be sure to list columns that are used as groupings and/or filters. " +
              "If no columns are provided, then all columns will be included by default.")
-    optional.add_argument("--minify-json", action="store_true",
-        help="Export JSON without indentation or line returns.")
+
+    add_minify_arguments(parser)
 
     return parser
 
@@ -244,8 +244,13 @@ def run(args):
         'collections': [collection_output]
     }
 
-    # Compact JSON if specified
-    minify = True if args.minify_json or os.environ.get("AUGUR_MINIFY_JSON") else False
+    # Should output be minified?
+    if args.minify_json:
+        minify = True
+    elif args.no_minify_json:
+        minify = False
+    else:
+        minify = None
     # Create output JSON
     write_json(output, args.output_json, minify=minify)
     # Verify the produced output is a valid measurements JSON
