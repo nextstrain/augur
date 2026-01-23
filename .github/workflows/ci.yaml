@@ -65,21 +65,15 @@ jobs:
     - name: Set cache key
       run: echo "DATE=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
 
-    # While it may be tempting to install Augur using Conda to avoid hardcoding
-    # the list of dependencies here, installing just the dependencies not
-    # available on PyPI allows us to test against dependencies installed by pip,
-    # which may have slightly different versions compared to Conda counterparts.
+    # Create a Conda environment from dev_env.yml.
+    # Python dependencies are left out, allowing us to test against dependencies
+    # installed by pip, which may have slightly different versions compared to
+    # Conda counterparts.
     - name: Install dependencies from Conda
       uses: mamba-org/setup-micromamba@v2
       with:
-        create-args: >-
-          mafft raxml fasttree iqtree vcftools seqkit sqlite tsv-utils
-          ${{ matrix.conda-args }}
-        condarc: |
-          channels:
-            - conda-forge
-            - bioconda
-          channel_priority: strict
+        create-args: ${{ matrix.conda-args }}
+        environment-file: dev_env.yml
         cache-environment: true
         cache-environment-key: ${{ env.DATE }}
         environment-name: augur
