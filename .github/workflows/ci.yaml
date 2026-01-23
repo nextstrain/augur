@@ -36,7 +36,7 @@ jobs:
     - run: npx pyright --stats
 
   pytest-cram:
-    name: pytest-cram (python=${{ matrix.python-version }} biopython=${{ matrix.biopython-version || 'latest' }} numpy=${{ matrix.numpy-version || 'latest' }})
+    name: pytest-cram (${{ matrix.conda-args }} ${{ matrix.pip-args }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -45,15 +45,15 @@ jobs:
           # of Biopython¹ and Numpy²
           # ¹ <https://github.com/biopython/biopython/blob/master/NEWS.rst>
           # ² <https://numpy.org/doc/stable/release>
-          - { python-version: '3.9',  biopython-version: '1.80', numpy-version: '1.19.4' }  # Biopython 1.79 is the first to support Python 3.9, but Augur requires >=1.80
-          - { python-version: '3.10', biopython-version: '1.80', numpy-version: '1.21.3' }
-          - { python-version: '3.11', biopython-version: '1.80', numpy-version: '1.23.4' }  # numpy 1.23.2-3 did not declare support in conda
-          - { python-version: '3.12', biopython-version: '1.82', numpy-version: '1.26.0' }
-          - { python-version: '3.13', biopython-version: '1.85', numpy-version: '2.1.0'  }
+          - { conda-args: 'python=3.9',  pip-args: 'biopython==1.80 numpy==1.19.4' }  # Biopython 1.79 is the first to support Python 3.9, but Augur requires >=1.80
+          - { conda-args: 'python=3.10', pip-args: 'biopython==1.80 numpy==1.21.3' }
+          - { conda-args: 'python=3.11', pip-args: 'biopython==1.80 numpy==1.23.4' }  # numpy 1.23.2-3 did not declare support in conda
+          - { conda-args: 'python=3.12', pip-args: 'biopython==1.82 numpy==1.26.0' }
+          - { conda-args: 'python=3.13', pip-args: 'biopython==1.85 numpy==2.1.0'  }
           # Latest versions of Biopython and Numpy
-          - { python-version: '3.13', biopython-version: ''    , numpy-version: ''       }
+          - { conda-args: 'python=3.13', pip-args: 'biopython numpy'               }
           # Latest Biopython with Numpy v1
-          - { python-version: '3.12', biopython-version: ''    , numpy-version: '1'      }
+          - { conda-args: 'python=3.12', pip-args: 'biopython numpy==1.*'          }
 
     defaults:
       run:
@@ -74,9 +74,7 @@ jobs:
       with:
         create-args: >-
           mafft raxml fasttree iqtree vcftools seqkit sqlite tsv-utils
-          biopython=${{ matrix.biopython-version }}
-          numpy=${{ matrix.numpy-version }}
-          python=${{ matrix.python-version }}
+          ${{ matrix.conda-args }}
         condarc: |
           channels:
             - conda-forge
@@ -87,7 +85,7 @@ jobs:
         environment-name: augur
 
     # Install the local version of Augur and Python dependencies.
-    - run: pip install .[dev]
+    - run: pip install .[dev] ${{ matrix.pip-args }}
     - run: pip list
     - run: conda info
     - run: conda list
@@ -98,9 +96,10 @@ jobs:
     # ¹ <https://github.com/nextstrain/augur/pull/968>
     # ² <https://github.com/nextstrain/augur/pull/1861>
     - name: Set coverage environment variables
-      if: matrix.python-version == '3.9'
+      if: contains(matrix.conda-args, 'python=3.9')
       run: |
-        echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@python=${{ matrix.python-version }},biopython=${{ matrix.biopython-version || 'latest' }}" >> "$GITHUB_ENV"
+        coverage_id="$(printf '%s' "${{ matrix.conda-args }}|${{ matrix.pip-args }}" | sha256sum | cut -d' ' -f1)"
+        echo "COVERAGE_FILE=${{ github.workspace }}/.coverage@${coverage_id}" >> "$GITHUB_ENV"
         echo "COVERAGE_RCFILE=${{ github.workspace }}/.coveragerc" >> "$GITHUB_ENV"
         if python3 -c 'import sys; print(sys.version_info >= (3, 14))' | grep -q True; then
             echo "Using sysmon for coverage to reduce overhead"
