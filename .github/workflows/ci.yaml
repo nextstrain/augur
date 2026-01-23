@@ -93,6 +93,10 @@ jobs:
     - run: conda list
 
     # Run with coverage on the earliest supported Python version
+    # Ideally, coverage is run on all jobs and combined later.¹ It was reduced
+    # down to a single to improve overall CI run time.²
+    # ¹ <https://github.com/nextstrain/augur/pull/968>
+    # ² <https://github.com/nextstrain/augur/pull/1861>
     - name: Set coverage environment variables
       if: matrix.python-version == '3.9'
       run: |
