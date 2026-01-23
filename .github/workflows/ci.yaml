@@ -86,7 +86,7 @@ jobs:
         cache-environment-key: ${{ env.DATE }}
         environment-name: augur
 
-    # Replace the Conda Augur installation with the local version.
+    # Install the local version of Augur and Python dependencies.
     - run: pip install .[dev]
     - run: pip list
     - run: conda info
