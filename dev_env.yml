@@ -21,4 +21,5 @@ dependencies:
   - conda-forge::sqlite
 
   # Tools used in tests
+  - conda-forge::jq
   - conda-forge::tsv-utils

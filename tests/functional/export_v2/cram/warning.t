@@ -10,10 +10,7 @@ Specify a warning as text.
   >   --skip-validation \
   >   --output dataset.json &>/dev/null
 
-TODO: Switch to use jq once it's available in a well-defined test environment.
-<https://github.com/nextstrain/augur/issues/1557>
-
-  $ python3 -c 'import json, sys; print(json.load(sys.stdin)["meta"]["warning"])' < dataset.json
+  $ jq -r '.meta.warning' dataset.json
   A warning with "quotes"
 
 Add a warning from a markdown file.
@@ -28,7 +25,7 @@ Add a warning from a markdown file.
   >   --skip-validation \
   >   --output dataset.json &>/dev/null
 
-  $ python3 -c 'import json, sys; print(json.load(sys.stdin)["meta"]["warning"])' < dataset.json
+  $ jq -r '.meta.warning' dataset.json
   A warning with "quotes".
   
 

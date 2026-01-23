@@ -38,10 +38,7 @@ Limit ambiguous dates to be within (2000, 2020).
   >  --divergence-units mutations &> /dev/null
 
 Check that the inferred date is 2020-12-31.
-TODO: Switch to use jq once it's available in a well-defined test environment.
-<https://github.com/nextstrain/augur/issues/1557>
-
-  $ python3 -c 'import json, sys; print(json.load(sys.stdin)["nodes"]["PAN/CDC_259359_V1_V3/2015"]["date"])' < branch_lengths.json
+  $ jq -r '.nodes["PAN/CDC_259359_V1_V3/2015"].date' branch_lengths.json
   2020-12-31
 
 Reverse the order to check that order does not matter.
@@ -63,15 +60,15 @@ Reverse the order to check that order does not matter.
 
 Run the same check as above.
 
-  $ python3 -c 'import json, sys; print(json.load(sys.stdin)["nodes"]["PAN/CDC_259359_V1_V3/2015"]["date"])' < branch_lengths.json
+  $ jq -r '.nodes["PAN/CDC_259359_V1_V3/2015"].date' branch_lengths.json
   2020-12-31
 
 Check that the date is marked as inferred.
 
-  $ python3 -c 'import json, sys; print(json.load(sys.stdin)["nodes"]["PAN/CDC_259359_V1_V3/2015"]["date_inferred"])' < branch_lengths.json
-  True
+  $ jq -r '.nodes["PAN/CDC_259359_V1_V3/2015"].date_inferred' branch_lengths.json
+  true
 
 Check that another date is not marked as inferred.
 
-  $ python3 -c 'import json, sys; print(json.load(sys.stdin)["nodes"]["Colombia/2016/ZC204Se"]["date_inferred"])' < branch_lengths.json
-  False
+  $ jq -r '.nodes["Colombia/2016/ZC204Se"].date_inferred' branch_lengths.json
+  false
