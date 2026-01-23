@@ -13,10 +13,10 @@ from Bio import Phylo
 from typing import Dict, Union, TypedDict, Any, Tuple
 from urllib.parse import urlparse
 
-from .argparse_ import SKIP_AUTO_DEFAULT_IN_HELP, ExtendOverwriteDefault, add_validation_arguments
+from .argparse_ import ExtendOverwriteDefault, add_minify_arguments, add_validation_arguments
 from .errors import AugurError
 from .io.file import open_file
-from .io.json import MINIFY_THRESHOLD_MB, write_json
+from .io.json import write_json
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
 from .types import ValidationMode
 from .utils import read_node_data, read_lat_longs, read_colors
@@ -942,24 +942,7 @@ def register_parser(parent_subparsers):
                  two columns will be resolved by taking the coordinates from the user-provided
                  file.""")
 
-    minify_group = parser.add_argument_group(
-            title="OPTIONAL MINIFY SETTINGS",
-            description=f"""
-                By default, output JSON files (both main and sidecar) are automatically minimized if
-                the size of the un-minified main JSON file exceeds {MINIFY_THRESHOLD_MB} MB. Use
-                these options to override that behavior.
-                """
-        ).add_mutually_exclusive_group()
-    minify_group.add_argument(
-        '--minify-json',
-        action="store_true",
-        help="Always export JSONs without indentation or line returns. A truthy value (e.g. 1) in :envvar:`AUGUR_MINIFY_JSON` has the same effect, but it can be overridden by ``--no-minify-json``." + SKIP_AUTO_DEFAULT_IN_HELP,
-    )
-    minify_group.add_argument(
-        '--no-minify-json',
-        action="store_true",
-        help="Always export JSONs to be human readable. This overrides :envvar:`AUGUR_MINIFY_JSON`." + SKIP_AUTO_DEFAULT_IN_HELP,
-    )
+    add_minify_arguments(parser)
 
     root_sequence = parser.add_argument_group(
             title="OPTIONAL ROOT-SEQUENCE SETTINGS",

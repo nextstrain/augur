@@ -4,6 +4,7 @@ Custom helpers for the argparse standard library.
 from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
 from itertools import chain
 from typing import Iterable, Optional, Tuple, Union
+from .io.json import MINIFY_THRESHOLD_MB
 from .types import ValidationMode
 
 
@@ -152,3 +153,31 @@ def walk_commands(parser: ArgumentParser, command: Optional[Tuple[str, ...]] = N
         visited.add(subparser)
 
         yield from walk_commands(subparser, (*command, subname))
+
+
+def add_minify_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
+    """
+    Add mutually exclusive --minify-json and --no-minify-json arguments.
+
+    These control whether output JSON files are minified (no indentation or line
+    returns). By default, minification is determined automatically based on file
+    size.
+    """
+    minify_group = parser.add_argument_group(
+            title="OPTIONAL MINIFY SETTINGS",
+            description=f"""
+                By default, output JSON files are automatically minimized if
+                the size of the un-minified file exceeds {MINIFY_THRESHOLD_MB} MB. Use
+                these options to override that behavior.
+                """
+        ).add_mutually_exclusive_group()
+    minify_group.add_argument(
+        '--minify-json',
+        action="store_true",
+        help="Always output JSON files without indentation or line returns. A truthy value (e.g. 1) in :envvar:`AUGUR_MINIFY_JSON` has the same effect, but it can be overridden by ``--no-minify-json``." + SKIP_AUTO_DEFAULT_IN_HELP,
+    )
+    minify_group.add_argument(
+        '--no-minify-json',
+        action="store_true",
+        help="Always output JSON files to be human readable. This overrides :envvar:`AUGUR_MINIFY_JSON`." + SKIP_AUTO_DEFAULT_IN_HELP,
+    )
