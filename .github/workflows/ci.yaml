@@ -45,7 +45,7 @@ jobs:
           # of Biopython¹ and Numpy²
           # ¹ <https://github.com/biopython/biopython/blob/master/NEWS.rst>
           # ² <https://numpy.org/doc/stable/release>
-          - { python-version: '3.9',  biopython-version: '1.79', numpy-version: '1.19.4' }
+          - { python-version: '3.9',  biopython-version: '1.80', numpy-version: '1.19.4' }  # Biopython 1.79 is the first to support Python 3.9, but Augur requires >=1.80
           - { python-version: '3.10', biopython-version: '1.80', numpy-version: '1.21.3' }
           - { python-version: '3.11', biopython-version: '1.80', numpy-version: '1.23.4' }  # numpy 1.23.2-3 did not declare support in conda
           - { python-version: '3.12', biopython-version: '1.82', numpy-version: '1.26.0' }
