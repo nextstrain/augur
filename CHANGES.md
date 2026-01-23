@@ -16,11 +16,13 @@
 
 * export v2: Improved the error message that is displayed when a deprecated coloring key is used. [#1882][] (@corneliusroemer)
 * export v2: `--no-minify-json` now properly overrides any truthy value in `AUGUR_MINIFY_JSON`. [#1943][] (@victorlin)
+* export v2: Skip unhashable node attr values with warning message to avoid previously unhandled `TypeError`. [#1948][] (@joverlee521) 
 
 [#1304]: https://github.com/nextstrain/augur/issues/1304
 [#1768]: https://github.com/nextstrain/augur/issues/1768
 [#1882]: https://github.com/nextstrain/augur/issues/1882
 [#1943]: https://github.com/nextstrain/augur/pull/1943
+[#1948]: https://github.com/nextstrain/augur/pull/1948
 
 ## 32.1.0 (18 November 2025)
 
