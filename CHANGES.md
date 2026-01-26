@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 33.0.0 (26 January 2026)
+
 ### Major Changes
 
 * Dropped support for Python 3.9 and added support for Python 3.14. [#1938][], [#1939][] (@victorlin)
