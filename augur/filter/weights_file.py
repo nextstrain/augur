@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-import numpy as np
 import pandas as pd
 
 from textwrap import dedent
@@ -50,14 +49,14 @@ def get_weighted_columns(weights_file):
     return columns
 
 
-def get_default_weight(weights: pd.DataFrame, weighted_columns: List[str]) -> Optional[np.number]:
+def get_default_weight(weights: pd.DataFrame, weighted_columns: List[str]) -> Optional[float]:
     # Match weighted columns with 'default' value. Multiple values can be matched for 2 reasons:
     # 1. Repeated rows following additional permutation with unweighted columns.
     #    This is handled by unique() since the value should be the same.
     # 2. Multiple default rows specified in the weights file.
     #    This is a user error.
     mask = (
-        weights[weighted_columns].eq(COLUMN_VALUE_FOR_DEFAULT_WEIGHT).all(axis=1) &
+        weights[weighted_columns].eq(COLUMN_VALUE_FOR_DEFAULT_WEIGHT).all(axis=1) &  # type: ignore[arg-type]
         weights[weighted_columns].notna().all(axis=1)
     )
     default_weight_values = weights.loc[mask, WEIGHTS_COLUMN].unique()  # type: ignore[operator]
