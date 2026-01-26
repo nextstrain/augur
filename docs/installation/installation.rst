@@ -62,7 +62,7 @@ There are several ways to install Augur, ordered from least to most complex.
       .. warning::
          Installing other Python packages after Augur may cause dependency incompatibilities. If this happens, re-install Augur using the command in step 1.
 
-      Augur can be installed from source. This is useful if you want to use unreleased changes or develop Augur locally.
+      Augur can be installed from source. This is useful if you want to use unreleased changes. To develop Augur locally, see instructions in the "Development" tab.
 
       1. Install Augur along with Python dependencies.
 
@@ -72,17 +72,35 @@ There are several ways to install Augur, ordered from least to most complex.
             cd augur
             python3 -m pip install .
 
-         .. note::
-
-            For local development, install from source in editable mode with ``dev`` dependencies.
-
-            .. code:: bash
-
-               python3 -m pip install -e .'[dev]'
-
       2. Install other dependencies.
 
          .. include:: non-python-dependencies.rst
+
+   .. group-tab:: Development
+
+      .. warning::
+         Installing other Python packages after Augur may cause dependency incompatibilities. If this happens, re-create the environment from scratch.
+
+      1. Install non-Python dependencies. The instructions below are for `conda <https://docs.conda.io/projects/conda>`__.
+
+         .. code:: bash
+
+            NAME=augur
+            conda env create -n "$NAME" -f dev_env.yml
+
+      2. Activate the new environment.
+
+         .. code:: bash
+
+            conda activate "$NAME"
+
+      3. Install Augur along with Python dependencies.
+
+         .. code:: bash
+
+            git clone https://github.com/nextstrain/augur.git
+            cd augur
+            python3 -m pip install -e .'[dev]'
 
 Testing if it worked
 ====================

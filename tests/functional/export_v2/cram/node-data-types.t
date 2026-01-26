@@ -13,11 +13,8 @@ Verify the expected node attrs from the node-data JSON are exported as filters
 and colorings. Not diffing the dataset.json because order of node_attrs is not
 guaranteed without an auspice_config.json
 
-TODO: Switch to use jq once it's available in a well-defined test environment.
-<https://github.com/nextstrain/augur/issues/1557>
+  $ jq -c '.meta.filters | sort' dataset.json
+  ["test_bool","test_float","test_int","test_str"]
 
-  $ python3 -c 'import json, sys; print(sorted(json.load(sys.stdin)["meta"]["filters"]))' < dataset.json
-  ['test_bool', 'test_float', 'test_int', 'test_str']
-
-  $ python3 -c 'import json, sys; print(sorted(c["key"] for c in json.load(sys.stdin)["meta"]["colorings"]))' < dataset.json
-  ['test_bool', 'test_float', 'test_int', 'test_str']
+  $ jq -c '[.meta.colorings[].key] | sort' dataset.json
+  ["test_bool","test_float","test_int","test_str"]

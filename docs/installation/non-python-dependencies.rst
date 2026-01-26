@@ -12,10 +12,6 @@ Augur uses some external bioinformatics programs that are not available on PyPI:
 
 - Bacterial data (or any VCF usage) requires `vcftools <https://vcftools.github.io/>`__
 
-.. note::
-
-   For local development, tests also require `tsv-utils <https://opensource.ebay.com/tsv-utils/>`__.
-
 If you use Conda, you can install them in an active environment:
 
 .. code:: bash

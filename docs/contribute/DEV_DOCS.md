@@ -8,7 +8,7 @@ To be an effective, productive contributor, please start by reading the
 [**Nextstrain contributing guide**](https://github.com/nextstrain/.github/blob/-/CONTRIBUTING.md)
 for useful information about how to pick an issue, submit your contributions, and so on.
 
-Please see the "Source" tab in [Augur's installation instructions](https://docs.nextstrain.org/projects/augur/en/stable/installation/installation.html) for details on how to install Augur for development.
+Please see the "Development" tab in [Augur's installation instructions](https://docs.nextstrain.org/projects/augur/en/stable/installation/installation.html) for details on how to install Augur for development.
 
 This project strictly adheres to the
 [Contributor Covenant Code of Conduct](https://github.com/nextstrain/.github/blob/-/CODE_OF_CONDUCT.md).
@@ -98,7 +98,7 @@ Both tree and JSON comparison scripts rely on [deepdiff](https://deepdiff.readth
 #### Running Tests
 
 You've written tests and now you want to run them to see if they are passing.
-First, you will need to [install the complete Nextstrain environment](https://nextstrain.org/docs/getting-started/local-installation) and augur dev dependencies as described above.
+First, you will need to set up your development environment as described [above](#getting-started).
 Next, run all augur tests with the following command from the root, top-level of the augur repository:
 
 ```bash
@@ -335,14 +335,7 @@ submodule, autogenerate a new API file as follows.
 ### Building documentation
 
 Building the documentation locally is useful to test changes.
-First, make sure you have the development dependencies of augur installed:
-
-```bash
-pip install -e '.[dev]'
-```
-
-This installs packages listed in the `dev` section of `extras_require` in _setup.py_,
-as well as augur's dependencies as necessary.
+First, make sure you have set up your development environment as described [above](#getting-started).
 
 Sphinx and make are used when **building** documentation. Here are some examples that you
 may find useful:
