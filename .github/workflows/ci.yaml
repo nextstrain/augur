@@ -49,8 +49,9 @@ jobs:
           - { conda-args: 'python=3.11', pip-args: 'biopython==1.80 numpy==1.23.4' }  # numpy 1.23.2-3 did not declare support in conda
           - { conda-args: 'python=3.12', pip-args: 'biopython==1.82 numpy==1.26.0' }
           - { conda-args: 'python=3.13', pip-args: 'biopython==1.85 numpy==2.1.0'  }
+          - { conda-args: 'python=3.14', pip-args: 'biopython==1.86 numpy==2.3.2'  }
           # Latest versions of Biopython and Numpy
-          - { conda-args: 'python=3.13', pip-args: 'biopython numpy'               }
+          - { conda-args: 'python=3.14', pip-args: 'biopython numpy'               }
           # Latest Biopython with Numpy v1
           - { conda-args: 'python=3.12', pip-args: 'biopython numpy==1.*'          }
 
@@ -71,7 +72,10 @@ jobs:
     - name: Install dependencies from Conda
       uses: mamba-org/setup-micromamba@v2
       with:
-        create-args: ${{ matrix.conda-args }}
+        # cvxopt is a pip dependency that isn't prebuilt for Python 3.14 on PyPI
+        # (yet).¹ It is already prebuilt on conda, so install it here.
+        # ¹ <https://github.com/cvxopt/cvxopt/issues/265>
+        create-args: ${{ matrix.conda-args }} ${{ contains(matrix.conda-args, 'python=3.14') && 'cvxopt' || '' }}
         environment-file: dev_env.yml
         cache-environment: true
         cache-environment-key: ${{ env.DATE }}

@@ -1,8 +1,15 @@
 import datetime
 import pytest
+import sys
 from freezegun import freeze_time
 from augur import dates
 from augur.errors import AugurError
+
+# Python 3.14 improved the ValueError message format for out of bound date parts.
+if sys.version_info >= (3, 14):
+    DAY_RANGE_ERROR = r"day \d+ must be in range \d+\.\.\d+ for month"
+else:
+    DAY_RANGE_ERROR = "day is out of range for month"
 
 
 class TestDates:
@@ -80,9 +87,9 @@ class TestDates:
             ("2000-00-01", "month must be in 1..12"),
             ("2000-13-01", "month must be in 1..12"),
             ("2000-100-01", "month must be in 1..12"),
-            ("2000-01-00", "day is out of range for month"),
-            ("2000-01-32", "day is out of range for month"),
-            ("2000-01-100", "day is out of range for month"),
+            ("2000-01-00", DAY_RANGE_ERROR),
+            ("2000-01-32", DAY_RANGE_ERROR),
+            ("2000-01-100", DAY_RANGE_ERROR),
         ],
     )
     def test_get_numerical_date_from_value_silent_error(self, value, error):
