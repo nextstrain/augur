@@ -8,8 +8,11 @@ channels:
 
 # While Augur is available as a Conda package, it is not listed here.
 # Augur itself and its Python dependencies should be installed via pip.
+#
+# Version constraints should mirror the Biopython recipe.
+# <https://github.com/bioconda/bioconda-recipes/blob/-/recipes/augur/meta.yaml>
 dependencies:
-  - conda-forge::python
+  - conda-forge::python >=3.10
 
   # Augur's non-Python dependencies
   - mafft
@@ -18,7 +21,7 @@ dependencies:
   - iqtree
   - vcftools
   - seqkit
-  - conda-forge::sqlite
+  - conda-forge::sqlite >=3.39,<4
 
   # Tools used in tests
   - conda-forge::jq
