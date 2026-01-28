@@ -31,9 +31,9 @@ Weight locations A:B as 2:1. This is reflected in target_group_sizes.tsv below.
   >   --output-metadata filtered.tsv 2>/dev/null
 
   $ cat target_group_sizes.tsv | tsv-pretty
-  location  weight  _augur_filter_target_size  _augur_filter_input_size  _augur_filter_subsampling_output_size
-  A              2                         67                       100                                     67
-  B              1                         33                       150                                     33
+  location  weight  augur_filter_target_size  augur_filter_input_size  augur_filter_subsampling_output_size
+  A              2                        67                      100                                    67
+  B              1                        33                      150                                    33
 
 There are also enough rows per group that the output metadata directly reflects
 the target group sizes.
@@ -60,9 +60,9 @@ Using 1:1 weights is similarly straightforward, with 50 sequences from each loca
   >   --output-strains strains.txt 2>/dev/null
 
   $ cat target_group_sizes.tsv | tsv-pretty
-  location  weight  _augur_filter_target_size  _augur_filter_input_size  _augur_filter_subsampling_output_size
-  A              1                         50                       100                                     50
-  B              1                         50                       150                                     50
+  location  weight  augur_filter_target_size  augur_filter_input_size  augur_filter_subsampling_output_size
+  A              1                        50                      100                                    50
+  B              1                        50                      150                                    50
 
 Keep the 1:1 location weighting, but add uniform sampling on year.
 The uniform sampling happens "within" each weighted column value, so the 1:1
@@ -79,12 +79,12 @@ available per location.
   >   --output-strains strains.txt 2>/dev/null
 
   $ cat target_group_sizes.tsv | tsv-pretty
-  year  location       weight  _augur_filter_target_size  _augur_filter_input_size  _augur_filter_subsampling_output_size
-  2000  A         0.5                                 25                        50                                     25
-  2000  B         0.3333333333333333                  16                        50                                     16
-  2001  A         0.5                                 25                        50                                     25
-  2001  B         0.3333333333333333                  16                        50                                     16
-  2002  B         0.3333333333333333                  17                        50                                     17
+  year  location       weight  augur_filter_target_size  augur_filter_input_size  augur_filter_subsampling_output_size
+  2000  A         0.5                                25                       50                                    25
+  2000  B         0.3333333333333333                 16                       50                                    16
+  2001  A         0.5                                25                       50                                    25
+  2001  B         0.3333333333333333                 16                       50                                    16
+  2002  B         0.3333333333333333                 17                       50                                    17
 
 If a single sequence is added for group (2002,A), the weighting now appears
 "equal" among all years and locations.
@@ -110,13 +110,13 @@ requested 17, so the total number of sequences outputted is lower than requested
   83 strains passed all filters
 
   $ cat target_group_sizes.tsv | tsv-pretty
-  year  location       weight  _augur_filter_target_size  _augur_filter_input_size  _augur_filter_subsampling_output_size
-  2000  A         0.3333333333333333                  17                        50                                     17
-  2000  B         0.3333333333333333                  16                        50                                     16
-  2001  A         0.3333333333333333                  16                        50                                     16
-  2001  B         0.3333333333333333                  16                        50                                     16
-  2002  A         0.3333333333333333                  17                         1                                      1
-  2002  B         0.3333333333333333                  17                        50                                     17
+  year  location       weight  augur_filter_target_size  augur_filter_input_size  augur_filter_subsampling_output_size
+  2000  A         0.3333333333333333                 17                       50                                    17
+  2000  B         0.3333333333333333                 16                       50                                    16
+  2001  A         0.3333333333333333                 16                       50                                    16
+  2001  B         0.3333333333333333                 16                       50                                    16
+  2002  A         0.3333333333333333                 17                        1                                     1
+  2002  B         0.3333333333333333                 17                       50                                    17
 
   $ wc -l strains.txt
   \s*83 .* (re)
