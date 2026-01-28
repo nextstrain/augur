@@ -102,7 +102,7 @@ setuptools.setup(
         ],
         "piqtree": [
             'piqtree >=0.8.0; python_version >= "3.12" and python_version < "3.15"',
-            "cogent3 >= 26.1.7",
+            "cogent3 >= 2026.1.20a1",
         ],
     },
     classifiers = [
