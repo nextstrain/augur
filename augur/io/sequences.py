@@ -537,9 +537,9 @@ def read_sequence_ids(file: str, nthreads: int):
         raise AugurError(dedent(f"""\
             Sequence ids must be unique.
 
-            The following {_n("id was", "ids were", len(duplicates))} were duplicated in {file!r}:
+            The following {_n("id was", "ids were", len(duplicates))} duplicated in {file!r}:
 
-              {indented_list(sorted(duplicates), '            ' + '  ')}
+              {indented_list(map(repr, sorted(duplicates)), '            ' + '  ')}
         """))
     
     return unique

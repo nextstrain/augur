@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* filter, merge: Fixed formatting of the error message shown when there are duplicate sequence ids. [#1954][] @victorlin
+
+[#1954]: https://github.com/nextstrain/augur/pull/1954
 
 ## 33.0.0 (26 January 2026)
 
