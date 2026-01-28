@@ -387,7 +387,8 @@ def _build_piqtree(
     # revert back to the original sequence names
     rn_tree = tree.renamed_nodes({a: n for n, a in seqname_aliases.items()})
     rn_tree.write(out_file)
-    return rn_tree, aln.names
+    # convert cogent3 tree to Biopython tree for consistency with other methods
+    return Phylo.read(out_file), aln.names
 
 
 # Once the minimum supported version is Python 3.12+, we can default to piqtree
