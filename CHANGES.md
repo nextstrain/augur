@@ -5,8 +5,10 @@
 ### Bug fixes
 
 * filter, merge: Fixed formatting of the error message shown when there are duplicate sequence ids. [#1954][] @victorlin
+* The helper function `augur.subsample.get_referenced_files` now shows errors when used in a lambda expression for a Snakemake input. [#1955][] (@victorlin)
 
 [#1954]: https://github.com/nextstrain/augur/pull/1954
+[#1955]: https://github.com/nextstrain/augur/pull/1955
 
 ## 33.0.0 (26 January 2026)
 
