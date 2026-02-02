@@ -5,8 +5,10 @@
 ### Bug fixes
 
 * filter, merge: Fixed formatting of the error message shown when there are duplicate sequence ids. [#1954][] @victorlin
+* filter: Adjusted the error message shown when there are missing weights to mention the option of updating values in metadata. [#1956][] @victorlin
 
 [#1954]: https://github.com/nextstrain/augur/pull/1954
+[#1956]: https://github.com/nextstrain/augur/pull/1956
 
 ## 33.0.0 (26 January 2026)
 
