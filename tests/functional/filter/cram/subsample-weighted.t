@@ -89,9 +89,10 @@ Sampling with incomplete weights should show an error.
   Sampling with weights defined by weights.tsv.
   ERROR: The input metadata contains these values under the following columns that are not covered by 'weights.tsv':
   - 'location': ['B']
-  To fix this, either:
-  (1) specify weights explicitly - add entries to 'weights.tsv' for the values above, or
-  (2) specify a default weight - add an entry to 'weights.tsv' with the value 'default' for all columns
+  Some ways to fix this:
+  (1) use existing weights - update the metadata file to use values in 'weights.tsv', or
+  (2) specify new weights - add entries to 'weights.tsv' for the values above, or
+  (3) specify a default weight - add an entry to 'weights.tsv' with the value 'default' for all columns
   [2]
 
 Re-running with a default weight shows a warning and continues.
@@ -139,9 +140,10 @@ To specify a default weight, the value 'default' must be set for all weighted co
   ERROR: The input metadata contains these values under the following columns that are not covered by 'weights.tsv':
   - 'location': ['B']
   - 'month': ['2000-01', '2000-03']
-  To fix this, either:
-  (1) specify weights explicitly - add entries to 'weights.tsv' for the values above, or
-  (2) specify a default weight - add an entry to 'weights.tsv' with the value 'default' for all columns
+  Some ways to fix this:
+  (1) use existing weights - update the metadata file to use values in 'weights.tsv', or
+  (2) specify new weights - add entries to 'weights.tsv' for the values above, or
+  (3) specify a default weight - add an entry to 'weights.tsv' with the value 'default' for all columns
   [2]
 
   $ cat >weights.tsv <<~~

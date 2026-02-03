@@ -486,9 +486,10 @@ def _handle_incomplete_weights(
         raise AugurError(dedent(f"""\
             The input metadata contains these values under the following columns that are not covered by {weights_file!r}:
             - {columns_with_values}
-            To fix this, either:
-            (1) specify weights explicitly - add entries to {weights_file!r} for the values above, or
-            (2) specify a default weight - add an entry to {weights_file!r} with the value {COLUMN_VALUE_FOR_DEFAULT_WEIGHT!r} for all columns"""))
+            Some ways to fix this:
+            (1) use existing weights - update the metadata file to use values in {weights_file!r}, or
+            (2) specify new weights - add entries to {weights_file!r} for the values above, or
+            (3) specify a default weight - add an entry to {weights_file!r} with the value {COLUMN_VALUE_FOR_DEFAULT_WEIGHT!r} for all columns"""))
     else:
         print_err(dedent(f"""\
             WARNING: The input metadata contains these values under the following columns that are not directly covered by {weights_file!r}:
