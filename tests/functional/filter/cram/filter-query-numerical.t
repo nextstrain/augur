@@ -42,7 +42,7 @@ string comparisons:
   >  --query "coverage.str.endswith('.95')" \
   >  --output-strains filtered_strains.txt > /dev/null
   ERROR: Internal Pandas error when applying query:
-  	Can only use .str accessor with string values!
+  \\tCan only use .str accessor with string values.* (re)
   Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
   [2]
 
