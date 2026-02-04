@@ -37,6 +37,7 @@ class TestRootNodeMutationAssignment:
             'fill_overhangs': True, # augur default
             'marginal': 'joint', # augur default
             'alphabet': 'nuc', # augur default
+            'rng_seed': 0,
         }
 
 
