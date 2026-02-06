@@ -265,15 +265,21 @@ def get_referenced_files(
     set
         Resolved filepaths
     """
-    # Load schema, parse and validate config.
-    schema_validator = load_json_schema("schema-subsample-config.json")
-    config = _parse_config(config_file, config_section, schema_validator)
+    # TODO: Remove try/except once Snakemake bug is fixed.
+    # <https://github.com/snakemake/snakemake/issues/3953>
+    try:
+        # Load schema, parse and validate config.
+        schema_validator = load_json_schema("schema-subsample-config.json")
+        config = _parse_config(config_file, config_section, schema_validator)
 
-    # Resolve filepaths.
-    search_path_objs = _get_search_paths(config_file, search_paths)
-    config, filepaths = _resolve_filepaths(config, search_path_objs, schema_validator.schema)
+        # Resolve filepaths.
+        search_path_objs = _get_search_paths(config_file, search_paths)
+        config, filepaths = _resolve_filepaths(config, search_path_objs, schema_validator.schema)
 
-    return set(filepaths)
+        return set(filepaths)
+    except Exception as e:
+        print_err(f"ERROR: {e}")
+        raise e
 
 
 def _parse_config(filename: str, config_section: Optional[List[str]], schema) -> Dict[str, Any]:
