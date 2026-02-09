@@ -111,9 +111,9 @@ class TestValidateGenomeAnnotations():
         capsys.readouterr() # suppress validation error printing
 
     def test_missing_nuc(self, capsys, genome_annotation_schema):
+        # AA-only datasets are valid
         d = {"cds": {"start": 100, "end": 200, "strand": "+"}}
-        with pytest.raises(ValidateError):
-            validate_json(d, genome_annotation_schema, "<test-json>")
+        validate_json(d, genome_annotation_schema, "<test-json>")
         capsys.readouterr() # suppress validation error printing
 
     def test_missing_properties(self, capsys, genome_annotation_schema):
