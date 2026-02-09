@@ -58,7 +58,8 @@ def collectTreeAttrsV2(root, warn):
 
 def collectMutationGenes(root):
     """
-    Returns a set of all genes specified in the tree in the "aa_muts" objects
+    Returns a set of all genes specified in the tree in the "aa_muts" objects.
+    Includes "nuc" as a gene if there are any nucleodite mutations present.
     """
     genes = set()
     def recurse(node):
@@ -68,7 +69,7 @@ def collectMutationGenes(root):
         if "children" in node:
             [recurse(child) for child in node["children"]]
     recurse(root)
-    genes -= {"nuc"}
+    # genes -= {"nuc"}
     return genes
 
 def collectBranchLabels(root):
