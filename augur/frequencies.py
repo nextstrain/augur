@@ -2,7 +2,10 @@
 infer frequencies of mutations or clades
 """
 import json, os, sys
+from collections.abc import Iterable, Mapping
+from textwrap import dedent
 import numpy as np
+import pandas as pd
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
@@ -13,6 +16,7 @@ from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, T
 from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
+from .io.print import indented_list, _n
 from .utils import write_augur_json
 
 REGION_COLUMN = 'region'
@@ -89,6 +93,34 @@ def format_frequencies(freq):
     return [round(x,6) for x in freq]
 
 
+def validate_dates(
+    ids_to_check: Iterable[str],
+    num_dates: Mapping[str, float],
+    str_dates: Mapping[str, str],
+) -> None:
+    """Check that all given sequence ids have valid dates.
+
+    Raises an AugurError listing sequences with missing or invalid dates.
+
+    Parameters
+    ----------
+    ids_to_check
+        Sequence ids to check.
+    num_dates
+        Mapping of sequence id to numerical date value.
+    str_dates
+        Mapping of sequence id to original date string.
+    """
+    if missing := [f"{s!r} has date {str_dates[s]!r}"
+                   for s in sorted(s for s in ids_to_check
+                   if pd.isna(num_dates[s]))]:
+        raise AugurError(dedent(f"""\
+            The following {_n("sequence id is", "sequence ids are", len(missing))} missing valid dates:
+
+              {indented_list(missing, '            ' + '  ')}
+            """))
+
+
 def run(args):
     try:
         metadata_object = Metadata(args.metadata, args.metadata_delimiters, args.metadata_id_columns)
@@ -131,6 +163,12 @@ def run(args):
 
     if args.tree:
         tree = Phylo.read(args.tree, 'newick')
+
+        validate_dates(
+            [tip.name for tip in tree.get_terminals()],
+            dates, metadata[METADATA_DATE_COLUMN],
+        )
+
         tps = []
         for tip in tree.get_terminals():
             tip.attr = {"num_date": np.mean(dates[tip.name])}
@@ -229,6 +267,12 @@ def run(args):
 
             aln = MultipleSeqAlignment([seq for seq in AlignIO.read(fname, 'fasta')
                                         if not seq.name.startswith('NODE_')])
+
+            validate_dates(
+                [seq.name for seq in aln],
+                dates, metadata[METADATA_DATE_COLUMN],
+            )
+
             tps = np.array([np.mean(dates[seq.name]) for seq in aln])
 
             if frequencies is None:
