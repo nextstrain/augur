@@ -14,6 +14,7 @@ build/
 dist/
 *stderr
 /docs/_build/
+.env/
 
 # Output files from running tests
 tests/functional/tree/data/full_aligned-delim.fasta.contree

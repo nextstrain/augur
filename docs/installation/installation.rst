@@ -87,26 +87,23 @@ There are several ways to install Augur, ordered from least to most complex.
 
       .. include:: python-3.14-warning.rst
 
-      1. Install non-Python dependencies. The instructions below are for `conda <https://docs.conda.io/projects/conda>`__.
+      1. Setup an isolated development environment in `.env/` with:
 
          .. code:: bash
 
-            NAME=augur
-            conda env create -n "$NAME" -f dev_env.yml
+            ./devel/setup-env
 
       2. Activate the new environment.
 
          .. code:: bash
 
-            conda activate "$NAME"
+            source ./devel/activate.sh
 
-      3. Install Augur along with Python dependencies.
+      2. Now test that you can run:
 
          .. code:: bash
 
-            git clone https://github.com/nextstrain/augur.git
-            cd augur
-            python3 -m pip install -e .'[dev]'
+            augur --help
 
 Testing if it worked
 ====================

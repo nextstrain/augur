@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+base="$(cd "$(dirname "$0")/.."; pwd)"
+env="$base/.env"
+env_file="$base/dev_env.yml"
+
+source "$(dirname "$0")/common.sh"
+
+main() {
+    echo "Setting up $env"
+    remove
+    create
+}
+
+remove() {
+    if [[ -e "$env" ]]; then
+        echo "Removing existing env"
+        rm -rf "$env"
+    fi
+}
+
+create() {
+    echo "Creating new env"
+    conda-ish env create \
+        --yes \
+        --prefix "$env" \
+        --file "$env_file" \
+        python=3.13
+
+    "$env"/bin/pip install --upgrade pip setuptools wheel pip-tools
+    "$env"/bin/pip install -e '.[dev]'
+}
+
+main "$@"
