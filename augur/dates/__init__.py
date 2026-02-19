@@ -6,7 +6,7 @@ import pandas as pd
 import re
 from functools import cache
 from treetime.utils import numeric_date as tt_numeric_date, datetime_from_numeric
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Literal, Optional, Tuple, Union
 from augur.errors import AugurError
 from .errors import InvalidDate
 
@@ -75,16 +75,48 @@ def numeric_date(date):
 
     raise InvalidDate(date, f"""Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
 
-def numeric_date_type(date):
-    """Wraps numeric_date() for argparse usage.
+def numeric_date_type_min(date) -> float:
+    """Wraps numeric_date() for argparse usage, taking the minimum value if resolved to a range.
 
     This raises an ArgumentTypeError from InvalidDateFormat exceptions, otherwise the custom exception message won't be shown in console output due to:
     https://github.com/python/cpython/blob/5c4d1f6e0e192653560ae2941a6677fbf4fbd1f2/Lib/argparse.py#L2503-L2513
+
+    >>> round(numeric_date_type_min("2018"), 3)
+    2018.001
     """
     try:
-        return numeric_date(date)
+        return get_single_numeric_date(date, fmt="%Y-%m-%d", min_or_max="min")
     except InvalidDate as error:
         raise argparse.ArgumentTypeError(str(error)) from error
+
+def numeric_date_type_max(date) -> float:
+    """Wraps numeric_date() for argparse usage, taking the maximum value if resolved to a range.
+
+    This raises an ArgumentTypeError from InvalidDateFormat exceptions, otherwise the custom exception message won't be shown in console output due to:
+    https://github.com/python/cpython/blob/5c4d1f6e0e192653560ae2941a6677fbf4fbd1f2/Lib/argparse.py#L2503-L2513
+
+    >>> round(numeric_date_type_max("2018"), 3)
+    2018.999
+    """
+    try:
+        return get_single_numeric_date(date, fmt="%Y-%m-%d", min_or_max="max")
+    except InvalidDate as error:
+        raise argparse.ArgumentTypeError(str(error)) from error
+
+def get_single_numeric_date(value, fmt, min_or_max: Literal["min", "max"]) -> float:
+    numeric_date = get_numerical_date_from_value(value, fmt)
+
+    if isinstance(numeric_date, float):
+        return numeric_date
+
+    if isinstance(numeric_date, tuple):
+        if min_or_max == "min":
+            return numeric_date[0]
+        if min_or_max == "max":
+            return numeric_date[1]
+
+    raise InvalidDate(value, f"""Ensure it is in one of the supported formats:\n{SUPPORTED_DATE_HELP_TEXT}""")
+
 
 def is_date_ambiguous(date, ambiguous_by):
     """
@@ -227,6 +259,14 @@ def get_numerical_date_from_value(value, fmt, min_max_year=None) -> Union[float,
             raise InvalidDate(value, f"Start {start!r} is later than end {end!r}")
 
         return (date_to_numeric(start), date_to_numeric(end))
+
+    # Check if value is an ISO 8601 duration treated as a backwards-looking relative date
+    try:
+        if not value.startswith('P'):
+            value = 'P' + value
+        return date_to_numeric(datetime.date.today() - isodate.parse_duration(value))
+    except (ValueError, isodate.ISO8601Error):
+        pass
 
     # Return none (silent error) if the date does not match any of the checked formats.
 
