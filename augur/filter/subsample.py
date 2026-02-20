@@ -349,12 +349,16 @@ def get_weighted_group_sizes(
     weights[OUTPUT_SIZE_COLUMN] = weights[[INPUT_SIZE_COLUMN, TARGET_SIZE_COLUMN]].min(axis=1)
 
     # Warn on any under-sampled groups
-    for _, row in weights.iterrows():
-        if row[INPUT_SIZE_COLUMN] < row[TARGET_SIZE_COLUMN]:
-            sequences = _n('sequence', 'sequences', int(row[TARGET_SIZE_COLUMN]))
-            are = _n('is', 'are', int(row[INPUT_SIZE_COLUMN]))
-            group = list(f'{col}={value!r}' for col, value in row[group_by].items())
-            print_err(f"WARNING: Targeted {row[TARGET_SIZE_COLUMN]} {sequences} for group {group} but only {row[INPUT_SIZE_COLUMN]} {are} available.")
+    for group_values, input_size, target_size in zip(
+        weights[group_by].itertuples(index=False),
+        weights[INPUT_SIZE_COLUMN],
+        weights[TARGET_SIZE_COLUMN],
+    ):
+        if input_size < target_size:
+            sequences = _n('sequence', 'sequences', int(target_size))
+            are = _n('is', 'are', int(input_size))
+            group = list(f'{col}={value!r}' for col, value in zip(group_by, group_values))
+            print_err(f"WARNING: Targeted {target_size} {sequences} for group {group} but only {input_size} {are} available.")
 
     if output_sizes_file:
         weights.to_csv(output_sizes_file, index=False, sep='\t')
