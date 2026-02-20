@@ -72,10 +72,7 @@ jobs:
     - name: Install dependencies from Conda
       uses: mamba-org/setup-micromamba@v2
       with:
-        # cvxopt is a pip dependency that isn't prebuilt for Python 3.14 on PyPI
-        # (yet).¹ It is already prebuilt on conda, so install it here.
-        # ¹ <https://github.com/cvxopt/cvxopt/issues/265>
-        create-args: ${{ matrix.conda-args }} ${{ contains(matrix.conda-args, 'python=3.14') && 'cvxopt' || '' }}
+        create-args: ${{ matrix.conda-args }}
         environment-file: dev_env.yml
         cache-environment: true
         cache-environment-key: ${{ env.DATE }}

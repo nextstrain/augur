@@ -45,8 +45,6 @@ There are several ways to install Augur, ordered from least to most complex.
       .. warning::
          Installing other Python packages after Augur may cause dependency incompatibilities. If this happens, re-install Augur using the command in step 1.
 
-      .. include:: python-3.14-warning.rst
-
       Augur is written in Python 3 and requires at least Python 3.10. It's published on `PyPI <https://pypi.org>`__ as `nextstrain-augur <https://pypi.org/project/nextstrain-augur>`__.
 
       1. Install Augur along with Python dependencies.
@@ -63,8 +61,6 @@ There are several ways to install Augur, ordered from least to most complex.
 
       .. warning::
          Installing other Python packages after Augur may cause dependency incompatibilities. If this happens, re-install Augur using the command in step 1.
-
-      .. include:: python-3.14-warning.rst
 
       Augur can be installed from source. This is useful if you want to use unreleased changes. To develop Augur locally, see instructions in the "Development" tab.
 
@@ -84,8 +80,6 @@ There are several ways to install Augur, ordered from least to most complex.
 
       .. warning::
          Installing other Python packages after Augur may cause dependency incompatibilities. If this happens, re-create the environment from scratch.
-
-      .. include:: python-3.14-warning.rst
 
       1. Install non-Python dependencies. The instructions below are for `conda <https://docs.conda.io/projects/conda>`__.
 
