@@ -233,6 +233,39 @@ def run(args: argparse.Namespace) -> None:
                 sample.remove_output_strains()
 
 
+def get_parallelism(
+    config_file: str,
+    config_section: Optional[List[str]] = None,
+    limit: int = None
+) -> int:
+    """Compute the degree of parallelism (i.e., optimal value for ``--nthreads``).
+
+    Inspects the subsample config file to return the degree of parallelism that
+    should be used for ``--nthreads``. Higher values will underutilize
+    resources, while lower values will underallocate resources and not fully use
+    available parallelism.
+
+    Parameters
+    ----------
+    config_file
+        Path to the subsample config file.
+
+    config_section
+        Optional list of keys to navigate to a specific section of the config file.
+
+    limit
+        Upper bound for return value.
+
+    Returns
+    -------
+    int
+        Degree of parallelism.
+    """
+    schema_validator = load_json_schema("schema-subsample-config.json")
+    config = _parse_config(config_file, config_section, schema_validator)
+    return max(1, min(limit, len(config["samples"])))
+
+
 def get_referenced_files(
     config_file: str,
     config_section: Optional[List[str]] = None,
