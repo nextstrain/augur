@@ -5,6 +5,7 @@
     "title": "Schema for the 'annotations' property (node-data JSON) or the 'genome_annotations' property (auspice JSON)",
     "properties": {
         "nuc": {
+            "description": "Genome/gene/segment/sequence coordinates in one-based nuc(leotide) coordinates",
             "type": "object",
             "allOf": [{ "$ref": "#/$defs/startend" }],
             "properties": {
@@ -23,7 +24,7 @@
             "$comment": "All other properties are unused by Auspice."
         }
     },
-    "required": ["nuc"],
+    "required": [],
     "additionalProperties": false,
     "patternProperties": {
         "^(?!nuc$)[a-zA-Z0-9*_.()-]+$": {

@@ -1,0 +1,16 @@
+{
+  "annotations": {
+  },
+  "nodes": {
+    "internalDEF": {
+      "muts": [
+        "A400T"
+      ]
+    },
+    "not_in_tree": {
+      "muts": [
+        "A100T"
+      ]
+    }
+  }
+}
