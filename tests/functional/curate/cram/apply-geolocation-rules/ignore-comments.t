@@ -11,5 +11,5 @@ Test that comments are ignored.
 
   $ echo '{"region": "r_raw", "country": "c_raw", "division": "d_raw", "location": "l_raw"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "r_annotated", "country": "c_annotated", "division": "d_annotated", "location": "l_annotated"}

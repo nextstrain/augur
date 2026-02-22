@@ -14,5 +14,5 @@ It applies the last rules that matched.
 
   $ echo '{"region": "r_raw", "country": "c_raw", "division": "d_raw", "location": "l_raw"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "r_annotated_custom", "country": "c_annotated_custom", "division": "d_annotated_custom", "location": "l_annotated_custom"}
