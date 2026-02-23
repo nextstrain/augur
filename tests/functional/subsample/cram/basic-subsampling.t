@@ -30,12 +30,13 @@ Test basic subsampling functionality with a simple config.
   [recent] 	5 were dropped because they were earlier than 2016.17 or missing a date
   [recent] 	6 were dropped because of subsampling criteria
   [recent] 1 strain passed all filters
-  11 strains were dropped during filtering
-  	1 had no metadata
-  	12 were dropped by `--exclude-all`
-  \\t1 was added back because it was in .*sample_early.* (re)
-  \\t1 was added back because it was in .*sample_recent.* (re)
-  2 strains passed all filters
+  [collect samples] combining outputs from 2 samples
+  [collect samples] 11 strains were dropped during filtering
+  [collect samples] 	1 had no metadata
+  [collect samples] 	12 were dropped by `--exclude-all`
+  \[collect samples\] \\t1 was added back because it was in .*sample_early.* (re)
+  \[collect samples\] \\t1 was added back because it was in .*sample_recent.* (re)
+  [collect samples] 2 strains passed all filters
 
 Check that two sequences remain in outputs.
 
