@@ -136,6 +136,14 @@ def create_schema():
     # ¹ augur/subsample.py:SAMPLE_CONFIG
     sample_options = {
         **default_options,
+        "target_sample": {
+            "type": "string",
+            "description": "Use the outputs from another sample as the inputs for this sample. Value must be a sample name.",
+        },
+        "drop_sample": {
+            "type": "boolean",
+            "description": "Drop this sample from the final output",
+        },
         "group_by": {
             "oneOf": [
                 {"type": "string"},

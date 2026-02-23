@@ -34,12 +34,13 @@ Test config nested under a top level key.
   [recent] 	5 were dropped because they were earlier than 2016.17 or missing a date
   [recent] 	6 were dropped because of subsampling criteria
   [recent] 1 strain passed all filters
-  11 strains were dropped during filtering
-  	1 had no metadata
-  	12 were dropped by `--exclude-all`
-  \\t1 was added back because it was in .*sample_early.* (re)
-  \\t1 was added back because it was in .*sample_recent.* (re)
-  2 strains passed all filters
+  [collect samples] combining outputs from 2 samples
+  [collect samples] 11 strains were dropped during filtering
+  [collect samples] 	1 had no metadata
+  [collect samples] 	12 were dropped by `--exclude-all`
+  \[collect samples\] \\t1 was added back because it was in .*sample_early.* (re)
+  \[collect samples\] \\t1 was added back because it was in .*sample_recent.* (re)
+  [collect samples] 2 strains passed all filters
 
 An invalid config path results in an error.
 
@@ -88,12 +89,13 @@ Test config nested under multiple keys.
   [recent] 	3 were dropped because they were earlier than 2016.0 or missing a date
   [recent] 	8 were dropped because of subsampling criteria
   [recent] 1 strain passed all filters
-  11 strains were dropped during filtering
-  	1 had no metadata
-  	12 were dropped by `--exclude-all`
-  \\t1 was added back because it was in .*sample_early.* (re)
-  \\t1 was added back because it was in .*sample_recent.* (re)
-  2 strains passed all filters
+  [collect samples] combining outputs from 2 samples
+  [collect samples] 11 strains were dropped during filtering
+  [collect samples] 	1 had no metadata
+  [collect samples] 	12 were dropped by `--exclude-all`
+  \[collect samples\] \\t1 was added back because it was in .*sample_early.* (re)
+  \[collect samples\] \\t1 was added back because it was in .*sample_recent.* (re)
+  [collect samples] 2 strains passed all filters
 
 An invalid config path results in an error.
 
