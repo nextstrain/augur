@@ -255,6 +255,14 @@
                     ],
                     "description": "Use alongside query to specify columns and data types in the format\n'column:type', where type is one of\n(bool,float,int,str). Automatic type inference will be\nattempted on all unspecified columns used in the query. Example:\nregion:str coverage:float."
                 },
+                "target_sample": {
+                    "type": "string",
+                    "description": "Use the outputs from another sample as the inputs for this sample. Value must be a sample name."
+                },
+                "drop_sample": {
+                    "type": "boolean",
+                    "description": "Drop this sample from the final output"
+                },
                 "group_by": {
                     "oneOf": [
                         {

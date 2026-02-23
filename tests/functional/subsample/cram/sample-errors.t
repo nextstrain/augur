@@ -4,8 +4,9 @@ Setup
 
 A failed sample should terminate the process early.
 
-Note that good_sample_1 starts due to a race condition where the sample starts
-before the previous sample's failure is detected.
+As long as we run with a single thread, the first sample (the bad one) will fail and
+in our handling of that failure we can cancel subsequent samples which haven't yet
+started
 
   $ cat >samples.yaml <<~~
   > samples:
@@ -25,11 +26,9 @@ before the previous sample's failure is detected.
   >   --config samples.yaml \
   >   --output-metadata subsampled.tsv \
   >   --output-sequences subsampled.fasta \
+  >   --nthreads 1 \
   >   --seed 0
   Validating schema of 'samples.yaml'...
   [bad_sample] ERROR: You must specify a number of sequences per group or maximum sequences to subsample.
-  [good_sample_1] 11 strains were dropped during filtering
-  [good_sample_1] 	11 were dropped because of subsampling criteria
-  [good_sample_1] 1 strain passed all filters
   ERROR: Sample 'bad_sample' failed, see error above.
   [2]
