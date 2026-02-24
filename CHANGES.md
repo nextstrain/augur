@@ -2,6 +2,8 @@
 
 ## __NEXT__
 
+* align: Added `--alignment-args` options for passing arguments to the alignment program. [#1789] (@vbadelita)
+
 ### Bug fixes
 
 * filter, merge: Fixed formatting of the error message shown when there are duplicate sequence ids. [#1954][] @victorlin
@@ -190,6 +192,7 @@
 * export v2: Automatically rename fields within the `filters` and `colorings` configs of the provided auspice config file to match the renamed fields in the exported nodes. [#1804][] (@joverlee521)
 * export v2: Divergence values are now exported with increased precision, showing up to 6 significant digits instead of 3. [#1801][] (@rneher)
 
+[#1789]: https://github.com/nextstrain/augur/issues/1789
 [#875]: https://github.com/nextstrain/augur/issues/875
 [#945]: https://github.com/nextstrain/augur/issues/945
 [#1791]: https://github.com/nextstrain/augur/issues/1791
