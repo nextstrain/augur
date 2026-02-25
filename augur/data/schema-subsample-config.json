@@ -133,7 +133,7 @@
                 }
             }
         },
-        "sampleProperties": {
+        "filterSampleProperties": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -295,6 +295,46 @@
                     "description": "Select no more than this number of sequences (i.e. total sample\nsize). Can be used without grouping columns."
                 }
             }
+        },
+        "proximalSampleProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "hamming"
+                    ],
+                    "description": "Proximity approach used"
+                },
+                "focal_sample": {
+                    "type": "string",
+                    "description": "FASTA file with aligned focal sequences to find neighbors for"
+                },
+                "context_sample": {
+                    "type": "string",
+                    "description": "FASTA file with aligned contextual sequences"
+                },
+                "drop_sample": {
+                    "type": "boolean",
+                    "description": "Drop this sample from final outputs"
+                },
+                "k": {
+                    "type": "integer",
+                    "description": "number of nearest neighbors to find per focal strain"
+                },
+                "max_distance": {
+                    "type": "integer",
+                    "description": "maximum distance threshold for considering a sequence to match"
+                },
+                "ignore_missing_data": {
+                    "type": "string",
+                    "description": "All non-ATGC bases are converted to 'N', and then:\n- 'none' treats 'N' as a normal base for comparison purposes;\n- 'all' ignores positions where either sequence is N;\n- 'flanking' ignores runs of Ns at the start/end of each sequence."
+                }
+            },
+            "required": [
+                "focal_sample"
+            ]
         }
     },
     "properties": {
@@ -306,7 +346,14 @@
             "minProperties": 1,
             "patternProperties": {
                 "^.+$": {
-                    "$ref": "#/$defs/sampleProperties"
+                    "oneOf": [
+                        {
+                            "$ref": "#/$defs/filterSampleProperties"
+                        },
+                        {
+                            "$ref": "#/$defs/proximalSampleProperties"
+                        }
+                    ]
                 }
             }
         }
