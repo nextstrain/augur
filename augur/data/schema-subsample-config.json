@@ -295,6 +295,40 @@
                     "description": "Select no more than this number of sequences (i.e. total sample\nsize). Can be used without grouping columns."
                 }
             }
+        },
+        "sampleProximityProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "hamming"
+                    ]
+                },
+                "query_sample": {
+                    "type": "string"
+                },
+                "drop_sample": {
+                    "type": "boolean",
+                    "description": "Drop this sample from final outputs"
+                },
+                "context_sample": {
+                    "type": "string"
+                },
+                "k": {
+                    "type": "integer"
+                },
+                "max_distance": {
+                    "type": "integer"
+                },
+                "missing_data": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "query_sample"
+            ]
         }
     },
     "properties": {
@@ -306,7 +340,14 @@
             "minProperties": 1,
             "patternProperties": {
                 "^.+$": {
-                    "$ref": "#/$defs/sampleProperties"
+                    "oneOf": [
+                        {
+                            "$ref": "#/$defs/sampleProperties"
+                        },
+                        {
+                            "$ref": "#/$defs/sampleProximityProperties"
+                        }
+                    ]
                 }
             }
         }
