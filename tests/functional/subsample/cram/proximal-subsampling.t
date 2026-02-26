@@ -87,6 +87,6 @@ The expectation is a final output with 2 from North America and 2 from South Ame
   \[collect samples\] \\t2 were added back because they were in .*sample_prox.* (re)
   [collect samples] 4 strains passed all filters
 
-  $ cat subsampled2.tsv | csvtk cut -t --delete-header -f region | sort | uniq -c
+  $ tail -n +2 subsampled2.tsv | cut -f 5 | sort | uniq -c
      2 North America
      2 South America
