@@ -44,6 +44,7 @@ Submodules
    augur.mask
    augur.merge
    augur.parse
+   augur.proximity
    augur.read_file
    augur.reconstruct_sequences
    augur.refine

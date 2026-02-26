@@ -15,6 +15,7 @@ We're in the process of adding examples and more extensive documentation for eac
 	index
 	filter
 	subsample
+	proximity
 	mask
 	align
 	tree
