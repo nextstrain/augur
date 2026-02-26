@@ -1,6 +1,5 @@
 {
   // Check against lowest compatible Python version
-  // Sync this with python-version in .github/workflows/ci.yaml:jobs.pyright
   "pythonVersion": "3.10",
 
   "include": ["augur/"],
