@@ -403,7 +403,7 @@ def run(args):
     strains_file = None
     if args.output_strains:
         strains_file = args.output_strains
-    elif args.output_sequences:
+    elif args.output_sequences or args.output_metadata:
         strains_file = NamedTemporaryFile(delete=False).name
 
     if strains_file is not None:
@@ -420,14 +420,13 @@ def run(args):
             write_vcf(args.sequences, args.output_sequences, dropped_samps)
         else:
             subset_fasta(args.sequences, args.output_sequences, strains_file, args.nthreads)
-            if not args.output_strains:
-                os.remove(strains_file)
 
     if args.output_metadata:
         print_debug(f"Reading metadata from {args.metadata!r} and writing to {args.output_metadata!r}…")
-        write_output_metadata(args.metadata, args.metadata_delimiters,
-                              args.metadata_id_columns, args.output_metadata,
-                              valid_strains)
+        write_output_metadata(args.metadata, metadata_object.id_column, args.output_metadata, strains_file)
+
+    if not args.output_strains:
+        os.remove(strains_file)
 
     # Calculate the number of strains that don't exist in either metadata or
     # sequences.
