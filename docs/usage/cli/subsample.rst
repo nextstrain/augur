@@ -40,6 +40,16 @@ Terminology
 
          Example: *The contextual sample consisted of …*
 
+   filter sample
+    
+      The most common type of sample, one which is generated internally via ``augur filter``.
+      Configured by specifying filtering parameters (date ranges, queries etc) and (optionally) a context sample to use as the input.
+
+   proximal sample
+      
+      A specific type of sample where we compare a (small) focal sample against a (large) context sample and find the closest genetic matches.
+      Uses ``augur proximity`` under the hood.
+         
 Configuration
 =============
 
@@ -67,8 +77,8 @@ defaults
 --------
 
 The ``defaults`` section is optional and allows you to specify common options
-that apply to all samples. This reduces repetition when multiple samples share
-the same criteria.
+that apply to all filter samples. This reduces repetition when multiple filter
+samples share the same criteria.
 
 Options specified in the ``defaults`` section can be overridden by individual
 samples. If both defaults and a specific sample define the same option, the
@@ -82,40 +92,58 @@ specified in defaults.
 samples
 -------
 
-``samples`` must contain at least one sample. Sample-specific options override
-any values set in the ``defaults`` section.
 
-.. schema-options-table:: augur/data/schema-subsample-config.json sampleProperties
+``samples`` must contain at least one sample.
+
+filter sample options
+_____________________
+
+These options override any values set in the ``defaults`` section.
+
+.. schema-options-table:: augur/data/schema-subsample-config.json filterSampleProperties
+
+proximal sample options
+_______________________
+
+.. schema-options-table:: augur/data/schema-subsample-config.json proximalSampleProperties
+
 
 Implementation details
 ======================
 
-- Configurations containing a single :term:`sample` are run using a single call
+- Configurations containing a single :term:`filter sample` are run using a single call
   to :doc:`augur filter <./filter>`.
 
-- Configurations containing multiple samples are run using multiple calls to
-  :doc:`augur filter <./filter>`.
-
-  Each sample has its own call to ``augur filter``, known as intermediate calls.
-  These can run in parallel when ``--nthreads`` > 1.
-
-  Each intermediate call uses ``--output-strains`` to write a text file
-  containing the selected sequence ids for that sample.
-
-  The output dataset is produced by a final ``augur filter`` call that uses the
-  union of all sample id files to subset the input dataset.
+- Configurations containing multiple samples are run using multiple "intermediate" calls to
+  augur commands. Each :term:`filter sample` has its own call to ``augur filter`` and each
+  :term:`proximal sample` has its own call to ``augur proximity``. Each intermediate call
+  will write temporary files which may include a strains list, sequences FASTA and/or
+  metadata TSV. The eventual output dataset is produced by a final ``augur filter`` call
+  that uses the union of requested samples.
+ 
+- Samples may be dropped from the final output (via the ``drop_sample`` config option.
+  This is useful when we wish to use samples only for as an input for another sample.
+  
+- As samples may depend on other samples (via the ``focal_sample`` and ``context_sample``
+  config values), internally we create a graph of samples which controls the order in
+  which samples are evaluated.
+  
+- Multithreading (via ``--nthreads``) will allow samples to run as efficiently as possible,
+  according to the sample dependency graph. Proximal samples always use all available threads
+  which both allows them to run as efficiently as possible (they're often computationally expensive)
+  as well as minimising the memory consumption of ``augur subsample``.
 
 - CLI and YAML config options map closely to augur filter options.
 
    The following table shows the mapping between ``augur subsample`` and ``augur
    filter`` CLI options.
 
-   .. cli-option-table:: augur.subsample.GLOBAL_CLI_OPTIONS augur.subsample.FINAL_CLI_OPTIONS
+   .. cli-option-table:: augur.subsample.FILTER_GLOBAL_CLI_OPTIONS augur.subsample.FILTER_FINAL_CLI_OPTIONS
 
-   The following table shows the mapping between ``augur subsample`` sample
+   The following table shows the mapping between ``augur subsample`` :term:`filter sample`
    configuration options and ``augur filter`` CLI options.
 
-   .. yaml-option-table:: augur.subsample.SAMPLE_CONFIG
+   .. yaml-option-table:: augur.subsample.FILTER_SAMPLE_CONFIG
 
    Note that the following ``augur filter`` options are not supported:
 
@@ -123,3 +151,9 @@ Implementation details
    - ``--output-group-by-sizes``
    - ``--output-strains``
    - ``--empty-output-reporting``
+
+   
+   The following table shows the mapping between ``augur subsample`` :term:`proximal sample`
+   configuration options and ``augur proximity`` CLI options.
+
+   .. yaml-option-table:: augur.subsample.PROXIMAL_SAMPLE_CONFIG
