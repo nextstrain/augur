@@ -143,6 +143,12 @@ nitpick_ignore = [
      # inventory (only pandas.DataFrame is).
      # <https://github.com/tox-dev/sphinx-autodoc-typehints/issues/47#issuecomment-401403609>
      ("py:class", "pandas.core.frame.DataFrame"),
+
+     # numpy scalar types used in NDArray[] annotations (e.g. proximity.py)
+     # are not in numpy's intersphinx inventory.
+     ("py:class", "numpy.int8"),
+     ("py:class", "numpy.int32"),
+     ("py:class", "numpy.bool_"),
 ]
 
 # -- Cross-project references ------------------------------------------------
