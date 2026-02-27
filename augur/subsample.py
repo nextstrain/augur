@@ -142,7 +142,7 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
             directories will be considered before the defaults, which are:
             (1) directory containing the config file
             (2) current working directory""" + SKIP_AUTO_DEFAULT_IN_HELP))
-    config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this means the number of samples to run simultaneously. Individual samples are limited to a single thread. The final augur filter call can take advantage of multiple threads.")
+    config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this controls both parallelism across samples and threads within proximity samples. Individual filter samples are limited to a single thread, while proximity samples use (nthreads - 1) threads. The final augur filter call can take advantage of multiple threads.")
     config_group.add_argument('--seed', metavar="N", type=int, help="random number generator seed for reproducible outputs (with same input data)." + SKIP_AUTO_DEFAULT_IN_HELP)
 
     output_group = parser.add_argument_group("Output options", "options related to output files")
@@ -226,9 +226,11 @@ def run(args: argparse.Namespace) -> None:
             # TODO XXX -- replace globals / filter globals etc
             RELEVANT_GLOBAL_ARGS = ['--sequences']
             _global_filter_args = {k:v for k,v in global_filter_args.items() if k in RELEVANT_GLOBAL_ARGS}
-
+            # TODO XXX - config customisable thread counts
+            # Set the threads for _this_ proximity sampling
+            _threads = max(1, args.nthreads-1)
             samples.append(ProximalSample(
-                name, options, _global_filter_args, drop=drop,
+                name, options, _global_filter_args, drop=drop, nthreads=_threads,
             ))
         else:
             raise AugurError(f"Unknown schema match {sample_type!r} for sample {name!r}")
@@ -579,16 +581,13 @@ def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, 
 
 
 class Sample:
-    """
-    Construct 
-    
-    """
     def __init__(self, name: str, config: Dict[str, Any], global_filter_args: FilterArgs, /, drop: bool=False, target_sample: str|None=None) -> None:
         self.name = name
         self.augur_cmd = 'filter'
         self.outputs = {
             'strains': tempfile.NamedTemporaryFile(prefix=f"sample_{self.name}_", delete=False).name
         }
+        self.nthreads = 1
         self.drop = drop # flag indicating this sample shouldn't be used in the final output
         self.depends_on: dict[str, str] = {'target_sample': target_sample} if target_sample else {}
         self.incomplete:bool = bool(self.depends_on) # if it depends on other samples it will be incomplete until we run `connect_dependencies` for each
@@ -634,8 +633,8 @@ class Sample:
             # Checks will run once on the final augur filter call, unless explicitly skipped.
             "--skip-checks": None,
 
-            # Use a single thread for each sample to simplify multithreading across samples.
-            "--nthreads": 1,
+            # Use the sample's nthreads property for thread allocation.
+            "--nthreads": self.nthreads,
 
             # Store outcome as a list of ids to be used by --include in the final augur filter call.
             "--output-strains": self.outputs['strains']
@@ -699,7 +698,7 @@ class Sample:
           This is also why run_shell_command() isn't used here.
         """
         if DEBUGGING:
-            print(f"Running sample {self.name}")
+            print(f"Running sample {self.name} using {self.nthreads} threads")
         assert not self.incomplete
         result = subprocess.run(
             [*augur(shell=False), self.augur_cmd, *_args_dict_to_list(self.args)],
@@ -725,9 +724,10 @@ class Sample:
                     print(f"Removed temporary file for sample {self.name} file type {ftype}")
 
 class ProximalSample(Sample):
-    def __init__(self, name: str, config: Dict[str, Any], global_filter_args: FilterArgs, /, drop: bool=False, target_sample: str|None=None) -> None:
+    def __init__(self, name: str, config: Dict[str, Any], global_filter_args: FilterArgs, /, drop: bool=False, target_sample: str|None=None, nthreads: int=1) -> None:
         self.name = name
         self.augur_cmd = 'proximity'
+        self.nthreads = nthreads
         self.outputs = {
             'strains': tempfile.NamedTemporaryFile(prefix=f"sample_{self.name}_", delete=False).name
         }
@@ -743,7 +743,7 @@ class ProximalSample(Sample):
         
         if DEBUGGING:
             print("\n\nProximity sample:", self.name, f"\n\t{self.drop=} {self.incomplete=} {self.depends_on=}\n\tArgs: ", self.args)
-    
+
     def _construct_args(self, config: Dict[str, Any], global_filter_args: FilterArgs) -> FilterArgs:
         filter_args = {
             # Currently only hamming is available. If / when we expand this then configs should override this value
@@ -752,8 +752,7 @@ class ProximalSample(Sample):
             # We currently don't handle progress printing well, so disable it
             "--no-progress": None,
             
-            # TODO XXX - proximity sampling should be parallalised as much as possible... 
-            "--nthreads": 1,
+            "--nthreads": self.nthreads,
             
             # Output strains
             "--output-strains": self.outputs['strains'],
@@ -808,88 +807,129 @@ class ProximalSample(Sample):
     
 
 def _run_samples(
-    samples: List[Sample],
+    samples: List[Sample|ProximalSample],
     dependents: Dict[str, List[str]],
     nthreads: int,
 ) -> None:
-    """Run samples respecting dependency order using a single thread pool.
-
-    Samples with no dependencies are submitted immediately. When a sample
-    completes, any downstream samples whose dependencies are now fully
-    satisfied are submitted. This allows maximum parallelism — a downstream
-    sample starts as soon as its parent finishes, without waiting for an
-    entire layer of unrelated samples.
+    """Run samples respecting dependency order using a single thread pool and with
+    varying number of threads per sample.
+    
+    This necessitates two approaches to concurrency:
+        1. We use a thread pool to deploy functions representing samples which are
+        available to run, i.e. those whose dependencies have been satisfied. A callback
+        attached to each of these will add samples to the thread pool when their
+        dependencies are become satisfied.
+        2. Each of these "deployed" functions will wait until it can acquire the
+        number of threads it needs (as set on the sample object). We manage our own
+        counter of available threads (semaphore) to achieve this.
+    
+    If all samples run with a single thread this approach is maximally parallised:
+    a downstream sample starts as soon as its parent finishes. If samples need
+    multiple threads (e.g. proximity samples) then we'll (almost always) end up
+    waiting for threads to become free.
     """
-    by_name: Dict[str, Sample] = {s.name: s for s in samples}
+    by_name: Dict[str, Sample|ProximalSample] = {s.name: s for s in samples}
 
     # Track how many unfinished parents each sample has
-    # (Currently this maxes out at 1, but with forthcoming proximity subsampling it may be more)
     pending_deps: Dict[str, int] = {s.name: 0 for s in samples}
     for children in dependents.values():
         for child in children:
             pending_deps[child] += 1
 
-    remaining = {s.name for s in samples}
+    samples_remaining = {s.name for s in samples}
+    # Use a lock for code which will modify shared variables, print things etc
     lock = threading.Lock()
     all_done = threading.Event()
     error: Optional[BaseException] = None
+    # a future represents a job we've submitted, and this is how we track its progress
+    # (we use the future to trigger a callback when it's done)
     futures: List[Future] = []
 
-    def _on_complete(future: Future, name: str) -> None:
-        """Callback fired when a sample's future completes."""
+    def _on_complete(future: Future, sample_name: str) -> None:
+        """Callback fired when a sample's job (future) completes.
+        Behaviour depends on the state of the future:
+            Cancelled: return immediately
+            Error: Cancel other futures and modify the (shared) `error` value
+            Success: Check if any samples which depend on this one are now free to run
+                     and add them to the thread pool if so.
+                     If all samples are now finished then trigger the `all_done` event.
+        """
         nonlocal error
 
         # Cancelled futures (from our error handling) can be silently ignored
         if future.cancelled():
             return
 
-        with lock:
-            remaining.discard(name)
+        with lock: # acquire a lock before modifying shared state
+            samples_remaining.discard(sample_name)
 
+            # Set the shared `error` value if this sample failed
             exc = future.exception()
             if exc is not None:
                 if error is None:
                     error = exc
-                # Cancel any queued (not-yet-running) futures and don't
-                # schedule new ones. Already-running samples will finish
-                # naturally but no further work will be submitted.
+                # Cancel any queued (not-yet-running) futures and don't schedule new ones.
+                # Already-running samples will finish naturally but no further work will be submitted.
                 for f in futures:
                     f.cancel()
-                remaining.clear()
+                samples_remaining.clear()
                 all_done.set()
                 return
 
             # Don't schedule children if a previous sample already failed
             if error is not None:
-                if len(remaining) == 0:
+                if len(samples_remaining) == 0:
                     all_done.set()
                 return
 
             # If this sample has dependents (i.e. we are the dependency of another sample)
-            # Then decrease the running count of that samples dependencies
-            # If the count is zero, then add it to the queue / thread pool
-            for child in dependents.get(name, []):
+            # then see if they can be run:
+            for child in dependents.get(sample_name, []):
                 pending_deps[child] -= 1
                 if pending_deps[child] == 0:
-                    _submit(by_name[child])
+                    _submit_to_thread_pool(by_name[child])
 
-            if len(remaining) == 0:
+            if len(samples_remaining) == 0:
                 all_done.set()
 
-    def _submit(sample: Sample) -> None:
-        """Submit a sample to the executor. Caller must hold lock."""
-        f = executor.submit(sample.run)
+    # Resource accounting: track available CPU thread slots with a condition variable so we can
+    # atomically acquire multiple permits (this avoids partial-acquisition deadlocks, e.g.
+    # if we had 4 threads available and 2 jobs each wanted 4 then each needs to grab all 4 at once)
+    slots_available = nthreads
+    slots_cond = threading.Condition()
+
+    def _run_with_semaphore(sample: Sample|ProximalSample) -> None:
+        """This function is scheduled and run via the thread pool executor. However we
+        need to manage our own allocation of slots/threads/cores, so we wait here until
+        we can acquire the necessary slots for the sample to actually be run.
+        """
+        nonlocal slots_available
+        n = sample.nthreads
+        if DEBUGGING:
+            print(f"[{sample.name}] deployed via thread pool. Waiting for {n} threads ({slots_available} currently available)", flush=True)
+        with slots_cond:
+            slots_cond.wait_for(lambda: slots_available >= n)
+            slots_available -= n
+        try:
+            sample.run()
+        finally:
+            with slots_cond:
+                slots_available += n
+                slots_cond.notify_all() # triggers waiting `_run_with_semaphore` functions
+
+    def _submit_to_thread_pool(sample:Sample|ProximalSample) -> None:
+        f = executor.submit(_run_with_semaphore, sample)
         futures.append(f)
         f.add_done_callback(lambda fut, n=sample.name: _on_complete(fut, n)) # type: ignore[misc]
 
-    executor = ThreadPoolExecutor(max_workers=nthreads)
+    # Create a (large!) thread pool - this will potentially execute more jobs than we have threads,
+    # but each job will wait until it can acquire its necessary threads before doing any real work 
+    executor = ThreadPoolExecutor(max_workers=len(samples))
     try:
-        # Submit samples which have no dependencies
-        with lock:
-            for s in samples:
-                if pending_deps[s.name] == 0:
-                    _submit(s)
-
+        with lock: # Initially deploy all samples which have no dependencies
+            for sample in samples:
+                if pending_deps[sample.name] == 0:
+                    _submit_to_thread_pool(sample)
         # Wait for all samples (including dynamically submitted ones) to complete
         all_done.wait()
     finally:
