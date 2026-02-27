@@ -15,21 +15,32 @@ from typing import Any, Dict
 # Add augur package to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from augur.filter.arguments import descriptions
-from augur.subsample import SAMPLE_CONFIG
+from augur.subsample import SAMPLE_CONFIG, SAMPLE_PROXIMITY_CONFIG
 
 
 OUTPUT = Path(__file__).parent.parent / "augur" / "data" / "schema-subsample-config.json"
 
 
-def validate(sample_options: Dict[str, Any]):
-    sample_option_keys = set(sample_options.keys())
-    sample_config_keys = set(SAMPLE_CONFIG.keys())
+def validate(schema_options: Dict[str, Any], config: Dict[str, Any]):
+    schema_keys = set(schema_options.keys())
+    config_keys = set(config.keys())
 
-    if extra_in_schema := sample_option_keys - sample_config_keys:
-        raise Exception(f"Keys in sample_options but not in SAMPLE_CONFIG: {sorted(extra_in_schema)}")
+    if extra_in_schema := schema_keys - config_keys:
+        raise Exception(f"Keys in schema but not in config: {sorted(extra_in_schema)}")
 
-    if missing_in_schema := sample_config_keys - sample_option_keys:
-        raise Exception(f"Keys in SAMPLE_CONFIG but not in sample_options: {sorted(missing_in_schema)}")
+    if missing_in_schema := config_keys - schema_keys:
+        raise Exception(f"Keys in config but not in schema: {sorted(missing_in_schema)}")
+
+def _required_properties(options: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract properties marked with ``"required": True`` and return a dict
+    with a ``"required"`` key suitable for unpacking into a JSON Schema object
+    definition.  The ``"required"`` key is removed from each property in-place.
+    """
+    required = []
+    for key, prop in options.items():
+        if prop.pop("required", False):
+            required.append(key)
+    return {"required": required} if required else {}
 
 def create_schema():
     # Initialize the schema with metadata.
@@ -136,6 +147,14 @@ def create_schema():
     # ¹ augur/subsample.py:SAMPLE_CONFIG
     sample_options = {
         **default_options,
+        "target_sample": {
+            "type": "string",
+            "description": "Use the outputs from another sample as the inputs for this sample. Value must be a sample name.",
+        },
+        "drop_sample": {
+            "type": "boolean",
+            "description": "Drop this sample from the final output",
+        },
         "group_by": {
             "oneOf": [
                 {"type": "string"},
@@ -165,7 +184,48 @@ def create_schema():
         }
     }
 
-    validate(sample_options)
+    validate(sample_options, SAMPLE_CONFIG)
+
+    # Define sample proximity options as properties in the schema.
+    # These map directly to augur proximity options¹.
+    # ¹ augur/subsample.py:SAMPLE_PROXIMITY_CONFIG
+    sample_proximity_options = {
+        "method": {
+            "type": "string",
+            "enum": ["hamming"],
+            # TODO XXX description - import from `augur proximity`
+        },
+        "query_sample": {
+            "required": True,
+            "type": "string",
+            # TODO XXX - must be the _name_ of a sample, but don't think schema can check this...
+            # TODO XXX description - import from `augur proximity`
+        },
+        "drop_sample": {
+            "type": "boolean",
+            "description": "Drop this sample from final outputs", # TODO XXX
+        },
+        "context_sample": {
+            "type": "string",
+            # TODO XXX - must be the _name_ of a sample, but don't think schema can check this...
+            # TODO XXX if not set will use everything...
+            # TODO XXX description - import from `augur proximity`
+        },
+        "k": {
+            "type": "integer",
+            # TODO XXX description - import from `augur proximity`
+        },
+        "max_distance": {
+            "type": "integer",
+            # TODO XXX description - import from `augur proximity`
+        },
+        "missing_data": {
+            "type": "string",
+            # TODO XXX description - import from `augur proximity`
+        },
+    }
+
+    validate(sample_proximity_options, SAMPLE_PROXIMITY_CONFIG)
 
     # Add definitions for default and sample options.
     schema["$defs"] = {
@@ -177,7 +237,14 @@ def create_schema():
         "sampleProperties": {
             "type": "object",
             "additionalProperties": False,
-            "properties": sample_options
+            "properties": sample_options,
+            **_required_properties(sample_options),
+        },
+        "sampleProximityProperties": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": sample_proximity_options,
+            **_required_properties(sample_proximity_options),
         }
     }
 
@@ -189,7 +256,12 @@ def create_schema():
             "minProperties": 1,
             "patternProperties": {
                 # Sample names can be any non-empty string.
-                "^.+$": {"$ref": "#/$defs/sampleProperties"}
+                "^.+$": {
+                    "oneOf": [
+                        {"$ref": "#/$defs/sampleProperties"},
+                        {"$ref": "#/$defs/sampleProximityProperties"}
+                    ]
+                }
             }
         }
     }

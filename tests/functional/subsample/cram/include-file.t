@@ -24,10 +24,11 @@ File at path relative to config file location is found
   >   --output-metadata output_metadata.tsv \
   >   --seed 0
   Validating schema of 'config/config.yaml'...
-  9 strains were dropped during filtering
-  \\t1 was added back because it was in .*/defaults/include.txt.* (re)
-  	10 were dropped because of subsampling criteria
-  3 strains passed all filters
+  [test] running as the only filter call necessary
+  [test] 9 strains were dropped during filtering
+  \[test\] \\t1 was added back because it was in .*/defaults/include.txt.* (re)
+  [test] 	10 were dropped because of subsampling criteria
+  [test] 3 strains passed all filters
 
 File at path relative to current working directory is found
 
@@ -45,10 +46,11 @@ File at path relative to current working directory is found
   >   --output-metadata output_metadata.tsv \
   >   --seed 0
   Validating schema of 'config/config.yaml'...
-  9 strains were dropped during filtering
-  \\t1 was added back because it was in .*/include.txt.* (re)
-  	10 were dropped because of subsampling criteria
-  3 strains passed all filters
+  [test] running as the only filter call necessary
+  [test] 9 strains were dropped during filtering
+  \[test\] \\t1 was added back because it was in .*/include.txt.* (re)
+  [test] 	10 were dropped because of subsampling criteria
+  [test] 3 strains passed all filters
 
 File in --search-path is found
 
@@ -72,10 +74,11 @@ File in --search-path is found
   >   --output-metadata output_metadata.tsv \
   >   --seed 0
   Validating schema of 'config/config.yaml'...
-  9 strains were dropped during filtering
-  \\t1 was added back because it was in .*/custom_dir/include_custom.txt.* (re)
-  	10 were dropped because of subsampling criteria
-  3 strains passed all filters
+  [test] running as the only filter call necessary
+  [test] 9 strains were dropped during filtering
+  \[test\] \\t1 was added back because it was in .*/custom_dir/include_custom.txt.* (re)
+  [test] 	10 were dropped because of subsampling criteria
+  [test] 3 strains passed all filters
 
 Custom search path is searched before default paths (the file exists in both cwd and search_path_dir)
 
@@ -104,10 +107,11 @@ Custom search path is searched before default paths (the file exists in both cwd
   >   --output-metadata output_metadata.tsv \
   >   --seed 0
   Validating schema of 'config/config.yaml'...
-  9 strains were dropped during filtering
-  \\t1 was added back because it was in .*/include.txt.* (re)
-  	10 were dropped because of subsampling criteria
-  3 strains passed all filters
+  [test] running as the only filter call necessary
+  [test] 9 strains were dropped during filtering
+  \[test\] \\t1 was added back because it was in .*/include.txt.* (re)
+  [test] 	10 were dropped because of subsampling criteria
+  [test] 3 strains passed all filters
 
 Verify the file from search_path_dir was used (contains SG_018, not EcEs062_16 from cwd)
 
@@ -166,10 +170,11 @@ Error when file not found in any search path
   WARNING: Both the command line argument --search-paths
   and the environment variable AUGUR_SEARCH_PATHS are set.
   Only the command line argument will be used.
-  9 strains were dropped during filtering
-  \\t1 was added back because it was in .*/cli_dir/include.txt.* (re)
-  	10 were dropped because of subsampling criteria
-  3 strains passed all filters
+  [test] running as the only filter call necessary
+  [test] 9 strains were dropped during filtering
+  \[test\] \\t1 was added back because it was in .*/cli_dir/include.txt.* (re)
+  [test] 	10 were dropped because of subsampling criteria
+  [test] 3 strains passed all filters
 
 Verify the file from cli_dir was used (contains SG_018, not EcEs062_16 from env_dir)
 

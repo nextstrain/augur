@@ -27,12 +27,13 @@ Test two overlapping samples with an output log.
   [B] 7 strains were dropped during filtering
   [B] 	7 were dropped because of subsampling criteria
   [B] 5 strains passed all filters
-  8 strains were dropped during filtering
-  	1 had no metadata
-  	12 were dropped by `--exclude-all`
-  \\t4 were added back because they were in .*sample_A.* (re)
-  \\t5 were added back because they were in .*sample_B.* (re)
-  5 strains passed all filters
+  [collect samples] combining outputs from 2 samples
+  [collect samples] 8 strains were dropped during filtering
+  [collect samples] 	1 had no metadata
+  [collect samples] 	12 were dropped by `--exclude-all`
+  \[collect samples\] \\t4 were added back because they were in .*sample_A.* (re)
+  \[collect samples\] \\t5 were added back because they were in .*sample_B.* (re)
+  [collect samples] 5 strains passed all filters
 
 Show the output log.
 

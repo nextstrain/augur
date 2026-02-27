@@ -26,6 +26,7 @@ command_strings = [
     "index",
     "filter",
     "subsample",
+    "proximity",
     "mask",
     "align",
     "tree",

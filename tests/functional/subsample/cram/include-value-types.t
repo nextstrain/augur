@@ -24,10 +24,11 @@ Create an include file.
   >   --output-metadata output_metadata.tsv \
   >   --seed 0
   Validating schema of 'config.yaml'...
-  9 strains were dropped during filtering
-  \\t1 was added back because it was in .*/include.txt.* (re)
-  	10 were dropped because of subsampling criteria
-  3 strains passed all filters
+  [test] running as the only filter call necessary
+  [test] 9 strains were dropped during filtering
+  \[test\] \\t1 was added back because it was in .*/include.txt.* (re)
+  [test] 	10 were dropped because of subsampling criteria
+  [test] 3 strains passed all filters
 
 'include' can be specified as a scalar:
 
@@ -44,7 +45,8 @@ Create an include file.
   >   --output-metadata output_metadata.tsv \
   >   --seed 0
   Validating schema of 'config.yaml'...
-  9 strains were dropped during filtering
-  \\t1 was added back because it was in .*/include.txt.* (re)
-  	10 were dropped because of subsampling criteria
-  3 strains passed all filters
+  [test] running as the only filter call necessary
+  [test] 9 strains were dropped during filtering
+  \[test\] \\t1 was added back because it was in .*/include.txt.* (re)
+  [test] 	10 were dropped because of subsampling criteria
+  [test] 3 strains passed all filters
