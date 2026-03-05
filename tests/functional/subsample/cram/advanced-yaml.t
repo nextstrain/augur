@@ -46,11 +46,12 @@ Keeping it around as a valid test for advanced YAML syntax.
   \[oceania\] \\t2 were added back because they were in .*/include.txt.* (re)
   [oceania] 	0 were dropped because of subsampling criteria
   [oceania] 2 strains passed all filters
-  9 strains were dropped during filtering
-  	12 were dropped by `--exclude-all`
-  \\t3 were added back because they were in .*south_america.* (re)
-  \\t2 were added back because they were in .*oceania.* (re)
-  3 strains passed all filters
+  [collect samples] combining outputs from 2 samples
+  [collect samples] 9 strains were dropped during filtering
+  [collect samples] 	12 were dropped by `--exclude-all`
+  \[collect samples\] \\t3 were added back because they were in .*south_america.* (re)
+  \[collect samples\] \\t2 were added back because they were in .*oceania.* (re)
+  [collect samples] 3 strains passed all filters
 
 The ids in include.txt are present in the output.
 

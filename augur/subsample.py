@@ -6,12 +6,16 @@ The input dataset can consist of a metadata file, a sequences file, or both.
 See documentation page for details on configuration.
 """
 
+from __future__ import annotations # can be removed once python 3.11 is our minimum
 import argparse
 import os
 import subprocess
+import sys
 import tempfile
+import threading
 import yaml
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from collections import defaultdict, deque
+from concurrent.futures import ThreadPoolExecutor, Future
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
@@ -22,7 +26,7 @@ from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
 from augur.io.print import print_err, indented_list
 from augur.utils import augur
 from augur.validate import load_json_schema, validate_json, ValidateError
-
+from augur.debug import DEBUGGING
 
 BooleanFlags = Tuple[str, Optional[str]]
 """
@@ -41,7 +45,6 @@ FilterArgs = Dict[str, Any]
 """
 Augur filter arguments stored as a mapping from option to value.
 """
-
 
 GLOBAL_CLI_OPTIONS: Dict[str, AugurFilterOption] = {
     "metadata": "--metadata",
@@ -69,10 +72,11 @@ Mapping of argparse namespace variable name to augur filter option.
 These are sent to only the final augur filter call.
 """
 
-
 # NOTE: If you edit any of these values, please re-run
 # devel/regenerate-subsample-schema and commit the schema changes too.
-SAMPLE_CONFIG: Dict[str, AugurFilterOption] = {
+SAMPLE_CONFIG: Dict[str, AugurFilterOption|None] = {
+    "target_sample": None, # TODO XXX - config option which doesn't map directly to an augur filter cmd line arg
+    "drop_sample": None, # TODO XXX - config option which doesn't map directly to an augur filter cmd line arg
     "exclude": "--exclude",
     "exclude_all": ("--exclude-all", None),
     "exclude_ambiguous_dates_by": "--exclude-ambiguous-dates-by",
@@ -97,6 +101,22 @@ Mapping of YAML configuration key name to augur filter option.
 These are sent to only the intermediate augur filter calls.
 """
 
+AugurProximityOption = Union[str, BooleanFlags]
+"""
+Type for an augur proximity command line option. Either a single option or boolean
+pair of flags.
+"""
+
+# TODO XXX Can we not get this from augur proximity? Too much repitition...
+SAMPLE_PROXIMITY_CONFIG: Dict[str, AugurProximityOption|None] = {
+    "query_sample": None, # TODO XXX
+    "drop_sample": None, # TODO XXX
+    "context_sample": None, # TODO XXX
+    "method": "--method",
+    "k": "--k",
+    "max_distance": "--max-distance",
+    "missing_data": "--missing-data",
+}
 
 def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     parser = parent_subparsers.add_parser("subsample", help=__doc__)
@@ -122,7 +142,7 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
             directories will be considered before the defaults, which are:
             (1) directory containing the config file
             (2) current working directory""" + SKIP_AUTO_DEFAULT_IN_HELP))
-    config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this means the number of samples to run simultaneously. Individual samples are limited to a single thread. The final augur filter call can take advantage of multiple threads.")
+    config_group.add_argument('--nthreads', metavar="N", type=int, default=1, help="Number of CPUs/cores/threads/jobs to utilize at once. For augur subsample, this controls both parallelism across samples and threads within proximity samples. Individual filter samples are limited to a single thread, while proximity samples use (nthreads - 1) threads. The final augur filter call can take advantage of multiple threads.")
     config_group.add_argument('--seed', metavar="N", type=int, help="random number generator seed for reproducible outputs (with same input data)." + SKIP_AUTO_DEFAULT_IN_HELP)
 
     output_group = parser.add_argument_group("Output options", "options related to output files")
@@ -167,70 +187,97 @@ def run(args: argparse.Namespace) -> None:
 
     # Resolve filepaths.
     search_paths = _get_search_paths(args.config, args.search_paths)
-    config, _ = _resolve_filepaths(config, search_paths, schema_validator.schema)
+    config, filepaths = _resolve_filepaths(config, search_paths, schema_validator.schema)
+    if DEBUGGING:
+        print(f"\nResolved filepaths: {filepaths}")
 
-    # Construct argument lists for augur filter.
+    # Construct sample objects for augur filter calls
+    # These contain the lists of arguments, but the arguments may be incomplete
+    # since some samples depend on others. They will be completed when we create the DAG.
 
     defaults = config.get("defaults")
-    samples: List[Sample] = []
+    samples: List[Sample|ProximalSample] = []
     global_filter_args: FilterArgs = {}
     for cli_option, filter_option in GLOBAL_CLI_OPTIONS.items():
         if (value := getattr(args, cli_option)) is not None:
             _add_to_args(global_filter_args, filter_option, value)
 
     for name, options in config.get("samples", {}).items():
-        options = _merge_options(options, defaults)
-        sample = Sample(name, options, global_filter_args)
-        samples.append(sample)
+        sample_type = options.pop("_schema")
+        
+        # Is this sample an intermediate one and should be dropped from final output?
+        drop = bool(options.pop('drop_sample', False))
+        
+        if sample_type == 'sampleProperties':
+            merged_options = _merge_options(options, defaults)
+
+            # Does this sample define a target sample, i.e. we need to use the outputs of
+            # the target not the global input sequences
+            target_sample = merged_options.pop('target_sample', None)
+            _global_filter_args = {**global_filter_args}
+            if target_sample:
+                _global_filter_args.pop("--metadata")  # key must exist
+                _global_filter_args.pop("--sequences") # key must exist
+                _global_filter_args.pop("--sequence_index", None) # key optional
+    
+            sample = Sample(name, merged_options, _global_filter_args, drop=drop, target_sample=target_sample)
+            samples.append(sample)
+        elif sample_type == 'sampleProximityProperties':
+            # TODO XXX -- replace globals / filter globals etc
+            RELEVANT_GLOBAL_ARGS = ['--sequences']
+            _global_filter_args = {k:v for k,v in global_filter_args.items() if k in RELEVANT_GLOBAL_ARGS}
+            # TODO XXX - config customisable thread counts
+            # Set the threads for _this_ proximity sampling
+            _threads = max(1, args.nthreads-1)
+            samples.append(ProximalSample(
+                name, options, _global_filter_args, drop=drop, nthreads=_threads,
+            ))
+        else:
+            raise AugurError(f"Unknown schema match {sample_type!r} for sample {name!r}")
 
     final_filter_args: FilterArgs = {}
     for cli_option, filter_option in FINAL_CLI_OPTIONS.items():
         if (value := getattr(args, cli_option)) is not None:
             _add_to_args(final_filter_args, filter_option, value)
 
-    # Run augur filter.
+    # Resolve dependency ordering across samples
+    # This wires up outputs→inputs for dependent samples
+    dependents = _resolve_dag(samples)
+    if DEBUGGING:
+        _print_dag(samples, dependents)
 
+    # Run augur filter.
     if len(samples) == 1:
         # A single sample is translated to a single augur filter call.
-
-        # The list of ids is useless in this case.
-        samples[0].remove_output_strains()
-
+        # The list of ids (strains) is not needed in this case
+        del samples[0].args["--output-strains"]
+        samples[0].remove_temporary_files()
         filter_args = {
-            **samples[0].filter_args,
+            **samples[0].args,
             **final_filter_args,
             "--nthreads": args.nthreads,
         }
-        _run_final_filter(filter_args)
+        print(f"[{samples[0].name}] running as the only filter call necessary", flush=True)
+        _run_final_filter(filter_args, samples[0].name)
     else:
         # Multiple samples require multiple augur filter calls.
         try:
-            # Run intermediate augur filter calls in parallel.
-            with ThreadPoolExecutor(max_workers=args.nthreads) as executor:
-                futures = [executor.submit(s.run) for s in samples]
-                try:
-                    for future in as_completed(futures):
-                        future.result()
-                except Exception:
-                    # Note: There is a race condition where samples may start before
-                    # failures in other samples are detected. On failure, we cancel
-                    # remaining queued samples but already-running samples will
-                    # complete. This provides partial fail-fast behavior while
-                    # maintaining parallelism.
-                    executor.shutdown(cancel_futures=True)
-                    raise
+            _run_samples(samples, dependents, args.nthreads)
 
             # Run the final augur filter call to combine the intermediate samples.
+            # Exclude samples marked with drop=True (e.g. used only as upstream input).
+            included_samples = [s for s in samples if not s.drop]
             final_filter_args.update(global_filter_args)
             final_filter_args.update({
                 "--exclude-all": None,
-                "--include": [s.output_strains for s in samples],
+                "--include": [s.outputs['strains'] for s in included_samples],
                 "--nthreads": args.nthreads,
             })
-            _run_final_filter(final_filter_args)
+            print(f"[collect samples] combining outputs from {len(included_samples)} samples", flush=True)
+            _run_final_filter(final_filter_args, "collect samples")
         finally:
             for sample in samples:
-                sample.remove_output_strains()
+                sample.remove_temporary_files()
 
 
 def get_referenced_files(
@@ -366,6 +413,8 @@ def _resolve_filepaths(
     pattern_properties = schema.get("patternProperties", {})
 
     for key, value in config.items():
+        if key.startswith("_"):
+            continue
         prop_schema = properties.get(key)
 
         if not prop_schema and pattern_properties:
@@ -375,6 +424,8 @@ def _resolve_filepaths(
         # Get referenced property schema
         if ref := prop_schema.get("$ref"):
             prop_schema = _get_referenced_schema(ref, root_schema)
+        elif "oneOf" in prop_schema and isinstance(value, dict):
+            prop_schema = _match_one_of(prop_schema["oneOf"], value, root_schema)
 
         # Resolve filepath
         if _is_filepath(prop_schema):
@@ -425,6 +476,39 @@ def _is_filepath(prop_schema: Dict[str, Any]) -> bool:
 
     return False
 
+def _match_one_of(
+    variants: List[Dict[str, Any]],
+    value: Dict[str, Any],
+    root_schema: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Given a oneOf list of schema variants (typically $ref entries), resolve each
+    and return the one whose properties best match the keys in *value*.
+
+    As a side effect, ``value["_schema"]`` is set to the name of the matched
+    ``$ref`` (the last component of the path, e.g. ``"sampleProperties"``).
+    """
+    value_keys = set(value.keys())
+    best_schema = None
+    best_ref = None
+    best_overlap = -1
+    for variant in variants:
+        ref = variant.get("$ref")
+        if ref:
+            resolved = _get_referenced_schema(ref, root_schema)
+        else:
+            resolved = variant
+        props = set(resolved.get("properties", {}).keys())
+        overlap = len(value_keys & props)
+        if overlap > best_overlap:
+            best_overlap = overlap
+            best_schema = resolved
+            best_ref = ref
+    if best_ref:
+        value["_schema"] = best_ref.rsplit("/", 1)[-1]
+    if not best_schema:
+        raise AugurError("Couldn't match oneOf schema for config dict")
+    return best_schema
 
 def _resolve_filepath(
     path: Path,
@@ -461,7 +545,7 @@ def _resolve_filepath(
 
     If the relative path doesn't exist anywhere, raise an error.
 
-    >>> _resolve_filepath(Path("nonexistent.txt"), [tmpdir1, tmpdir2])
+    >>> _resolve_filepath(Path("nonexistent.txt"), [tmpdir1, tmpdir2]) # doctest: +ELLIPSIS
     Traceback (most recent call last):
       ...
     augur.errors.AugurError: File 'nonexistent.txt' not resolvable from any of the following paths:
@@ -491,19 +575,32 @@ def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, 
     """
     Merge sample options with default options, with sample options taking precedence.
     """
-    if defaults is None:
-        return sample_options
-
-    return {**defaults, **sample_options}
+    merged = {**sample_options} if defaults is None else {**defaults, **sample_options}
+    merged.pop('_schema', None)
+    return merged
 
 
 class Sample:
-    def __init__(self, name: str, config: Dict[str, Any], global_filter_args: FilterArgs) -> None:
+    def __init__(self, name: str, config: Dict[str, Any], global_filter_args: FilterArgs, /, drop: bool=False, target_sample: str|None=None) -> None:
         self.name = name
-        self.output_strains = tempfile.NamedTemporaryFile(prefix=f"sample_{self.name}_", delete=False).name
-        self.filter_args = self._construct_filter_args(config, global_filter_args)
+        self.augur_cmd = 'filter'
+        self.outputs = {
+            'strains': tempfile.NamedTemporaryFile(prefix=f"sample_{self.name}_", delete=False).name
+        }
+        self.nthreads = 1
+        self.drop = drop # flag indicating this sample shouldn't be used in the final output
+        self.depends_on: dict[str, str] = {'target_sample': target_sample} if target_sample else {}
+        self.incomplete:bool = bool(self.depends_on) # if it depends on other samples it will be incomplete until we run `connect_dependencies` for each
+        self.args = self._construct_args(config, global_filter_args)
+        
+        if DEBUGGING:
+            print("\n\nSample:", self.name, f"\n\t{self.drop=} {self.incomplete=} {self.depends_on=}\n\tArgs: ", self.args)
 
-    def _construct_filter_args(self, config: Dict[str, Any], global_filter_args: FilterArgs) -> FilterArgs:
+    def __repr__(self):
+        # helps with debugging
+        return f"Sample obj ({self.name})"
+
+    def _construct_args(self, config: Dict[str, Any], global_filter_args: FilterArgs) -> FilterArgs:
         """
         Construct filter arguments from YAML config and global arguments.
 
@@ -511,24 +608,24 @@ class Sample:
 
         >>> global_args = {"--metadata": "test.tsv", "--sequences": "test.fasta"}
         >>> sample = Sample("test_sample", {}, global_args)
-        >>> sample.filter_args["--metadata"]
+        >>> sample.args["--metadata"]
         'test.tsv'
-        >>> sample.filter_args["--sequences"]
+        >>> sample.args["--sequences"]
         'test.fasta'
 
         Maps YAML config to filter arguments:
 
         >>> config = {"min_date": "2020-01-01", "group_by": ["region", "year"], "sequences_per_group": 5, "non_nucleotide": True, "probabilistic_sampling": False}
         >>> sample = Sample("test_sample", config, {})
-        >>> sample.filter_args["--min-date"]
+        >>> sample.args["--min-date"]
         '2020-01-01'
-        >>> sample.filter_args["--group-by"]
+        >>> sample.args["--group-by"]
         ['region', 'year']
-        >>> sample.filter_args["--sequences-per-group"]
+        >>> sample.args["--sequences-per-group"]
         5
-        >>> "--non-nucleotide" in sample.filter_args
+        >>> "--non-nucleotide" in sample.args
         True
-        >>> "--no-probabilistic-sampling" in sample.filter_args
+        >>> "--no-probabilistic-sampling" in sample.args
         True
         """
         filter_args = {
@@ -536,11 +633,11 @@ class Sample:
             # Checks will run once on the final augur filter call, unless explicitly skipped.
             "--skip-checks": None,
 
-            # Use a single thread for each sample to simplify multithreading across samples.
-            "--nthreads": 1,
+            # Use the sample's nthreads property for thread allocation.
+            "--nthreads": self.nthreads,
 
             # Store outcome as a list of ids to be used by --include in the final augur filter call.
-            "--output-strains": self.output_strains
+            "--output-strains": self.outputs['strains']
         }
 
         filter_args.update(global_filter_args)
@@ -550,6 +647,41 @@ class Sample:
             _add_to_args(filter_args, filter_option, value)
 
         return filter_args
+
+    def connect_dependencies(self, samples_by_name: Dict[str,Sample|ProximalSample]) -> None:
+        """
+        Given all known samples_by_name (i.e. ones which this sample depends on), connect
+        this sample to its dependencies. Essentially use their _outputs_ as _inputs_ for our
+        sample (i.e. `self`). This may requires modifying upstream sample(s) to output
+        sequences & metadata which we can consume!
+
+        When all upstream dependencies have been wired up, ``self.incomplete``
+        is set to False.
+        """
+        if not self.depends_on:
+            return # A sample doesn't need a dependency (most won't have any!)
+        assert set(self.depends_on.keys()) == set(['target_sample']), "This must be a [Augur filter] Sample"
+        # TODO XXX - what about if the target sample is a proximity?
+        upstream = samples_by_name[self.depends_on['target_sample']]
+        assert type(upstream) is Sample, "Target sample must currently be an [Augur Filter] sample" # TODO XXX
+        assert not upstream.incomplete
+        
+        # modify upstream to output more than just a strains list
+        upstream.outputs['metadata']  = tempfile.NamedTemporaryFile(prefix=f"sample_{upstream.name}_metadata_", delete=False).name
+        upstream.outputs['sequences'] = tempfile.NamedTemporaryFile(prefix=f"sample_{upstream.name}_sequences_", delete=False).name
+        _add_to_args(upstream.args, "--output-metadata", upstream.outputs['metadata'])
+        _add_to_args(upstream.args, "--output-sequences", upstream.outputs['sequences'])
+
+        # and modify downstream (self!) to use these outputs as inputs
+        _add_to_args(self.args, "--metadata", upstream.outputs['metadata'])
+        _add_to_args(self.args, "--sequences", upstream.outputs['sequences'])
+
+        self.incomplete = False
+
+        if DEBUGGING:
+            print(f"\n\nMapping dependencies between upstream sample {upstream.name} and downstream {self.name}")
+            print("\n\tupstream:", upstream.args)
+            print("\n\tdownstream:", self.args)
 
     def run(self) -> None:
         """Run augur filter as a subprocess.
@@ -565,8 +697,11 @@ class Sample:
           carefully escape values such as "--metadata-delimiters , \t".
           This is also why run_shell_command() isn't used here.
         """
+        if DEBUGGING:
+            print(f"Running sample {self.name} using {self.nthreads} threads")
+        assert not self.incomplete
         result = subprocess.run(
-            [*augur(shell=False), 'filter', *_args_dict_to_list(self.filter_args)],
+            [*augur(shell=False), self.augur_cmd, *_args_dict_to_list(self.args)],
             capture_output=True,
             text=True,
         )
@@ -580,12 +715,347 @@ class Sample:
             error_msg = f"Sample {self.name!r} failed, see error above."
             raise AugurError(error_msg)
 
-    def remove_output_strains(self):
-        """Remove the augur filter arguments and temporary file."""
-        del self.filter_args["--output-strains"]
+    def remove_temporary_files(self):
+        """Remove any temporary outputs which may have been created"""
+        for ftype, fname in self.outputs.items():
+            if os.path.exists(fname):
+                os.unlink(fname)
+                if DEBUGGING:
+                    print(f"Removed temporary file for sample {self.name} file type {ftype}")
 
-        if os.path.exists(self.output_strains):
-            os.unlink(self.output_strains)
+class ProximalSample(Sample):
+    def __init__(self, name: str, config: Dict[str, Any], global_filter_args: FilterArgs, /, drop: bool=False, target_sample: str|None=None, nthreads: int=1) -> None:
+        self.name = name
+        self.augur_cmd = 'proximity'
+        self.nthreads = nthreads
+        self.outputs = {
+            'strains': tempfile.NamedTemporaryFile(prefix=f"sample_{self.name}_", delete=False).name
+        }
+        self.drop = drop # flag indicating this sample shouldn't be used in the final output
+        
+        self.depends_on: dict[str, str] = {}
+        self.depends_on['query_sample'] = config.pop('query_sample')
+        if context_sample:=config.pop('context_sample', False):
+            self.depends_on['context_sample'] = context_sample
+
+        self.incomplete:bool = True # necessarily incomplete as we need a prior sample
+        self.args = self._construct_args(config, global_filter_args)
+        
+        if DEBUGGING:
+            print("\n\nProximity sample:", self.name, f"\n\t{self.drop=} {self.incomplete=} {self.depends_on=}\n\tArgs: ", self.args)
+
+    def _construct_args(self, config: Dict[str, Any], global_filter_args: FilterArgs) -> FilterArgs:
+        filter_args = {
+            # Currently only hamming is available. If / when we expand this then configs should override this value
+            "--method": "hamming",
+            
+            # We currently don't handle progress printing well, so disable it
+            "--no-progress": None,
+            
+            "--nthreads": self.nthreads,
+            
+            # Output strains
+            "--output-strains": self.outputs['strains'],
+        }
+
+        filter_args.update(global_filter_args)
+
+        for config_key, value in config.items():
+            filter_option = SAMPLE_PROXIMITY_CONFIG[config_key]
+            _add_to_args(filter_args, filter_option, value)
+
+        return filter_args
+
+    def connect_dependencies(self, samples_by_name: Dict[str,Sample|ProximalSample]) -> None:
+        query_sample = samples_by_name[self.depends_on['query_sample']]
+        assert not query_sample.incomplete
+
+        if type(query_sample) is not Sample:
+            raise AugurError(dedent(f"""\
+                The proximity sample {self.name!r} declares a query sample of {self.depends_on['query_sample']!r}
+                which must itself be a non-proximity sample. I.e. you can't proximity sample directly from another
+                proximity sample!
+                """))
+        
+        # To run a proximal sample we need to get the query sample to spit out sequences!
+        query_sample.outputs['sequences'] = tempfile.NamedTemporaryFile(prefix=f"sample_{query_sample.name}_sequences_", delete=False).name
+        _add_to_args(query_sample.args, "--output-sequences", query_sample.outputs['sequences'])
+        _add_to_args(self.args, "--query", query_sample.outputs['sequences'])
+
+        # If we define the specific contextual sample then we need to get that sample to output
+        # sequences and use it as the --sequences arg to this proximity sample
+        if 'context_sample' in self.depends_on:
+            context_sample = samples_by_name[self.depends_on['context_sample']]
+            assert not context_sample.incomplete
+            if type(context_sample) is not Sample:
+                raise AugurError(dedent(f"""\
+                The proximity sample {self.name!r} declares a context sample of {self.depends_on['context_sample']!r}
+                which must itself be a non-proximity sample. I.e. you can't proximity sample directly from another
+                proximity sample!
+                """))
+            context_sample.outputs['sequences'] = tempfile.NamedTemporaryFile(prefix=f"sample_{context_sample.name}_sequences_", delete=False).name
+            _add_to_args(context_sample.args, "--output-sequences", context_sample.outputs['sequences'])
+            _add_to_args(self.args, "--sequences", context_sample.outputs['sequences'])
+
+        self.incomplete = False
+
+        if DEBUGGING:
+            print(f"\n\nMapping dependencies between upstream Sample {query_sample.name} and downstream ProximalSample {self.name}")
+            print("\n\tupstream:", query_sample.args)
+            print("\n\tdownstream:", self.args)
+
+    
+
+def _run_samples(
+    samples: List[Sample|ProximalSample],
+    dependents: Dict[str, List[str]],
+    nthreads: int,
+) -> None:
+    """Run samples respecting dependency order using a single thread pool and with
+    varying number of threads per sample.
+    
+    This necessitates two approaches to concurrency:
+        1. We use a thread pool to deploy functions representing samples which are
+        available to run, i.e. those whose dependencies have been satisfied. A callback
+        attached to each of these will add samples to the thread pool when their
+        dependencies are become satisfied.
+        2. Each of these "deployed" functions will wait until it can acquire the
+        number of threads it needs (as set on the sample object). We manage our own
+        counter of available threads (semaphore) to achieve this.
+    
+    If all samples run with a single thread this approach is maximally parallised:
+    a downstream sample starts as soon as its parent finishes. If samples need
+    multiple threads (e.g. proximity samples) then we'll (almost always) end up
+    waiting for threads to become free.
+    """
+    by_name: Dict[str, Sample|ProximalSample] = {s.name: s for s in samples}
+
+    # Track how many unfinished parents each sample has
+    pending_deps: Dict[str, int] = {s.name: 0 for s in samples}
+    for children in dependents.values():
+        for child in children:
+            pending_deps[child] += 1
+
+    samples_remaining = {s.name for s in samples}
+    # Use a lock for code which will modify shared variables, print things etc
+    lock = threading.Lock()
+    all_done = threading.Event()
+    error: Optional[BaseException] = None
+    # a future represents a job we've submitted, and this is how we track its progress
+    # (we use the future to trigger a callback when it's done)
+    futures: List[Future] = []
+
+    def _on_complete(future: Future, sample_name: str) -> None:
+        """Callback fired when a sample's job (future) completes.
+        Behaviour depends on the state of the future:
+            Cancelled: return immediately
+            Error: Cancel other futures and modify the (shared) `error` value
+            Success: Check if any samples which depend on this one are now free to run
+                     and add them to the thread pool if so.
+                     If all samples are now finished then trigger the `all_done` event.
+        """
+        nonlocal error
+
+        # Cancelled futures (from our error handling) can be silently ignored
+        if future.cancelled():
+            return
+
+        with lock: # acquire a lock before modifying shared state
+            samples_remaining.discard(sample_name)
+
+            # Set the shared `error` value if this sample failed
+            exc = future.exception()
+            if exc is not None:
+                if error is None:
+                    error = exc
+                # Cancel any queued (not-yet-running) futures and don't schedule new ones.
+                # Already-running samples will finish naturally but no further work will be submitted.
+                for f in futures:
+                    f.cancel()
+                samples_remaining.clear()
+                all_done.set()
+                return
+
+            # Don't schedule children if a previous sample already failed
+            if error is not None:
+                if len(samples_remaining) == 0:
+                    all_done.set()
+                return
+
+            # If this sample has dependents (i.e. we are the dependency of another sample)
+            # then see if they can be run:
+            for child in dependents.get(sample_name, []):
+                pending_deps[child] -= 1
+                if pending_deps[child] == 0:
+                    _submit_to_thread_pool(by_name[child])
+
+            if len(samples_remaining) == 0:
+                all_done.set()
+
+    # Resource accounting: track available CPU thread slots with a condition variable so we can
+    # atomically acquire multiple permits (this avoids partial-acquisition deadlocks, e.g.
+    # if we had 4 threads available and 2 jobs each wanted 4 then each needs to grab all 4 at once)
+    slots_available = nthreads
+    slots_cond = threading.Condition()
+
+    def _run_with_semaphore(sample: Sample|ProximalSample) -> None:
+        """This function is scheduled and run via the thread pool executor. However we
+        need to manage our own allocation of slots/threads/cores, so we wait here until
+        we can acquire the necessary slots for the sample to actually be run.
+        """
+        nonlocal slots_available
+        n = sample.nthreads
+        if DEBUGGING:
+            print(f"[{sample.name}] deployed via thread pool. Waiting for {n} threads ({slots_available} currently available)", flush=True)
+        with slots_cond:
+            slots_cond.wait_for(lambda: slots_available >= n)
+            slots_available -= n
+        try:
+            sample.run()
+        finally:
+            with slots_cond:
+                slots_available += n
+                slots_cond.notify_all() # triggers waiting `_run_with_semaphore` functions
+
+    def _submit_to_thread_pool(sample:Sample|ProximalSample) -> None:
+        f = executor.submit(_run_with_semaphore, sample)
+        futures.append(f)
+        f.add_done_callback(lambda fut, n=sample.name: _on_complete(fut, n)) # type: ignore[misc]
+
+    # Create a (large!) thread pool - this will potentially execute more jobs than we have threads,
+    # but each job will wait until it can acquire its necessary threads before doing any real work 
+    executor = ThreadPoolExecutor(max_workers=len(samples))
+    try:
+        with lock: # Initially deploy all samples which have no dependencies
+            for sample in samples:
+                if pending_deps[sample.name] == 0:
+                    _submit_to_thread_pool(sample)
+        # Wait for all samples (including dynamically submitted ones) to complete
+        all_done.wait()
+    finally:
+        executor.shutdown(wait=True, cancel_futures=True)
+
+    if error is not None:
+        raise error
+
+
+def _resolve_dag(samples: List[Sample]) -> Dict[str, List[str]]:
+    """Validate sample dependencies and wire up outputs→inputs.
+
+    Uses Kahn's algorithm to verify the dependency graph is a DAG (no cycles),
+    then calls ``connect_dependencies`` to connect dependent samples.
+
+    Parameters
+    ----------
+    samples
+        List of Sample objects, some of which may have ``depends_on`` set.
+
+    Returns
+    -------
+    dict
+        Mapping of sample name → list of downstream sample names that depend
+        on it. Used by the executor to schedule samples as their parents
+        complete.
+
+    Raises
+    ------
+    AugurError
+        If a sample references a non-existent upstream sample, or if there is a
+        dependency cycle.
+
+    >>> # No dependencies → empty dependents
+    >>> a = Sample.__new__(Sample); a.name = "a"; a.depends_on = {}; a.incomplete = False
+    >>> b = Sample.__new__(Sample); b.name = "b"; b.depends_on = {}; b.incomplete = False
+    >>> _resolve_dag([a, b])
+    {}
+
+    >>> # Simple dependency
+    >>> a = Sample.__new__(Sample); a.name = "a"; a.depends_on = {}; a.incomplete = False
+    >>> a.args = {}; a.outputs={}
+    >>> b = Sample.__new__(Sample); b.name = "b"; b.depends_on = {"target_sample": "a"}; b.incomplete = True
+    >>> b.args = {}; b.outputs={}
+    >>> sorted(_resolve_dag([a, b]).items())  # doctest: +ELLIPSIS
+    [('a', ['b'])]
+    """
+    samples_by_name: Dict[str, Sample|ProximalSample] = {s.name:s for s in samples}
+
+    # Validate references
+    for s in samples:
+        for dep_name in s.depends_on.values():
+            if dep_name not in samples_by_name:
+                raise AugurError(dedent(f"""\
+                    Sample {s.name!r} depends on {dep_name!r} which is not a defined sample."""))
+
+    # Build adjacency and in-degree for cycle detection
+    in_degree: Dict[str, int] = {s.name: 0 for s in samples}
+    dependents: Dict[str, List[str]] = defaultdict(list)
+    for s in samples:
+        for dep in s.depends_on.values():
+            in_degree[s.name] += 1
+            dependents[dep].append(s.name)
+
+    # Kahn's algorithm for cycle detection and topological ordering
+    queue = deque(name for name, deg in in_degree.items() if deg == 0)
+    topo_order: List[str] = []
+    while queue:
+        name = queue.popleft()
+        topo_order.append(name)
+        for dep in dependents[name]:
+            in_degree[dep] -= 1
+            if in_degree[dep] == 0:
+                queue.append(dep)
+
+    if len(topo_order) != len(samples):
+        raise AugurError("Dependency cycle detected among samples.")
+
+    # Wire up outputs→inputs in topological order so that upstream samples
+    # are always complete before their dependents are wired up.
+    for name in topo_order:
+        s = samples_by_name[name]
+        s.connect_dependencies(samples_by_name)
+
+    # Return dictionary whose keys are samples which are dependencies for other samples
+    # The values are a list of samples which depend on the (key) sample.
+    # Note: samples which are not depended on by other samples will not be keys of this!
+    return {k: v for k, v in dependents.items() if v}
+
+def _print_dag(samples: List[Sample], dependents: Dict[str, List[str]]) -> None:
+    """Print an ASCII representation of the sample dependency graph.
+
+    Roots (no dependencies) are printed first, with their children indented
+    below. Samples with no relationships are listed independently.
+
+    >>> a = Sample.__new__(Sample); a.name = "a"; a.depends_on = {}; a.drop = False
+    >>> b = Sample.__new__(Sample); b.name = "b"; b.depends_on = {"target_sample": "a"}; b.drop = False
+    >>> c = Sample.__new__(Sample); c.name = "c"; c.depends_on = {}; c.drop = True
+    >>> _print_dag([a, b, c], {"a": ["b"]})
+    <BLANKLINE>
+    Sample dependency graph:
+      a
+        └── b
+      c (drop)
+    <BLANKLINE>
+    """
+    has_parent = {child for children in dependents.values() for child in children}
+    roots = [s for s in samples if s.name not in has_parent]
+
+    lines = ["\nSample dependency graph:"]
+    by_name = {s.name: s for s in samples}
+
+    def _walk(name: str, prefix: str, connector: str) -> None:
+        drop_tag = " (drop)" if by_name[name].drop else ""
+        sample_type = "[Proximity Sample] " if type(by_name[name]) is ProximalSample else ""
+        lines.append(f"{prefix}{connector}{sample_type}{name}{drop_tag}")
+        children = dependents.get(name, [])
+        child_prefix = prefix + ("    " if connector == "└── " else "│   " if connector == "├── " else "  ")
+        for i, child in enumerate(children):
+            _walk(child, child_prefix, "└── " if i == len(children) - 1 else "├── ")
+
+    for root in roots:
+        _walk(root.name, "  ", "")
+
+    lines.append("")
+    print("\n".join(lines))
 
 
 def _add_to_args(args: FilterArgs, filter_option: AugurFilterOption, value: Any) -> None:
@@ -713,15 +1183,63 @@ def _args_dict_to_list(args: FilterArgs) -> List[str]:
     return args_list
 
 
-def _run_final_filter(filter_args: FilterArgs) -> None:
+def _run_final_filter(filter_args: FilterArgs, name: str) -> None:
     """Run augur filter as part of the augur subsample process.
 
     Note: intermediate augur filter calls go through a separate subprocess to
     avoid interleaved messages during parallel execution - see Sample.run().
     This final call goes through the current Python process to take advantage of
-    streamed messages.
+    streamed messages, which we prepend with the ``name`` by using a custom stderr
+    handler
+
+    Parameters
+    ----------
+    filter_args
+        Arguments for augur filter.
+    name
+        Label prepended to stderr output lines as ``[name]``.
     """
     parser = argparse.ArgumentParser()
     augur_filter.register_arguments(parser)
     args = parser.parse_args(_args_dict_to_list(filter_args))
-    augur_filter.run(args)
+
+    original_stderr = sys.stderr
+    sys.stderr = _PrefixWriter(original_stderr, f"[{name}] ")
+    try:
+        augur_filter.run(args)
+    finally:
+        sys.stderr = original_stderr
+
+
+class _PrefixWriter:
+    """A file-like wrapper that prepends a prefix to each line written to the
+    underlying stream."""
+
+    def __init__(self, stream, prefix: str):
+        self._stream = stream
+        self._prefix = prefix
+        self._at_line_start = True
+
+    def write(self, text: str) -> int:
+        if not text:
+            return 0
+        lines = text.split('\n')
+        out = []
+        for i, line in enumerate(lines):
+            if i > 0:
+                out.append('\n')
+                self._at_line_start = True
+            if line:
+                if self._at_line_start:
+                    out.append(self._prefix)
+                out.append(line)
+                self._at_line_start = False
+        result = ''.join(out)
+        self._stream.write(result)
+        return len(text)
+
+    def flush(self):
+        self._stream.flush()
+
+    def __getattr__(self, name):
+        return getattr(self._stream, name)
