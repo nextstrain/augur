@@ -4,10 +4,12 @@ from textwrap import dedent
 import isodate
 import pandas as pd
 import re
+from collections.abc import Iterable, Mapping
 from functools import cache
 from treetime.utils import numeric_date as tt_numeric_date, datetime_from_numeric
 from typing import Any, Dict, Optional, Tuple, Union
 from augur.errors import AugurError
+from augur.io.print import indented_list, _n
 from .errors import InvalidDate
 
 from .ambiguous_date import AmbiguousDate
@@ -116,6 +118,35 @@ def is_date_ambiguous(date, ambiguous_by):
         "X" in month and ambiguous_by in ("any", "month", "day"),
         "X" in day and ambiguous_by in ("any", "day")
     ))
+
+
+def validate_dates(
+    ids_to_check: Iterable[str],
+    num_dates: Mapping[str, float],
+    str_dates: Mapping[str, str],
+) -> None:
+    """Check that all given sequence ids have valid dates.
+
+    Raises an AugurError listing sequences with missing or invalid dates.
+
+    Parameters
+    ----------
+    ids_to_check
+        Sequence ids to check.
+    num_dates
+        Mapping of sequence id to numerical date value from a pandas DataFrame.
+    str_dates
+        Mapping of sequence id to original date string.
+    """
+    if missing := [f"{s!r} has date {str_dates[s]!r}"
+                   for s in ids_to_check
+                   if pd.isna(num_dates[s])]:
+        raise AugurError(dedent(f"""\
+            The following {_n("sequence id is", "sequence ids are", len(missing))} missing valid dates:
+
+              {indented_list(sorted(missing), '            ' + '  ')}
+            """))
+
 
 RE_NUMERIC_DATE = re.compile(r'^-*\d+\.\d+$')
 """
