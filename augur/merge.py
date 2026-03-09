@@ -376,6 +376,8 @@ def merge_metadata(args):
 
     except SQLiteError as err:
         delete_db = False
+        if err.proc.stderr:
+            print_err(f"[SQLite] {err.proc.stderr}", end="")
         raise AugurError(str(err)) from err
 
     finally:
@@ -435,22 +437,28 @@ def sqlite3(*args, **kwargs):
     argv = [sqlite3, "-init", os.devnull, "-batch", *args]
 
     print_debug(f"running {argv!r}")
-    proc = subprocess.run(argv, encoding="utf-8", text=True, **kwargs)
+    proc = subprocess.run(argv, encoding="utf-8", text=True, stderr=subprocess.PIPE, **kwargs)
 
     try:
         proc.check_returncode()
     except subprocess.CalledProcessError as err:
-        raise SQLiteError(f"sqlite3 invocation failed") from err
+        raise SQLiteError(proc, f"sqlite3 invocation failed") from err
 
     return proc
 
 
 class SQLiteError(Exception):
-    pass
+    """
+    Exception raised when `sqlite3` invocation fails.
+    `proc` stores the failed process. Useful for retrieving info such as output.
+    """
+    def __init__(self, proc: subprocess.CompletedProcess, *args):
+        super().__init__(*args)
+        self.proc = proc
 
 
 def sqlite3_table_columns(db_path, table: str) -> Iterable[str]:
-    return sqlite3(db_path, f"select name from pragma_table_info({sqlite_quote_string(table)})", capture_output=True).stdout.splitlines();
+    return sqlite3(db_path, f"select name from pragma_table_info({sqlite_quote_string(table)})", stdout=subprocess.PIPE).stdout.splitlines();
 
 
 def sqlite_quote_id(*xs):

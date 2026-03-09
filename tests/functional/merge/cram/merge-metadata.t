@@ -275,7 +275,7 @@ Duplicates.
   >   --metadata dups=dups.tsv Y=y.tsv \
   >   --output-metadata /dev/null
   Reading 'dups' metadata from 'dups.tsv'…
-  Error: stepping, UNIQUE constraint failed: metadata_dups.strain (19)
+  [SQLite] Error: stepping, UNIQUE constraint failed: metadata_dups.strain (19)
   WARNING: Skipped deletion of */augur-merge-*.sqlite due to error, but you may want to clean it up yourself (e.g. if it's large). (glob)
   ERROR: sqlite3 invocation failed
   [2]
@@ -426,7 +426,7 @@ handled).
   > ${AUGUR} merge \
   >   --metadata X=x.tsv Y=y.tsv \
   >   --output-metadata /dev/null --quiet
-  This isn't the program you're looking for.
+  [SQLite] This isn't the program you're looking for.
   ERROR: sqlite3 invocation failed
   [2]
 
