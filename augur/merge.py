@@ -375,6 +375,27 @@ def merge_metadata(args):
             f'.output')
 
     except SQLiteError as err:
+        # Check for duplicates
+        try:
+            proc = sqlite3(db_path, f"""
+                select {sqlite_quote_id(m.id_column)}
+                from {sqlite_quote_id(m.table_name)}
+                group by {sqlite_quote_id(m.id_column)}
+                having count(*) > 1;
+            """, stdout=subprocess.PIPE)
+
+            if duplicates := proc.stdout.splitlines():
+                raise AugurError(dedent(f"""\
+                    Sequence ids must be unique.
+
+                    The following {_n("id was", "ids were", len(duplicates))} duplicated in metadata table {m.name!r}:
+
+                      {indented_list(map(repr, sorted(duplicates)), '                    ' + '  ')}
+                    """)) from None
+        except SQLiteError:
+            pass
+
+        # Unknown SQLite error
         delete_db = False
         if err.proc.stderr:
             print_err(f"[SQLite] {err.proc.stderr}", end="")

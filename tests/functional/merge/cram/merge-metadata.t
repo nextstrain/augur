@@ -275,9 +275,12 @@ Duplicates.
   >   --metadata dups=dups.tsv Y=y.tsv \
   >   --output-metadata /dev/null
   Reading 'dups' metadata from 'dups.tsv'…
-  [SQLite] Error: stepping, UNIQUE constraint failed: metadata_dups.strain (19)
-  WARNING: Skipped deletion of */augur-merge-*.sqlite due to error, but you may want to clean it up yourself (e.g. if it's large). (glob)
-  ERROR: sqlite3 invocation failed
+  ERROR: Sequence ids must be unique.
+  
+  The following id was duplicated in metadata table 'dups':
+  
+    'one'
+  
   [2]
 
 Unknown metadata names in --metadata-delimiters.
