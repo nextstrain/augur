@@ -31,6 +31,7 @@ Error on missing dates.
   ERROR: The following sequence ids are missing valid dates:
   
     'COL/FLR_00008/2015' has date 'invalid'
+    'Colombia/2016/ZC204Se' has date 'XXXX-XX-XX'
     'PAN/CDC_259359_V1_V3/2015' has date ''
     'PRVABC59' has date 'NA'
   
