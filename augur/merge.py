@@ -365,12 +365,14 @@ def merge_metadata(args):
         # Assume TSV like nearly all other extant --output-metadata options.
         print_info(f"Merging metadata and writing to {args.output_metadata!r}…")
         print_debug(query)
+        # TODO: Use .once after SQLite bug is fixed: <https://sqlite.org/forum/forumpost/ea9c546fdf>
         sqlite3(db_path,
             f'.mode csv',
             f'.separator "\\t" "\\n"',
             f'.headers on',
-            f'.once {sqlite_quote_dot(f"|{augur()} write-file {shquote(args.output_metadata)}")}',
-            query)
+            f'.output {sqlite_quote_dot(f"|{augur()} write-file {shquote(args.output_metadata)}")}',
+            query,
+            f'.output')
 
     except SQLiteError as err:
         delete_db = False
