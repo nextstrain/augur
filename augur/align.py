@@ -15,6 +15,10 @@ from .io.shell_command_runner import run_shell_command
 from .utils import nthreads_value
 from collections import defaultdict
 
+DEFAULT_ARGS = {
+    "mafft": "--reorder --anysymbol --nomemsave --adjustdirection",
+}
+
 class AlignmentError(Exception):
     # TODO: this exception should potentially be renamed and made augur-wide
     # thus allowing any module to raise it and have the message printed & augur
@@ -32,6 +36,9 @@ def register_arguments(parser):
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--method', default='mafft', choices=["mafft"], help="alignment program to use")
+    parser.add_argument('--alignment-args', help="arguments to pass to the alignment program (except for threads, keeplength if `--existing-alignment` is passed), overriding defaults. " +
+                                                f"mafft defaults: `{DEFAULT_ARGS['mafft']}`")
+    parser.add_argument('--override-default-args', action="store_true", help="override default alignment program arguments with the values provided by the user in `--alignment-args` instead of augmenting the existing defaults.")
     parser.add_argument('--reference-name', metavar="NAME", type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
     parser.add_argument('--reference-sequence', metavar="PATH", type=str, help="Add this reference sequence to the dataset & strip insertions relative to this. Use if the reference is NOT already in the input sequences")
     parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
@@ -133,7 +140,7 @@ def run(args):
 
         # generate alignment command & run
         log = args.output + ".log"
-        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, log)
+        cmd = generate_alignment_cmd(args.method, args.nthreads, existing_aln_fname, seqs_to_align_fname, args.output, log, alignment_args=args.alignment_args, override_default_args=args.override_default_args)
         success = run_shell_command(cmd)
         if not success:
             raise AlignmentError(f"Error during alignment: please see the log file {log!r} for more details")
@@ -249,17 +256,32 @@ def read_reference(ref_fname):
                 "\n\tmake sure the file %s contains one sequence in genbank or fasta format"%ref_fname)
     return ref_seq
 
-def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname):
+def generate_alignment_cmd(method, nthreads, existing_aln_fname, seqs_to_align_fname, aln_fname, log_fname, alignment_args=None, override_default_args=False):
+    if method not in DEFAULT_ARGS:
+        raise AlignmentError('ERROR: alignment method %s not implemented'%method)
+    
+    if alignment_args is None:
+        alignment_args = DEFAULT_ARGS[method]
+    elif override_default_args:
+        alignment_args = alignment_args
+    else:
+        alignment_args = f"{DEFAULT_ARGS[method]} {alignment_args}"
+    
     if method=='mafft':
+        files_to_align = shquote(seqs_to_align_fname)
         if existing_aln_fname:
-            cmd = "mafft --add %s --keeplength --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s"%(shquote(seqs_to_align_fname), nthreads, shquote(existing_aln_fname), shquote(aln_fname), shquote(log_fname))
-        else:
-            cmd = "mafft --reorder --anysymbol --nomemsave --adjustdirection --thread %d %s 1> %s 2> %s"%(nthreads, shquote(seqs_to_align_fname), shquote(aln_fname), shquote(log_fname))
+            # If there is an existing alignment, then seqs_to_align_fname becomes a parameter of --add
+            # and existing_aln_fname becomes the anonymous parameter
+            files_to_align = f"--add {shquote(seqs_to_align_fname)} {shquote(existing_aln_fname)}"
+            alignment_args = " ".join(["--keeplength", alignment_args])
+
+        cmd = f"mafft {alignment_args} --thread {nthreads} {files_to_align} 1> {shquote(aln_fname)} 2> {shquote(log_fname)}"
         print("\nusing mafft to align via:\n\t" + cmd +
               " \n\n\tKatoh et al, Nucleic Acid Research, vol 30, issue 14"
               "\n\thttps://doi.org/10.1093%2Fnar%2Fgkf436\n")
     else:
         raise AlignmentError('ERROR: alignment method %s not implemented'%method)
+    
     return cmd
 
 
