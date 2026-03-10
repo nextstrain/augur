@@ -365,15 +365,40 @@ def merge_metadata(args):
         # Assume TSV like nearly all other extant --output-metadata options.
         print_info(f"Merging metadata and writing to {args.output_metadata!r}…")
         print_debug(query)
+        # TODO: Use .once after SQLite bug is fixed: <https://sqlite.org/forum/forumpost/ea9c546fdf>
         sqlite3(db_path,
             f'.mode csv',
             f'.separator "\\t" "\\n"',
             f'.headers on',
-            f'.once {sqlite_quote_dot(f"|{augur()} write-file {shquote(args.output_metadata)}")}',
-            query)
+            f'.output {sqlite_quote_dot(f"|{augur()} write-file {shquote(args.output_metadata)}")}',
+            query,
+            f'.output')
 
     except SQLiteError as err:
+        # Check for duplicates
+        try:
+            proc = sqlite3(db_path, f"""
+                select {sqlite_quote_id(m.id_column)}
+                from {sqlite_quote_id(m.table_name)}
+                group by {sqlite_quote_id(m.id_column)}
+                having count(*) > 1;
+            """, stdout=subprocess.PIPE)
+
+            if duplicates := proc.stdout.splitlines():
+                raise AugurError(dedent(f"""\
+                    Sequence ids must be unique.
+
+                    The following {_n("id was", "ids were", len(duplicates))} duplicated in metadata table {m.name!r}:
+
+                      {indented_list(map(repr, sorted(duplicates)), '                    ' + '  ')}
+                    """)) from None
+        except SQLiteError:
+            pass
+
+        # Unknown SQLite error
         delete_db = False
+        if err.proc.stderr:
+            print_err(f"[SQLite] {err.proc.stderr}", end="")
         raise AugurError(str(err)) from err
 
     finally:
@@ -433,22 +458,28 @@ def sqlite3(*args, **kwargs):
     argv = [sqlite3, "-init", os.devnull, "-batch", *args]
 
     print_debug(f"running {argv!r}")
-    proc = subprocess.run(argv, encoding="utf-8", text=True, **kwargs)
+    proc = subprocess.run(argv, encoding="utf-8", text=True, stderr=subprocess.PIPE, **kwargs)
 
     try:
         proc.check_returncode()
     except subprocess.CalledProcessError as err:
-        raise SQLiteError(f"sqlite3 invocation failed") from err
+        raise SQLiteError(proc, f"sqlite3 invocation failed") from err
 
     return proc
 
 
 class SQLiteError(Exception):
-    pass
+    """
+    Exception raised when `sqlite3` invocation fails.
+    `proc` stores the failed process. Useful for retrieving info such as output.
+    """
+    def __init__(self, proc: subprocess.CompletedProcess, *args):
+        super().__init__(*args)
+        self.proc = proc
 
 
 def sqlite3_table_columns(db_path, table: str) -> Iterable[str]:
-    return sqlite3(db_path, f"select name from pragma_table_info({sqlite_quote_string(table)})", capture_output=True).stdout.splitlines();
+    return sqlite3(db_path, f"select name from pragma_table_info({sqlite_quote_string(table)})", stdout=subprocess.PIPE).stdout.splitlines();
 
 
 def sqlite_quote_id(*xs):

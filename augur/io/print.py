@@ -4,16 +4,16 @@ import sys
 from augur.debug import DEBUGGING
 
 
-def print_err(*args):
+def print_err(*args, **kwargs):
     """Print to stderr. When data goes to stdout (most cases), this should be
     used for any informational messages, not just errors/warnings."""
-    print(*args, file=sys.stderr)
+    print(*args, file=sys.stderr, **kwargs)
 
 
-def print_debug(*args):
+def print_debug(*args, **kwargs):
     """Print to stderr if in debugging mode."""
     if DEBUGGING:
-        print_err(*args)
+        print_err(*args, **kwargs)
 
 
 def indented_list(xs, prefix):

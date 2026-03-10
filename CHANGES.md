@@ -7,10 +7,13 @@
 * filter, merge: Fixed formatting of the error message shown when there are duplicate sequence ids. [#1954][] @victorlin
 * filter: Adjusted the error message shown when there are missing weights to mention the option of updating values in metadata. [#1956][] @victorlin
 * frequencies: Added a proper error message for missing or invalid dates. [#1960][] @victorlin
+* merge: Added a workaround for a bug in SQLite version 3.52.0. [#1969][] @victorlin
+* merge: Improved error messages from SQLite. [#1969][] @victorlin
 
 [#1954]: https://github.com/nextstrain/augur/pull/1954
 [#1956]: https://github.com/nextstrain/augur/pull/1956
 [#1960]: https://github.com/nextstrain/augur/issues/1960
+[#1969]: https://github.com/nextstrain/augur/pull/1969
 
 ## 33.0.0 (26 January 2026)
 
