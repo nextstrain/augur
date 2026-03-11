@@ -1,0 +1,123 @@
+{
+  "version": "v2",
+  "meta": {
+    "updated": "2026-02-09",
+    "maintainers": [
+      {
+        "name": "Nextstrain Team"
+      }
+    ],
+    "genome_annotations": {
+      "gene1": {
+        "end": 150,
+        "start": 50,
+        "strand": "+"
+      },
+      "gene2": {
+        "end": 300,
+        "start": 200,
+        "strand": "+"
+      }
+    },
+    "colorings": [
+      {
+        "key": "gt",
+        "title": "Genotype",
+        "type": "categorical"
+      }
+    ],
+    "filters": [],
+    "panels": [
+      "tree",
+      "entropy"
+    ]
+  },
+  "tree": {
+    "name": "ROOT",
+    "node_attrs": {
+      "div": 0
+    },
+    "branch_attrs": {},
+    "children": [
+      {
+        "name": "tipA",
+        "node_attrs": {
+          "div": 1
+        },
+        "branch_attrs": {}
+      },
+      {
+        "name": "internalBC",
+        "node_attrs": {
+          "div": 2
+        },
+        "branch_attrs": {
+          "mutations": {
+            "gene1": [
+              "S10G",
+              "P20S"
+            ]
+          },
+          "labels": {
+            "aa": "gene1: S10G, P20S"
+          }
+        },
+        "children": [
+          {
+            "name": "tipB",
+            "node_attrs": {
+              "div": 3
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipC",
+            "node_attrs": {
+              "div": 3
+            },
+            "branch_attrs": {}
+          }
+        ]
+      },
+      {
+        "name": "internalDEF",
+        "node_attrs": {
+          "div": 5
+        },
+        "branch_attrs": {
+          "mutations": {
+            "gene1": [
+              "P20S"
+            ]
+          },
+          "labels": {
+            "aa": "gene1: P20S"
+          }
+        },
+        "children": [
+          {
+            "name": "tipD",
+            "node_attrs": {
+              "div": 8
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipE",
+            "node_attrs": {
+              "div": 9
+            },
+            "branch_attrs": {}
+          },
+          {
+            "name": "tipF",
+            "node_attrs": {
+              "div": 6
+            },
+            "branch_attrs": {}
+          }
+        ]
+      }
+    ]
+  }
+}
