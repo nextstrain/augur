@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 33.0.1 (11 March 2026)
+
 ### Bug fixes
 
 * filter, frequencies, subsample: A date value of `XXXX-XX-XX` is now treated the same as no value (empty string). [#1894][] @victorlin
