@@ -189,3 +189,19 @@ class TestDates:
         }
         with pytest.raises(AugurError):
             dates.get_numerical_dates(metadata, "%Y-%m-%d")
+
+    @freeze_time("2000-02-20")
+    def test_get_numerical_date_from_value_relative_dates(self):
+        """Test that get_numerical_date_from_value handles ISO duration strings as relative dates."""
+        assert dates.get_numerical_date_from_value("1D", "%Y-%m-%d") == pytest.approx(2000.135, abs=1e-3)
+        assert dates.get_numerical_date_from_value("1W", "%Y-%m-%d") == pytest.approx(2000.119, abs=1e-3)
+        assert dates.get_numerical_date_from_value("1M", "%Y-%m-%d") == pytest.approx(2000.053, abs=1e-3)
+        assert dates.get_numerical_date_from_value("1Y", "%Y-%m-%d") == pytest.approx(1999.138, abs=1e-3)
+        assert dates.get_numerical_date_from_value("1Y1M1W", "%Y-%m-%d") == pytest.approx(1999.034, abs=1e-3)
+
+    @freeze_time("2000-02-20")
+    def test_get_numerical_date_from_value_relative_dates_with_p_prefix(self):
+        """Test that get_numerical_date_from_value handles ISO duration strings with P prefix."""
+        assert dates.get_numerical_date_from_value("P1D", "%Y-%m-%d") == pytest.approx(2000.135, abs=1e-3)
+        assert dates.get_numerical_date_from_value("P1W", "%Y-%m-%d") == pytest.approx(2000.119, abs=1e-3)
+        assert dates.get_numerical_date_from_value("P1M", "%Y-%m-%d") == pytest.approx(2000.053, abs=1e-3)
