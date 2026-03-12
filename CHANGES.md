@@ -7,7 +7,7 @@
 
 ### Bug fixes
 
-* filter, frequencies, subsample: A date value of `XXXX-XX-XX` is now treated the same as no value (empty string). [#1894][] @victorlin
+* filter, frequencies, refine, subsample: A date value of `XXXX-XX-XX` is now treated the same as no value (empty string). [#1894][] @victorlin
 * filter, merge: Fixed formatting of the error message shown when there are duplicate sequence ids. [#1954][] @victorlin
 * filter: Adjusted the error message shown when there are missing weights to mention the option of updating values in metadata. [#1956][] @victorlin
 * frequencies: Added a proper error message for missing or invalid dates. [#1960][] @victorlin
