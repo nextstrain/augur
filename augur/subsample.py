@@ -12,10 +12,9 @@ import os
 import subprocess
 import sys
 import tempfile
-import threading
 import yaml
 from collections import defaultdict, deque
-from concurrent.futures import ThreadPoolExecutor, Future
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, Future, wait
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
@@ -847,22 +846,19 @@ def _run_samples(
 ) -> None:
     """Run samples respecting dependency order using a single thread pool and with
     varying number of threads per sample.
-    
-    This necessitates two approaches to concurrency:
-        1. We use a thread pool to deploy functions representing samples which are
-        available to run, i.e. those whose dependencies have been satisfied. A callback
-        attached to each of these will add samples to the thread pool when their
-        dependencies are become satisfied.
-        2. Each of these "deployed" functions will wait until it can acquire the
-        number of threads it needs (as set on the sample object). We manage our own
-        counter of available threads (semaphore) to achieve this.
-    
-    If all samples run with a single thread this approach is maximally parallised:
+
+    This uses a single scheduler loop with two kinds of state:
+        1. Dependency state (``pending_deps``, ``ready``) to ensure we only run samples
+           whose upstream dependencies have completed.
+        2. Resource state (``threads_available``) to ensure we never exceed the global
+           thread budget while still allowing per-sample thread requirements.
+
+    If all samples run with a single thread this approach is maximally parallelised:
     a downstream sample starts as soon as its parent finishes. If samples need
     multiple threads (e.g. proximity samples) then we'll (almost always) end up
     waiting for threads to become free.
     """
-    by_name: Dict[str, Sample|ProximalSample] = {s.name: s for s in samples}
+    by_name: Dict[str, Sample] = {s.name: s for s in samples}
 
     # Track how many unfinished parents each sample has
     pending_deps: Dict[str, int] = {s.name: 0 for s in samples}
@@ -870,111 +866,89 @@ def _run_samples(
         for child in children:
             pending_deps[child] += 1
 
-    samples_remaining = {s.name for s in samples}
-    # Use a lock for code which will modify shared variables, print things etc
-    lock = threading.Lock()
-    all_done = threading.Event()
+    # Queue of samples which are ready to run (not blocked by any dependencies).
+    ready = deque(s.name for s in samples if pending_deps[s.name] == 0)
+
+    # Running futures mapped to their sample name and allocated threads.
+    running: Dict[Future, Tuple[str, int]] = {}
+    threads_available = nthreads
     error: Optional[BaseException] = None
-    # a future represents a job we've submitted, and this is how we track its progress
-    # (we use the future to trigger a callback when it's done)
-    futures: List[Future] = []
 
-    # Resource accounting: track available CPU thread slots with a condition variable so we can
-    # atomically acquire multiple permits (this avoids partial-acquisition deadlocks, e.g.
-    # if we had 4 threads available and 2 jobs each wanted 4 then each needs to grab all 4 at once)
-    slots_available = nthreads
-    slots_cond = threading.Condition()
-
-    def _on_complete(future: Future, sample_name: str) -> None:
-        """Callback fired when a sample's job (future) completes.
-        Behaviour depends on the state of the future:
-            Cancelled: return immediately
-            Error: Cancel other futures and modify the (shared) `error` value
-            Success: Check if any samples which depend on this one are now free to run
-                     and add them to the thread pool if so.
-                     If all samples are now finished then trigger the `all_done` event.
-        """
-        nonlocal error
-
-        # Cancelled futures (from our error handling) can be silently ignored
-        if future.cancelled():
-            return
-
-        with lock: # acquire a lock before modifying shared state
-            samples_remaining.discard(sample_name)
-
-            # Set the shared `error` value if this sample failed
-            exc = future.exception()
-            if exc is not None:
-                if error is None:
-                    error = exc
-                # Cancel any queued (not-yet-running) futures and don't schedule new ones.
-                for f in futures:
-                    f.cancel()
-                # Wake up threads waiting on the semaphore so they can exit early.
-                with slots_cond:
-                    slots_cond.notify_all()
-                samples_remaining.clear()
-                all_done.set()
-                return
-
-            # Don't schedule children if a previous sample already failed
-            if error is not None:
-                if len(samples_remaining) == 0:
-                    all_done.set()
-                return
-
-            # If this sample has dependents (i.e. we are the dependency of another sample)
-            # then see if they can be run:
-            for child in dependents.get(sample_name, []):
-                pending_deps[child] -= 1
-                if pending_deps[child] == 0:
-                    _submit_to_thread_pool(by_name[child])
-
-            if len(samples_remaining) == 0:
-                all_done.set()
-
-
-    def _run_with_semaphore(sample: Sample) -> None:
-        """This function is scheduled and run via the thread pool executor. However we
-        need to manage our own allocation of slots/threads/cores, so we wait here until
-        we can acquire the necessary slots for the sample to actually be run.
-        """
-        nonlocal slots_available
-        n = sample.nthreads
+    def _submit(sample_name: str) -> None:
+        nonlocal threads_available
+        sample = by_name[sample_name]
+        # A sample that needs more threads than the global budget can never run.
+        if sample.nthreads > nthreads:
+            raise AugurError(
+                f"Sample {sample.name!r} requests {sample.nthreads} threads but only {nthreads} are available."
+            )
+        # Reserve threads at submission time so accounting is exact for running jobs.
+        threads_available -= sample.nthreads
         if DEBUGGING:
-            print(f"[{sample.name}] added to thread pool. Waiting for {n} threads ({slots_available} currently available)", flush=True)
-        with slots_cond:
-            slots_cond.wait_for(lambda: slots_available >= n or error is not None)
+            print(
+                f"[{sample.name}] submitted using {sample.nthreads} threads ({threads_available} remaining)",
+                flush=True,
+            )
+        # A future represents a submitted sample job; track it so we can release
+        # threads and unblock dependents when it completes.
+        future = executor.submit(sample.run)
+        running[future] = (sample.name, sample.nthreads)
+
+    # Worker count is bounded by available threads and total samples.
+    max_workers = min(len(samples), max(1, nthreads))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        while running or ready:
+            # Greedily schedule any ready samples that currently fit in remaining
+            # threads. We rotate the queue when a sample doesn't currently fit, so
+            # other ready samples still have a chance to run.
+            made_progress = True
+            while ready and made_progress:
+                made_progress = False
+                for _ in range(len(ready)):
+                    sample_name = ready[0]
+                    sample = by_name[sample_name]
+                    if sample.nthreads <= threads_available:
+                        ready.popleft()
+                        _submit(sample_name)
+                        made_progress = True
+                    else:
+                        ready.rotate(-1)
+
+            # No running jobs means nothing will change state unless we can submit.
+            # If we still have ready jobs then thread requirements are unsatisfiable.
+            if not running and ready:
+                sample_name = ready[0]
+                sample = by_name[sample_name]
+                raise AugurError(
+                    f"Sample {sample.name!r} cannot be scheduled: needs {sample.nthreads} threads but only {threads_available} are free."
+                )
+
+            # Wait for a sample to finish
+            done, _ = wait(set(running), return_when=FIRST_COMPLETED)
+            for future in done:
+                sample_name, used_threads = running.pop(future)
+                # Release threads that were allocated to the sample.
+                threads_available += used_threads
+
+
+                # If this sample failed, capture its exception and stop scheduling.
+                exc = future.exception()
+                if exc is not None:
+                    error = exc
+                    break
+
+                # Unblock any dependent samples.
+                for child in dependents.get(sample_name, []):
+                    pending_deps[child] -= 1
+                    if pending_deps[child] == 0:
+                        ready.append(child)
+
             if error is not None:
-                return
-            slots_available -= n
-        if error is not None:
-            return
-        try:
-            sample.run()
-        finally:
-            with slots_cond:
-                slots_available += n
-                slots_cond.notify_all() # triggers waiting `_run_with_semaphore` functions
-
-    def _submit_to_thread_pool(sample:Sample) -> None:
-        f = executor.submit(_run_with_semaphore, sample)
-        futures.append(f)
-        f.add_done_callback(lambda fut, n=sample.name: _on_complete(fut, n)) # type: ignore[misc]
-
-    # Create a (large!) thread pool - this will potentially execute more jobs than we have threads,
-    # but each job will wait until it can acquire its necessary threads before doing any real work 
-    executor = ThreadPoolExecutor(max_workers=len(samples))
-    try:
-        with lock: # Initially deploy all samples which have no dependencies
-            for sample in samples:
-                if pending_deps[sample.name] == 0:
-                    _submit_to_thread_pool(sample)
-        # Wait for all samples (including dynamically submitted ones) to complete
-        all_done.wait()
-    finally:
-        executor.shutdown(wait=True, cancel_futures=True)
+                # Cancel queued/not-yet-running samples; already-running samples may
+                # finish naturally while the executor shuts down.
+                for future in running:
+                    future.cancel()
+                break
 
     if error is not None:
         raise error
