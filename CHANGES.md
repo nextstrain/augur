@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+* proximity: Introduce a new `augur proximity` tool to find the k closest strains against a query set. [#1962][] @jameshadfield
+* subsample: Allow subsampling schemes (YAML configuration) to perform hierarchical sampling where one sample depends on another, as well as proximal sampling where we use another sample as the query set. [#1962][] @jameshadfield
+
+[#1962]: https://github.com/nextstrain/augur/pull/1962
 
 ## 33.0.1 (11 March 2026)
 
