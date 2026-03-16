@@ -603,6 +603,28 @@ class Sample:
         """Connect this sample to its dependencies. Subclasses override as needed."""
         pass
 
+    def add_output_metadata(self) -> str:
+        """Ensure this sample writes metadata output and return the filepath."""
+        if 'metadata' not in self.outputs:
+            self.outputs['metadata'] = tempfile.NamedTemporaryFile(
+                prefix=f"sample_{self.name}_metadata_",
+                suffix='.tsv',
+                delete=False,
+            ).name
+            _add_to_args(self.args, "--output-metadata", self.outputs['metadata'])
+        return self.outputs['metadata']
+
+    def add_output_sequences(self) -> str:
+        """Ensure this sample writes sequence output and return the filepath."""
+        if 'sequences' not in self.outputs:
+            self.outputs['sequences'] = tempfile.NamedTemporaryFile(
+                prefix=f"sample_{self.name}_sequences_",
+                suffix='.fasta',
+                delete=False,
+            ).name
+            _add_to_args(self.args, "--output-sequences", self.outputs['sequences'])
+        return self.outputs['sequences']
+
     def __repr__(self):
         # helps with debugging
         return f"{self.__class__.__name__} obj ({self.name})"
@@ -730,21 +752,15 @@ class FilterSample(Sample):
         if  type(upstream) is FilterSample:
             # modify upstream to output sequences & metadata as the downstream will consume these
             # (another sample may have already caused this to be the case)
-            if 'metadata' not in upstream.outputs:
-                upstream.outputs['metadata']  = tempfile.NamedTemporaryFile(prefix=f"sample_{upstream.name}_metadata_", suffix='.tsv', delete=False).name
-                _add_to_args(upstream.args, "--output-metadata", upstream.outputs['metadata'])
-            if 'sequences' not in upstream.outputs:
-                upstream.outputs['sequences'] = tempfile.NamedTemporaryFile(prefix=f"sample_{upstream.name}_sequences_", suffix='.fasta', delete=False).name
-                _add_to_args(upstream.args, "--output-sequences", upstream.outputs['sequences'])
+            upstream.add_output_metadata()
+            upstream.add_output_sequences()
     
             # and modify downstream (self!) to use these outputs as inputs
             _add_to_args(self.args, "--metadata", upstream.outputs['metadata'])
             _add_to_args(self.args, "--sequences", upstream.outputs['sequences'])
         elif type(upstream) is ProximalSample:
             # Ensure the upstream outputs a sequences FASTA which we can consume
-            if 'sequences' not in upstream.outputs:
-                upstream.outputs['sequences'] = tempfile.NamedTemporaryFile(prefix=f"sample_{upstream.name}_sequences_", suffix='.fasta', delete=False).name
-                _add_to_args(upstream.args, "--output-sequences", upstream.outputs['sequences'])
+            upstream.add_output_sequences()
             _add_to_args(self.args, "--sequences", upstream.outputs['sequences'])
             
             # The upstream ProximalSample only exports (proximal) sequences, not metadata.
@@ -809,9 +825,7 @@ class ProximalSample(Sample):
         
         # A proximal sample needs sequences output from the parent sample (`focal_sample`, required).
         # We need to ensure the focal sample exports sequences (not the default, but another sample may have already caused this to be the case)
-        if 'sequences' not in focal_sample.outputs:
-            focal_sample.outputs['sequences'] = tempfile.NamedTemporaryFile(prefix=f"sample_{focal_sample.name}_sequences_", suffix='.fasta', delete=False).name
-            _add_to_args(focal_sample.args, "--output-sequences", focal_sample.outputs['sequences'])
+        focal_sample.add_output_sequences()
         _add_to_args(self.args, "--focal-sequences", focal_sample.outputs['sequences'])
 
         # If we define the specific contextual sample then we need to get that sample
@@ -826,8 +840,7 @@ class ProximalSample(Sample):
                 which must itself be a non-proximal sample. I.e. you can't proximity sample directly from another
                 proximity sample!
                 """))
-            context_sample.outputs['sequences'] = tempfile.NamedTemporaryFile(prefix=f"sample_{context_sample.name}_sequences_", delete=False).name
-            _add_to_args(context_sample.args, "--output-sequences", context_sample.outputs['sequences'])
+            context_sample.add_output_sequences()
             _add_to_args(self.args, "--context-sequences", context_sample.outputs['sequences'])
 
         self.incomplete = False
