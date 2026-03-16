@@ -144,10 +144,13 @@ jobs:
           - measles
           - mpox
           - mumps
+          - nipah
+          - norovirus
           - oropouche
           - rabies
+          - rubella
           - seasonal-cov
-          - wnv
+          - WNV
           - yellow-fever
           - zika
 
