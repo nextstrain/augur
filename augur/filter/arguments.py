@@ -15,7 +15,7 @@ descriptions = {
         (e.g., "country == 'Colombia'" or "(country == 'USA' & (division ==
         'Washington'))")
 
-        __ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query"""),
+        __ https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query"""),
 
     "query_columns": dedent(f"""\
         Use alongside query to specify columns and data types in the format

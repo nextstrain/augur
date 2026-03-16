@@ -23,7 +23,7 @@ Some error messages from Pandas may be useful, so they are exposed:
   >  --output-strains filtered_strains.txt > /dev/null
   ERROR: Internal Pandas error when applying query:
   	'>=' not supported between instances of 'str' and 'float'
-  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query>.
   [2]
 
 However, other Pandas errors are not so helpful, so a link is provided for users to learn more about query syntax.
@@ -34,7 +34,7 @@ However, other Pandas errors are not so helpful, so a link is provided for users
   >  --output-strains filtered_strains.txt > /dev/null
   ERROR: Internal Pandas error when applying query:
   	cannot assign without a target object
-  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query>.
   [2]
 
   $ ${AUGUR} filter \
@@ -51,5 +51,5 @@ However, other Pandas errors are not so helpful, so a link is provided for users
       some bad syntax
   ERROR: Internal Pandas error when applying query:
   	invalid syntax (<unknown>, line 1)
-  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query>.
   [2]
