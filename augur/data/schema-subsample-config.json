@@ -115,7 +115,7 @@
                 },
                 "query": {
                     "type": "string",
-                    "description": "Filter sequences by attribute. Uses `Pandas DataFrame query syntax`__.\n(e.g., \"country == 'Colombia'\" or \"(country == 'USA' & (division ==\n'Washington'))\")\n\n__ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query"
+                    "description": "Filter sequences by attribute. Uses `Pandas DataFrame query syntax`__.\n(e.g., \"country == 'Colombia'\" or \"(country == 'USA' & (division ==\n'Washington'))\")\n\n__ https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query"
                 },
                 "query_columns": {
                     "oneOf": [
@@ -239,7 +239,7 @@
                 },
                 "query": {
                     "type": "string",
-                    "description": "Filter sequences by attribute. Uses `Pandas DataFrame query syntax`__.\n(e.g., \"country == 'Colombia'\" or \"(country == 'USA' & (division ==\n'Washington'))\")\n\n__ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query"
+                    "description": "Filter sequences by attribute. Uses `Pandas DataFrame query syntax`__.\n(e.g., \"country == 'Colombia'\" or \"(country == 'USA' & (division ==\n'Washington'))\")\n\n__ https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query"
                 },
                 "query_columns": {
                     "oneOf": [

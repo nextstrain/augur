@@ -245,7 +245,7 @@ def filter_by_query(metadata: pd.DataFrame, query: str, column_types: Optional[D
     except Exception as e:
         if isinstance(e, PandasUndefinedVariableError):
             raise AugurError(f"Query contains a column that does not exist in metadata: {e}") from e
-        raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.") from e
+        raise AugurError(f"Internal Pandas error when applying query:\n\t{e}\nEnsure the syntax is valid per <https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query>.") from e
 
 
 def _string_to_boolean(s: str):

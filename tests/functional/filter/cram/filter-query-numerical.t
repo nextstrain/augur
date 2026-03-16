@@ -31,7 +31,7 @@ The 'category' column will fail when used with a numerical comparison.
   >  --output-strains filtered_strains.txt
   ERROR: Internal Pandas error when applying query:
   	'>=' not supported between instances of 'str' and 'float'
-  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query>.
   [2]
 
 With automatic type inference, the 'coverage' column isn't query-able with
@@ -43,7 +43,7 @@ string comparisons:
   >  --output-strains filtered_strains.txt > /dev/null
   ERROR: Internal Pandas error when applying query:
   	Can only use .str accessor with string values!
-  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>.
+  Ensure the syntax is valid per <https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query>.
   [2]
 
 However, that is still possible by explicitly specifying that it is a string column.
