@@ -25,7 +25,7 @@ from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
 from augur.io.print import print_err, indented_list
 from augur.utils import augur
 from augur.validate import load_json_schema, validate_json, ValidateError
-from augur.debug import DEBUGGING
+from augur.io.print import print_debug
 
 BooleanFlags = Tuple[str, Optional[str]]
 """
@@ -194,8 +194,7 @@ def run(args: argparse.Namespace) -> None:
     # Resolve filepaths.
     search_paths = _get_search_paths(args.config, args.search_paths)
     config, filepaths = _resolve_filepaths(config, search_paths, schema_validator.schema)
-    if DEBUGGING:
-        print(f"\nResolved filepaths: {filepaths}")
+    print_debug(f"\nResolved filepaths: {filepaths}")
 
     # Construct sample objects for augur filter calls
     # These contain the lists of arguments, but the arguments may be incomplete
@@ -246,8 +245,7 @@ def run(args: argparse.Namespace) -> None:
     # Resolve dependency ordering across samples
     # This wires up outputs→inputs for dependent samples
     dependents = _resolve_dag(samples)
-    if DEBUGGING:
-        _print_dag(samples, dependents)
+    print_debug(_ascii_dag(samples, dependents))
 
     # Run augur filter.
     if len(samples) == 1:
@@ -676,8 +674,7 @@ class Sample:
           carefully escape values such as "--metadata-delimiters , \t".
           This is also why run_shell_command() isn't used here.
         """
-        if DEBUGGING:
-            print(f"Running sample {self.name} using {self.nthreads} threads", flush=True)
+        print_debug(f"Running sample {self.name} using {self.nthreads} threads", flush=True)
         assert not self.incomplete
         result = subprocess.run(
             [*augur(shell=False), self.augur_cmd, *_args_dict_to_list(self.args)],
@@ -699,8 +696,7 @@ class Sample:
         for ftype, fname in self.outputs.items():
             if os.path.exists(fname):
                 os.unlink(fname)
-                if DEBUGGING:
-                    print(f"Removed temporary file for sample {self.name} file type {ftype}")
+                print_debug(f"Removed temporary file for sample {self.name} file type {ftype}")
 
 
 class FilterSample(Sample):
@@ -714,8 +710,7 @@ class FilterSample(Sample):
             self.args.pop("--metadata")  # key guaranteed to exist
             self.args.pop("--sequences") # key guaranteed to exist
             self.args.pop("--sequence_index", None) # key optional
-        if DEBUGGING:
-            print("\n\nFilterSample:", self.name, f"\n\t{self.drop=} {self.incomplete=} {self.depends_on=}\n\tArgs: ", self.args)
+            print_debug("\n\nFilterSample:", self.name, f"\n\t{self.drop=} {self.incomplete=} {self.depends_on=}\n\tArgs: ", self.args)
 
     def _construct_args(self, config: Dict[str, Any], global_filter_args: AugurArgs) -> AugurArgs:
         """
@@ -812,10 +807,9 @@ class FilterSample(Sample):
             raise AugurError("Program error (type failure)")
         self.incomplete = False
 
-        if DEBUGGING:
-            print(f"\n\nMapping dependencies between upstream sample {upstream.name} and downstream {self.name}")
-            print(f"\tupstream ({upstream.name}):", upstream.args)
-            print(f"\tdownstream ({self.name}):", self.args)
+        print_debug(f"\n\nMapping dependencies between upstream sample {upstream.name} and downstream {self.name}")
+        print_debug(f"\tupstream ({upstream.name}):", upstream.args)
+        print_debug(f"\tdownstream ({self.name}):", self.args)
 
 class ProximalSample(Sample):
     def __init__(self, name: str, config: Dict[str, Any], global_args: AugurArgs, /, drop: bool=False, context_sample: str|None=None, nthreads: int=1) -> None:
@@ -827,8 +821,7 @@ class ProximalSample(Sample):
         self.incomplete = True # necessarily incomplete as we need a prior sample
         self.args = self._construct_args(config, global_args)
         
-        if DEBUGGING:
-            print("\n\nProximal sample:", self.name, f"\n\t{self.drop=} {self.incomplete=} {self.depends_on=}\n\tArgs: ", self.args)
+        print_debug("\n\nProximal sample:", self.name, f"\n\t{self.drop=} {self.incomplete=} {self.depends_on=}\n\tArgs: ", self.args)
     
     def _construct_args(self, config: Dict[str, Any], global_args: AugurArgs) -> AugurArgs:
         proximity_args = {
@@ -890,12 +883,11 @@ class ProximalSample(Sample):
 
         self.incomplete = False
 
-        if DEBUGGING:
-            print(f"\n\nMapping dependencies between upstream focal Sample {focal_sample.name!r}, context Sample {context_sample.name if context_sample else 'N/A'} and downstream ProximalSample {self.name!r}")
-            print(f"\tupstream focal ({focal_sample.name}):", focal_sample.args)
-            if context_sample:
-                print(f"\tupstream context ({context_sample.name}):", context_sample.args)
-            print(f"\tdownstream ({self.name}):", self.args)
+        print_debug(f"\n\nMapping dependencies between upstream focal Sample {focal_sample.name!r}, context Sample {context_sample.name if context_sample else 'N/A'} and downstream ProximalSample {self.name!r}")
+        print_debug(f"\tupstream focal ({focal_sample.name}):", focal_sample.args)
+        if context_sample:
+            print_debug(f"\tupstream context ({context_sample.name}):", context_sample.args)
+        print_debug(f"\tdownstream ({self.name}):", self.args)
     
 
 def _run_samples(
@@ -941,8 +933,7 @@ def _run_samples(
             raise AugurError(f"Sample {sample.name!r} requests {sample.nthreads} threads but only {nthreads} are available in total.")
         # Reserve threads at submission time so accounting is exact for running jobs.
         threads_available -= sample.nthreads
-        if DEBUGGING:
-            print(f"[{sample.name}] submitted using {sample.nthreads} threads ({threads_available} remaining)", flush=True)
+        print_debug(f"[{sample.name}] submitted using {sample.nthreads} threads ({threads_available} remaining)", flush=True)
         # A future represents a submitted sample job; track it so we can release
         # threads and unblock dependents when it completes.
         future = executor.submit(sample.run)
@@ -1085,7 +1076,7 @@ def _resolve_dag(samples: List[Sample]) -> Dict[str, List[str]]:
     # Note: samples which are not depended on by other samples will not be keys of this!
     return {k: v for k, v in dependents.items() if v}
 
-def _print_dag(samples: List[Sample], dependents: Dict[str, List[str]]) -> None:
+def _ascii_dag(samples: List[Sample], dependents: Dict[str, List[str]]) -> str:
     """Print an ASCII representation of the sample dependency graph.
 
     Roots (no dependencies) are printed first, with their children indented
@@ -1094,7 +1085,7 @@ def _print_dag(samples: List[Sample], dependents: Dict[str, List[str]]) -> None:
     >>> a = Sample.__new__(Sample); a.name = "a"; a.depends_on = {}; a.drop = False
     >>> b = Sample.__new__(Sample); b.name = "b"; b.depends_on = {"context_sample": "a"}; b.drop = False
     >>> c = Sample.__new__(Sample); c.name = "c"; c.depends_on = {}; c.drop = True
-    >>> _print_dag([a, b, c], {"a": ["b"]})
+    >>> print(_ascii_dag([a, b, c], {"a": ["b"]}))
     <BLANKLINE>
     Sample dependency graph:
       a
@@ -1121,7 +1112,7 @@ def _print_dag(samples: List[Sample], dependents: Dict[str, List[str]]) -> None:
         _walk(root.name, "  ", "")
 
     lines.append("")
-    print("\n".join(lines))
+    return "\n".join(lines)
 
 
 def _add_to_args(args: AugurArgs, filter_option: AugurOption, value: Any) -> None:
