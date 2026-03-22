@@ -323,6 +323,32 @@ def get_referenced_files(
 
     return set(filepaths)
 
+def requires_aligned_sequences(
+    config_file: str,
+    config_section: Optional[List[str]] = None,
+) -> bool:
+    """NOTE: This function may change without warning & is for internal Snakemake
+    development / testing purposes.
+
+    Does the config specify one or more proximal samples. If it does, then
+    --sequences must be supplied to ``augur subsample`` and they must be aligned.
+
+    Parameters
+    ----------
+    config_file
+        Path to the subsample config file.
+
+    config_section
+        Optional list of keys to navigate to a specific section of the config file.
+
+    Returns
+    -------
+    bool
+        Does augur subsample require aligned sequences?
+    """
+    schema_validator = load_json_schema("schema-subsample-config.json")
+    config = _parse_config(config_file, config_section, schema_validator)
+    return _includes_proximal_sample(config)
 
 def _parse_config(filename: str, config_section: Optional[List[str]], schema) -> Dict[str, Any]:
     # Create a custom YAML loader to treat timestamps as strings.
