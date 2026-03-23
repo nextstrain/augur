@@ -29,6 +29,7 @@ import sys
 import numpy as np
 from Bio import SeqIO
 from Bio.Phylo.BaseTree import Tree  # type: ignore[import-untyped]
+from Bio.Align import MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_augur_json, get_json_name, \
@@ -39,7 +40,7 @@ from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 from .argparse_ import add_validation_arguments
 from .util_support.node_data_file import NodeDataObject
-from typing import cast, Any, TypedDict
+from typing import cast, Any, Callable, TypedDict
 from typing_extensions import NotRequired
 
 VCF_Alignment = dict[str, dict[int, str]]
@@ -69,6 +70,65 @@ class Ancestral_JSON(TypedDict):
     mask: NotRequired[str]
     annotations: Annotations_JSON
     nodes: Any
+
+
+def _make_seq_corrector(alphabet: str) -> Callable[[str], str]:
+    """Build a function that replaces invalid or fully-ambiguous characters in a
+    sequence with the standard ambiguous character for the given alphabet
+    ('N' for nuc, 'X' for aa).
+
+    A character is replaced if it is either:
+    - not present in TreeTime's profile_map (i.e. completely unknown), or
+    - fully ambiguous (its profile has equal weight across all states)
+
+    The standard ambiguous character itself (N/X) is kept as-is since it is
+    valid and expected by downstream code such as create_mask.
+    
+    The corrected sequence string will be all uppercase.
+    """
+    from treetime.seq_utils import alphabets, profile_maps
+    profile_map = profile_maps[alphabet]
+    n_states = len(alphabets[alphabet])
+
+    if alphabet == 'nuc':
+        ambiguous_char = 'N'
+    elif alphabet == 'aa':
+        ambiguous_char = 'X'
+    else:
+        raise ValueError(f"Unknown alphabet: {alphabet!r}")
+
+    # Identify characters in the profile_map that are valid and not fully
+    # ambiguous (partially ambiguous IUPAC chars like R, Y are kept)
+    valid = set()
+    for char, profile in profile_map.items():
+        if char == ambiguous_char:
+            valid.add(char)
+        elif sum(profile) < n_states:
+            valid.add(char)
+        # else: fully ambiguous non-standard char → will be replaced
+
+    def correct(seq: str) -> str:
+        seq_upper = seq.upper()
+        if all(c in valid for c in seq_upper):
+            return seq_upper
+        return ''.join(c if c in valid else ambiguous_char for c in seq_upper)
+
+    return correct
+
+
+def correct_alignment(aln_fname: str, correct_seq: Callable[[str], str]) -> MultipleSeqAlignment:
+    """Read an alignment from a FASTA file and correct sequences using the
+    provided correction function (from _make_seq_corrector).
+
+    Returns a MultipleSeqAlignment suitable for passing directly to TreeAnc.
+    """
+    from Bio import AlignIO
+    alignment = AlignIO.read(aln_fname, 'fasta')
+    corrected_records = [
+        SeqRecord(Seq(correct_seq(str(record.seq))), id=record.id, description=record.description)
+        for record in alignment
+    ]
+    return MultipleSeqAlignment(corrected_records)
 
 
 def create_mask(is_vcf, tt, reference_sequence, aln):
@@ -117,7 +177,7 @@ def create_mask(is_vcf, tt, reference_sequence, aln):
         mask = ambiguous_count==num_tips
     return mask
 
-def collect_mutations(tt, mask, character_map=None, reference_sequence=None, infer_ambiguous=False):
+def collect_mutations(tt, mask, reference_sequence=None, infer_ambiguous=False):
     """iterates of the tree and produces dictionaries with
     mutations and sequences for each node.
 
@@ -132,8 +192,6 @@ def collect_mutations(tt, mask, character_map=None, reference_sequence=None, inf
     tt : treetime.TreeTime
         instance of treetime with valid ancestral reconstruction
     mask : numpy.ndarray(bool)
-    character_map : None, optional
-        optional dictionary to map characters to a custom set.
     reference_sequence : str, optional
 
     Returns
@@ -143,11 +201,6 @@ def collect_mutations(tt, mask, character_map=None, reference_sequence=None, inf
         <from><1-based-pos><to>
     """
 
-    if character_map is None:
-        cm = lambda x:x
-    else:
-        cm = lambda x: character_map.get(x, x)
-
     data = {}
     inc = 1 # convert python numbering to start-at-1
 
@@ -155,7 +208,7 @@ def collect_mutations(tt, mask, character_map=None, reference_sequence=None, inf
     # the mask, because while sites which are all Ns may have an inferred base,
     # there will be no variablity and thus no mutations.
     for n in tt.tree.find_clades():
-        data[n.name] = [a+str(int(pos)+inc)+cm(d)
+        data[n.name] = [a+str(int(pos)+inc)+d
                         for a,pos,d in n.mutations]
 
     if reference_sequence:
@@ -211,7 +264,7 @@ def collect_sequences(tt, mask, reference_sequence=None, infer_ambiguous=False):
 
 def run_ancestral(
         T:Tree,
-        aln: str|VCF_Alignment,
+        aln: str|VCF_Alignment|MultipleSeqAlignment,
         reference_sequence:str|None=None,
         is_vcf=False,
         full_sequences=False,
@@ -233,15 +286,6 @@ def run_ancestral(
     tt.infer_ancestral_sequences(infer_gtr=True, marginal=marginal,
                                  reconstruct_tip_states=infer_ambiguous, sample_from_profile='root')
 
-
-    character_map = {}
-    for x in tt.gtr.profile_map:
-        if tt.gtr.profile_map[x].sum()==tt.gtr.n_states:
-            # TreeTime treats all characters that are not valid IUPAC nucleotide chars as fully ambiguous
-            # To clean up auspice output, we map all those to 'N'
-            character_map[x] = 'N'
-        else:
-            character_map[x] = x
     # add reference sequence to json structure. This is the sequence with
     # respect to which mutations on the tree are defined.
     if reference_sequence:
@@ -250,7 +294,7 @@ def run_ancestral(
         root_seq = str(tt.sequence(T.root, as_string=True))
 
     mask = create_mask(is_vcf, tt, reference_sequence, aln)
-    mutations = collect_mutations(tt, mask, character_map, reference_sequence, infer_ambiguous)
+    mutations = collect_mutations(tt, mask, reference_sequence, infer_ambiguous)
     sequences = {}
     if full_sequences:
         sequences = collect_sequences(tt, mask, reference_sequence, infer_ambiguous)
@@ -379,17 +423,17 @@ def _read_tree(fname: str) -> Tree:
     return T
 
 def _read_sequence_data(args: argparse.Namespace, is_vcf: bool) \
-        -> tuple[str|None, VCF_Alignment|str, VCF_Metadata|None]:
-    aln: VCF_Alignment | str
+        -> tuple[str|None, VCF_Alignment|MultipleSeqAlignment, VCF_Metadata|None]:
+    correct_nuc = _make_seq_corrector('nuc')
     if is_vcf:
         if not args.vcf_reference:
             raise AugurError("a reference Fasta is required with VCF-format alignments")
         compress_seq = read_vcf(args.alignment, args.vcf_reference)
-        aln = cast(VCF_Alignment, compress_seq['sequences'])
+        aln: VCF_Alignment | MultipleSeqAlignment = cast(VCF_Alignment, compress_seq['sequences'])
         ref = cast(str, compress_seq['reference'])
         vcf_metadata = cast(VCF_Metadata, compress_seq['metadata'])
     else:
-        aln = cast(str, args.alignment)
+        aln = correct_alignment(args.alignment, correct_nuc)
         ref = None
         vcf_metadata = None
         if args.root_sequence:
@@ -401,6 +445,8 @@ def _read_sequence_data(args: argparse.Namespace, is_vcf: bool) \
                     pass
             if ref is None:
                 raise AugurError(f"could not read root sequence from {args.root_sequence}")
+    if ref:
+        ref = correct_nuc(ref)
 
     return (ref, aln, vcf_metadata)
 
@@ -446,14 +492,19 @@ def reconstruct_translations(
         raise AugurError(f"The 'nuc' annotation coordinates parsed from {annotation_fname!r} ({features['nuc'].location.start+1}..{features['nuc'].location.end})"
             f" don't match the provided sequence data coordinates ({anc_seqs['annotations']['nuc']['start']}..{anc_seqs['annotations']['nuc']['end']}).")
 
+    correct_aa = _make_seq_corrector('aa')
+
     print("Read in {} features from reference sequence file".format(len(features)))
     for gene in genes:
         print(f"Processing gene: {gene}")
         fname = translations_fname_pattern.replace("%GENE", gene)
         feat = features[gene]
         reference_sequence = str(feat.extract(Seq(ref)).translate()) if ref else None
+        if reference_sequence:
+            reference_sequence = correct_aa(reference_sequence)
 
-        aa_result = run_ancestral(T, fname, reference_sequence=reference_sequence, is_vcf=False, fill_overhangs=fill_overhangs,
+        aa_aln = correct_alignment(fname, correct_aa)
+        aa_result = run_ancestral(T, aa_aln, reference_sequence=reference_sequence, is_vcf=False, fill_overhangs=fill_overhangs,
                                     marginal=marginal, infer_ambiguous=infer_ambiguous, alphabet='aa', rng_seed=rng_seed)
         len_translated_alignment = aa_result['tt'].data.full_length*3
         if len_translated_alignment != len(feat):
@@ -490,6 +541,7 @@ def run(args: argparse.Namespace):
     validate_arguments(args, is_vcf)
 
     T = _read_tree(args.tree)
+    # read sequence data, correcting any invalid nucleotide states
     ref, aln, vcf_metadata = _read_sequence_data(args, is_vcf)
 
 
