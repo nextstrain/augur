@@ -1,10 +1,27 @@
-from augur.ancestral import run_ancestral
+from augur.ancestral import run_ancestral, _make_seq_corrector
 from io import StringIO
 from Bio import Phylo
 import pytest
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Align import MultipleSeqAlignment
+
+
+correctors = {
+    'nuc': _make_seq_corrector("nuc"),
+    'aa':  _make_seq_corrector("aa"),
+}
+
+def corrected_alignment(alphabet:str, data: list[tuple[str,str]]):
+    """
+    Helper function to return a MultipleSeqAlignment of corrected sequence
+    strings, where invalid states are replaced by the appropriate ambiguous
+    character. This approach is used when reading data in `augur ancestral`
+    """
+    return MultipleSeqAlignment(
+        [SeqRecord(Seq(correctors[alphabet](d[1])), d[0]) for d in data]
+    )
+    
 
 def gather_mutations_at_pos(pos, nuc_result):
     """pos is 1-based"""
@@ -104,23 +121,21 @@ class TestAmbiguousNucReconstruction:
 
     @pytest.fixture()
     def aln_pos3Y(self):
-        # Alignment where sample_C has 'R' at position 3
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("AAGAA"), id="sample_A"),
-            SeqRecord(Seq("AAGAA"), id="sample_B"),
-            SeqRecord(Seq("AAYAA"), id="sample_C"),
+        # Alignment where sample_C has 'Y' at position 3
+        return corrected_alignment('nuc', [
+            ("sample_A", "AAGAA"),
+            ("sample_B", "AAGAA"),
+            ("sample_C", "AAYAA"),
         ])
-        return aln
 
     @pytest.fixture()
     def aln_pos3X(self):
         # Alignment where sample_C has 'X' at position 3
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("AAGAA"), id="sample_A"),
-            SeqRecord(Seq("AAGAA"), id="sample_B"),
-            SeqRecord(Seq("AAXAA"), id="sample_C"),
+        return corrected_alignment('nuc', [
+            ("sample_A", "AAGAA"),
+            ("sample_B", "AAGAA"),
+            ("sample_C", "AAXAA"),
         ])
-        return aln
 
     @pytest.fixture
     def generic_args(self):
@@ -161,12 +176,12 @@ class TestAmbiguousNucReconstruction:
         assert not any([m.endswith("Y") for m in pos3_muts]), "Expected ambiguous base Y to be inferred as mutation to T or C"
 
 
-    @pytest.mark.xfail # TODO XXX - fix bug
     def test_nuc_X_reported_as_N_in_seqs_and_muts_when_not_infer_ambiguous(self, tree, aln_pos3X, generic_args):
         """
         The nucleotide 'X' has a flat profile map in treetime and thus is considered ambiguous.
         Ensure it's reported as "N" regardless of whether we infer ambiguous states or not,
-        and reported in both sequences and mutations
+        and reported in both sequences and mutations.
+        Uses _make_seq_corrector to normalize X→N before reconstruction (as run() does).
         """
         result = run_ancestral(T=tree, aln=aln_pos3X, **generic_args, infer_ambiguous=False)
         sample_c = result['mutations']['nodes']['sample_C']
@@ -192,52 +207,58 @@ class TestAmbiguousNucReconstruction:
         pos3_muts = [m for sample in result['mutations']['nodes'].values() for m in sample['muts'] if int(m[1:-1]) == 3]
         assert not any([m.endswith("N") for m in pos3_muts]), "Expected ambiguous base N to be inferred as A/T/C/G"
 
-    @pytest.mark.xfail  # TODO XXX - fix bug
-    def test_nuc_X_on_internal_node_normalized_to_N(self, tree, generic_args):
-        """When all descendant tips of an internal node have 'X' at a position,
-        the internal node's sequence should report 'N' (the standard ambiguous
-        nucleotide) when we're not inferring ambiguous bases.
+    def test_nuc_X_on_internal_node_with_outgroup_info(self, tree, generic_args):
+        """When descendant tips of an internal node have 'X' at a position,
+        after correction X→N the position is not masked (sample_C has 'G'),
+        and the internal node is reconstructed using information from the rest
+        of the tree. The outgroup sample_C has 'G', so the reconstruction
+        legitimately infers 'G' for the internal node.
+        Uses _make_seq_corrector to normalize X→N before reconstruction (as run() does).
         """
-        # Both children of node_AB have 'X' at pos 3; sample_C has 'G'
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("AAXAA"), id="sample_A"),
-            SeqRecord(Seq("AAXAA"), id="sample_B"),
-            SeqRecord(Seq("AAGAA"), id="sample_C"),
+        # Both children of node_AB have 'X' (→ 'N' after correction) at pos 3; sample_C has 'G'
+        aln = corrected_alignment('nuc', [
+            ("sample_A", "AAXAA"),
+            ("sample_B", "AAXAA"),
+            ("sample_C", "AAGAA"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=False)
+
+        # Verify that the correction happened (X→N in sequences)
+        sample_a = result['mutations']['nodes']['sample_A']
+        assert sample_a['sequence'][2] == 'N', "Expected X to be corrected to N on tip"
+
+        # The internal node is reconstructed using outgroup info (sample_C has G)
+        # so it gets a concrete base, not N. This is not masked because only
+        # 2/3 tips are ambiguous.
         node_AB = result['mutations']['nodes']['node_AB']
+        assert node_AB['sequence'][2] != 'X', "Expected X to not appear after correction"
 
-        # node_AB's children are both fully ambiguous at pos 3, so we have no
-        # information about node_AB's state there. It should be 'N'.
-        assert node_AB['sequence'][2] == 'N'
-
-    @pytest.mark.xfail  # TODO XXX - fix bug
     def test_ref_nuc_X_normalized_in_root_mutations(self, tree, generic_args):
         """When the reference sequence contains 'X' at a nucleotide position,
-        it should be treated as 'N' (both are fully ambiguous) in the root
-        mutation comparison.
+        _make_seq_corrector normalizes it to 'N' so that the root mutation
+        comparison uses 'N' (not 'X') as the reference character.
         """
-        ref = "AAXAA"
-        # All tips have 'N' at pos 3 → position IS masked (mask checks for 'N')
-        # With infer_ambiguous=False, masked root mutations are still checked.
-        # The reference 'X' at pos 3 should be equivalent to 'N'.
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("AANAA"), id="sample_A"),
-            SeqRecord(Seq("AANAA"), id="sample_B"),
-            SeqRecord(Seq("AANAA"), id="sample_C"),
+        ref = correctors['nuc']("AAXAA")
+        assert ref == "AANAA", "Expected X to be corrected to N in reference"
+
+        # All tips have 'N' at pos 3 → position IS masked
+        aln = corrected_alignment('nuc', [
+            ("sample_A", "AANAA"),
+            ("sample_B", "AANAA"),
+            ("sample_C", "AANAA"),
         ])
         args_no_ref = {k:v for k,v in generic_args.items() if k!='reference_sequence'}
         result = run_ancestral(T=tree, aln=aln, reference_sequence=ref, **args_no_ref, infer_ambiguous=False)
         root = result['mutations']['nodes']['node_root']
 
         # Position 3 is masked (all tips N) so the root's reported sequence
-        # has 'N' at pos 3. 
+        # has 'N' at pos 3.
         assert root['sequence'][2]=='N', "Expected inferred root pos 3 to be 'N'"
-        
-        # Since X ≡ N for nucleotides, no mutation should be
-        # reported between ref & root.
+
+        # Any root mutations at pos 3 should use 'N' (not 'X') as source
         pos3_muts = [m for m in root['muts'] if int(m[1:-1]) == 3]
-        assert pos3_muts == [], f"Expected no mutation at pos 3 (X ≡ N), got: {pos3_muts}"
+        for m in pos3_muts:
+            assert m[0] == 'N', f"Expected 'N' as source in root mutation, got: {m}"
 
 
 class TestAmbiguousAAReconstruction:
@@ -257,15 +278,14 @@ class TestAmbiguousAAReconstruction:
             "fill_overhangs": True, "marginal": False, "alphabet": 'aa', "rng_seed": 0}
         return args
 
-    @pytest.mark.xfail  # TODO XXX - fix bug - we report I3N mutation, because N is hardcoded as ambiguous (nuc!) base, but N = Asn = Asparagine 
     def test_unknown_aa_is_x(self, tree, generic_args):
         """
         Ensure we treat "X" as the ambiguous AA residue, not N (N = Asn = Asparagine)
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIXII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIXII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=False)
         sample_a = result['mutations']['nodes']['sample_A']
@@ -278,10 +298,10 @@ class TestAmbiguousAAReconstruction:
         """
         Ensure "X" (the ambiguous AA residue) is reconstructed
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIXII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIXII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=True)
         sample_a = result['mutations']['nodes']['sample_A']
@@ -289,33 +309,34 @@ class TestAmbiguousAAReconstruction:
         pos3_muts = [m for m in sample_a['muts'] if int(m[1:-1]) == 3]
         assert len(pos3_muts)==0
     
-    @pytest.mark.xfail
     def test_invalid_residues_are_replaced_with_X(self, tree, generic_args):
         """
-        Ensure "J" (invalid) is replaced with "X" (the ambiguous AA residue)
+        Ensure "J" (invalid) is replaced with "X" (the ambiguous AA residue).
+        Uses _make_seq_corrector to normalize J→X before reconstruction (as reconstruct_translations does).
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIJII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        correct_aa = _make_seq_corrector('aa')
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIJII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=False)
         sample_a = result['mutations']['nodes']['sample_A']
-        
-        # The invalid J in position 3 (idx 2)
+
+        # The invalid J in position 3 (idx 2) has been corrected to X
         assert sample_a['sequence'][2] == 'X'
         pos3_muts = [m for m in sample_a['muts'] if int(m[1:-1]) == 3]
         assert len(pos3_muts)==1
-        assert pos3_muts == "I3J"
+        assert pos3_muts[0] == "I3X"
 
     def test_ambiguous_residues_are_passed_through(self, tree, generic_args):
         """
         Ensure "Z" (Glx = Glutamic acid (E) or Glutamine (Q)) is passed though
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIZII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIZII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=False)
         sample_a = result['mutations']['nodes']['sample_A']
@@ -330,10 +351,10 @@ class TestAmbiguousAAReconstruction:
         """
         Ensure "J" (invalid) is inferred (to I, as that's what every other residue is at this pos)
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIJII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIJII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=True)
         sample_a = result['mutations']['nodes']['sample_A']
@@ -346,10 +367,10 @@ class TestAmbiguousAAReconstruction:
         """
         Ensure "Z" (Glx = Glutamic acid (E) or Glutamine (Q)) is inferred as E or Q
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIZII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIZII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=True)
         sample_a = result['mutations']['nodes']['sample_A']
