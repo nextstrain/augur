@@ -1,10 +1,27 @@
-from augur.ancestral import run_ancestral
+from augur.ancestral import run_ancestral, _make_seq_corrector
 from io import StringIO
 from Bio import Phylo
 import pytest
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Align import MultipleSeqAlignment
+
+
+correctors = {
+    'nuc': _make_seq_corrector("nuc"),
+    'aa':  _make_seq_corrector("aa"),
+}
+
+def corrected_alignment(alphabet:str, data: list[tuple[str,str]]):
+    """
+    Helper function to return a MultipleSeqAlignment of corrected sequence
+    strings, where invalid states are replaced by the appropriate ambiguous
+    character. This approach is used when reading data in `augur ancestral`
+    """
+    return MultipleSeqAlignment(
+        [SeqRecord(Seq(correctors[alphabet](d[1])), d[0]) for d in data]
+    )
+    
 
 def gather_mutations_at_pos(pos, nuc_result):
     """pos is 1-based"""
@@ -115,15 +132,14 @@ class TestAmbiguousAAReconstruction:
             "fill_overhangs": True, "marginal": False, "alphabet": 'aa', "rng_seed": 0}
         return args
 
-    @pytest.mark.xfail  # TODO XXX - fix bug - we report I3N mutation, because N is hardcoded as ambiguous (nuc!) base, but N = Asn = Asparagine 
     def test_unknown_aa_is_x(self, tree, generic_args):
         """
         Ensure we treat "X" as the ambiguous AA residue, not N (N = Asn = Asparagine)
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIXII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIXII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=False)
         sample_a = result['mutations']['nodes']['sample_A']
@@ -136,10 +152,10 @@ class TestAmbiguousAAReconstruction:
         """
         Ensure "X" (the ambiguous AA residue) is reconstructed
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIXII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIXII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=True)
         sample_a = result['mutations']['nodes']['sample_A']
@@ -147,15 +163,14 @@ class TestAmbiguousAAReconstruction:
         pos3_muts = gather_mutations_at_pos(3, result)
         assert len(pos3_muts)==0
     
-    @pytest.mark.xfail
     def test_invalid_residues_are_replaced_with_X(self, tree, generic_args):
         """
-        Ensure "J" (invalid) is replaced with "X" (the ambiguous AA residue)
+        Ensure "J" (invalid) is replaced with "X" (the ambiguous AA residue).
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIJII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIJII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=False)
         sample_a = result['mutations']['nodes']['sample_A']
@@ -170,10 +185,10 @@ class TestAmbiguousAAReconstruction:
         """
         Ensure "Z" (Glx = Glutamic acid (E) or Glutamine (Q)) is passed though
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIZII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIZII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=False)
         sample_a = result['mutations']['nodes']['sample_A']
@@ -188,10 +203,10 @@ class TestAmbiguousAAReconstruction:
         """
         Ensure "J" (invalid) is inferred (to I, as that's what every other residue is at this pos)
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIJII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIJII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=True)
         sample_a = result['mutations']['nodes']['sample_A']
@@ -204,10 +219,10 @@ class TestAmbiguousAAReconstruction:
         """
         Ensure "Z" (Glx = Glutamic acid (E) or Glutamine (Q)) is inferred as E or Q
         """
-        aln = MultipleSeqAlignment([
-            SeqRecord(Seq("IIZII"), id="sample_A"),
-            SeqRecord(Seq("IIIII"), id="sample_B"),
-            SeqRecord(Seq("IIIII"), id="sample_C"),
+        aln = corrected_alignment('aa', [
+            ("sample_A", "IIZII"),
+            ("sample_B", "IIIII"),
+            ("sample_C", "IIIII"),
         ])
         result = run_ancestral(T=tree, aln=aln, **generic_args, infer_ambiguous=True)
         sample_a = result['mutations']['nodes']['sample_A']
