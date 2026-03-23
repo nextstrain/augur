@@ -158,8 +158,8 @@ def run(args):
 
 def merge_metadata(args):
     # Parse --metadata arguments
-    if not len(args.metadata) >= 2:
-        raise AugurError(f"At least two metadata inputs are required for merging.")
+    if not len(args.metadata) >= 1:
+        raise AugurError(f"At least one metadata input is required for merging.")
 
     if unnamed := [repr(x) for x in args.metadata if "=" not in x or x.startswith("=")]:
         raise AugurError(dedent(f"""\
@@ -409,8 +409,8 @@ def merge_metadata(args):
 
 
 def merge_sequences(args):
-    if not len(args.sequences) >= 2:
-        raise AugurError(f"At least two sequence inputs are required for merging.")
+    if not len(args.sequences) >= 1:
+        raise AugurError(f"At least one sequence input is required for merging.")
 
     if not args.skip_input_sequences_validation:
         for s in args.sequences:

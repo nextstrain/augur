@@ -229,14 +229,6 @@ No source columns (explicitly or by default).
 
 ERROR HANDLING
 
-At least two metadata inputs are required.
-
-  $ ${AUGUR} merge \
-  >   --metadata X=x.tsv \
-  >   --output-metadata -
-  ERROR: At least two metadata inputs are required for merging.
-  [2]
-
 Metadata names are required.
 
   $ ${AUGUR} merge \
