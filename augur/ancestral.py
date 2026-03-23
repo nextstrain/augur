@@ -317,6 +317,7 @@ def run_ancestral(
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("ancestral", help=__doc__)
 
+    # ----------------------------- INPUTS ----------------------------- 
     input_group = parser.add_argument_group(
         "inputs",
         "Tree and sequences to use for ancestral reconstruction"
@@ -331,6 +332,7 @@ def register_parser(parent_subparsers):
                                  help='[FASTA alignment only] file of the sequence that is used as root for mutation calling.'
                                       ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
 
+    # ----------------------------- GLOBAL OPTIONS -----------------------------
     global_options_group = parser.add_argument_group(
         "global options",
         "Options to configure reconstruction of both nucleotide and amino acid sequences"
@@ -338,19 +340,15 @@ def register_parser(parent_subparsers):
     global_options_group.add_argument('--inference', default='joint', choices=["joint", "marginal"],
                                     help="calculate joint or marginal maximum likelihood ancestral sequence states")
     global_options_group.add_argument('--seed', type=int, help="seed for random number generation")
-
-    nucleotide_options_group = parser.add_argument_group(
-        "nucleotide options",
-        "Options to configure reconstruction of ancestral nucleotide sequences"
-    )
-    ambiguous = nucleotide_options_group.add_mutually_exclusive_group()
+    ambiguous = global_options_group.add_mutually_exclusive_group()
     ambiguous.add_argument('--keep-ambiguous', action="store_true",
-                                help='do not infer nucleotides at ambiguous (N) sites on tip sequences (leave as N).')
+                                help='do not infer ambiguous states on tip sequences')
     ambiguous.add_argument('--infer-ambiguous', action="store_true", default=True,
-                                help='infer nucleotides at ambiguous (N,W,R,..) sites on tip sequences and replace with most likely state.')
-    nucleotide_options_group.add_argument('--keep-overhangs', action="store_true", default=False,
-                                help='do not infer nucleotides for gaps (-) on either side of the alignment')
+                                help='infer ambiguous states on tip sequences and replace with most likely state')
+    global_options_group.add_argument('--keep-overhangs', action="store_true", default=False,
+                                help='do not infer states for gaps (-) on either side of the alignment')
 
+    # ------------------- AMINO-ACID (TRANSLATION) OPTIONS ONLY ------------------------ 
     amino_acid_options_group = parser.add_argument_group(
         "amino acid options",
         "Options to configure reconstruction of ancestral amino acid sequences. All arguments are required for ancestral amino acid sequence reconstruction."
@@ -363,6 +361,7 @@ def register_parser(parent_subparsers):
                            "template like 'aa_sequences_%%GENE.fasta' where %%GENE will be replaced "
                            "by the gene name.")
 
+    # ----------------------------- OUTPUTS ----------------------------- 
     output_group = parser.add_argument_group(
         "outputs",
         "Outputs supported for reconstructed ancestral sequences"
@@ -374,9 +373,8 @@ def register_parser(parent_subparsers):
                         "the gene name.")
     output_group.add_argument('--output-vcf', type=str, help='name of output VCF file which will include ancestral seqs')
 
-    general_group = parser.add_argument_group(
-        "general",
-    )
+    # ----------------------------- GENERAL / MISC ----------------------------- 
+    general_group = parser.add_argument_group("general",)
     add_validation_arguments(general_group)
 
     return parser
