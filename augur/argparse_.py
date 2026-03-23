@@ -1,6 +1,8 @@
 """
 Custom helpers for the argparse standard library.
 """
+import re
+import textwrap
 from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
 from itertools import chain
 from typing import Iterable, Optional, Tuple, Union
@@ -19,6 +21,107 @@ from .types import ValidationMode
 # Copied from the Nextstrain CLI repo
 # https://github.com/nextstrain/cli/blob/017c53805e8317951327d24c04184615cc400b09/nextstrain/cli/argparse.py#L13-L21
 SKIP_AUTO_DEFAULT_IN_HELP = "%(default).0s"
+
+
+def rst_to_text(text):
+    """Convert RST-formatted text to plain terminal-readable text."""
+    if not text:
+        return text
+
+    text = textwrap.dedent(text).strip()
+
+    # RST hyperlinks: `Link Text <URL>`_ -> Link Text (URL)
+    text = re.sub(r'`([^`<]+?)\s*<([^>]+)>`_', r'\1(\2)', text)
+
+    # Bold: **text** -> TEXT (uppercase for terminal emphasis)
+    text = re.sub(r'\*\*(.+?)\*\*', lambda m: m.group(1).upper(), text)
+
+    # .. note:: directive -> "Note: " + dedented content
+    def _replace_note(m):
+        body = textwrap.dedent(m.group(1)).strip()
+        return f"Note: {body}"
+    text = re.sub(
+        r'^\.\.\s+note::\s*\n\n((?:[ \t]+.*\n?)+)',
+        _replace_note, text, flags=re.MULTILINE)
+
+    # .. code-block:: <lang> -> remove directive line, keep indented content
+    text = re.sub(
+        r'^\.\.\s+code-block::.*\n\n',
+        '', text, flags=re.MULTILINE)
+
+    # Numbered lists: #. -> sequential 1. 2. 3.
+    counter = [0]
+    def _replace_numbered(m):
+        counter[0] += 1
+        return f"{counter[0]}."
+    text = re.sub(r'^#\.', _replace_numbered, text, flags=re.MULTILINE)
+
+    # Single backticks (not double): `text` -> text
+    text = re.sub(r'(?<!`)`([^`]+)`(?!`)', r'\1', text)
+
+    return text
+
+
+def _paragraph_fill(text, width, indent):
+    """Fill text paragraph by paragraph, preserving indented blocks (e.g. code)."""
+    paragraphs = re.split(r'\n\n+', text)
+    filled = []
+    for para in paragraphs:
+        lines = para.split('\n')
+        # If all non-empty lines start with whitespace, treat as preformatted
+        if all(line.startswith((' ', '\t')) or not line.strip() for line in lines):
+            filled.append(textwrap.indent(para, indent))
+        else:
+            # Split paragraph into list items and prose blocks, then wrap each
+            filled.append(_fill_block(lines, width, indent))
+    return '\n\n'.join(filled)
+
+
+# Matches lines that start a numbered or bulleted list item
+_LIST_ITEM_RE = re.compile(r'^(\d+\.\s+|-\s+)')
+
+
+def _fill_block(lines, width, indent):
+    """Wrap a block of lines, treating list items as separate units with hanging indent."""
+    chunks = []
+    current = []
+
+    def flush():
+        if current:
+            text = ' '.join(current)
+            m = _LIST_ITEM_RE.match(text)
+            if m:
+                # Hanging indent for continuation lines of list items
+                subsequent = indent + ' ' * len(m.group(1))
+                chunks.append(textwrap.fill(text, width,
+                                            initial_indent=indent,
+                                            subsequent_indent=subsequent))
+            else:
+                chunks.append(textwrap.fill(text, width,
+                                            initial_indent=indent,
+                                            subsequent_indent=indent))
+
+    for line in lines:
+        if _LIST_ITEM_RE.match(line):
+            flush()
+            current = [line]
+        else:
+            current.append(line)
+
+    flush()
+    return '\n'.join(chunks)
+
+
+class RSTHelpFormatter(ArgumentDefaultsHelpFormatter):
+    """Argparse formatter that renders RST in descriptions as clean terminal text."""
+
+    def _fill_text(self, text, width, indent):
+        text = rst_to_text(text)
+        return _paragraph_fill(text, width, indent)
+
+    def _split_lines(self, text, width):
+        text = rst_to_text(text)
+        return super()._split_lines(text, width)
 
 
 def add_default_command(parser):
@@ -62,7 +165,7 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
 
         # Use the same formatting class for every command for consistency.
         # Set here to avoid repeating it in every command's register_parser().
-        subparser.formatter_class = ArgumentDefaultsHelpFormatter
+        subparser.formatter_class = RSTHelpFormatter
 
         if not subparser.description and command.__doc__:
             subparser.description = command.__doc__

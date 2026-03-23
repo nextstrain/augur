@@ -14,7 +14,7 @@ from treetime import TreeTimeError, TreeTimeUnknownError
 from .debug import DEBUGGING
 from .errors import AugurError
 from .io.print import print_err
-from .argparse_ import add_command_subparsers, add_default_command
+from .argparse_ import add_command_subparsers, add_default_command, RSTHelpFormatter
 
 DEFAULT_AUGUR_RECURSION_LIMIT = 10000
 sys.setrecursionlimit(int(os.environ.get("AUGUR_RECURSION_LIMIT") or DEFAULT_AUGUR_RECURSION_LIMIT))
@@ -53,7 +53,8 @@ command_strings = [
 def make_parser():
     parser = argparse.ArgumentParser(
         prog        = "augur",
-        description = "Augur: A bioinformatics toolkit for phylogenetic analysis.")
+        description = "Augur: A bioinformatics toolkit for phylogenetic analysis.",
+        formatter_class = RSTHelpFormatter)
 
     add_default_command(parser)
     add_version_alias(parser)
