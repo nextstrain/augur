@@ -35,7 +35,7 @@ class TestRootNodeMutationAssignment:
     def default_augur_args(self):
         return {
             'fill_overhangs': True, # augur default
-            'marginal': 'joint', # augur default
+            'marginal': False, # augur default -- `bool(args.inference=='marginal')`
             'alphabet': 'nuc', # augur default
             'rng_seed': 0,
         }
