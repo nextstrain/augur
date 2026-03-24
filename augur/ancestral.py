@@ -32,6 +32,7 @@ from Bio.Phylo.BaseTree import Tree  # type: ignore[import-untyped]
 from Bio.Align import MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+from .translate import safe_translate
 from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_augur_json, get_json_name, \
     genome_features_to_auspice_annotation
 from .io.file import open_file
@@ -42,6 +43,7 @@ from .argparse_ import add_validation_arguments
 from .util_support.node_data_file import NodeDataObject
 from typing import cast, Any, Callable, TypedDict
 from typing_extensions import NotRequired
+from math import floor
 
 VCF_Alignment = dict[str, dict[int, str]]
 
@@ -360,6 +362,9 @@ def register_parser(parent_subparsers):
                            "Currently only supported for FASTA-input. Specify the file name via a "
                            "template like 'aa_sequences_%%GENE.fasta' where %%GENE will be replaced "
                            "by the gene name.")
+    amino_acid_options_group.add_argument('--report-inconsistent-translation', action="store_true",
+                                help='Report where amino acid reconstruction differed from a translation of the reconstructed nuc sequence')
+
 
     # ----------------------------- OUTPUTS ----------------------------- 
     output_group = parser.add_argument_group(
@@ -463,6 +468,53 @@ def _to_ancestral_json(anc: Ancestral_Reconstruction) -> Ancestral_JSON:
         j['mask'] = "".join(['1' if x else '0' for x in anc["mutations"]["mask"]])
     return j
 
+def _validate_translated_consistency(anc_seqs, aa_result, feat, gene, T):
+    """Compare the independently reconstructed AA sequences with translations
+    of the reconstructed nucleotide sequences for a given gene. Reports any
+    inconsistencies as warnings.
+
+    Parameters
+    ----------
+    anc_seqs : Ancestral_JSON
+        Contains reconstructed nucleotide sequences for all nodes.
+    aa_result : Ancestral_Reconstruction
+        The independent AA reconstruction for this gene.
+    feat : Bio.SeqFeature.SeqFeature
+        The gene feature, used to extract the nucleotide region.
+    gene : str
+        Gene name, for reporting.
+    T : Bio.Phylo.BaseTree.Tree
+        The tree (used to iterate over all nodes).
+    """
+    nodes_with_differences = {'tips': 0, 'internal': 0}
+    difference_counts: list[int] = []
+
+    for node in T.find_clades():
+        nuc_seq = anc_seqs['nodes'].get(node.name, {}).get('sequence')
+        assert nuc_seq is not None
+        nuc_translated = safe_translate(str(feat.extract(Seq(nuc_seq))))
+        # re-reconstruct the inferred protein sequence since we don't store them on anc_seqs
+        aa_seq = aa_result['tt'].sequence(node, as_string=True, reconstructed=True)
+        assert len(aa_seq)==len(nuc_translated)
+    
+        if nuc_translated != aa_seq:
+            nodes_with_differences["tips" if node.is_terminal() else "internal"] += 1
+            difference_counts.append(sum(c1!=c2 for c1,c2 in zip(nuc_translated, aa_seq)))
+
+    if len(difference_counts) > 0:
+        difference_counts.sort()
+        median = difference_counts[floor(len(difference_counts)/2)]
+        print(
+            f"WARNING: gene {gene!r} has differences between the independently reconstructed"
+            f" amino acid sequence and a translation of the reconstructed nucleotide sequence."
+            f" {nodes_with_differences['tips']} terminal nodes and"
+            f" {nodes_with_differences['internal']} internal nodes were different."
+            f" Median residue mismatch count: {median:,}"
+            f" (range: {difference_counts[0]:,} - {difference_counts[-1]:,})",
+            file=sys.stderr,
+        )
+
+
 def reconstruct_translations(
     anc_seqs: Ancestral_JSON,
     ref: str|None,
@@ -475,6 +527,7 @@ def reconstruct_translations(
     marginal: bool,
     rng_seed: int,
     output_fname_pattern: str|None,
+    report_inconsistent_translation: bool,
 ):
     genes = parse_genes_argument(genes_arg)
     if genes is None or not len(genes):
@@ -521,6 +574,9 @@ def reconstruct_translations(
                     node["aa_sequences"] = {}
 
                 node["aa_sequences"][gene] = aa_result['tt'].sequence(T.root, as_string=True, reconstructed=True)
+        
+        if report_inconsistent_translation:
+            _validate_translated_consistency(anc_seqs, aa_result, feat, gene, T)
 
         anc_seqs['reference'][gene] = aa_result['root_seq']
         anc_seqs['annotations'].update(genome_features_to_auspice_annotation({gene: feat}, annotation_fname))
@@ -568,7 +624,7 @@ def run(args: argparse.Namespace):
         assert not is_vcf # guaranteed by validate_arguments() but good to double check   
         reconstruct_translations(anc_seqs, ref, T, args.genes, args.annotation, args.translations,
             infer_ambiguous, fill_overhangs, marginal_inference, rng_seed,
-            args.output_translations)
+            args.output_translations, args.report_inconsistent_translation)
 
 
     out_name = get_json_name(args, '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json')
