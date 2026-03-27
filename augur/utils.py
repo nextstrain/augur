@@ -551,7 +551,7 @@ def read_entries(*files, comment_char="#"):
     return entries
 
 
-def parse_genes_argument(input):
+def parse_genes_argument(input) -> None|list[str]:
     if input is None:
         return None
 
@@ -563,7 +563,7 @@ def parse_genes_argument(input):
     return input
 
 
-def _get_genes_from_file(fname):
+def _get_genes_from_file(fname) -> list[str]:
     if os.path.isfile(fname):
         genes = read_entries(fname)
     else:
@@ -575,7 +575,7 @@ def _get_genes_from_file(fname):
         print("You have duplicates in your genes file. They are being ignored.")
     print("Read in {} specified genes to translate.".format(len(unique_genes)))
 
-    return unique_genes
+    return list(unique_genes)
 
 
 
