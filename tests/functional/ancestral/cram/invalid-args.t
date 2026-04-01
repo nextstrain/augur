@@ -44,7 +44,7 @@ This should fail.
   >  --genes ENV PRO \
   >  --seed 314159 \
   >  --output-node-data "ancestral_mutations.json" > /dev/null
-  ERROR: For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.
+  ERROR: For amino acid sequence reconstruction with multiple genes (or a single gene with nuc reconstruction), you must provide an annotation file and a path to amino acid sequences (as well as the list of genes)
   [2]
 
 Missing tree file
@@ -70,5 +70,5 @@ Attempting to use FASTA-input reference and VCF-input reference args
   >  --output-sequences "output.fasta" > /dev/null 2>"err-args.txt"
   [2]
 
-  $ grep "augur ancestral: error: argument --vcf-reference: not allowed with argument --root-sequence" "err-args.txt"
-  augur ancestral: error: argument --vcf-reference: not allowed with argument --root-sequence
+  $ grep "ERROR" "err-args.txt"
+  ERROR: argument --vcf-reference: not allowed with argument --root-sequence
