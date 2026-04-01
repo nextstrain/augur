@@ -369,7 +369,7 @@ def register_parser(parent_subparsers):
     amino_acid_options_group.add_argument('--genes', nargs='+', action=ExtendOverwriteDefault,
         help="gene(s) to translate (list or file containing list).")
     amino_acid_options_group.add_argument('--annotation',
-                        help='GenBank or GFF file containing the annotation.')
+                        help='GenBank or GFF file containing the annotation. Optional if reconstructing a single gene without nuc data.')
     amino_acid_options_group.add_argument('--translations', type=str, help="Translated alignments for each CDS/Gene."
                            " If you are translating multiple genes you must specify the file name via a template"
                            f" like 'aa_sequences_%{GENE_PATTERN}.fasta' where %{GENE_PATTERN} will be replaced,"
@@ -403,7 +403,7 @@ class Mode:
     nuc_reconstruction: bool
     aa_reconstruction: bool = False
 
-def validate_arguments(args: argparse.Namespace) -> Mode:
+def validate_arguments(args: argparse.Namespace, genes: None|list[str]) -> Mode:
     """
     Check that provided arguments are compatible.
     Where possible we use argparse built-ins, but they don't cover everything we want to check.
@@ -419,10 +419,16 @@ def validate_arguments(args: argparse.Namespace) -> Mode:
         raise AugurError("A root sequence is only used if you also reconstruct nuc sequences")
 
     # translations are run in one of two modes: multiple genes or a single gene
-    required_aa_arguments = (args.annotation, args.genes, args.translations)
-    if any(required_aa_arguments) and not all(required_aa_arguments):
-        raise AugurError("For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a path to amino acid sequences.")
-    if all(required_aa_arguments):
+    # For single-genes, the annotation is optional if you are only reconstructing a single AA alignment (no nuc reconstruction)
+    if any((args.annotation, args.genes, args.translations)):
+        if not args.genes or not len(genes):
+            raise AugurError("For amino acid sequence reconstruction, you must provide a list of genes, a path to amino acid sequences, and (if multiple genes) an annotations file.")
+        if len(genes)>1 or mode.nuc_reconstruction:
+            if not all((args.annotation, args.translations)):
+                raise AugurError("For amino acid sequence reconstruction with multiple genes (or a single gene with nuc reconstruction), you must provide an annotation file and a path to amino acid sequences (as well as the list of genes)")
+        else: # single gene, aa-only
+            if not args.translations:
+                raise AugurError("For amino acid sequence reconstruction you must provide a path to amino acid sequences.")
         mode.aa_reconstruction = True
 
     if not mode.nuc_reconstruction and not mode.aa_reconstruction:
@@ -555,13 +561,23 @@ def _validate_translated_consistency(anc_seqs, aa_result, feat, gene, T) -> None
             file=sys.stderr,
         )
 
+def construct_cds_feature(name: str, aa_len: int):
+    from Bio.SeqFeature import SeqFeature, SimpleLocation
+    # Note that BioPython locations use "Pythonic" coordinates: [zero-origin, half-open)
+    feat = SeqFeature(
+        location=SimpleLocation(0, 3*aa_len, strand=1),
+        type='CDS',
+        qualifiers={'gene_name': [name], 'source': ['feature']}
+    )
+    return feat
+
 
 def reconstruct_translations(
     anc_seqs: None|Ancestral_JSON,
     ref: str|None,
     T: Tree,
-    genes_arg: list[str], # filename or list of genes
-    annotation_fname: str,
+    genes: None|list[str],
+    annotation_fname: str|None,
     translations_fname_pattern: str,
     infer_ambiguous: bool,
     fill_overhangs: bool,
@@ -570,7 +586,8 @@ def reconstruct_translations(
     output_fname_pattern: str|None,
     report_inconsistent_translation: bool,
 ) -> Ancestral_JSON:
-    genes = parse_genes_argument(genes_arg)
+    correct_aa = _make_seq_corrector('aa')
+
     if genes is None or not len(genes):
         raise AugurError("Empty list of genes provided")
 
@@ -580,10 +597,15 @@ def reconstruct_translations(
         if output_fname_pattern and GENE_PATTERN not in output_fname_pattern:
             raise AugurError(f"--output-translations must contain {GENE_PATTERN} for multiple-gene amino acid reconstructions")
 
-    ## load features; only requested features if genes given
-    # Note: It's plausible to run a single-gene, no-nuc reconstruction without annotations if we want to allow that.
-    from .io.sequences import load_features
-    features = load_features(annotation_fname, genes)
+    if annotation_fname is None:
+        assert len(genes)==1 and anc_seqs is None # already checked in validate_arguments
+        # This adds a duplicate read of the gene alignment - computational cost for code clarity
+        gene_aln = correct_alignment(translations_fname_pattern.replace(GENE_PATTERN, genes[0]), correct_aa)        
+        features = {genes[0]: construct_cds_feature(genes[0], gene_aln.get_alignment_length())}
+    else:
+        ## load features (only requested features)
+        from .io.sequences import load_features
+        features = load_features(annotation_fname, genes)
 
     # anc_seqs was populated by the nucleotide reconstruction, which is optional. Create an ~empty structure if we
     # didn't run nucleotide reconstruction.
@@ -600,8 +622,6 @@ def reconstruct_translations(
             features['nuc'].location.end != anc_seqs['annotations']['nuc']['end']):
             raise AugurError(f"The 'nuc' annotation coordinates parsed from {annotation_fname!r} ({features['nuc'].location.start+1}..{features['nuc'].location.end})"
                 f" don't match the provided sequence data coordinates ({anc_seqs['annotations']['nuc']['start']}..{anc_seqs['annotations']['nuc']['end']}).")
-
-    correct_aa = _make_seq_corrector('aa')
 
     print("Read in {} features from reference sequence file".format(len(features)))
     for gene in genes:
@@ -650,7 +670,9 @@ def reconstruct_translations(
 
 def run(args: argparse.Namespace):
 
-    mode = validate_arguments(args)
+    genes = parse_genes_argument(args.genes)
+
+    mode = validate_arguments(args, genes)
 
     T = _read_tree(args.tree)
 
@@ -683,7 +705,7 @@ def run(args: argparse.Namespace):
         # For protein reconstruction by gene, read the already-translated (AA) FASTAs and reconstruct across the tree
         # Results are stored in the provided `anc_seqs` object and written to FASTA if requested
         assert not mode.is_vcf # guaranteed by validate_arguments() but good to double check
-        anc_seqs = reconstruct_translations(anc_seqs, ref, T, args.genes, args.annotation, args.translations,
+        anc_seqs = reconstruct_translations(anc_seqs, ref, T, genes, args.annotation, args.translations,
             infer_ambiguous, fill_overhangs, marginal_inference, rng_seed,
             args.output_translations, args.report_inconsistent_translation)
     

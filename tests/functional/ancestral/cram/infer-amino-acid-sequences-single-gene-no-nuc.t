@@ -51,3 +51,28 @@ Check that the outputs are identical
   $ diff "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_ENV_1.fasta" "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_ENV_2.fasta"
 
 
+For single genes the annotations file is optional. The result should be the same except the (nuc) coordinates of the CDS will differ without the annotation file
+
+  $ ${AUGUR} ancestral \
+  >  --tree $TESTDIR/../data/tree.nwk \
+  >  --genes ENV \
+  >  --translations $TESTDIR/../data/aa_sequences_ENV.fasta \
+  >  --seed 314159 \
+  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_3.json" \
+  >  --output-translations "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_ENV_3.fasta" &> /dev/null
+
+
+  $ diff "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_ENV_1.fasta" "$CRAMTMP/$TESTFILE/ancestral_aa_sequences_ENV_3.fasta"
+
+Nucleotide coordinates of the ENV gene are different - without the annotation file we start them at nuc_pos=1 (1-based, GFF-style)
+So for this example the offset is 960 (start is 961 - 960 = 1, end is 2472 - 960 = 1512) 
+
+  $ diff "$CRAMTMP/$TESTFILE/ancestral_mutations_1.json" "$CRAMTMP/$TESTFILE/ancestral_mutations_3.json" 
+  4,6c4,5
+  \<       "end": 2472, (re)
+  \<       "seqid": .* (re)
+  \<       "start": 961, (re)
+  ---
+  \>       "end": 1512, (re)
+  \>       "start": 1, (re)
+  [1]
