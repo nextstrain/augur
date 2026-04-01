@@ -70,5 +70,5 @@ Attempting to use FASTA-input reference and VCF-input reference args
   >  --output-sequences "output.fasta" > /dev/null 2>"err-args.txt"
   [2]
 
-  $ grep "augur ancestral: error: argument --vcf-reference: not allowed with argument --root-sequence" "err-args.txt"
-  augur ancestral: error: argument --vcf-reference: not allowed with argument --root-sequence
+  $ grep "ERROR" "err-args.txt"
+  ERROR: argument --vcf-reference: not allowed with argument --root-sequence

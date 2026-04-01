@@ -335,12 +335,8 @@ def register_parser(parent_subparsers):
         "Options to configure reconstruction of nucleotide sequences."
     )
     nucleotide_options_group.add_argument('--alignment', '-a', help="alignment in FASTA or VCF format")
-    nucleotide_options_exclusive_group = nucleotide_options_group.add_mutually_exclusive_group()
-    nucleotide_options_exclusive_group.add_argument('--vcf-reference', type=str, metavar='FASTA',
+    nucleotide_options_group.add_argument('--vcf-reference', type=str, metavar='FASTA',
                                  help='[VCF alignment only] file of the sequence the VCF was mapped to.'
-                                      ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
-    nucleotide_options_exclusive_group.add_argument('--root-sequence', type=str,metavar='FASTA/GenBank',
-                                 help='[FASTA alignment only] file of the sequence that is used as root for mutation calling.'
                                       ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
 
     # ----------------------------- GLOBAL OPTIONS -----------------------------
@@ -358,6 +354,12 @@ def register_parser(parent_subparsers):
                                 help='infer ambiguous states on tip sequences and replace with most likely state')
     global_options_group.add_argument('--keep-overhangs', action="store_true", default=False,
                                 help='do not infer states for gaps (-) on either side of the alignment')
+    global_options_group.add_argument('--root-sequence', type=str, metavar='FASTA/GenBank',
+                                 help='Sequence to use as root for mutation calling.'
+                                     ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.'
+                                     ' If reconstructing nuc seqs, the nucleotide alignment must be in FASTA format and (if also reconstructing AA seqs)'
+                                     ' this sequence will be translated to get the AA root sequences for each gene.'
+                                     ' If reconstructing AA-seqs only then this argument takes the same form as --translations and must be in FASTA format')
 
     # ------------------- AMINO-ACID (TRANSLATION) OPTIONS ONLY ------------------------ 
     amino_acid_options_group = parser.add_argument_group(
@@ -413,8 +415,9 @@ def validate_arguments(args: argparse.Namespace) -> Mode:
         is_vcf = is_filename_vcf(args.alignment)
     )
 
-    if not mode.nuc_reconstruction and args.root_sequence:
-        raise AugurError("A root sequence is only used if you also reconstruct nuc sequences")
+    if args.vcf_reference and args.root_sequence:
+        # when root-sequence was nucleotide only this error was enforced by argparse config
+        raise AugurError("argument --vcf-reference: not allowed with argument --root-sequence")
 
     # translations are run in one of two modes: multiple genes or a single gene
     # For single-genes, the annotation is optional if you are only reconstructing a single AA alignment (no nuc reconstruction)
@@ -572,7 +575,8 @@ def construct_cds_feature(name: str, aa_len: int):
 
 def reconstruct_translations(
     anc_seqs: None|Ancestral_JSON,
-    ref: str|None,
+    nuc_ref: str|None,
+    aa_ref_fname: str|None,
     T: Tree,
     genes_arg: list[str], # filename or list of genes
     annotation_fname: str|None,
@@ -625,13 +629,21 @@ def reconstruct_translations(
     print("Read in {} features from reference sequence file".format(len(features)))
     for gene in genes:
         print(f"Processing gene: {gene}")
-        fname = translations_fname_pattern.replace(GENE_PATTERN, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
         feat = features[gene]
-        reference_sequence = str(feat.extract(Seq(ref)).translate()) if ref else None
-        if reference_sequence:
-            reference_sequence = correct_aa(reference_sequence)
-
-        aa_aln = correct_alignment(fname, correct_aa)
+        
+        # There are various ways to provide the (optional) root-sequence
+        if nuc_ref:
+            reference_sequence = correct_aa(str(feat.extract(Seq(nuc_ref)).translate()))
+        elif aa_ref_fname:
+            root_fname = aa_ref_fname.replace(GENE_PATTERN, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
+            reference_sequence = correct_aa(str(read_single_sequence(root_fname, format='fasta').seq).upper())
+            if len(reference_sequence)!=int(len(feat)/3):
+                raise AugurError(f"The provided root-sequence AA fasta for {gene} has length {len(reference_sequence):,} which doesn't match the length of the CDS {int(len(feat)/3):,} (amino acids)")
+        else:
+            reference_sequence = None
+            
+        aln_fname = translations_fname_pattern.replace(GENE_PATTERN, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
+        aa_aln = correct_alignment(aln_fname, correct_aa)
         aa_result = run_ancestral(T, aa_aln, reference_sequence=reference_sequence, is_vcf=False, fill_overhangs=fill_overhangs,
                                     marginal=marginal, infer_ambiguous=infer_ambiguous, alphabet='aa', rng_seed=rng_seed)
         len_translated_alignment = aa_result['tt'].data.full_length*3
@@ -702,7 +714,8 @@ def run(args: argparse.Namespace):
         # For protein reconstruction by gene, read the already-translated (AA) FASTAs and reconstruct across the tree
         # Results are stored in the provided `anc_seqs` object and written to FASTA if requested
         assert not mode.is_vcf # guaranteed by validate_arguments() but good to double check
-        anc_seqs = reconstruct_translations(anc_seqs, ref, T, args.genes, args.annotation, args.translations,
+        aa_root_seqs = args.root_sequence if (args.root_sequence and not mode.nuc_reconstruction) else None
+        anc_seqs = reconstruct_translations(anc_seqs, ref, aa_root_seqs, T, args.genes, args.annotation, args.translations,
             infer_ambiguous, fill_overhangs, marginal_inference, rng_seed,
             args.output_translations, args.report_inconsistent_translation)
     
