@@ -12,7 +12,7 @@ considered an implementation detail that may change in the future.  The CLI
 program vcftools must be available on PATH.
 """
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
-from augur.dates import numeric_date_type
+from augur.dates import numeric_date_type_min, numeric_date_type_max
 from augur.filter.arguments import descriptions
 from augur.filter.io import column_type_pair
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
@@ -39,8 +39,8 @@ def register_arguments(parser):
 
     metadata_filter_group.add_argument('--query', help=descriptions['query'])
     metadata_filter_group.add_argument('--query-columns', type=column_type_pair, nargs="+", action=ExtendOverwriteDefault, help=descriptions['query_columns'])
-    metadata_filter_group.add_argument('--min-date', type=numeric_date_type, help=descriptions['min_date'])
-    metadata_filter_group.add_argument('--max-date', type=numeric_date_type, help=descriptions['max_date'])
+    metadata_filter_group.add_argument('--min-date', type=numeric_date_type_min, help=descriptions['min_date'])
+    metadata_filter_group.add_argument('--max-date', type=numeric_date_type_max, help=descriptions['max_date'])
     metadata_filter_group.add_argument('--exclude-ambiguous-dates-by', choices=['any', 'day', 'month', 'year'], help=descriptions['exclude_ambiguous_dates_by'])
     metadata_filter_group.add_argument('--exclude', type=str, nargs="+", action=ExtendOverwriteDefault, help=descriptions['exclude'])
     metadata_filter_group.add_argument('--exclude-where', nargs='+', action=ExtendOverwriteDefault, help=descriptions['exclude_where'])

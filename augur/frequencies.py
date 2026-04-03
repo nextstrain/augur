@@ -11,7 +11,7 @@ from .dates import validate_dates
 from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
 from .frequency_estimators import AlignmentKdeFrequencies, TreeKdeFrequencies, TreeKdeFrequenciesError
-from .dates import numeric_date_type, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
+from .dates import numeric_date_type_min, numeric_date_type_max, SUPPORTED_DATE_HELP_TEXT, get_numerical_dates
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .utils import write_augur_json
@@ -38,9 +38,9 @@ def register_parser(parent_subparsers):
                         help="number of units between pivots")
     parser.add_argument("--pivot-interval-units", type=str, default="months", choices=['months', 'weeks'],
                         help="space pivots by months (default) or by weeks")
-    parser.add_argument('--min-date', type=numeric_date_type,
+    parser.add_argument('--min-date', type=numeric_date_type_min,
                         help=f"date to begin frequencies calculations; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
-    parser.add_argument('--max-date', type=numeric_date_type,
+    parser.add_argument('--max-date', type=numeric_date_type_max,
                         help=f"date to end frequencies calculations; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
 
     # Tree-specific arguments
