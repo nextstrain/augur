@@ -76,3 +76,68 @@ So for this example the offset is 960 (start is 961 - 960 = 1, end is 2472 - 960
   \>       "end": 1512, (re)
   \>       "start": 1, (re)
   [1]
+
+
+Test single gene reconstruction with an explicitly provided AA root-sequence
+(See infer-amino-acid-sequences-with-root-sequence.t for using a nuc sequence as --root-sequence)
+
+  $ ${AUGUR} ancestral \
+  >  --tree $TESTDIR/../data/tree.nwk \
+  >  --annotation $TESTDIR/../data/zika_outgroup.gb \
+  >  --genes ENV \
+  >  --translations $TESTDIR/../data/aa_sequences_ENV.fasta \
+  >  --aa-root-sequence $TESTDIR/../data/ENV_outgroup.fasta \
+  >  --seed 314159 \
+  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_4.json" &> /dev/null
+
+The reference has been modified to include a leading AAA:
+
+  $ grep -A 2 "reference" "$CRAMTMP/$TESTFILE/ancestral_mutations_4.json"
+    "reference": {
+      "ENV": "AAA.+ (re)
+    }
+
+Check that this results in 3 mutations between the provided root-sequence & the inferred root node
+
+  $ grep -A 11 "NODE_0000006" "$CRAMTMP/$TESTFILE/ancestral_mutations_4.json"
+      "NODE_0000006": {
+        "aa_muts": {
+          "ENV": [
+            "A1I",
+            "A2R",
+            "A3C"
+          ]
+        },
+        "aa_sequences": {
+          "ENV": "IRC.+ (re)
+        }
+      },
+
+
+Retest the above, using a %GENE placeholder in --aa-root-sequence
+
+  $ ${AUGUR} ancestral \
+  >  --tree $TESTDIR/../data/tree.nwk \
+  >  --annotation $TESTDIR/../data/zika_outgroup.gb \
+  >  --genes ENV \
+  >  --translations $TESTDIR/../data/aa_sequences_ENV.fasta \
+  >  --aa-root-sequence $TESTDIR/../data/%GENE_outgroup.fasta \
+  >  --seed 314159 \
+  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_5.json" &> /dev/null
+
+
+  $ diff "$CRAMTMP/$TESTFILE/ancestral_mutations_4.json" "$CRAMTMP/$TESTFILE/ancestral_mutations_5.json"
+
+
+Test that accidentally providing the wrong AA root-sequence (e.g. a nuc one) results in an error
+
+  $ ${AUGUR} ancestral \
+  >  --tree $TESTDIR/../data/tree.nwk \
+  >  --annotation $TESTDIR/../data/zika_outgroup.gb \
+  >  --genes ENV \
+  >  --translations $TESTDIR/../data/aa_sequences_ENV.fasta \
+  >  --aa-root-sequence $TESTDIR/../data/simple-genome/reference.fasta \
+  >  --seed 314159 \
+  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_5.json" > /dev/null
+  ERROR: The provided root-sequence AA fasta for ENV has length 50 which doesn't match the length of the CDS 504 (amino acids)
+  [2]

@@ -343,7 +343,8 @@ def register_parser(parent_subparsers):
                                       ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
     nucleotide_options_exclusive_group.add_argument('--root-sequence', type=str,metavar='FASTA/GenBank',
                                  help='[FASTA alignment only] file of the sequence that is used as root for mutation calling.'
-                                      ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
+                                      ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.'
+                                      ' If also reconstructing AA sequences, this (nuc) sequence will be translated to form the AA root sequences unless --aa-root-sequence is provided.')
 
     # ----------------------------- GLOBAL OPTIONS -----------------------------
     global_options_group = parser.add_argument_group(
@@ -378,6 +379,10 @@ def register_parser(parent_subparsers):
     amino_acid_options_group.add_argument('--report-inconsistent-translation', action="store_true",
                                 help="Report where amino acid reconstruction differed from a translation of the reconstructed nuc sequence."
                                 " Requires nucleotide reconstruction.")
+    amino_acid_options_group.add_argument('--aa-root-sequence', type=str, metavar='FASTA',
+                                 help='File(s) of the AA root sequence(s). Differences between this sequence and the inferred root will be'
+                                      ' reported as mutations on the root branch for each gene. For more than one gene this must include'
+                                      f' %{GENE_PATTERN} like other arguments.')
 
     # ----------------------------- OUTPUTS ----------------------------- 
     output_group = parser.add_argument_group(
@@ -415,12 +420,10 @@ def validate_arguments(args: argparse.Namespace, genes: None|list[str]) -> Mode:
         is_vcf = is_filename_vcf(args.alignment)
     )
 
-    if not mode.nuc_reconstruction and args.root_sequence:
-        raise AugurError("A root sequence is only used if you also reconstruct nuc sequences")
-
     # translations are run in one of two modes: multiple genes or a single gene
     # For single-genes, the annotation is optional if you are only reconstructing a single AA alignment (no nuc reconstruction)
-    if any((args.annotation, args.genes, args.translations)):
+    if any((args.annotation, args.genes, args.translations, args.aa_root_sequence)):
+        # The presence of ANY of these arguments means we are translating AA sequences in some form.
         if not args.genes or not len(genes):
             raise AugurError("For amino acid sequence reconstruction, you must provide a list of genes, a path to amino acid sequences, and (if multiple genes) an annotations file.")
         if len(genes)>1 or mode.nuc_reconstruction:
@@ -429,6 +432,8 @@ def validate_arguments(args: argparse.Namespace, genes: None|list[str]) -> Mode:
         else: # single gene, aa-only
             if not args.translations:
                 raise AugurError("For amino acid sequence reconstruction you must provide a path to amino acid sequences.")
+        if not mode.nuc_reconstruction and args.root_sequence and args.aa_root_sequence:
+            raise AugurError("--root-sequence and --aa-root-sequence can not be used together for reconstruction of only AA sequences")
         mode.aa_reconstruction = True
 
     if not mode.nuc_reconstruction and not mode.aa_reconstruction:
@@ -574,7 +579,8 @@ def construct_cds_feature(name: str, aa_len: int):
 
 def reconstruct_translations(
     anc_seqs: None|Ancestral_JSON,
-    ref: str|None,
+    nuc_ref: str|None,
+    aa_ref_fname: str|None,
     T: Tree,
     genes: None|list[str],
     annotation_fname: str|None,
@@ -596,6 +602,8 @@ def reconstruct_translations(
             raise AugurError(f"--translations must contain {GENE_PATTERN} for multiple-gene amino acid reconstructions")
         if output_fname_pattern and GENE_PATTERN not in output_fname_pattern:
             raise AugurError(f"--output-translations must contain {GENE_PATTERN} for multiple-gene amino acid reconstructions")
+        if aa_ref_fname and GENE_PATTERN not in aa_ref_fname:
+            raise AugurError(f"--aa-root-sequence must contain {GENE_PATTERN} for multiple-gene amino acid reconstructions") 
 
     if annotation_fname is None:
         assert len(genes)==1 and anc_seqs is None # already checked in validate_arguments
@@ -626,13 +634,22 @@ def reconstruct_translations(
     print("Read in {} features from reference sequence file".format(len(features)))
     for gene in genes:
         print(f"Processing gene: {gene}")
-        fname = translations_fname_pattern.replace(GENE_PATTERN, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
         feat = features[gene]
-        reference_sequence = str(feat.extract(Seq(ref)).translate()) if ref else None
-        if reference_sequence:
-            reference_sequence = correct_aa(reference_sequence)
-
-        aa_aln = correct_alignment(fname, correct_aa)
+        
+        # There are various ways to provide the (optional) root-sequence
+        # Preferentially we use the explicitly provided sequence (--aa-root-sequence) if provided:
+        if aa_ref_fname:
+            root_fname = aa_ref_fname.replace(GENE_PATTERN, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
+            reference_sequence = correct_aa(str(read_single_sequence(root_fname, format='fasta').seq).upper())
+            if len(reference_sequence)!=int(len(feat)/3):
+                raise AugurError(f"The provided root-sequence AA fasta for {gene} has length {len(reference_sequence):,} which doesn't match the length of the CDS {int(len(feat)/3):,} (amino acids)")
+        elif nuc_ref:
+            reference_sequence = correct_aa(str(feat.extract(Seq(nuc_ref)).translate()))
+        else:
+            reference_sequence = None
+            
+        aln_fname = translations_fname_pattern.replace(GENE_PATTERN, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
+        aa_aln = correct_alignment(aln_fname, correct_aa)
         aa_result = run_ancestral(T, aa_aln, reference_sequence=reference_sequence, is_vcf=False, fill_overhangs=fill_overhangs,
                                     marginal=marginal, infer_ambiguous=infer_ambiguous, alphabet='aa', rng_seed=rng_seed)
         len_translated_alignment = aa_result['tt'].data.full_length*3
@@ -705,7 +722,7 @@ def run(args: argparse.Namespace):
         # For protein reconstruction by gene, read the already-translated (AA) FASTAs and reconstruct across the tree
         # Results are stored in the provided `anc_seqs` object and written to FASTA if requested
         assert not mode.is_vcf # guaranteed by validate_arguments() but good to double check
-        anc_seqs = reconstruct_translations(anc_seqs, ref, T, genes, args.annotation, args.translations,
+        anc_seqs = reconstruct_translations(anc_seqs, ref, args.aa_root_sequence, T, genes, args.annotation, args.translations,
             infer_ambiguous, fill_overhangs, marginal_inference, rng_seed,
             args.output_translations, args.report_inconsistent_translation)
     
