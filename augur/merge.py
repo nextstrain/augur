@@ -304,8 +304,25 @@ def merge_metadata(args):
             sqlite3(db_path,
                 f'.mode csv',
                 f'.separator {sqlite_quote_dot(m.delimiter)} {sqlite_quote_dot(newline)}',
-                f'.import {sqlite_quote_dot(f"|{augur()} read-file {shquote(m.path)}")} {sqlite_quote_dot(m.table_name)}',
+                f'.import {sqlite_quote_dot(f"|{augur()} read-file {shquote(m.path)}")} {sqlite_quote_dot(m.table_name)}')
 
+            proc = sqlite3(db_path, f"""
+                select {sqlite_quote_id(m.id_column)}
+                from {sqlite_quote_id(m.table_name)}
+                group by {sqlite_quote_id(m.id_column)}
+                having count(*) > 1;
+            """, stdout=subprocess.PIPE)
+
+            if duplicates := proc.stdout.splitlines():
+                raise AugurError(dedent(f"""\
+                    Sequence ids must be unique.
+
+                    The following {_n("id was", "ids were", len(duplicates))} duplicated in metadata table {m.name!r}:
+
+                      {indented_list(map(repr, sorted(duplicates)), '                    ' + '  ')}
+                    """)) from None
+
+            sqlite3(db_path,
                 f'create unique index {sqlite_quote_id(f"{m.table_name}_id")} on {sqlite_quote_id(m.table_name)}({sqlite_quote_id(m.id_column)});',
 
                 # <https://sqlite.org/pragma.html#pragma_optimize>
@@ -375,26 +392,6 @@ def merge_metadata(args):
             f'.output')
 
     except SQLiteError as err:
-        # Check for duplicates
-        try:
-            proc = sqlite3(db_path, f"""
-                select {sqlite_quote_id(m.id_column)}
-                from {sqlite_quote_id(m.table_name)}
-                group by {sqlite_quote_id(m.id_column)}
-                having count(*) > 1;
-            """, stdout=subprocess.PIPE)
-
-            if duplicates := proc.stdout.splitlines():
-                raise AugurError(dedent(f"""\
-                    Sequence ids must be unique.
-
-                    The following {_n("id was", "ids were", len(duplicates))} duplicated in metadata table {m.name!r}:
-
-                      {indented_list(map(repr, sorted(duplicates)), '                    ' + '  ')}
-                    """)) from None
-        except SQLiteError:
-            pass
-
         # Unknown SQLite error
         delete_db = False
         if err.proc.stderr:
