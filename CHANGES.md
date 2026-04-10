@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* merge: Added a workaround for a bug in SQLite version 3.53.0. [#1984][] @victorlin
+
+[#1984]: https://github.com/nextstrain/augur/pull/1984
 
 ## 33.0.1 (11 March 2026)
 
