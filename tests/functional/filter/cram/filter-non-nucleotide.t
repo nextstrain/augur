@@ -27,6 +27,7 @@ Create FASTA file for testing.
   >  --metadata metadata.tsv \
   >  --non-nucleotide \
   >  --output-strains filtered_strains_aa.txt
+  WARNING: --non-nucleotide is deprecated. Use --exclude-invalid instead.
   1 strain was dropped during filtering
-  	1 was dropped because it had non-nucleotide characters (esc)
+  	1 was dropped because it had invalid characters (esc)
   2 strains passed all filters
