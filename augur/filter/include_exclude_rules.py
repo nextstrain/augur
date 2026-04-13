@@ -481,6 +481,15 @@ def filter_by_max_length(metadata, sequence_index, max_length) -> FilterFunction
 
     return set(filtered_sequence_index[filtered_sequence_index["ACGT"] <= max_length].index.values)
 
+def _invalid_col_name(index):
+    """
+    Returns the name of the invalid character column of the index file
+    (this is different for AA sequences & nuc sequences)
+    """
+    assert not ("invalid_residues" in index and "invalid_nucleotides" in index)
+    if "invalid_residues" in index:
+        return "invalid_residues"
+    return "invalid_nucleotides"
 
 def filter_by_non_nucleotide(metadata, sequence_index) -> FilterFunctionReturn:
     """Filter metadata for strains with invalid nucleotide content.
@@ -504,9 +513,9 @@ def filter_by_non_nucleotide(metadata, sequence_index) -> FilterFunctionReturn:
     filtered_sequence_index = sequence_index.loc[
         sequence_index.index.intersection(strains)
     ]
-    no_invalid_nucleotides = filtered_sequence_index["invalid_nucleotides"] == 0
+    no_invalid = filtered_sequence_index[_invalid_col_name(filtered_sequence_index)] == 0
 
-    return set(filtered_sequence_index[no_invalid_nucleotides].index.values)
+    return set(filtered_sequence_index[no_invalid].index.values)
 
 
 def force_include_strains(metadata, include_file) -> FilterFunctionReturn:
