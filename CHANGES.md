@@ -2,10 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* ancestral: Add `--report-inconsistent-translation` argument to report where amino acid reconstruction differed from the translation of the reconstructed nuc sequence. [#1975][] @jameshadfield
+
 ### Bug fixes
 
+* ancestral: Fix potential bugs where 'N' could be used as the ambiguous character for AA sequences (this bug wasn't exposed if the provided translations came from Nextclade which was the usual path). Also includes fixes for nucleotide reconstructions involving the ambiguous 'X' character. [#1975][] @jameshadfield
 * merge: Added a workaround for a bug in SQLite version 3.53.0. [#1984][] @victorlin
 
+[#1975]: https://github.com/nextstrain/augur/pull/1975
 [#1984]: https://github.com/nextstrain/augur/pull/1984
 
 ## 33.0.1 (11 March 2026)
