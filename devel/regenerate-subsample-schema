@@ -122,9 +122,13 @@ def create_schema():
             "type": "integer",
             "description": descriptions["max_length"]
         },
+        "exclude_invalid": {
+            "type": "boolean",
+            "description": descriptions["exclude_invalid"]
+        },
         "non_nucleotide": {
             "type": "boolean",
-            "description": descriptions["non_nucleotide"]
+            "description": descriptions["non_nucleotide_config"]
         },
         "query": {
             "type": "string",

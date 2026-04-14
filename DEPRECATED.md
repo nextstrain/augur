@@ -4,6 +4,15 @@ These features are deprecated, which means they are no longer maintained and
 will go away in a future major version of Augur. They are currently still
 available for backwards compatibility, but should not be used in new code.
 
+## `augur filter` option `--non-nucleotide`, `augur subsample` keyword `non_nucleotide`
+
+*Deprecated in version 34.0.0 (April 2026). Planned for removal October 2026 or after.*
+
+Please now use `augur filter --exclude-invalid` or keyword `exclude_invalid` in
+a subsampling YAML. This change in language was motivated by Augur's support for
+Amino Acid sequences.
+
+
 ## `augur filter` options `--output` and `-o`
 
 *Deprecated in version 29.1.0. Planned for removal October 2025 or after.*
