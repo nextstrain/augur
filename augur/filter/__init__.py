@@ -88,7 +88,7 @@ def register_arguments(parser):
     deprecated_group = parser.add_argument_group("deprecated", "options to be removed in a future major version")
     deprecated_group.add_argument('--output', metavar="FILE", help="alias to --output-sequences" + SKIP_AUTO_DEFAULT_IN_HELP)
     deprecated_group.add_argument('-o', metavar="FILE", help="alias to --output-sequences" + SKIP_AUTO_DEFAULT_IN_HELP)
-    deprecated_group.add_argument('--non-nucleotide', action='store_true', help=descriptions['non_nucleotide'])
+    deprecated_group.add_argument('--non-nucleotide', action='store_true', help=descriptions['non_nucleotide_cli'])
 
     parser.set_defaults(probabilistic_sampling=True)
 

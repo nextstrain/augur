@@ -85,7 +85,8 @@ FILTER_SAMPLE_CONFIG: Dict[str, AugurOption|None] = {
     "max_date": "--max-date",
     "min_length": "--min-length",
     "max_length": "--max-length",
-    "non_nucleotide": ("--non-nucleotide", None),
+    "exclude_invalid": ("--exclude-invalid", None),
+    "non_nucleotide": ("--exclude-invalid", None), # 'non_nucleotide'/'--non-nucleotide' is deprecated
     "query": "--query",
     "query_columns": "--query-columns",
     "group_by": "--group-by",
@@ -100,6 +101,10 @@ These are sent to only the intermediate augur filter calls.
 A value of `None` is a sample config value which does not directly map to an `augur filter`
 argument and must be handled separately.
 """
+
+FILTER_SAMPLE_CONFIG_DEPRECATIONS: Dict[str, str] = {
+    'non_nucleotide': 'exclude_invalid'
+}
 
 PROXIMAL_SAMPLE_CONFIG: Dict[str, AugurOption|None] = {
     "focal_sample": None, # corresponds to --focal-sequences, but the config value is for a sample name
@@ -214,8 +219,9 @@ def run(args: argparse.Namespace) -> None:
         drop = bool(options.pop('drop_sample', False))
         
         if sample_type == 'filterSampleProperties':
-            merged_options = _merge_options(options, defaults)
-            
+            merged_options = _handle_deprecated_arguments(
+                _merge_options(options, defaults)
+            )
             # Does this sample define a context sample?
             context_sample = merged_options.pop('context_sample', None)
 
@@ -661,6 +667,28 @@ def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, 
 
 
 
+def _handle_deprecated_arguments(options: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Deprecations are currently hardcoded to use FILTER_SAMPLE_CONFIG_DEPRECATIONS
+    
+    >>> _handle_deprecated_arguments({'non_nucleotide': True})
+    {'exclude_invalid': True}
+    
+    >>> valid_opts = {'min_date': '2020-01-01'}
+    >>> _handle_deprecated_arguments(valid_opts) == valid_opts
+    True
+    """
+    
+    opts = {**options}
+    for old_key, new_key in FILTER_SAMPLE_CONFIG_DEPRECATIONS.items():
+        if old_key in opts:
+            print_err(f"WARNING: key {old_key!r} is deprecated and has been replaced with {new_key!r}")
+            if new_key in opts:
+                raise AugurError(f"In a sample both {old_key!r} (now deprecated) and {new_key!r} are present")
+            opts[new_key] = opts[old_key]
+            del opts[old_key]
+    return opts
+
 class Sample:
     """
     Base class containing information about a particular sample (represented by a 'sample' block in the YAML config).
@@ -761,7 +789,11 @@ class FilterSample(Sample):
         ['region', 'year']
         >>> sample.args["--sequences-per-group"]
         5
+        
+        (sample key non_nucleotide is deprecated, it should be be remapped to exclude_invalid which corresponds to --exclude-invalid)
         >>> "--non-nucleotide" in sample.args
+        False
+        >>> "--exclude-invalid" in sample.args
         True
         >>> "--no-probabilistic-sampling" in sample.args
         True

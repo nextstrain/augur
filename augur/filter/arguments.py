@@ -76,8 +76,11 @@ descriptions = {
     "exclude_invalid": dedent("""\
         Exclude sequences that contain invalid characters."""),
 
-    "non_nucleotide": dedent("""\
+    "non_nucleotide_cli": dedent("""\
         Deprecated, please use '--exclude-invalid' instead. Exclude sequences that contain invalid characters."""),
+
+    "non_nucleotide_config": dedent("""\
+        Deprecated, please use 'exclude_invalid' instead. Exclude sequences that contain invalid characters."""),
 
     "group_by": dedent(f"""\
         Grouping columns for subsampling. Notes:
