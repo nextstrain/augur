@@ -27,11 +27,12 @@ Defaults are applied to all samples.
   [contextual] 	4 were filtered out by the query: "region != 'North America'"
   [contextual] 	2 were dropped because they were earlier than 2016.0 or missing a date
   [contextual] 6 strains passed all filters
-  3 strains were dropped during filtering
-  	12 were dropped by `--exclude-all`
-  \\t3 were added back because they were in .*sample_focal.* (re)
-  \\t6 were added back because they were in .*sample_contextual.* (re)
-  9 strains passed all filters
+  [collect samples] combining outputs from 2 samples
+  [collect samples] 3 strains were dropped during filtering
+  [collect samples] 	12 were dropped by `--exclude-all`
+  \[collect samples\] \\t3 were added back because they were in .*sample_focal.* (re)
+  \[collect samples\] \\t6 were added back because they were in .*sample_contextual.* (re)
+  [collect samples] 9 strains passed all filters
 
 Defaults can be overridden by samples.
 
@@ -59,11 +60,12 @@ Defaults can be overridden by samples.
   [contextual] 	4 were filtered out by the query: "region != 'North America'"
   [contextual] 	2 were dropped because they were earlier than 2016.0 or missing a date
   [contextual] 6 strains passed all filters
-  5 strains were dropped during filtering
-  	12 were dropped by `--exclude-all`
-  \\t1 was added back because it was in .*sample_focal.* (re)
-  \\t6 were added back because they were in .*sample_contextual.* (re)
-  7 strains passed all filters
+  [collect samples] combining outputs from 2 samples
+  [collect samples] 5 strains were dropped during filtering
+  [collect samples] 	12 were dropped by `--exclude-all`
+  \[collect samples\] \\t1 was added back because it was in .*sample_focal.* (re)
+  \[collect samples\] \\t6 were added back because they were in .*sample_contextual.* (re)
+  [collect samples] 7 strains passed all filters
 
 Some sample options are not supported under defaults.
 This is flagged during config validation.
