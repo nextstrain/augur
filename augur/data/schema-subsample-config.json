@@ -103,15 +103,19 @@
                 },
                 "min_length": {
                     "type": "integer",
-                    "description": "Minimal length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)."
+                    "description": "Minimal length of the sequences, only counting valid characters\n(excluding gaps, ambiguous, and invalid characters)."
                 },
                 "max_length": {
                     "type": "integer",
-                    "description": "Maximum length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)."
+                    "description": "Maximum length of the sequences, only counting valid characters\n(excluding gaps, ambiguous, and invalid characters)."
+                },
+                "exclude_invalid": {
+                    "type": "boolean",
+                    "description": "Exclude sequences that contain invalid characters."
                 },
                 "non_nucleotide": {
                     "type": "boolean",
-                    "description": "Exclude sequences that contain illegal characters."
+                    "description": "Deprecated, please use 'exclude_invalid' instead. Exclude sequences that contain invalid characters."
                 },
                 "query": {
                     "type": "string",
@@ -227,15 +231,19 @@
                 },
                 "min_length": {
                     "type": "integer",
-                    "description": "Minimal length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)."
+                    "description": "Minimal length of the sequences, only counting valid characters\n(excluding gaps, ambiguous, and invalid characters)."
                 },
                 "max_length": {
                     "type": "integer",
-                    "description": "Maximum length of the sequences, only counting standard nucleotide\ncharacters A, C, G, or T (case-insensitive)."
+                    "description": "Maximum length of the sequences, only counting valid characters\n(excluding gaps, ambiguous, and invalid characters)."
+                },
+                "exclude_invalid": {
+                    "type": "boolean",
+                    "description": "Exclude sequences that contain invalid characters."
                 },
                 "non_nucleotide": {
                     "type": "boolean",
-                    "description": "Exclude sequences that contain illegal characters."
+                    "description": "Deprecated, please use 'exclude_invalid' instead. Exclude sequences that contain invalid characters."
                 },
                 "query": {
                     "type": "string",

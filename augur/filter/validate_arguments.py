@@ -7,7 +7,7 @@ from augur.io.sequences import is_vcf as filename_is_vcf, seqkit
 SEQUENCE_ONLY_FILTERS = (
     "min_length",
     "max_length",
-    "non_nucleotide",
+    "exclude_invalid",
 )
 
 
@@ -67,3 +67,6 @@ def validate_arguments(args):
         raise AugurError(
             "--group-by-weights cannot be used with --no-probabilistic-sampling."
         )
+
+    if args.seq_type=='aa' and is_vcf:
+        raise AugurError("VCF files cannot be used for AA sequences")

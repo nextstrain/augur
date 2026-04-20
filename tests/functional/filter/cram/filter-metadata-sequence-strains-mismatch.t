@@ -12,7 +12,7 @@ The query initially filters 3 strains from Colombia, one of which is added back 
   >  --sequence-index "$TESTDIR/../data/sequence_index.tsv" \
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --query "country != 'Colombia'" \
-  >  --non-nucleotide \
+  >  --exclude-invalid \
   >  --exclude-ambiguous-dates-by year \
   >  --include "$TESTDIR/../data/include.txt" \
   >  --output-strains filtered_strains.txt \

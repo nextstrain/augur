@@ -44,7 +44,7 @@ This should fail.
   >  --genes ENV PRO \
   >  --seed 314159 \
   >  --output-node-data "ancestral_mutations.json" > /dev/null
-  ERROR: For amino acid sequence reconstruction, you must provide an annotation file, a list of genes, and a template path to amino acid sequences.
+  ERROR: For amino acid sequence reconstruction with multiple genes (or a single gene with nuc reconstruction), you must provide an annotation file and a path to amino acid sequences (as well as the list of genes)
   [2]
 
 Missing tree file

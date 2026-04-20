@@ -22,7 +22,7 @@ These should fail because the requested filters rely on sequence information.
 
   $ ${AUGUR} filter \
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
-  >  --non-nucleotide \
+  >  --exclude-invalid \
   >  --output-strains filtered_strains.txt > /dev/null
   ERROR: You need to provide a sequence index or sequences to filter on sequence-specific information.
   [2]

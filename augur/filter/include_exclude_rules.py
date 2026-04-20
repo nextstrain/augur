@@ -419,6 +419,26 @@ def filter_by_sequence_ids(metadata, sequence_ids: Set[str]) -> FilterFunctionRe
     return metadata_strains & sequence_ids
 
 
+def _filter_by_length(metadata, sequence_index, length, report_strains) -> FilterFunctionReturn:
+    """utility function for filter_by_min_length and filter_by_max_length.
+    report_strains=='leq': True will return strains below or equal to the length.
+    report_strains=='geq': will return strains above (or equal to) the length.
+    """
+    assert report_strains in ('leq', 'geq')
+    strains = set(metadata.index.values)
+    filtered_sequence_index = sequence_index.loc[
+        sequence_index.index.intersection(strains)
+    ]
+
+    if _invalid_col_name(filtered_sequence_index)=='invalid_nucleotides':
+        chars = list("ACGT")
+    else:
+        chars = list("ACDEFGHIKLMNPQRSTVWY")
+    
+    filtered_sequence_index["length_valid"] = filtered_sequence_index.loc[:, chars].sum(axis=1)
+    mask = filtered_sequence_index["length_valid"] <= length if report_strains=='leq' else filtered_sequence_index["length_valid"] >= length
+    return set(filtered_sequence_index[mask].index.values)
+
 def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunctionReturn:
     """Filter metadata by sequence length from a given sequence index.
 
@@ -429,29 +449,37 @@ def filter_by_min_length(metadata, sequence_index, min_length) -> FilterFunction
     sequence_index : pandas.DataFrame
         Sequence index
     min_length : int
-        Minimum number of standard nucleotide characters (A, C, G, or T) in each sequence
+        Minimum number of valid characters in each sequence 
+        (excluding gaps, ambiguous, and invalid characters).
 
     Examples
     --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000, "invalid_nucleotides": 0}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500, "invalid_nucleotides": 0}]).set_index("strain")
     >>> filter_by_min_length(metadata, sequence_index, min_length=27000)
     {'strain1'}
 
     It is possible for the sequence index to be missing strains present in the metadata.
 
-    >>> sequence_index = pd.DataFrame([{"strain": "strain3", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
+    >>> sequence_index = pd.DataFrame([{"strain": "strain3", "A": 7000, "C": 7000, "G": 7000, "T": 7000, "invalid_nucleotides": 0}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500, "invalid_nucleotides": 0}]).set_index("strain")
     >>> filter_by_min_length(metadata, sequence_index, min_length=27000)
     set()
 
+    Non-ATGC nucleotides don't count towards the length for these filters;
+    strain1 & 2 both have a total length of 28kb, but strain2 has 2kb of Ns so only strain1 passes the filter
+    
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000, "N": 0, "invalid_nucleotides": 0}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500, "N": 2000, "invalid_nucleotides": 0}]).set_index("strain")
+    >>> filter_by_min_length(metadata, sequence_index, min_length=27000)
+    {'strain1'}
+    
+    AA sequence indexes work as expected (strain1: 10 * 20 residues, strain2: 5*20 residues)
+    
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", **{r: 10 for r in 'ACDEFGHIKLMNPQRSTVWY'}, "invalid_residues": 0}, {"strain": "strain2", **{r: 5 for r in 'ACDEFGHIKLMNPQRSTVWY'}, "invalid_residues": 0}]).set_index("strain")
+    >>> filter_by_min_length(metadata, sequence_index, min_length=150)
+    {'strain1'}
+    
     """
-    strains = set(metadata.index.values)
-    filtered_sequence_index = sequence_index.loc[
-        sequence_index.index.intersection(strains)
-    ]
-    filtered_sequence_index["ACGT"] = filtered_sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
-
-    return set(filtered_sequence_index[filtered_sequence_index["ACGT"] >= min_length].index.values)
+    return _filter_by_length(metadata, sequence_index, min_length, 'geq')
 
 
 def filter_by_max_length(metadata, sequence_index, max_length) -> FilterFunctionReturn:
@@ -464,26 +492,42 @@ def filter_by_max_length(metadata, sequence_index, max_length) -> FilterFunction
     sequence_index : pandas.DataFrame
         Sequence index
     max_length : int
-        Maximum number of standard nucleotide characters (A, C, G, or T) in each sequence
+        Maximum number of valid characters in each sequence
+        (excluding gaps, ambiguous, and invalid characters).
 
     Examples
     --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}]).set_index("strain")
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000, "invalid_nucleotides": 0}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500, "invalid_nucleotides": 0}]).set_index("strain")
     >>> filter_by_max_length(metadata, sequence_index, max_length=27000)
     {'strain2'}
+    
+    Non-ATGC nucleotides don't count towards the length for these filters; here strain2 has an additional
+    10kb of Ns (total: 26kb characters) but it's still filtered out
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000, "invalid_nucleotides": 0}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500, "N": 10000, "invalid_nucleotides": 0}]).set_index("strain")
+    >>> filter_by_max_length(metadata, sequence_index, max_length=27000)
+    {'strain2'}
+    
+    AA sequence indexes work as expected (strain1: 10 * 20 residues, thus filtered out by max-length 300)
+    
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", **{r: 10 for r in 'ACDEFGHIKLMNPQRSTVWY'}, "invalid_residues": 0}]).set_index("strain")
+    >>> filter_by_max_length(metadata, sequence_index, max_length=300)
+    {'strain1'}
     """
-    strains = set(metadata.index.values)
-    filtered_sequence_index = sequence_index.loc[
-        sequence_index.index.intersection(strains)
-    ]
-    filtered_sequence_index["ACGT"] = filtered_sequence_index.loc[:, ["A", "C", "G", "T"]].sum(axis=1)
+    return _filter_by_length(metadata, sequence_index, max_length, 'leq')
 
-    return set(filtered_sequence_index[filtered_sequence_index["ACGT"] <= max_length].index.values)
+def _invalid_col_name(index):
+    """
+    Returns the name of the invalid character column of the index file
+    (this is different for AA sequences & nuc sequences)
+    """
+    assert not ("invalid_residues" in index and "invalid_nucleotides" in index)
+    if "invalid_residues" in index:
+        return "invalid_residues"
+    return "invalid_nucleotides"
 
-
-def filter_by_non_nucleotide(metadata, sequence_index) -> FilterFunctionReturn:
-    """Filter metadata for strains with invalid nucleotide content.
+def filter_by_invalid_characters(metadata, sequence_index) -> FilterFunctionReturn:
+    """Filter metadata for strains with invalid characters.
 
     Parameters
     ----------
@@ -496,7 +540,13 @@ def filter_by_non_nucleotide(metadata, sequence_index) -> FilterFunctionReturn:
     --------
     >>> metadata = pd.DataFrame([{"region": "Africa", "date": "2020-01-01"}, {"region": "Europe", "date": "2020-01-02"}], index=["strain1", "strain2"])
     >>> sequence_index = pd.DataFrame([{"strain": "strain1", "invalid_nucleotides": 0}, {"strain": "strain2", "invalid_nucleotides": 1}]).set_index("strain")
-    >>> filter_by_non_nucleotide(metadata, sequence_index)
+    >>> filter_by_invalid_characters(metadata, sequence_index)
+    {'strain1'}
+
+    AA sequence indexes will have an "invalid_residues" column
+
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "invalid_residues": 0}, {"strain": "strain2", "invalid_residues": 1}]).set_index("strain")
+    >>> filter_by_invalid_characters(metadata, sequence_index)
     {'strain1'}
 
     """
@@ -504,9 +554,9 @@ def filter_by_non_nucleotide(metadata, sequence_index) -> FilterFunctionReturn:
     filtered_sequence_index = sequence_index.loc[
         sequence_index.index.intersection(strains)
     ]
-    no_invalid_nucleotides = filtered_sequence_index["invalid_nucleotides"] == 0
+    no_invalid = filtered_sequence_index[_invalid_col_name(filtered_sequence_index)] == 0
 
-    return set(filtered_sequence_index[no_invalid_nucleotides].index.values)
+    return set(filtered_sequence_index[no_invalid].index.values)
 
 
 def force_include_strains(metadata, include_file) -> FilterFunctionReturn:
@@ -716,10 +766,10 @@ def construct_filters(args, sequence_index, sequence_ids: Set[str]) -> Tuple[Lis
                 }
             ))
 
-    # Exclude sequences with non-nucleotide characters.
-    if args.non_nucleotide:
+    # Exclude sequences with invalid characters.
+    if args.exclude_invalid:
         exclude_by.append((
-            filter_by_non_nucleotide,
+            filter_by_invalid_characters,
             {
                 "sequence_index": sequence_index,
             }
@@ -787,7 +837,7 @@ def apply_filters(metadata, exclude_by: List[FilterOption], include_by: List[Fil
     We also want to filter by characteristics of the sequence data that we've
     annotated in a sequence index.
 
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500}, {"strain": "strain3", "A": 1250, "C": 1250, "G": 1250, "T": 1250}]).set_index("strain")
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "A": 7000, "C": 7000, "G": 7000, "T": 7000, "invalid_nucleotides": 0}, {"strain": "strain2", "A": 6500, "C": 6500, "G": 6500, "T": 6500, "invalid_nucleotides": 0}, {"strain": "strain3", "A": 1250, "C": 1250, "G": 1250, "T": 1250, "invalid_nucleotides": 0}]).set_index("strain")
     >>> exclude_by = [(filter_by_min_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> include_by = [(force_include_where, {"include_where": "region=Europe"})]
     >>> strains_to_keep, strains_to_exclude, strains_to_include = apply_filters(metadata, exclude_by, include_by)
@@ -881,7 +931,7 @@ def _filter_kwargs_to_str(kwargs: FilterFunctionKwargs):
     --------
     >>> from augur.dates import numeric_date
     >>> from augur.filter.include_exclude_rules import filter_by_min_length, filter_by_min_date
-    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "ACGT": 28000}, {"strain": "strain2", "ACGT": 26000}, {"strain": "strain3", "ACGT": 5000}]).set_index("strain")
+    >>> sequence_index = pd.DataFrame([{"strain": "strain1", "length": 28000}, {"strain": "strain2", "length": 26000}, {"strain": "strain3", "length": 5000}]).set_index("strain")
     >>> exclude_by = [(filter_by_min_length, {"sequence_index": sequence_index, "min_length": 27000})]
     >>> _filter_kwargs_to_str(exclude_by[0][1])
     '[["min_length", 27000]]'

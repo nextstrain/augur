@@ -1,0 +1,7 @@
+strain	length	A	C	D	E	F	G	H	I	K	L	M	N	P	Q	R	S	T	V	W	Y	*	X	-	invalid_residues
+Seq1	329	16	9	18	10	11	23	5	25	19	21	3	27	20	14	21	35	21	17	5	9	0	0	0	0
+Seq2_same_as_seq1	329	16	9	18	10	11	23	5	25	19	21	3	27	20	14	21	35	21	17	5	9	0	0	0	0
+Seq3	329	16	9	18	10	10	23	5	25	20	21	3	26	20	15	20	35	21	18	5	9	0	0	0	0
+Seq4_many_unknown	329	4	2	1	1	0	4	2	1	3	4	1	4	3	3	3	2	4	2	0	2	0	283	0	0
+Seq5_many_unknown_and_gaps	329	4	2	1	1	0	4	2	1	3	4	1	4	3	3	3	2	4	2	0	2	0	170	113	0
+Seq6_invalid_chars	329	4	2	1	1	0	4	2	1	3	4	1	3	3	3	3	1	3	2	0	2	0	170	113	3

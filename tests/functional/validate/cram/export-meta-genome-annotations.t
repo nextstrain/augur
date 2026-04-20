@@ -3,6 +3,7 @@ Setup
   $ source "$TESTDIR"/_setup.sh
 
 Test with invalid genome annotations structure:
+Note that nucleotide annotation is no longer required
 
   $ cat >invalid-annotations.json <<~~
   > {
@@ -29,6 +30,5 @@ Test with invalid genome annotations structure:
       Option 2: {"$ref": "#/$defs/segments"}
         .meta.genome_annotations.invalid_gene failed: Expected object but found str '"not_an_object"'
     .meta.genome_annotations.invalid_gene failed: Expected object but found str '"not_an_object"'
-    .meta.genome_annotations failed: Missing required property 'nuc'
   FATAL ERROR: Validation of 'invalid-annotations.json' failed.
   [2]
