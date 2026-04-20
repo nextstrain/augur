@@ -52,6 +52,7 @@ FILTER_GLOBAL_CLI_OPTIONS: Dict[str, AugurOption] = {
     "sequences": "--sequences",
     "sequence_index": "--sequence-index",
     "seed": "--subsample-seed",
+    "seq_type": "--seq-type",
 }
 """
 Mapping of argparse namespace variable name to augur filter option.
@@ -132,6 +133,7 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     input_group.add_argument('--metadata-id-columns', metavar="COLUMN", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     input_group.add_argument('--metadata-delimiters', metavar="CHARACTER", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     input_group.add_argument('--skip-checks', action='store_true', help="use this option to skip checking for duplicates in sequences and whether ids in metadata have a sequence entry. Can improve performance on large files. Note that this should only be used if you are sure there are no duplicate sequences or mismatched ids since they can lead to errors in downstream Augur commands.")
+    input_group.add_argument('--seq-type', default='nuc', choices=['nuc', 'aa'], help="Sequence type: 'nuc' or 'aa'")
 
     config_group = parser.add_argument_group("Configuration options", "options related to configuration")
     config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file. The expected config options must be defined at the top level, or within a specific section using --config-section." + SKIP_AUTO_DEFAULT_IN_HELP)
@@ -195,6 +197,9 @@ def run(args: argparse.Namespace) -> None:
 
     if _includes_proximal_sample(config) and not args.sequences:
         raise AugurError("Augur subsample with a proximal sample requires (aligned) sequences to be provided.")
+
+    if _includes_proximal_sample(config) and args.seq_type!='nuc':
+        raise AugurError("Proximal sampling for AA sequences is not yet supported.")
 
     # Resolve filepaths.
     search_paths = _get_search_paths(args.config, args.search_paths)
