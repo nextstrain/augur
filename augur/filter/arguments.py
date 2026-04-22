@@ -66,15 +66,21 @@ descriptions = {
         of an entry in sequences."""),
 
     "min_length": dedent("""\
-        Minimal length of the sequences, only counting standard nucleotide
-        characters A, C, G, or T (case-insensitive)."""),
+        Minimal length of the sequences, only counting valid characters
+        (excluding gaps, ambiguous, and invalid characters)."""),
 
     "max_length": dedent("""\
-        Maximum length of the sequences, only counting standard nucleotide
-        characters A, C, G, or T (case-insensitive)."""),
+        Maximum length of the sequences, only counting valid characters
+        (excluding gaps, ambiguous, and invalid characters)."""),
 
-    "non_nucleotide": dedent("""\
-        Exclude sequences that contain illegal characters."""),
+    "exclude_invalid": dedent("""\
+        Exclude sequences that contain invalid characters."""),
+
+    "non_nucleotide_cli": dedent("""\
+        Deprecated, please use '--exclude-invalid' instead. Exclude sequences that contain invalid characters."""),
+
+    "non_nucleotide_config": dedent("""\
+        Deprecated, please use 'exclude_invalid' instead. Exclude sequences that contain invalid characters."""),
 
     "group_by": dedent(f"""\
         Grouping columns for subsampling. Notes:

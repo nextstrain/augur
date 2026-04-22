@@ -77,7 +77,8 @@ def collectTreeAttrsV2(root, warn) -> Tuple[TreeAttrs, int]:
 
 def collectMutationGenes(root):
     """
-    Returns a set of all genes specified in the tree in the "aa_muts" objects
+    Returns a set of all genes specified in the tree in the "aa_muts" objects.
+    Includes "nuc" as a gene if there are any nucleotide mutations present.
     """
     genes = set()
     def recurse(node):
@@ -87,7 +88,6 @@ def collectMutationGenes(root):
         if "children" in node:
             [recurse(child) for child in node["children"]]
     recurse(root)
-    genes -= {"nuc"}
     return genes
 
 def collectBranchLabels(root):
@@ -180,12 +180,9 @@ def verifyMainJSONIsInternallyConsistent(data, ValidateError):
 
     genes_with_mutations = collectMutationGenes(data['tree'])
     if len(genes_with_mutations):
-        if "genome_annotations" not in data["meta"]:
-            warn("The tree defined mutations on genes {}, but annotations aren't defined in the meta JSON.".format(", ".join(genes_with_mutations)))
-        else:
-            for gene in genes_with_mutations:
-                if gene not in data["meta"]["genome_annotations"]:
-                    warn("The tree defined mutations on gene {} which doesn't appear in the metadata annotations object.".format(gene))
+        for gene in genes_with_mutations:
+            if gene not in data["meta"].get("genome_annotations", {}):
+                warn("The tree defined mutations on gene {} which doesn't appear in the metadata annotations object.".format(gene))
 
     default_branch_label = data.get("meta").get("display_defaults", {}).get("branch_label")
     if default_branch_label and default_branch_label.lower() != "none":

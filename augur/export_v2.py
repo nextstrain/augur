@@ -478,7 +478,7 @@ def set_geo_resolutions(data_json, config, command_line_traits, lat_long_mapping
 
 
 def set_annotations(data_json, node_data):
-    if "annotations" in node_data:
+    if len(node_data.get("annotations", {}).keys()):
         data_json['meta']["genome_annotations"] = node_data["annotations"]
 
 def set_filters(data_json, config):

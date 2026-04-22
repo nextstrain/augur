@@ -52,6 +52,7 @@ FILTER_GLOBAL_CLI_OPTIONS: Dict[str, AugurOption] = {
     "sequences": "--sequences",
     "sequence_index": "--sequence-index",
     "seed": "--subsample-seed",
+    "seq_type": "--seq-type",
 }
 """
 Mapping of argparse namespace variable name to augur filter option.
@@ -85,7 +86,8 @@ FILTER_SAMPLE_CONFIG: Dict[str, AugurOption|None] = {
     "max_date": "--max-date",
     "min_length": "--min-length",
     "max_length": "--max-length",
-    "non_nucleotide": ("--non-nucleotide", None),
+    "exclude_invalid": ("--exclude-invalid", None),
+    "non_nucleotide": ("--exclude-invalid", None), # 'non_nucleotide'/'--non-nucleotide' is deprecated
     "query": "--query",
     "query_columns": "--query-columns",
     "group_by": "--group-by",
@@ -100,6 +102,10 @@ These are sent to only the intermediate augur filter calls.
 A value of `None` is a sample config value which does not directly map to an `augur filter`
 argument and must be handled separately.
 """
+
+FILTER_SAMPLE_CONFIG_DEPRECATIONS: Dict[str, str] = {
+    'non_nucleotide': 'exclude_invalid'
+}
 
 PROXIMAL_SAMPLE_CONFIG: Dict[str, AugurOption|None] = {
     "focal_sample": None, # corresponds to --focal-sequences, but the config value is for a sample name
@@ -127,6 +133,7 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     input_group.add_argument('--metadata-id-columns', metavar="COLUMN", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     input_group.add_argument('--metadata-delimiters', metavar="CHARACTER", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     input_group.add_argument('--skip-checks', action='store_true', help="use this option to skip checking for duplicates in sequences and whether ids in metadata have a sequence entry. Can improve performance on large files. Note that this should only be used if you are sure there are no duplicate sequences or mismatched ids since they can lead to errors in downstream Augur commands.")
+    input_group.add_argument('--seq-type', default='nuc', choices=['nuc', 'aa'], help="Sequence type: 'nuc' or 'aa'")
 
     config_group = parser.add_argument_group("Configuration options", "options related to configuration")
     config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file. The expected config options must be defined at the top level, or within a specific section using --config-section." + SKIP_AUTO_DEFAULT_IN_HELP)
@@ -191,6 +198,9 @@ def run(args: argparse.Namespace) -> None:
     if _includes_proximal_sample(config) and not args.sequences:
         raise AugurError("Augur subsample with a proximal sample requires (aligned) sequences to be provided.")
 
+    if _includes_proximal_sample(config) and args.seq_type!='nuc':
+        raise AugurError("Proximal sampling for AA sequences is not yet supported.")
+
     # Resolve filepaths.
     search_paths = _get_search_paths(args.config, args.search_paths)
     config, filepaths = _resolve_filepaths(config, search_paths, schema_validator.schema)
@@ -214,8 +224,9 @@ def run(args: argparse.Namespace) -> None:
         drop = bool(options.pop('drop_sample', False))
         
         if sample_type == 'filterSampleProperties':
-            merged_options = _merge_options(options, defaults)
-            
+            merged_options = _handle_deprecated_arguments(
+                _merge_options(options, defaults)
+            )
             # Does this sample define a context sample?
             context_sample = merged_options.pop('context_sample', None)
 
@@ -661,6 +672,28 @@ def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, 
 
 
 
+def _handle_deprecated_arguments(options: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Deprecations are currently hardcoded to use FILTER_SAMPLE_CONFIG_DEPRECATIONS
+    
+    >>> _handle_deprecated_arguments({'non_nucleotide': True})
+    {'exclude_invalid': True}
+    
+    >>> valid_opts = {'min_date': '2020-01-01'}
+    >>> _handle_deprecated_arguments(valid_opts) == valid_opts
+    True
+    """
+    
+    opts = {**options}
+    for old_key, new_key in FILTER_SAMPLE_CONFIG_DEPRECATIONS.items():
+        if old_key in opts:
+            print_err(f"WARNING: key {old_key!r} is deprecated and has been replaced with {new_key!r}")
+            if new_key in opts:
+                raise AugurError(f"In a sample both {old_key!r} (now deprecated) and {new_key!r} are present")
+            opts[new_key] = opts[old_key]
+            del opts[old_key]
+    return opts
+
 class Sample:
     """
     Base class containing information about a particular sample (represented by a 'sample' block in the YAML config).
@@ -761,7 +794,11 @@ class FilterSample(Sample):
         ['region', 'year']
         >>> sample.args["--sequences-per-group"]
         5
+        
+        (sample key non_nucleotide is deprecated, it should be be remapped to exclude_invalid which corresponds to --exclude-invalid)
         >>> "--non-nucleotide" in sample.args
+        False
+        >>> "--exclude-invalid" in sample.args
         True
         >>> "--no-probabilistic-sampling" in sample.args
         True

@@ -2,12 +2,22 @@
 
 ## __NEXT__
 
-### Major Changes
+### Features
 
 * proximity: Introduce a new `augur proximity` tool to find the k closest strains against a query set using hamming distance. [#1962][] @jameshadfield
+
 * subsample: Allow subsampling schemes (YAML configuration) to perform hierarchical sampling where one sample depends on another, as well as proximal sampling where we use another sample as the query set. [#1962][] @jameshadfield
 
-### Features
+* Allow analyses of AA (protein) datasets. This includes changes to the following augur components: [#1958][] @jameshadfield
+  * index: AA sequences can be indexed by using `--seq-type aa`. The column names of the resulting index will differ from those for nuc sequences.
+  * filter: AA sequences now work with sequence based filters when using `--seq-type aa`.
+  * filter: The `--non-nucleotide` argument is deprecated and has been replaced with `--exclude-invalid`.
+  * subsample: AA sequences now work when using `--seq-type aa`.
+  * subsample: The `non_nucleotide` sample keyword is deprecated and has been replaced with `exclude_invalid`.
+  * refine: Addition of an `--seq-type aa` argument which will result in TreeTime using the JTT92 substitution model.
+  * ancestral: Reconstruction to genes can now happen without a nucleotide sequence. We also allow AA root sequences to be provided (for AA-only or AA+nuc analyses).
+  * export v2: Node-data JSONs with gene-only annotations are now valid and will be exported.
+  * Schema changes to annotations and export_v2 to make the `nuc` key optional for (genome) annotations.
 
 * ancestral: Add `--report-inconsistent-translation` argument to report where amino acid reconstruction differed from the translation of the reconstructed nuc sequence. [#1975][] @jameshadfield
 
@@ -16,6 +26,7 @@
 * ancestral: Fix potential bugs where 'N' could be used as the ambiguous character for AA sequences (this bug wasn't exposed if the provided translations came from Nextclade which was the usual path). Also includes fixes for nucleotide reconstructions involving the ambiguous 'X' character. [#1975][] @jameshadfield
 * merge: Added a workaround for a bug in SQLite version 3.53.0. [#1984][] @victorlin
 
+[#1958]: https://github.com/nextstrain/augur/pull/1958
 [#1962]: https://github.com/nextstrain/augur/pull/1962
 [#1975]: https://github.com/nextstrain/augur/pull/1975
 [#1984]: https://github.com/nextstrain/augur/pull/1984

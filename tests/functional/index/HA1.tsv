@@ -1,0 +1,7 @@
+strain	date
+Seq1	2021-06-01
+Seq2_same_as_seq1	2022-06-01
+Seq3	2023-06-01
+Seq4_many_unknown	2024-06-01
+Seq5_many_unknown_and_gaps	2025-06-01
+Seq6_invalid_chars	2026-06-01

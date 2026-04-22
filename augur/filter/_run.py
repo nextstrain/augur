@@ -56,7 +56,7 @@ def run(args):
         if is_vcf:
             index_vcf(args.sequences, sequence_index_path)
         else:
-            index_sequences(args.sequences, sequence_index_path)
+            index_sequences(args.sequences, sequence_index_path, args.seq_type)
 
     # Load the sequence index, if a path exists.
     sequence_index = None
@@ -78,6 +78,12 @@ def run(args):
             os.unlink(sequence_index_path)
 
         sequence_index_ids = set(sequence_index.index.values)
+
+        # Ensure the index seq-type matches the one we're running augur filter with
+        if args.seq_type=='nuc' and 'invalid_nucleotides' not in sequence_index.columns:
+            raise AugurError("Sequence index was missing 'invalid_nucleotides' column, please ensure it was generated for nucleotide sequences")
+        elif args.seq_type=='aa' and 'invalid_residues' not in sequence_index.columns:
+            raise AugurError("Sequence index was missing 'invalid_residues' column, please ensure it was generated for AA sequences")
 
     # Check ids for duplicates and compare against sequence index.
     if args.skip_checks:
@@ -454,9 +460,9 @@ def run(args):
         include_exclude_rules.filter_by_ambiguous_date.__name__: "{count} {were} dropped because of their ambiguous date in {ambiguity}",
         include_exclude_rules.filter_by_min_date.__name__: "{count} {were} dropped because {they} {were} earlier than {min_date} or missing a date",
         include_exclude_rules.filter_by_max_date.__name__: "{count} {were} dropped because {they} {were} later than {max_date} or missing a date",
-        include_exclude_rules.filter_by_min_length.__name__: "{count} {were} dropped because {they} {were} shorter than the minimum length of {min_length}bp when only counting standard nucleotide characters A, C, G, or T (case-insensitive)",
-        include_exclude_rules.filter_by_max_length.__name__: "{count} {were} dropped because {they} {were} longer than the maximum length of {max_length}bp when only counting standard nucleotide characters A, C, G, or T (case-insensitive)",
-        include_exclude_rules.filter_by_non_nucleotide.__name__: "{count} {were} dropped because {they} had non-nucleotide characters",
+        include_exclude_rules.filter_by_min_length.__name__: "{count} {were} dropped because {they} {were} shorter than the minimum length of {min_length} when only counting valid characters",
+        include_exclude_rules.filter_by_max_length.__name__: "{count} {were} dropped because {they} {were} longer than the maximum length of {max_length} when only counting valid characters",
+        include_exclude_rules.filter_by_invalid_characters.__name__: "{count} {were} dropped because {they} had invalid characters",
         include_exclude_rules.skip_group_by_with_ambiguous_year.__name__: "{count} {were} dropped during grouping due to ambiguous year information",
         include_exclude_rules.skip_group_by_with_ambiguous_month.__name__: "{count} {were} dropped during grouping due to ambiguous month information",
         include_exclude_rules.skip_group_by_with_ambiguous_day.__name__: "{count} {were} dropped during grouping due to ambiguous day information",
