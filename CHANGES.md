@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 33.1.0 (22 April 2026)
+
 ### Features
 
 * proximity: Introduce a new `augur proximity` tool to find the k closest strains against a query set using hamming distance. [#1962][] @jameshadfield
