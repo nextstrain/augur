@@ -64,7 +64,7 @@ setuptools.setup(
         "packaging >=19.2",
         # Sync this with 'pandas-stubs' dev dependency
         "pandas >=1.4.0, <3",
-        "phylo-treetime >=0.11.2, <0.12",
+        "phylo-treetime >=0.11.2, <0.13",
         "pyfastx >=1.0.0, <3.0",
         "python_calamine >=0.2.0",
         "pyyaml",
