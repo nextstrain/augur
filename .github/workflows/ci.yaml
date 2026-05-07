@@ -361,12 +361,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
-  build-docs:
-    uses: nextstrain/.github/.github/workflows/docs-ci.yaml@master
-    with:
-      docs-directory: docs/
-      pip-install-target: .[dev]
-
   check-docs:
     runs-on: ubuntu-latest
     steps:
