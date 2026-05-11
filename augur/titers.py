@@ -8,7 +8,7 @@ from Bio import Phylo
 from .reconstruct_sequences import load_alignments
 from .titer_model import InsufficientDataException
 from .utils import write_augur_json
-from .argparse_ import add_default_command, ExtendOverwriteDefault
+from .argparse_ import add_default_command, add_subparser, ExtendOverwriteDefault
 
 
 def register_parser(parent_subparsers):
@@ -16,7 +16,7 @@ def register_parser(parent_subparsers):
     subparsers = parser.add_subparsers()
     add_default_command(parser)
 
-    tree_model = subparsers.add_parser('tree', help='tree model')
+    tree_model = add_subparser(subparsers, 'tree', help='tree model')
     tree_model.add_argument('--titers', nargs='+', action=ExtendOverwriteDefault, type=str, required=True, help="file with titer measurements")
     tree_model.add_argument('--tree', '-t', type=str, required=True, help="tree to perform fit titer model to")
     tree_model.add_argument('--allow-empty-model', action="store_true", help="allow model to be empty")
@@ -26,7 +26,7 @@ def register_parser(parent_subparsers):
         __command__ = infer_tree_model
     )
 
-    sub_model = subparsers.add_parser('sub', help='substitution model')
+    sub_model = add_subparser(subparsers, 'sub', help='substitution model')
     sub_model.add_argument('--titers', nargs='+', action=ExtendOverwriteDefault, type=str, required=True, help="file with titer measurements")
     sub_model.add_argument('--alignment', nargs='+', action=ExtendOverwriteDefault, type=str, required=True, help="sequence to be used in the substitution model, supplied as fasta files")
     sub_model.add_argument('--gene-names', nargs='+', action=ExtendOverwriteDefault, type=str, required=True, help="names of the sequences in the alignment, same order assumed")

@@ -33,6 +33,16 @@ def add_default_command(parser):
     parser.set_defaults(__command__ = default_command)
 
 
+def add_subparser(parent_subparsers: _SubParsersAction, *args, **kwargs) -> ArgumentParser:
+    """
+    Add a subparser to a parent subparser.
+    """
+    # Use the same formatting class for every command for consistency.
+    kwargs.setdefault("formatter_class", ArgumentDefaultsHelpFormatter)
+
+    return parent_subparsers.add_parser(*args, **kwargs)
+
+
 def add_command_subparsers(subparsers, commands, command_attribute='__command__'):
     """
     Add subparsers for each command module.
