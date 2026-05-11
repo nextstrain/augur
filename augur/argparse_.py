@@ -1,9 +1,12 @@
 """
 Custom helpers for the argparse standard library.
 """
+import os
 from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
 from itertools import chain
+from textwrap import indent as indent_text
 from typing import Iterable, Optional, Tuple, Union
+from .rst import rst_to_text
 from .types import ValidationMode
 
 
@@ -19,6 +22,45 @@ from .types import ValidationMode
 # Copied from the Nextstrain CLI repo
 # https://github.com/nextstrain/cli/blob/017c53805e8317951327d24c04184615cc400b09/nextstrain/cli/argparse.py#L13-L21
 SKIP_AUTO_DEFAULT_IN_HELP = "%(default).0s"
+
+
+class HelpFormatter(ArgumentDefaultsHelpFormatter):
+    def __init__(self, prog, indent_increment = 2, max_help_position = 24, width = None):
+        # Ignore terminal size, unlike standard argparse, as the readability of
+        # paragraphs of text suffers at wide widths.  Instead, default to 78
+        # columns (80 wide - 2 column gutter), but let that be overridden by an
+        # explicit COLUMNS variable or reduced by a smaller actual terminal.
+        if width is None:
+            try:
+                width = int(os.environ["COLUMNS"])
+            except (KeyError, ValueError):
+                try:
+                    width = min(os.get_terminal_size().columns, 80) - 2
+                except (AttributeError, OSError):
+                    width = 80 - 2
+
+        super().__init__(prog, indent_increment, max_help_position, width)
+
+    # Based on argparse.RawDescriptionHelpFormatter's implementation
+    def _fill_text(self, text, width, indent):
+        return indent_text(rst_to_text(text, width), prefix=indent)
+
+    # Based on argparse.RawTextHelpFormatter's implementation
+    def _split_lines(self, text, width):
+        # Render to rST here so rST gets control over wrapping/line breaks.
+        return rst_to_text(text, width).splitlines()
+
+    # Emit blank lines between arguments for better readability.  It might seem
+    # simpler to override _join_parts() instead, but that's called from two
+    # places and we only want to join on newlines for one of those places.
+    def add_arguments(self, actions):
+        for i, action in enumerate(actions):
+            if i != 0:
+                # Use " \n" to avoid a completely empty line (e.g. "\n") for
+                # the sake ShowBriefHelp.truncate_help()'s heuristic.
+                self._add_item(str, [" \n"])
+
+            self.add_argument(action)
 
 
 def add_default_command(parser):
@@ -38,7 +80,7 @@ def add_subparser(parent_subparsers: _SubParsersAction, *args, **kwargs) -> Argu
     Add a subparser to a parent subparser.
     """
     # Use the same formatting class for every command for consistency.
-    kwargs.setdefault("formatter_class", ArgumentDefaultsHelpFormatter)
+    kwargs.setdefault("formatter_class", HelpFormatter)
 
     return parent_subparsers.add_parser(*args, **kwargs)
 
@@ -72,7 +114,7 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
 
         # Use the same formatting class for every command for consistency.
         # Set here to avoid repeating it in every command's register_parser().
-        subparser.formatter_class = ArgumentDefaultsHelpFormatter
+        subparser.formatter_class = HelpFormatter
 
         if not subparser.description and command.__doc__:
             subparser.description = command.__doc__

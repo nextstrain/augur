@@ -4,6 +4,9 @@
 
   "include": ["augur/"],
 
+  "ignore": [
+    "augur/rst/sphinx.py",
+  ],
 
   "typeCheckingMode": "basic",
 

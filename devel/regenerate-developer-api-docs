@@ -8,4 +8,5 @@ sphinx-apidoc \
   --separate \
   --no-toc \
   --output-dir docs/api/developer \
-  augur
+  augur \
+  augur/rst

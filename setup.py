@@ -55,6 +55,7 @@ setuptools.setup(
         # TODO: Remove biopython >= 1.80 pin if it is added to bcbio-gff: https://github.com/chapmanb/bcbb/issues/142
         "biopython >=1.80, ==1.*",
         "cvxopt >=1.1.9, ==1.*",
+        "docutils",
         "importlib_resources >=5.3.0; python_version < '3.11'",
         "isodate >=0.6,<0.8",
         # Sync this with 'types-jsonschema' dev dependency
