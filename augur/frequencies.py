@@ -2,6 +2,7 @@
 infer frequencies of mutations or clades
 """
 import json, os, sys
+from textwrap import dedent
 import numpy as np
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
@@ -39,9 +40,9 @@ def register_parser(parent_subparsers):
     parser.add_argument("--pivot-interval-units", type=str, default="months", choices=['months', 'weeks'],
                         help="space pivots by months (default) or by weeks")
     parser.add_argument('--min-date', type=numeric_date_type,
-                        help=f"date to begin frequencies calculations; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
+                        help=f"date to begin frequencies calculations; may be specified as:\n\n{SUPPORTED_DATE_HELP_TEXT}")
     parser.add_argument('--max-date', type=numeric_date_type,
-                        help=f"date to end frequencies calculations; may be specified as: {SUPPORTED_DATE_HELP_TEXT}")
+                        help=f"date to end frequencies calculations; may be specified as:\n\n{SUPPORTED_DATE_HELP_TEXT}")
 
     # Tree-specific arguments
     parser.add_argument('--tree', '-t', type=str,
@@ -71,9 +72,10 @@ def register_parser(parent_subparsers):
     parser.add_argument('--minimal-clade-size', type=int, default=0,
                         help="minimal number of tips a clade must have for its diffusion frequencies to be reported")
     parser.add_argument('--minimal-clade-size-to-estimate', type=int, default=10,
-                        help="""minimal number of tips a clade must have for its diffusion frequencies to be estimated
-                                by the diffusion likelihood; all smaller clades will inherit frequencies from their
-                                parents""")
+                        help=dedent("""\
+                            minimal number of tips a clade must have for its diffusion frequencies to be estimated
+                            by the diffusion likelihood; all smaller clades will inherit frequencies from their
+                            parents"""))
     parser.add_argument("--stiffness", type=float, default=10.0, help="parameter penalizing curvature of the frequency trajectory")
     parser.add_argument("--inertia", type=float, default=0.0, help="determines how frequencies continue "
                         "in absense of data (inertia=0 -> go flat, inertia=1.0 -> continue current trend)")
