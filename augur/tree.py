@@ -477,9 +477,10 @@ def register_parser(parent_subparsers):
             Use the assignment operator (e.g.,
             ``--tree-builder-args="--polytomy"`` for IQ-TREE) to avoid
             unexpected errors.
-            FastTree defaults: ``{DEFAULT_ARGS['fasttree']}``.
-            RAxML defaults: ``{DEFAULT_ARGS['raxml']}``.
-            IQ-TREE defaults: ``{DEFAULT_ARGS['iqtree']}``.
+
+            - FastTree defaults: ``{DEFAULT_ARGS['fasttree']}``
+            - RAxML defaults: ``{DEFAULT_ARGS['raxml']}``
+            - IQ-TREE defaults: ``{DEFAULT_ARGS['iqtree']}``
 
             Note that IQ-TREE will rewrite certain characters in FASTA deflines.
             In order to prevent this from breaking downstream analysis steps,
