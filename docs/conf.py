@@ -120,6 +120,10 @@ html_css_files = [
     'css/custom.css',
 ]
 
+# Default action is "qDe", we are customizing to turn off the dash transformations.
+# See <https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-smart-quotes>
+smartquotes_action = "qe"
+
 # -- Resolve build warnings --------------------------------------------------
 
 nitpick_ignore = [
