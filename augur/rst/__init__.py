@@ -1,7 +1,7 @@
 """
 reStructuredText conversion.
 
-.. envvar:: NEXTSTRAIN_RST_STRICT
+.. envvar:: AUGUR_RST_STRICT
 
     If set to any value, then rST parsing is put into strict mode and any
     warnings and errors are raised as exceptions.
@@ -11,7 +11,7 @@ reStructuredText conversion.
     If set to any value, then rST parsing produces the stringified doctree
     instead of formatted plain text.  Being able to see the doctree is useful
     for debugging and making changes to
-    :cls:`~nextstrain.cli.rst.sphinx.TextWriter`.
+    :cls:`~augur.rst.sphinx.TextWriter`.
 
 Originally copied from the Nextstrain CLI project, which is licensed under an
 MIT license. See the LICENSE.nextstrain-cli file distributed alongside this
@@ -30,7 +30,7 @@ from docutils.parsers.rst import Directive
 from docutils.parsers.rst.directives import register_directive
 from docutils.parsers.rst.roles import register_local_role
 from docutils.utils import unescape
-from ..__version__ import __version__ as cli_version
+from ..__version__ import __version__ as augur_version
 from .sphinx import TextWriter
 
 
@@ -38,7 +38,7 @@ from .sphinx import TextWriter
 DEBUG = os.environ.get("NEXTSTRAIN_RST_DEBUG", "") != ""
 
 # For CI testing
-STRICT = os.environ.get("NEXTSTRAIN_RST_STRICT", "") != ""
+STRICT = os.environ.get("AUGUR_RST_STRICT", "") != ""
 
 # Ignore rST issues by default as we don't want messages included in output or
 # errors thrown at runtime.  Just do our best to convert.
@@ -83,7 +83,7 @@ def rst_to_text(source: str, width: int = None) -> str:
     emits the text surrounded by backticks) instead of ``title-reference``.
 
     If conversion fails, *source* is returned.  Set
-    :envvar:`NEXTSTRAIN_RST_STRICT` to enable strict conversion and raise
+    :envvar:`AUGUR_RST_STRICT` to enable strict conversion and raise
     exceptions for failures.
     """
     global REGISTERED
@@ -195,20 +195,20 @@ def doc_url(target: str) -> str:
     """
     Construct the absolute URL for a ``:doc:`` *target*.
 
-    The default project is the Nextstrain CLI, and the URLs produced will be
+    The default project is Augur, and the URLs produced will be
     version-specific so they stay relevant and accurate to what someone is
     running locally.
 
     *target* may be prefixed with a known project identifier (à la
     Intersphinx).
 
-    If :envvar:`NEXTSTRAIN_RST_STRICT` is set, then an exception will be raised
+    If :envvar:`AUGUR_RST_STRICT` is set, then an exception will be raised
     for an unknown project identifier in *target*.  Otherwise, *target* is
     returned as-is if unrecognized.
     """
     # Remove any +local part from the version (e.g. +git development versions)
     # since those never exist on RTD.
-    cli_doc_version = cli_version.split("+", 1)[0]
+    augur_doc_version = augur_version.split("+", 1)[0]
 
     if ":" in target:
         project, path = target.split(":", 1)
@@ -216,7 +216,7 @@ def doc_url(target: str) -> str:
         project, path = None, target
 
     project_urls = {
-        None: (f"https://docs.nextstrain.org/projects/cli/en/{cli_doc_version}/", ""),
+        None: (f"https://docs.nextstrain.org/projects/augur/en/{augur_doc_version}/", ""),
         "docs": ("https://docs.nextstrain.org/page/", ".html"),
     }
 

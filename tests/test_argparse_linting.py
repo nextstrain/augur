@@ -34,4 +34,4 @@ def test_help(command):
     result = run(args)
     assert result.returncode == 0, f"{args} exited with error"
 
-    # TODO: Test with NEXTSTRAIN_RST_STRICT once all Augur help strings are valid strict rST.
+    # TODO: Test with AUGUR_RST_STRICT once all Augur help strings are valid strict rST.
