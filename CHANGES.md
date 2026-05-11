@@ -5,7 +5,13 @@
 ### Features
 
 * Support treetime 0.12.* [#1986][]
-    
+
+### Bug fixes
+
+* Improved formatting of command line help text. [#313][], [#1630][] @victorlin
+
+[#313]: https://github.com/nextstrain/augur/issues/313
+[#1630]: https://github.com/nextstrain/augur/issues/1630
 [#1986]: https://github.com/nextstrain/augur/pull/1986
 
 ## 33.1.0 (22 April 2026)

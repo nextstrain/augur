@@ -11,6 +11,7 @@ VCFtools is used behind the scenes to handle VCF files, but this should be
 considered an implementation detail that may change in the future.  The CLI
 program vcftools must be available on PATH.
 """
+from textwrap import dedent
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.dates import numeric_date_type
 from augur.filter.arguments import descriptions
@@ -63,10 +64,11 @@ def register_arguments(parser):
     probabilistic_sampling_group.add_argument('--probabilistic-sampling', action='store_true', help=descriptions['probabilistic_sampling'])
     probabilistic_sampling_group.add_argument('--no-probabilistic-sampling', action='store_false', dest='probabilistic_sampling')
     subsample_group.add_argument('--group-by-weights', type=str, metavar="FILE", help=descriptions['group_by_weights'])
-    subsample_group.add_argument('--priority', type=str, help="""tab-delimited file with list of priority scores for strains (e.g., "<strain>\\t<priority>") and no header.
-    When scores are provided, Augur converts scores to floating point values, sorts strains within each subsampling group from highest to lowest priority, and selects the top N strains per group where N is the calculated or requested number of strains per group.
-    Higher numbers indicate higher priority.
-    Since priorities represent relative values between strains, these values can be arbitrary.""")
+    subsample_group.add_argument('--priority', type=str, help=dedent("""\
+        tab-delimited file with list of priority scores for strains (e.g., "<strain>\\t<priority>") and no header.
+        When scores are provided, Augur converts scores to floating point values, sorts strains within each subsampling group from highest to lowest priority, and selects the top N strains per group where N is the calculated or requested number of strains per group.
+        Higher numbers indicate higher priority.
+        Since priorities represent relative values between strains, these values can be arbitrary."""))
     subsample_group.add_argument('--subsample-seed', type=int, help="random number generator seed to allow reproducible subsampling (with same input data).")
 
     output_group = parser.add_argument_group("outputs", "options related to outputs, at least one of the possible representations of filtered data (--output-sequences, --output-metadata, --output-strains) is required")

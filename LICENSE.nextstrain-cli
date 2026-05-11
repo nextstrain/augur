@@ -1,8 +1,10 @@
 This license applies to the original copy of functions from the Nextstrain CLI
 project into this project, namely
 
+- everything in "augur/rst/__init__.py"
+- everything in "augur/rst/sphinx.py" (see also LICENSE.sphinx)
 - resource functions incorporated as "augur/data/__init__.py"
-- walk_commands() function incorporated into "augur/argparse_.py"
+- walk_commands() function and HelpFormatter class incorporated into "augur/argparse_.py"
 
 Any subsequent modifications to this project's copy of these functions are
 licensed under the license of this project, not of Nextstrain CLI.
