@@ -4,7 +4,7 @@ Custom helpers for the argparse standard library.
 import os
 from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
 from itertools import chain
-from textwrap import indent as indent_text
+from textwrap import dedent, indent as indent_text
 from typing import Iterable, Optional, Tuple, Union
 from .rst import rst_to_text
 from .types import ValidationMode
@@ -160,7 +160,7 @@ def add_validation_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
         type=ValidationMode,
         choices=[mode for mode in ValidationMode],
         default=ValidationMode.ERROR,
-        help="""
+        help=dedent("""\
             Control if optional validation checks are performed and what
             happens if they fail.
 
@@ -172,7 +172,7 @@ def add_validation_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
 
             Note that some validation checks are non-optional and as such are
             not affected by this setting.
-        """)
+        """))
     parser.add_argument(
         '--skip-validation',
         dest="validation_mode",
