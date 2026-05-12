@@ -535,27 +535,31 @@ def set_panels(data_json, config, cmd_line_panels):
     data_json['meta']["panels"] = panels
 
 
-def set_data_provenance(data_json, config):
-    """Set the data provenance from the given config file to the given data JSON.
+def transfer_directly_from_config(data_json, config, key):
+    """
+    Transfer configuration directly from the (validated) auspice-config data
+    into the data_json.meta object
 
     Parameters
     ----------
     data_json : dict
         auspice JSON to be updated
     config : dict
-        config JSON with an expected ``data_provenance`` key
+        config JSON with an expected
+    key : string
+        key to lookup data (in config) and set data (in data_json.meta)
 
     Examples
     --------
     >>> config = {"data_provenance": [{"name": "GISAID"}, {"name": "INSDC"}]}
     >>> data_json = {"meta": {}}
-    >>> set_data_provenance(data_json, config)
+    >>> transfer_directly_from_config(data_json, config, "data_provenance")
     >>> data_json["meta"]["data_provenance"][0]["name"]
     'GISAID'
 
     """
-    if "data_provenance" in config:
-        data_json["meta"]["data_provenance"] = config["data_provenance"]
+    if key in config:
+        data_json["meta"][key] = config[key]
 
 
 def counter_to_disambiguation_suffix(count):
@@ -1243,7 +1247,7 @@ def run(args):
 
     set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
     set_panels(data_json, config, args.panels)
-    set_data_provenance(data_json, config)
+    transfer_directly_from_config(data_json, config, 'data_provenance')
 
     # pass through any extensions block in the auspice config JSON without any changes / checking
     if config.get("extensions"):
