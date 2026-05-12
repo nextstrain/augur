@@ -75,7 +75,7 @@ def orderKeys(data):
     od = CustomOrderedDict(data)
     od.set_order("version", "meta", "tree")
     if "meta" in od:
-        od["meta"].set_order("title", "updated", "build_url", "build_avatar", "data_provenance", "maintainers")
+        od["meta"].set_order("title", "updated", "build_url", "build_avatar", "data_provenance", "sharing", "maintainers")
         for coloring in od['meta'].get('colorings', []):
             coloring.set_order("key", "title", "type", "scale", "legend")
     def order_nodes(node):
@@ -1248,6 +1248,7 @@ def run(args):
     set_geo_resolutions(data_json, config, args.geo_resolutions, read_lat_longs(args.lat_longs), node_attrs)
     set_panels(data_json, config, args.panels)
     transfer_directly_from_config(data_json, config, 'data_provenance')
+    transfer_directly_from_config(data_json, config, 'sharing')
 
     # pass through any extensions block in the auspice config JSON without any changes / checking
     if config.get("extensions"):

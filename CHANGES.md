@@ -5,6 +5,7 @@
 ### Features
 
 * Support treetime 0.12.* [#1986][]
+* Enable auspice config JSONs to define `sharing`, which controls which assets Auspice offers for download. See [Auspice docs](https://docs.nextstrain.org/projects/auspice/en/stable/advanced-functionality/view-settings.html) for more. [#1993][] @jameshadfield
 
 ### Bug fixes
 
@@ -13,6 +14,7 @@
 [#313]: https://github.com/nextstrain/augur/issues/313
 [#1630]: https://github.com/nextstrain/augur/issues/1630
 [#1986]: https://github.com/nextstrain/augur/pull/1986
+[#1993]: https://github.com/nextstrain/augur/pull/1993
 
 ## 33.1.0 (22 April 2026)
 

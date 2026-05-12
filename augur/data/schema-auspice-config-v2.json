@@ -283,6 +283,33 @@
                 }
             }
         },
+        "sharing": {
+          "type": "object",
+          "description": "Control which assets Auspice enables for download. By default all are enabled (true). Note: Auspice will overwrite some of these for GISAID datasets to comply with data sharing agreements.",
+          "additionalProperties": false,
+          "properties": {
+            "dataset_json": {
+              "type": "boolean",
+              "description": "Enable/disable JSON dataset downloading"
+            },
+            "metadata_tsv": {
+              "type": "boolean",
+              "description": "Enable/disable downloading metadata TSVs"
+            },
+            "authors": {
+              "type": "boolean",
+              "description": "Enable/disable downloading authorship TSVs (where the dataset supports it)"
+            },
+            "trees": {
+              "type": "boolean",
+              "description": "Enable/disable downloading Newick / Nexus trees"
+            },
+            "entropy": {
+              "type": "boolean",
+              "description": "Enable/disable downloading entropy panel data (where the dataset supports it)"
+            }
+          }
+        },
         "metadata_columns": {
             "description": "Metadata TSV columns to export in addition to columns provided as colorings.",
             "$comment": "These columns will not be used as coloring options in Auspice but will be visible in the tree.",
