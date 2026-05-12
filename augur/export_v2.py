@@ -11,6 +11,7 @@ import numbers
 import math
 import re
 from Bio import Phylo
+from inspect import cleandoc
 from typing import Dict, Union, TypedDict, Any, Tuple
 from urllib.parse import urlparse
 
@@ -942,20 +943,21 @@ def register_parser(parent_subparsers):
                                  help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV",
-        help=f"""Latitudes and longitudes for geography traits. See this file for the format:
-                 <https://github.com/nextstrain/augur/blob/{__version__}/augur/data/lat_longs.tsv>.
-                 This file provides the default set of latitudes and longitudes. An additional file
-                 specified by this option will extend the default set. Duplicates based on the first
-                 two columns will be resolved by taking the coordinates from the user-provided
-                 file.""")
+        help=cleandoc(f"""
+            Latitudes and longitudes for geography traits. See this file for the format:
+            <https://github.com/nextstrain/augur/blob/{__version__}/augur/data/lat_longs.tsv>.
+            This file provides the default set of latitudes and longitudes. An additional file
+            specified by this option will extend the default set. Duplicates based on the first
+            two columns will be resolved by taking the coordinates from the user-provided
+            file."""))
 
     minify_group = parser.add_argument_group(
             title="OPTIONAL MINIFY SETTINGS",
-            description=f"""
+            description=cleandoc(f"""
                 By default, output JSON files (both main and sidecar) are automatically minimized if
                 the size of the un-minified main JSON file exceeds {MINIFY_THRESHOLD_MB} MB. Use
                 these options to override that behavior.
-                """
+                """)
         ).add_mutually_exclusive_group()
     minify_group.add_argument(
         '--minify-json',
@@ -970,12 +972,12 @@ def register_parser(parent_subparsers):
 
     root_sequence = parser.add_argument_group(
             title="OPTIONAL ROOT-SEQUENCE SETTINGS",
-            description=f"""
+            description=cleandoc(f"""
                 The root-sequences describe the sequences (nuc + aa) for the parent of the tree's root-node. They may represent a
                 reference sequence or the inferred sequence at the root node, depending on how they were generated.
                 The data is taken directly from the `reference` key within the provided node-data JSONs.
                 These arguments are mutually exclusive.
-                """
+                """)
         ).add_mutually_exclusive_group()
     root_sequence.add_argument('--include-root-sequence', action="store_true", help="Export as an additional JSON. The filename will follow the pattern of <OUTPUT>_root-sequence.json for a main auspice JSON of <OUTPUT>.json")
     root_sequence.add_argument('--include-root-sequence-inline', action="store_true", help="Export the root sequence within the dataset JSON. This should only be used for small genomes for file size reasons.")
