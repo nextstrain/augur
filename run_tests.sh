@@ -42,8 +42,8 @@ python3 -m pytest $coverage_arg $filtered_args
 
 # Only run functional tests if we are not running a subset of tests for pytest.
 if [ "$partial_test" = 0 ]; then
-    echo "Running functional tests with cram"
-    cram tests/
+    echo "Running functional tests with cram in parallel via our run-cram-parallel.py runner"
+    ./scripts/run-cram-parallel.py
 else
     echo "Skipping functional tests when running a subset of unit tests"
 fi
