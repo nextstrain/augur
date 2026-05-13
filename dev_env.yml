@@ -25,4 +25,5 @@ dependencies:
 
   # Tools used in tests
   - conda-forge::jq
+  - conda-forge::parallel
   - conda-forge::tsv-utils
