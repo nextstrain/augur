@@ -1,0 +1,81 @@
+#!/bin/bash
+set -euo pipefail
+
+main() {
+    # Separate options, if any, from paths.  If options are given, they must be
+    # delimited from paths with "--".
+    local -a cram_opts
+    local job_opt="--jobs=+0"
+
+    if [[ $# -eq 0 ]]; then
+        exit-with-help
+    fi
+    if [[ "${1:-}" == -* ]]; then
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --help|-h)
+                    exit-with-help;;
+
+                --version|-V)
+                    exit-with-version;;
+
+                --jobs=?*|-j?*)
+                    job_opt="$1"
+                    shift;;
+
+                --jobs|-j)
+                    job_opt="--jobs=$2"
+                    shift 2;;
+
+                --interactive|-i|--yes|-y|--no|-n)
+                    echo "cram's interactivity options (e.g. $1) are not supported under cramp" >&2
+                    exit 1;;
+
+                --)
+                    shift
+                    break;;
+
+                *)
+                    cram_opts+=("$1")
+                    shift;;
+            esac
+        done
+    fi
+
+      find "$@" -type f -name '*.t' -print0 \
+    | sort --zero-terminated \
+    | parallel --null --line-buffer --keep-order "$job_opt" -- cram "${cram_opts[@]}" \
+    | "$(dirname "$0")"/cram-log-merge
+}
+
+exit-with-help() {
+    cram --help | sed -Ee '
+        /^Usage: /c Usage: cramp [<OPTIONS> --] [<PATHS>]
+
+        /^Options:/ {
+            i Cram, in parallel.
+            i
+            i If <OPTIONS> are given, they must be separated from test <PATHS> by "--".
+            i 
+            i cramp options:
+            i \ \ -jN, --jobs=N       number of tests to run in parallel
+            i \ \ -h, --help          show this help message and exit
+            i \ \ -V, --version       show version information and exit
+            i 
+            c cram options:
+        }
+        /\s--(help|version)\s/d         # takeover help and version
+        /\s--(interactive|yes|no)\s/d   # no interactivity
+    '
+    exit
+}
+
+exit-with-version() {
+    echo "Cram, parallel (version 0)"
+    echo "Copyright 2024 Thomas Sibley <tom@zulutango.org>"
+    echo
+    cram --version
+    exit
+}
+
+main "$@"

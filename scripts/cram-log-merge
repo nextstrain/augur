@@ -1,0 +1,41 @@
+#!/usr/bin/env perl
+# Merge output from multiple invocations of Cram into one.
+use strict;
+use warnings;
+
+$|++; # unbuffer stdout
+
+my $ok   = 0;
+my $skip = 0;
+my $fail = 0;
+my $buf  = "";
+my $kept = "";
+
+while (<<>>) {
+    if (/^# Ran (\d+) tests, (\d+) skipped, (\d+) failed[.]/) {
+        # End of a Cram run; track counts and print output.
+        $ok   += $1;
+        $skip += $2;
+        $fail += $3;
+
+        chomp $buf if $buf =~ /^[.s!]+$/;
+        print $buf;
+        $buf = "";
+    }
+    elsif (/^# Kept temporary directory:/) {
+        # Hold --keep-tmpdir output till very end.
+        $kept .= $_;
+    }
+    else {
+        # Accumulate output from a Cram run
+        $buf .= $_;
+    }
+}
+
+die if $buf; # assert empty
+
+print "\n";
+print "# Ran $ok tests, $skip skipped, $fail failed.\n";
+print $kept if $kept;
+
+exit $fail;
