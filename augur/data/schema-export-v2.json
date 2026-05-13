@@ -117,6 +117,9 @@
                 },
                 "data_provenance": {
                     "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/data_provenance"
+                },
+                "sharing": {
+                    "$ref": "https://nextstrain.org/schemas/auspice/config/v2#/properties/sharing"
                 }
             }
         },
