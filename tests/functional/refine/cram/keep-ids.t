@@ -9,6 +9,7 @@ Setup
   >  --alignment "$TESTDIR/../data/aligned.fasta" \
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --output-tree tree.nwk \
+  >  --output-node-data branch_lengths.json \
   >  --timetree \
   >  --clock-filter-iqd 2 \
   >  --seed 314159 2>&1 | grep "pruning leaf" || echo "Nothing pruned"
@@ -28,6 +29,7 @@ Use --keep-ids to force-include it.
   >  --alignment "$TESTDIR/../data/aligned.fasta" \
   >  --metadata "$TESTDIR/../data/metadata.tsv" \
   >  --output-tree tree.nwk \
+  >  --output-node-data branch_lengths.json \
   >  --timetree \
   >  --clock-filter-iqd 2 \
   >  --keep-ids include.txt \
