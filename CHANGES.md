@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 33.2.0 (13 May 2026)
+
 ### Features
 
 * Support treetime 0.12.* [#1986][]
