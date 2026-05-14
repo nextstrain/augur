@@ -8,6 +8,7 @@ import os
 import shlex
 import shutil
 import sys
+import tempfile
 import time
 import uuid
 import Bio
@@ -228,7 +229,7 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
     return T
 
 
-def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nthreads=1, tree_builder_args=None):
+def build_iqtree(aln_file, out_file, substitution_model="GTR", nthreads=1, tree_builder_args=None):
     '''
     build tree using IQ-Tree
     arguments:
@@ -255,94 +256,85 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
     reverse_escape_dict = {v:k for k,v in escape_dict.items()}
 
 
-    # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
-    tmp_aln_file = str(Path(aln_file).with_name(Path(aln_file).stem + "-delim.fasta"))
-    log_file = str(Path(tmp_aln_file).with_suffix(".iqtree.log"))
-    input_sequence_names = set()
-    with open_file(tmp_aln_file, 'w') as ofile, open_file(aln_file) as ifile:
-        for line in ifile:
-            if line.startswith(">"):
-                strain_name = line.lstrip('>').rstrip('\n')
-                # Modify the strain name to remove anything after a space (0x20)
-                # This preserves the behaviour of augur v28 but makes it explicit.
-                strain_name = strain_name.split(' ')[0]
-                input_sequence_names.add(strain_name)
-                for c,v in escape_dict.items():
-                    strain_name = strain_name.replace(c,v)
-                ofile.write(f">{strain_name}\n")
-            else:
-                ofile.write(line)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # IQ-tree messes with taxon names. Hence remove offending characters, reinstaniate later
+        tmp_aln_file = str(Path(tmp_dir) / (Path(aln_file).stem + "-delim.fasta"))
+        log_file = str(Path(out_file).with_name(Path(aln_file).stem + "-delim.iqtree.log"))
+        input_sequence_names = set()
+        with open_file(tmp_aln_file, 'w') as ofile, open_file(aln_file) as ifile:
+            for line in ifile:
+                if line.startswith(">"):
+                    strain_name = line.lstrip('>').rstrip('\n')
+                    # Modify the strain name to remove anything after a space (0x20)
+                    # This preserves the behaviour of augur v28 but makes it explicit.
+                    strain_name = strain_name.split(' ')[0]
+                    input_sequence_names.add(strain_name)
+                    for c,v in escape_dict.items():
+                        strain_name = strain_name.replace(c,v)
+                    ofile.write(f">{strain_name}\n")
+                else:
+                    ofile.write(line)
 
-    invalid_newick_names = [strain_name for strain_name in input_sequence_names if any([char in strain_name for char in invalid_newick_chars])]
-    if len(invalid_newick_names):
-        if clean_up and os.path.isfile(tmp_aln_file):
-            os.remove(tmp_aln_file)
-        raise AugurError(dedent(f"""\
-            Certain strain names have characters which cannot be written in newick format (by Bio.Python, at least).
-            You should ensure these strain names are changed as early as possible in your analysis. The following
-            names are unescaped and surrounded by double quotes.
+        invalid_newick_names = [strain_name for strain_name in input_sequence_names if any([char in strain_name for char in invalid_newick_chars])]
+        if len(invalid_newick_names):
+            raise AugurError(dedent(f"""\
+                Certain strain names have characters which cannot be written in newick format (by Bio.Python, at least).
+                You should ensure these strain names are changed as early as possible in your analysis. The following
+                names are unescaped and surrounded by double quotes.
 
-            Invalid strain names:
-              - {f"{chr(10)}{' '*14}- ".join(['"' + str(name) + '"' for name in invalid_newick_names])}
+                Invalid strain names:
+                  - {f"{chr(10)}{' '*14}- ".join(['"' + str(name) + '"' for name in invalid_newick_names])}
 
-            Invalid characters: {', '.join(['"' + str(char) + '"' for char in invalid_newick_chars])}
-            """))
+                Invalid characters: {', '.join(['"' + str(char) + '"' for char in invalid_newick_chars])}
+                """))
 
 
-    # Check tree builder arguments for conflicts with hardcoded defaults.
-    check_conflicting_args(tree_builder_args, (
-        # -ntmax/--threads-max are synonyms
-        # see https://github.com/iqtree/iqtree2/blob/74da454bbd98d6ecb8cb955975a50de59785fbde/utils/tools.cpp#L4882-L4883
-        "-ntmax",
-        "--threads-max",
-        # -s/--aln/--msa are synonyms
-        # see https://github.com/iqtree/iqtree2/blob/74da454bbd98d6ecb8cb955975a50de59785fbde/utils/tools.cpp#L2370-L2371
-        "-s",
-        "--aln",
-        "--msa",
-        # --model/-m are synonyms
-        # see https://github.com/iqtree/iqtree2/blob/74da454bbd98d6ecb8cb955975a50de59785fbde/utils/tools.cpp#L3232-L3233
-        "-m",
-        "--model",
-    ))
+        # Check tree builder arguments for conflicts with hardcoded defaults.
+        check_conflicting_args(tree_builder_args, (
+            # -ntmax/--threads-max are synonyms
+            # see https://github.com/iqtree/iqtree2/blob/74da454bbd98d6ecb8cb955975a50de59785fbde/utils/tools.cpp#L4882-L4883
+            "-ntmax",
+            "--threads-max",
+            # -s/--aln/--msa are synonyms
+            # see https://github.com/iqtree/iqtree2/blob/74da454bbd98d6ecb8cb955975a50de59785fbde/utils/tools.cpp#L2370-L2371
+            "-s",
+            "--aln",
+            "--msa",
+            # --model/-m are synonyms
+            # see https://github.com/iqtree/iqtree2/blob/74da454bbd98d6ecb8cb955975a50de59785fbde/utils/tools.cpp#L3232-L3233
+            "-m",
+            "--model",
+        ))
 
-    if substitution_model.lower() != "auto":
-        call = [iqtree, "--threads-max", str(nthreads), "-s", shquote(tmp_aln_file),
-                "-m", shquote(substitution_model), tree_builder_args, ">", shquote(log_file)]
-    else:
-        call = [iqtree, "--threads-max", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
+        if substitution_model.lower() != "auto":
+            call = [iqtree, "--threads-max", str(nthreads), "-s", shquote(tmp_aln_file),
+                    "-m", shquote(substitution_model), tree_builder_args, ">", shquote(log_file)]
+        else:
+            call = [iqtree, "--threads-max", str(nthreads), "-s", shquote(tmp_aln_file), tree_builder_args, ">", shquote(log_file)]
 
-    cmd = " ".join(call)
+        cmd = " ".join(call)
 
-    print("Building a tree via:\n\t" + cmd +
-          "\n\tPlease use the corresponding citations according to" +
-          "\n\thttps://iqtree.github.io/doc/Home#how-to-cite-iq-tree")
-    if substitution_model.lower() == "auto":
-        print(f"Conducting a model test... see '{shquote(log_file)}' for the result. You can specify this with --substitution-model in future runs.")
+        print("Building a tree via:\n\t" + cmd +
+              "\n\tPlease use the corresponding citations according to" +
+              "\n\thttps://iqtree.github.io/doc/Home#how-to-cite-iq-tree")
+        if substitution_model.lower() == "auto":
+            print(f"Conducting a model test... see '{shquote(log_file)}' for the result. You can specify this with --substitution-model in future runs.")
 
-    try:
-        run_shell_command(cmd, raise_errors = True)
-        T = Phylo.read(tmp_aln_file+".treefile", 'newick')
-        shutil.copyfile(tmp_aln_file+".treefile", out_file)
-        for n in T.find_clades(terminal=True):
-            tmp_name = n.name
-            for v,c in reverse_escape_dict.items():
-                tmp_name = tmp_name.replace(v,c)
-            n.name = tmp_name
-        #this allows the user to check intermediate output, as tree.nwk will be
-        if clean_up:
-            if os.path.isfile(tmp_aln_file):
-                os.remove(tmp_aln_file)
-
-            for ext in [".bionj",".ckp.gz",".iqtree",".mldist",".model.gz",".treefile",".uniqueseq.phy",".model"]:
-                if os.path.isfile(tmp_aln_file + ext):
-                    os.remove(tmp_aln_file + ext)
-    except Exception as error:
-        print("ERROR: TREE BUILDING FAILED")
-        print(f"ERROR: {error}")
-        if os.path.isfile(log_file):
-            print("Please see the log file for more details: {}".format(log_file))
-        T=None
+        try:
+            run_shell_command(cmd, raise_errors = True)
+            T = Phylo.read(tmp_aln_file+".treefile", 'newick')
+            shutil.copyfile(tmp_aln_file+".treefile", out_file)
+            for n in T.find_clades(terminal=True):
+                tmp_name = n.name
+                for v,c in reverse_escape_dict.items():
+                    tmp_name = tmp_name.replace(v,c)
+                n.name = tmp_name
+        except Exception as error:
+            print("ERROR: TREE BUILDING FAILED")
+            print(f"ERROR: {error}")
+            if os.path.isfile(log_file):
+                print("Please see the log file for more details: {}".format(log_file))
+            T=None
 
     return (T, input_sequence_names)
 
