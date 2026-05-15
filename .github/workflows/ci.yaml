@@ -105,14 +105,24 @@ jobs:
       run: |
         if [[ -n "${COVERAGE_FILE:-}" ]]; then
           echo "Running pytest with coverage enabled"
-          export AUGUR="coverage run -a ${{ github.workspace }}/bin/augur"
-          pytest --cov=augur -n auto
+          pytest --cov=augur --ignore=tests/functional -n auto
         else
           echo "Running pytest without coverage"
-          export AUGUR="${{ github.workspace }}/bin/augur"
-          pytest --no-cov -n auto
+          pytest --no-cov --ignore=tests/functional -n auto
         fi
-
+    # Run prysk tests separately to try to even spread out workers among long
+    # running functional tests.
+    - name: Run prysk tests
+      run: |
+        if [[ -n "${COVERAGE_FILE:-}" ]]; then
+          echo "Running prysk tests with coverage enabled"
+          export AUGUR="coverage run -a ${{ github.workspace }}/bin/augur"
+          pytest --no-cov -n auto tests/functional/
+        else
+          echo "Running prysk tests without coverage"
+          export AUGUR="${{ github.workspace }}/bin/augur"
+          pytest --no-cov -n auto tests/functional/
+        fi
     - name: Upload coverage
       if: env.COVERAGE_FILE
       uses: actions/upload-artifact@v7
