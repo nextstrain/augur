@@ -4,6 +4,7 @@ A suite of commands to help with data curation.
 import argparse
 import sys
 from collections import deque
+from inspect import cleandoc
 from textwrap import dedent
 from typing import Iterable, Set
 
@@ -50,10 +51,10 @@ def create_shared_parser():
 
     shared_inputs = shared_parser.add_argument_group(
         title="INPUTS",
-        description="""
+        description=cleandoc("""
             Input options shared by all `augur curate` commands.
             If no input options are provided, commands will try to read NDJSON records from stdin.
-        """)
+        """))
     shared_inputs.add_argument("--metadata",
         help="Input metadata file. May be plain text (TSV, CSV) or an Excel or OpenOffice spreadsheet workbook file. When an Excel or OpenOffice workbook, only the first visible worksheet will be read and initial empty rows/columns will be ignored. Accepts '-' to read plain text from stdin.")
     shared_inputs.add_argument("--id-column",
@@ -84,10 +85,10 @@ def create_shared_parser():
 
     shared_outputs = shared_parser.add_argument_group(
         title="OUTPUTS",
-        description="""
+        description=cleandoc("""
             Output options shared by all `augur curate` commands.
             If no output options are provided, commands will output NDJSON records to stdout.
-        """)
+        """))
     shared_outputs.add_argument("--output-metadata",
         help="Output metadata TSV file. Accepts '-' to output TSV to stdout.")
 

@@ -14,6 +14,7 @@ import Bio
 from Bio.Seq import MutableSeq
 from Bio import Phylo
 import numpy as np
+from inspect import cleandoc
 from shlex import quote as shquote
 from treetime.vcf_utils import read_vcf
 from pathlib import Path
@@ -491,9 +492,10 @@ def register_parser(parent_subparsers):
             """))
     parser.add_argument('--override-default-args', action="store_true", help="override default tree builder arguments with the values provided by the user in ``--tree-builder-args`` instead of augmenting the existing defaults.")
 
-    parser.epilog = """For example, to build a tree with IQ-TREE, use the following format:
-    augur tree --method iqtree --alignment <alignment> --substitution-model <model> --output <tree> --tree-builder-args="<extra arguments>"
-    """
+    parser.epilog = cleandoc("""
+        For example, to build a tree with IQ-TREE, use the following format:
+        augur tree --method iqtree --alignment <alignment> --substitution-model <model> --output <tree> --tree-builder-args="<extra arguments>"
+        """)
     return parser
 
 def run(args):

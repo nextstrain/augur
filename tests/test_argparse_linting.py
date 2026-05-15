@@ -14,6 +14,18 @@ from subprocess import run
 commands = list(walk_commands(make_parser()))
 
 
+def help_texts():
+    for command, parser in commands:
+        for attribute in ("description", "epilog"):
+            yield command, attribute, getattr(parser, attribute)
+
+        for group in parser._action_groups:
+            yield command, f"{group.title} description", group.description
+
+        for action in parser._actions:
+            yield command, "/".join(action.option_strings) or action.dest, action.help
+
+
 # Ensure we always use ExtendOverwriteDefault for options that take a variable
 # number of arguments.  See <https://github.com/nextstrain/augur/pull/1709>.
 @pytest.mark.parametrize("action", [
@@ -35,3 +47,35 @@ def test_help(command):
     assert result.returncode == 0, f"{args} exited with error"
 
     # TODO: Test with AUGUR_RST_STRICT once all Augur help strings are valid strict rST.
+
+
+@pytest.mark.parametrize("command, location, text", [
+    pytest.param(command, location, text, id = " ".join(command) + " " + location)
+        for command, location, text in help_texts()
+])
+def test_multiline_help_dedented(command, location, text):
+    assert not _has_extra_indent(text), \
+        f"{' '.join(command)} {location} has extra indentation"
+
+
+def _has_extra_indent(text):
+    # Ignore non-strings.
+    if not isinstance(text, str):
+        return False
+
+    # Ignore blank lines, since leading/trailing blank lines are common in
+    # triple-quoted strings and do not affect indentation.
+    lines = [line for line in text.splitlines() if line.strip()]
+
+    if len(lines) < 2:
+        return False
+
+    indents = [
+        len(line) - len(line.lstrip())
+        for line in lines
+    ]
+
+    return (
+        # Fail if all lines after the first are indented.
+        all(indent >= 1 for indent in indents[1:])
+    )
