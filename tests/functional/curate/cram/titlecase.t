@@ -1,8 +1,6 @@
 Setup
 
-  $ pushd "$TESTDIR" > /dev/null
-  $ export AUGUR="${AUGUR:-../../../../bin/augur}"
-
+  $ source "$TESTDIR"/_setup.sh
 
 Test output with articles and a mixture of lower and uppercase letters.
 
@@ -96,4 +94,3 @@ Test silencing on failures such as when encountering a non-string value
   >   | ${AUGUR} curate titlecase --titlecase-fields "bare_int" \
   >   --failure-reporting "silent"
   {"bare_int": 2021}
-
