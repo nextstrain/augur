@@ -86,6 +86,7 @@ setuptools.setup(
             "pytest >=5.4.1",
             "pytest-cov >=2.8.1",
             "pytest-mock >= 2.0.0",
+            "pytest-xdist",
             "recommonmark >=0.5.0",
             "Sphinx >=2.0.1",
             "sphinx-autobuild >=2021.3.14",
