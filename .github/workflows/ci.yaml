@@ -34,8 +34,8 @@ jobs:
     - uses: actions/checkout@v6
     - run: npx pyright --stats
 
-  pytest-cram:
-    name: pytest-cram (${{ matrix.conda-args }} ${{ matrix.pip-args }})
+  pytest-prysk:
+    name: pytest-prysk (${{ matrix.conda-args }} ${{ matrix.pip-args }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -105,21 +105,14 @@ jobs:
       run: |
         if [[ -n "${COVERAGE_FILE:-}" ]]; then
           echo "Running pytest with coverage enabled"
-          pytest --cov=augur
+          export AUGUR="coverage run -a ${{ github.workspace }}/bin/augur"
+          pytest --cov=augur -n auto
         else
           echo "Running pytest without coverage"
-          pytest --no-cov
-        fi
-    - name: Run cram tests
-      run: |
-        if [[ -n "${COVERAGE_FILE:-}" ]]; then
-          echo "Running cram tests with coverage enabled"
-          export AUGUR="coverage run -a ${{ github.workspace }}/bin/augur"
-        else
-          echo "Running cram tests without coverage"
           export AUGUR="${{ github.workspace }}/bin/augur"
+          pytest --no-cov -n auto
         fi
-        scripts/run-cram-parallel.py
+
     - name: Upload coverage
       if: env.COVERAGE_FILE
       uses: actions/upload-artifact@v7
@@ -342,7 +335,7 @@ jobs:
 
   codecov:
     if: github.repository == 'nextstrain/augur'
-    needs: [pytest-cram]
+    needs: [pytest-prysk]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -408,7 +401,7 @@ jobs:
   release:
     # Only run when called by the release workflow on the default branch
     if: github.workflow_ref == format('{0}/.github/workflows/release.yaml@refs/heads/{1}', github.repository, github.event.repository.default_branch)
-    needs: [pytest-cram]
+    needs: [pytest-prysk]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
