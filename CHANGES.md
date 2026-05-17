@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* [export] Add `sharing.screenshot` to the auspice-config schema which was unintentionally omitted in the previous release. [#1999][] @jameshadfield
+
+[#1999]: https://github.com/nextstrain/augur/pull/1999
 
 ## 33.2.0 (13 May 2026)
 
