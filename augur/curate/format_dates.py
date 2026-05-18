@@ -124,25 +124,23 @@ def format_date(date_string, expected_formats):
         Dates without month will be formatted as 'YYYY-XX-XX', even if day is known.
         Dates without day will be formatted as 'YYYY-MM-XX'.
 
-
-    >>> expected_formats = ['%Y', '%Y-%m', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ', '%m-%d']
-    >>> format_date("", expected_formats)
+    >>> format_date("", BUILTIN_DATE_FORMATS)
     'XXXX-XX-XX'
-    >>> format_date("  ", expected_formats)
+    >>> format_date("  ", BUILTIN_DATE_FORMATS)
     'XXXX-XX-XX'
-    >>> format_date("01-01", expected_formats)
+    >>> format_date("01-01", ['%m-%d'])
     'XXXX-XX-XX'
-    >>> format_date("2020", expected_formats)
+    >>> format_date("2020", ['%Y'])
     '2020-XX-XX'
-    >>> format_date("2020-01", expected_formats)
+    >>> format_date("2020-01", ['%Y-%m'])
     '2020-01-XX'
-    >>> format_date("2020-1-15", expected_formats)
+    >>> format_date("2020-1-15", ['%Y-%m-%d'])
     '2020-01-15'
-    >>> format_date("2020-1-1", expected_formats)
+    >>> format_date("2020-1-1", ['%Y-%m-%d'])
     '2020-01-01'
-    >>> format_date("2020-01-15", expected_formats)
+    >>> format_date("2020-01-15", BUILTIN_DATE_FORMATS)
     '2020-01-15'
-    >>> format_date("2020-01-15T00:00:00Z", expected_formats)
+    >>> format_date("2020-01-15T00:00:00Z", ['%Y-%m-%dT%H:%M:%SZ'])
     '2020-01-15'
     """
 
