@@ -547,7 +547,7 @@ def transfer_directly_from_config(data_json, config, key):
         auspice JSON to be updated
     config : dict
         config JSON with an expected
-    key : string
+    key : str
         key to lookup data (in config) and set data (in data_json.meta)
 
     Examples

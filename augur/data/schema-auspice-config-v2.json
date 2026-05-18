@@ -307,6 +307,10 @@
             "entropy": {
               "type": "boolean",
               "description": "Enable/disable downloading entropy panel data (where the dataset supports it)"
+            },
+            "screenshot": {
+              "type": "boolean",
+              "description": "Enable/disable downloading a SVG screenshot"
             }
           }
         },
