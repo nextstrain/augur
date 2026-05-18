@@ -1,5 +1,5 @@
 """
-Format date fields to ISO 8601 dates (YYYY-MM-DD).
+Format date fields to Augur-compatible formats.
 
 If the provided ``--expected-date-formats`` represent incomplete dates then
 the incomplete dates are masked with 'XX'. For example, providing
@@ -25,6 +25,17 @@ BUILTIN_DATE_FORMATS = [
     '%Y-XX-XX',
     'XXXX-XX-XX',
 ]
+BUILTIN_RANGE_FORMATS = {
+    '%Y-%m-%d/%Y-%m-%d': re.compile(
+        r'^([0-9]{4}-[0-9]{2}-[0-9]{2})/([0-9]{4}-[0-9]{2}-[0-9]{2})$'
+    ),
+
+    # NCBI Datasets can return dates in '[YYYY TO YYYY]' format.
+    # There is no mention of this in Datasets docs, but it is documented
+    # for NCBI Pathogen Detection which may be related.
+    # <https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#range-searches>
+    '[%Y TO %Y]': re.compile(r'^\[([0-9]{4}) TO ([0-9]{4})\]$'),
+}
 
 
 def register_parser(parent_subparsers):
@@ -46,7 +57,12 @@ def register_parser(parent_subparsers):
             Use 'XX' to match masked parts of the date (e.g. '%%m/XX/%%Y').
             The following formats are builtin and automatically used:
             {", ".join(repr(x).replace("%", "%%") for x in BUILTIN_DATE_FORMATS)}.
-            User-provided values are considered after the builtin formats."""))
+            User-provided values are considered after the builtin formats.
+
+            The following date range formats are also builtin and automatically used:
+            {", ".join(repr(range_format).replace("%", "%%") for range_format in BUILTIN_RANGE_FORMATS.keys())}.
+            Currently there is no option to specify custom date range formats.
+            """))
     optional.add_argument("--failure-reporting",
         type=DataErrorMethod.argtype,
         choices=list(DataErrorMethod),
@@ -105,6 +121,24 @@ def directive_is_included(potential_directives, date_format):
 
 def format_date(date_string, expected_formats):
     """
+    Format *date_string* to an Augur-compatible format.
+
+    >>> format_date("2020-01-15", BUILTIN_DATE_FORMATS)
+    '2020-01-15'
+    >>> format_date("[2001 TO 2002]", BUILTIN_DATE_FORMATS)
+    '2001-01-01/2002-12-31'
+    """
+    if formatted_date := format_to_iso_date(date_string, expected_formats):
+        return formatted_date
+
+    if formatted_range := format_to_iso_interval(date_string):
+        return formatted_range
+
+    return None
+
+
+def format_to_iso_date(date_string, expected_formats):
+    """
     Format *date_string* to ISO 8601 date (YYYY-MM-DD) by trying to parse it
     as one of the provided *expected_formats*.
 
@@ -124,24 +158,26 @@ def format_date(date_string, expected_formats):
         Dates without month will be formatted as 'YYYY-XX-XX', even if day is known.
         Dates without day will be formatted as 'YYYY-MM-XX'.
 
-    >>> format_date("", BUILTIN_DATE_FORMATS)
+    >>> format_to_iso_date("", BUILTIN_DATE_FORMATS)
     'XXXX-XX-XX'
-    >>> format_date("  ", BUILTIN_DATE_FORMATS)
+    >>> format_to_iso_date("  ", BUILTIN_DATE_FORMATS)
     'XXXX-XX-XX'
-    >>> format_date("01-01", ['%m-%d'])
+    >>> format_to_iso_date("01-01", ['%m-%d'])
     'XXXX-XX-XX'
-    >>> format_date("2020", ['%Y'])
+    >>> format_to_iso_date("2020", ['%Y'])
     '2020-XX-XX'
-    >>> format_date("2020-01", ['%Y-%m'])
+    >>> format_to_iso_date("2020-01", ['%Y-%m'])
     '2020-01-XX'
-    >>> format_date("2020-1-15", ['%Y-%m-%d'])
+    >>> format_to_iso_date("2020-1-15", ['%Y-%m-%d'])
     '2020-01-15'
-    >>> format_date("2020-1-1", ['%Y-%m-%d'])
+    >>> format_to_iso_date("2020-1-1", ['%Y-%m-%d'])
     '2020-01-01'
-    >>> format_date("2020-01-15", BUILTIN_DATE_FORMATS)
+    >>> format_to_iso_date("2020-01-15", BUILTIN_DATE_FORMATS)
     '2020-01-15'
-    >>> format_date("2020-01-15T00:00:00Z", ['%Y-%m-%dT%H:%M:%SZ'])
+    >>> format_to_iso_date("2020-01-15T00:00:00Z", ['%Y-%m-%dT%H:%M:%SZ'])
     '2020-01-15'
+    >>> format_to_iso_date("[2001 TO 2002]", BUILTIN_DATE_FORMATS) is None
+    True
     """
 
     date_string = date_string.strip()
@@ -185,6 +221,28 @@ def format_date(date_string, expected_formats):
     return None
 
 
+def format_to_iso_interval(date_string):
+    """
+    Format *date_string* to an ISO 8601 interval, compatible with RE_DATE_RANGE
+    in augur.dates.
+
+    >>> format_to_iso_interval("[2001 TO 2002]")
+    '2001-01-01/2002-12-31'
+    >>> format_to_iso_interval("2001-01-01/2002-12-31")
+    '2001-01-01/2002-12-31'
+    """
+    if BUILTIN_RANGE_FORMATS['%Y-%m-%d/%Y-%m-%d'].match(date_string):
+        return date_string
+
+    if match := BUILTIN_RANGE_FORMATS['[%Y TO %Y]'].match(date_string):
+        start_year, end_year = match.groups()
+        return f"{start_year}-01-01/{end_year}-12-31"
+
+    # TODO: make BUILTIN_RANGE_FORMATS extendable like --expected-date-formats
+
+    return None
+
+
 def run(args, records):
     expected_date_formats = BUILTIN_DATE_FORMATS
     if args.expected_date_formats:
@@ -194,7 +252,9 @@ def run(args, records):
     failure_reporting = args.failure_reporting
     failure_suggestion = (
         f"Current expected date formats are {expected_date_formats!r}. "
-        "This can be updated with --expected-date-formats."
+        "This can be updated with --expected-date-formats. "
+        f"The following date range formats are also acceptable: {list(BUILTIN_RANGE_FORMATS)!r}. "
+        "Currently there is no option to specify custom date range formats."
     )
     for index, record in enumerate(records):
         record = record.copy()

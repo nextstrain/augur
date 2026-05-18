@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* curate format-dates: Support date ranges in the formats `YYYY-MM-DD/YYYY-MM-DD` and `[YYYY TO YYYY]`. [#2000][] @victorlin
+
 ### Bug fixes
 
 * [export] Add `sharing.screenshot` to the auspice-config schema which was unintentionally omitted in the previous release. [#1999][] @jameshadfield
 
 [#1999]: https://github.com/nextstrain/augur/pull/1999
+[#2000]: https://github.com/nextstrain/augur/issues/2000
 
 ## 33.2.0 (13 May 2026)
 
