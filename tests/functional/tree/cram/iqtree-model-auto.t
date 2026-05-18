@@ -4,8 +4,9 @@ Setup
 
 Try building a tree with IQ-TREE using its ModelTest functionality, by supplying a substitution model of "auto".
 
+  $ cp "$TESTDIR/../data/aligned.fasta" .
   $ ${AUGUR} tree \
-  >  --alignment "$TESTDIR/../data/aligned.fasta" \
+  >  --alignment aligned.fasta \
   >  --method iqtree \
   >  --substitution-model auto \
   >  --output tree_raw.nwk \

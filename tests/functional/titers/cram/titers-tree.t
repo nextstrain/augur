@@ -5,10 +5,10 @@ Setup
 Test titer tree model.
 
   $ ${AUGUR} titers tree \
-  >   --tree ../data/tree.nwk \
-  >   --titers ../data/titers.tsv \
+  >   --tree $TESTDIR/../data/tree.nwk \
+  >   --titers $TESTDIR/../data/titers.tsv \
   >   --output $TMP/titers-tree.json > /dev/null
-  Read titers from ../data/titers.tsv, found:
+  Read titers from */data/titers.tsv, found: (glob)
    --- 62 strains
    --- 15 data sources
    --- 272 total measurements

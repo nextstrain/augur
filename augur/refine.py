@@ -5,7 +5,7 @@ import numpy as np
 import sys
 from Bio import Phylo
 from textwrap import dedent
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
@@ -174,8 +174,8 @@ def register_parser(parent_subparsers):
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    parser.add_argument('--output-tree', type=str, help='file name to write tree to')
-    parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data')
+    parser.add_argument('--output-tree', type=str, help='file name to write tree to.  If not provided a file will be created using the alignment or tree input path with a "_tt.nwk" suffix.'+SKIP_AUTO_DEFAULT_IN_HELP)
+    parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data. If not provided a file will be created using the alignment or tree input path with a ".node_data.json" suffix.'+SKIP_AUTO_DEFAULT_IN_HELP)
     parser.add_argument('--use-fft', action="store_true", help="produce timetree using FFT for convolutions")
     parser.add_argument('--max-iter', default=2, type=int, help="maximal number of iterations TreeTime uses for timetree inference")
     parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime, requires tree where branch length is in units of average number of nucleotide or protein substitutions per site (and branch lengths do not exceed 4)")

@@ -119,7 +119,7 @@ jobs:
           echo "Running cram tests without coverage"
           export AUGUR="${{ github.workspace }}/bin/augur"
         fi
-        cram tests/
+        scripts/run-cram-parallel.py
     - name: Upload coverage
       if: env.COVERAGE_FILE
       uses: actions/upload-artifact@v7

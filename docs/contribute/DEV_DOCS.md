@@ -112,10 +112,18 @@ For example, the following command only runs unit tests related to augur mask.
 ./run_tests.sh -k test_mask
 ```
 
-To run a specific integration test with cram, you can use the following command:
+You can run specific integration test(s) with `cram` directly or via our parallel-wrapper which will use all
+available CPUs by default. For instance to run `tests/functional/clades.t` these will both work:
 
 ```bash
 cram tests/functional/clades.t
+./scripts/run-cram-parallel.py tests/functional/clades.t
+```
+
+To run all tests in parallel simply run
+
+```bash
+./scripts/run-cram-parallel.py
 ```
 
 To run cram tests locally and capture test coverage data, you can use this invocation:

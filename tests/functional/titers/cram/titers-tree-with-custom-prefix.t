@@ -5,11 +5,11 @@ Setup
 Test titer tree model with a custom prefix for the node data attributes in the output.
 
   $ ${AUGUR} titers tree \
-  >   --tree ../data/tree.nwk \
-  >   --titers ../data/titers.tsv \
+  >   --tree $TESTDIR/../data/tree.nwk \
+  >   --titers $TESTDIR/../data/titers.tsv \
   >   --attribute-prefix custom_prefix_ \
   >   --output $TMP/titers-tree.json > /dev/null
-  Read titers from ../data/titers.tsv, found:
+  Read titers from */data/titers.tsv, found: (glob)
    --- 62 strains
    --- 15 data sources
    --- 272 total measurements
