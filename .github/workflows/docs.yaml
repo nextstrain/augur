@@ -5,6 +5,7 @@ on:
     branches:
       - master
     paths: &paths
+      - augur/**
       - docs/**
       - setup.py
       - .github/workflows/docs.yaml
