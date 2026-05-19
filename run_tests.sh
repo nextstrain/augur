@@ -1,18 +1,11 @@
 #!/bin/sh
 
 # Default to running all tests without coverage.
-partial_test=0
 run_coverage=0
 
 # Check if user explicitly requests coverage
 case "$@" in
     *--cov*) run_coverage=1 ;;
-esac
-
-# If user requests a subset of tests for pytest, note this preference to avoid
-# running other tests.
-case "$@" in
-    *-k*) partial_test=1 ;;
 esac
 
 if [ "$run_coverage" = 1 ]; then
@@ -37,15 +30,7 @@ else
     coverage_arg='--no-cov'
 fi
 
-echo "Running unit tests and doctests with pytest"
+echo "Running unit tests, doctests,and functional tests with pytest"
 python3 -m pytest $coverage_arg $filtered_args
-
-# Only run functional tests if we are not running a subset of tests for pytest.
-if [ "$partial_test" = 0 ]; then
-    echo "Running functional tests with cram in parallel via our run-cram-parallel.py runner"
-    ./scripts/run-cram-parallel.py
-else
-    echo "Skipping functional tests when running a subset of unit tests"
-fi
 
 exit $?
