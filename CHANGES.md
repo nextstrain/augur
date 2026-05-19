@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 33.3.0 (19 May 2026)
+
 ### Features
 
 * curate format-dates: Support date ranges in the formats `YYYY-MM-DD/YYYY-MM-DD` and `[YYYY TO YYYY]`. [#2000][] @victorlin
