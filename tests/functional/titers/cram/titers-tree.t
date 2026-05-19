@@ -7,10 +7,10 @@ Test titer tree model.
   $ ${AUGUR} titers tree \
   >   --tree $TESTDIR/../data/tree.nwk \
   >   --titers $TESTDIR/../data/titers.tsv \
-  >   --output $TMP/titers-tree.json > /dev/null
+  >   --output titers-tree.json > /dev/null
   Read titers from */data/titers.tsv, found: (glob)
    --- 62 strains
    --- 15 data sources
    --- 272 total measurements
-  $ grep cTiter $TMP/titers-tree.json | wc -l
+  $ grep cTiter titers-tree.json | wc -l
   \s*120 (re)

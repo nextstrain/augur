@@ -10,10 +10,10 @@ There should not be N bases in the inferred output sequences.
   >  --alignment $TESTDIR/../data/aligned.fasta \
   >  --infer-ambiguous \
   >  --seed 314159 \
-  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations.json" \
-  >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences.fasta" &> /dev/null
+  >  --output-node-data "ancestral_mutations.json" \
+  >  --output-sequences "ancestral_sequences.fasta" &> /dev/null
 
-  $ grep "^N" "$CRAMTMP/$TESTFILE/ancestral_sequences.fasta"
+  $ grep "^N" "ancestral_sequences.fasta"
   [1]
 
 test ambiguous bases remain in seqs and muts if we use `--keep-ambiguous`
@@ -32,16 +32,16 @@ and  also remain in the resulting sequence.
   $ ${AUGUR} ancestral --seed 0 \
   >  --keep-ambiguous \
   >  --tree $TESTDIR/../data/simple-genome/tree.nwk --alignment aln_pos3Y.fasta \
-  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_1.json" \
-  >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences_1.fasta" &> /dev/null
+  >  --output-node-data "ancestral_mutations_1.json" \
+  >  --output-sequences "ancestral_sequences_1.fasta" &> /dev/null
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_1.json" | jq -c '.nodes.sample_C.muts'
+  $ cat "ancestral_mutations_1.json" | jq -c '.nodes.sample_C.muts'
   ["C3Y"]
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_1.json" | jq -c '.nodes.sample_C.sequence'
+  $ cat "ancestral_mutations_1.json" | jq -c '.nodes.sample_C.sequence'
   "AAYAA"
 
-  $ grep 'sample_C' -A 1 "$CRAMTMP/$TESTFILE/ancestral_sequences_1.fasta"
+  $ grep 'sample_C' -A 1 "ancestral_sequences_1.fasta"
   >sample_C
   AAYAA
 
@@ -51,16 +51,16 @@ Same test as above but using `--infer-ambiguous` (the default) infers Y as eithe
   $ ${AUGUR} ancestral --seed 0 \
   >  --infer-ambiguous \
   >  --tree $TESTDIR/../data/simple-genome/tree.nwk --alignment aln_pos3Y.fasta \
-  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_2.json" \
-  >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences_2.fasta" &> /dev/null
+  >  --output-node-data "ancestral_mutations_2.json" \
+  >  --output-sequences "ancestral_sequences_2.fasta" &> /dev/null
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_2.json" | jq -c '.nodes.sample_C.muts'
+  $ cat "ancestral_mutations_2.json" | jq -c '.nodes.sample_C.muts'
   []
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_2.json" | jq -c '.nodes.sample_C.sequence'
+  $ cat "ancestral_mutations_2.json" | jq -c '.nodes.sample_C.sequence'
   "AACAA"
 
-  $ grep 'sample_C' -A 1 "$CRAMTMP/$TESTFILE/ancestral_sequences_2.fasta"
+  $ grep 'sample_C' -A 1 "ancestral_sequences_2.fasta"
   >sample_C
   AACAA
 
@@ -83,17 +83,17 @@ and reported in both sequences and mutations. Note that the parent state
   $ ${AUGUR} ancestral --seed 0 \
   >  --keep-ambiguous \
   >  --tree $TESTDIR/../data/simple-genome/tree.nwk --alignment aln_pos3X.fasta \
-  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_3.json" \
-  >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences_3.fasta" &> /dev/null
+  >  --output-node-data "ancestral_mutations_3.json" \
+  >  --output-sequences "ancestral_sequences_3.fasta" &> /dev/null
 
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_3.json" | jq -c '.nodes.sample_C.muts'
+  $ cat "ancestral_mutations_3.json" | jq -c '.nodes.sample_C.muts'
   ["G3N"]
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_3.json" | jq -c '.nodes.sample_C.sequence'
+  $ cat "ancestral_mutations_3.json" | jq -c '.nodes.sample_C.sequence'
   "AANAA"
 
-  $ grep 'sample_C' -A 1 "$CRAMTMP/$TESTFILE/ancestral_sequences_3.fasta"
+  $ grep 'sample_C' -A 1 "ancestral_sequences_3.fasta"
   >sample_C
   AANAA
 
@@ -104,17 +104,17 @@ Note 2: TreeTime chooses the root state as G as well, so there's no mutation on 
   $ ${AUGUR} ancestral --seed 0 \
   >  --infer-ambiguous \
   >  --tree $TESTDIR/../data/simple-genome/tree.nwk --alignment aln_pos3X.fasta \
-  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_4.json" \
-  >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences_4.fasta" &> /dev/null
+  >  --output-node-data "ancestral_mutations_4.json" \
+  >  --output-sequences "ancestral_sequences_4.fasta" &> /dev/null
 
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_4.json" | jq -c '.nodes.sample_C.muts'
+  $ cat "ancestral_mutations_4.json" | jq -c '.nodes.sample_C.muts'
   []
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_4.json" | jq -c '.nodes.sample_C.sequence'
+  $ cat "ancestral_mutations_4.json" | jq -c '.nodes.sample_C.sequence'
   "AAGAA"
 
-  $ grep 'sample_C' -A 1 "$CRAMTMP/$TESTFILE/ancestral_sequences_4.fasta"
+  $ grep 'sample_C' -A 1 "ancestral_sequences_4.fasta"
   >sample_C
   AAGAA
 
@@ -135,11 +135,11 @@ should report 'N' (the standard ambiguous nucleotide) when we're not inferring a
   $ ${AUGUR} ancestral --seed 0 \
   >  --keep-ambiguous \
   >  --tree $TESTDIR/../data/simple-genome/tree.nwk --alignment aln_pos3X_internal.fasta \
-  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_5.json" \
-  >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences_5.fasta" &> /dev/null
+  >  --output-node-data "ancestral_mutations_5.json" \
+  >  --output-sequences "ancestral_sequences_5.fasta" &> /dev/null
 
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_5.json" | jq -c '.nodes.node_AB.sequence'
+  $ cat "ancestral_mutations_5.json" | jq -c '.nodes.node_AB.sequence'
   "AANAA"
 
 
@@ -166,15 +166,15 @@ The reference 'X' at pos 3 should be equivalent to 'N')
   >  --keep-ambiguous \
   >  --root-sequence ref_pos3X.fasta \
   >  --tree $TESTDIR/../data/simple-genome/tree.nwk --alignment aln_col3N.fasta \
-  >  --output-node-data "$CRAMTMP/$TESTFILE/ancestral_mutations_6.json" \
-  >  --output-sequences "$CRAMTMP/$TESTFILE/ancestral_sequences_6.fasta" &> /dev/null
+  >  --output-node-data "ancestral_mutations_6.json" \
+  >  --output-sequences "ancestral_sequences_6.fasta" &> /dev/null
 
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_6.json" | jq -c '[.nodes[].sequence] | unique'
+  $ cat "ancestral_mutations_6.json" | jq -c '[.nodes[].sequence] | unique'
   ["AANAA"]
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_6.json" | jq -c '[.nodes[].muts[]]'
+  $ cat "ancestral_mutations_6.json" | jq -c '[.nodes[].muts[]]'
   []
 
-  $ cat "$CRAMTMP/$TESTFILE/ancestral_mutations_6.json" | jq -c '.reference.nuc'
+  $ cat "ancestral_mutations_6.json" | jq -c '.reference.nuc'
   "AANAA"
