@@ -61,7 +61,7 @@ They can be helpful for testing a real-world example and determining if a regres
 
 #### 3. Functional tests
 
-Augur's command line interface is tested by functional tests implemented with the [Cram framework](https://bitheap.org/cram/).
+Augur's command line interface is tested by functional tests implemented with the [Prysk framework](https://www.prysk.net/).
 These tests complement existing unit tests of individual augur Python functions by running augur commands in the shell and confirming that these commands:
 
 1. execute without any errors
@@ -69,11 +69,11 @@ These tests complement existing unit tests of individual augur Python functions 
 
 These tests can reveal bugs resulting from untested internal functions or untested combinations fo internal functions.
 
-Over time, we have changed the way we design and organize Augur's Cram tests. You might find older practices in existing tests that haven't been updated yet, but these are the latest guidelines that we've discovered to be helpful.
+Over time, we have changed the way we design and organize Augur's Prysk tests. You might find older practices in existing tests that haven't been updated yet, but these are the latest guidelines that we've discovered to be helpful.
 
-1. Keep cram files modular. This makes it easier to see which command is failing.
+1. Keep prysk files modular. This makes it easier to see which command is failing.
 2. Create files in the initial working directory (e.g. `./file.txt` or simply `file.txt`), as it is a temporary working directory unique to the test. Note that the name of the `$TMP` directory is misleading - although it is temporary, it is shared across all tests so you'll have to explicitly remove files at the end of each test to avoid affecting other tests. The initial directory of each test is a unique directory within `$TMP`.
-3. Each directory containing cram tests should have a setup script named `_setup.sh`. Keep all shared setup commands in this file.
+3. Each directory containing prysk tests should have a setup script named `_setup.sh`. Keep all shared setup commands in this file.
 
 ##### Comparing outputs of augur commands
 
@@ -105,6 +105,12 @@ Next, run all augur tests with the following command from the root, top-level of
 ./run_tests.sh
 ```
 
+For faster execution by runnning tests in parallel, add the `-n` argument.
+Using the `-n auto` will use all available cores:
+
+```bash
+./run_test.sh -n auto
+```
 For rapid execution of a subset of unit tests (as during test-driven development), the `-k` argument will disable code coverage and functional tests and pass directly to pytest to limit the tests that are run.
 For example, the following command only runs unit tests related to augur mask.
 
@@ -112,27 +118,27 @@ For example, the following command only runs unit tests related to augur mask.
 ./run_tests.sh -k test_mask
 ```
 
-You can run specific integration test(s) with `cram` directly or via our parallel-wrapper which will use all
-available CPUs by default. For instance to run `tests/functional/clades.t` these will both work:
+You can run specific integration test(s) with the `-k` argument as well, via pytest, or prysk directly.
 
 ```bash
-cram tests/functional/clades.t
-./scripts/run-cram-parallel.py tests/functional/clades.t
+./run_tests.sh -k tests/functional/clades/
+pytest tests/functional/clades/
+prysk tests/functional/clades/
 ```
 
 To run all tests in parallel simply run
 
 ```bash
-./scripts/run-cram-parallel.py
+./run_tests.sh -k tests/functional -n auto
 ```
 
-To run cram tests locally and capture test coverage data, you can use this invocation:
+To run prysk tests locally and capture test coverage data, you can use this invocation:
 
 ```bash
-AUGUR="coverage run --data-file="$PWD/.coverage" $PWD/bin/augur" cram
+AUGUR="coverage run --data-file="$PWD/.coverage" $PWD/bin/augur" prysk
 ```
 
-You can provide one or more cram test file names to get coverage for just those tests, or omit file names to run the entire cram test suite.
+You can provide one or more prysk test file names to get coverage for just those tests, or omit file names to run the entire prysk test suite.
 
 Troubleshooting tip: As tests run on the development code in the augur repository, your environment should not have an existing augur installation that could cause a conflict in pytest.
 
