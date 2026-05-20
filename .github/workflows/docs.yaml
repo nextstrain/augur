@@ -25,3 +25,4 @@ jobs:
     with:
       docs-directory: docs/
       pip-install-target: .[dev]
+      run-linkcheck: ${{ github.event_name == 'schedule' }}
