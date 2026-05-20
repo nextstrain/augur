@@ -4,13 +4,8 @@ on:
   push:
     branches:
       - master
-    paths: &paths
-      - docs/**
-      - setup.py
-      - .github/workflows/docs.yaml
 
   pull_request:
-    paths: *paths
 
   workflow_dispatch:
 
