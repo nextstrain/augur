@@ -702,14 +702,15 @@ def construct_filters(args, sequence_index, sequence_ids: Set[str]) -> Tuple[Lis
 
     # Exclude strains by metadata, using pandas querying.
     if args.query:
-        kwargs = {"query": args.query}
-        if args.query_columns:
-            kwargs["column_types"] = {column: dtype for column, dtype in args.query_columns}
+        for query in args.query:
+            kwargs = {"query": query}
+            if args.query_columns:
+                kwargs["column_types"] = {column: dtype for column, dtype in args.query_columns}
 
-        exclude_by.append((
-            filter_by_query,
-            kwargs
-        ))
+            exclude_by.append((
+                filter_by_query,
+                kwargs
+            ))
 
     # Filter by ambiguous dates.
     if args.exclude_ambiguous_dates_by:

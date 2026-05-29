@@ -14,6 +14,8 @@ descriptions = {
         Filter sequences by attribute. Uses `Pandas DataFrame query syntax`__.
         (e.g., "country == 'Colombia'" or "(country == 'USA' & (division ==
         'Washington'))")
+        Multiple values are processed as AND (only matching all of those
+        specified will be kept), not OR.
 
         __ https://pandas.pydata.org/pandas-docs/version/2.3/user_guide/indexing.html#indexing-query"""),
 

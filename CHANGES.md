@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* filter: `--query` now accepts multiple values, combined as AND (a sequence must match every query to be kept). [#2005][]
+
+[#2005]: https://github.com/nextstrain/augur/pull/2005
 
 ## 33.3.0 (19 May 2026)
 

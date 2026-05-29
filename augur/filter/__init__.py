@@ -39,7 +39,7 @@ def register_arguments(parser):
 
     metadata_filter_group = parser.add_argument_group("metadata filters", "filters to apply to metadata")
 
-    metadata_filter_group.add_argument('--query', help=descriptions['query'])
+    metadata_filter_group.add_argument('--query', nargs="+", action=ExtendOverwriteDefault, help=descriptions['query'])
     metadata_filter_group.add_argument('--query-columns', type=column_type_pair, nargs="+", action=ExtendOverwriteDefault, help=descriptions['query_columns'])
     metadata_filter_group.add_argument('--min-date', type=numeric_date_type, help=descriptions['min_date'])
     metadata_filter_group.add_argument('--max-date', type=numeric_date_type, help=descriptions['max_date'])

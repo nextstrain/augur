@@ -63,21 +63,22 @@ def get_useful_metadata_columns(args: Namespace, id_column: str, all_columns: Se
             for column, dtype in args.query_columns:
                 columns.add(column)
 
-        # Attempt to automatically extract columns from the query.
-        variables = extract_variables(args.query)
-        if variables is None and not args.query_columns:
-            print_err(dedent(f"""\
-                WARNING: Could not infer columns from the pandas query. Reading all metadata columns,
-                which may impact execution time. If the query is valid, please open a new issue:
+        for query in args.query:
+            # Attempt to automatically extract columns from the query.
+            variables = extract_variables(query)
+            if variables is None and not args.query_columns:
+                print_err(dedent(f"""\
+                    WARNING: Could not infer columns from the pandas query. Reading all metadata columns,
+                    which may impact execution time. If the query is valid, please open a new issue:
 
-                    <https://github.com/nextstrain/augur/issues/new/choose>
+                        <https://github.com/nextstrain/augur/issues/new/choose>
 
-                and add the query to the description:
+                    and add the query to the description:
 
-                    {args.query}"""))
-            columns.update(all_columns)
-        else:
-            columns.update(variables)
+                        {query}"""))
+                columns.update(all_columns)
+            else:
+                columns.update(variables)
 
     return list(columns)
 
