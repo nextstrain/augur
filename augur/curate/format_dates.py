@@ -30,6 +30,13 @@ BUILTIN_RANGE_FORMATS = {
         r'^([0-9]{4}-[0-9]{2}-[0-9]{2})/([0-9]{4}-[0-9]{2}-[0-9]{2})$'
     ),
 
+    # NCBI Datasets can return dates in 'YYYY/YYYY' format.
+    # There is no mention of this in Datasets docs, but it is a valid range
+    # format for collection dates under submission guidelines.
+    # <https://www.ncbi.nlm.nih.gov/WebSub/html/help/collection-date.html>
+    # TODO: support all combinations of '<value>/<value>'?
+    '%Y/%Y': re.compile(r'^([0-9]{4})/([0-9]{4})$'),
+
     # NCBI Datasets can return dates in '[YYYY TO YYYY]' format.
     # There is no mention of this in Datasets docs, but it is documented
     # for NCBI Pathogen Detection which may be related.
@@ -230,9 +237,15 @@ def format_to_iso_interval(date_string):
     '2001-01-01/2002-12-31'
     >>> format_to_iso_interval("2001-01-01/2002-12-31")
     '2001-01-01/2002-12-31'
+    >>> format_to_iso_interval("2001/2002")
+    '2001-01-01/2002-12-31'
     """
     if BUILTIN_RANGE_FORMATS['%Y-%m-%d/%Y-%m-%d'].match(date_string):
         return date_string
+
+    if match := BUILTIN_RANGE_FORMATS['%Y/%Y'].match(date_string):
+        start_year, end_year = match.groups()
+        return f"{start_year}-01-01/{end_year}-12-31"
 
     if match := BUILTIN_RANGE_FORMATS['[%Y TO %Y]'].match(date_string):
         start_year, end_year = match.groups()

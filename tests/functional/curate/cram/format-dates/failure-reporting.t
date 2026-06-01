@@ -16,7 +16,7 @@ This is expected to fail with an error, so redirecting stdout since we don't car
   >     --date-fields "date" "collectionDate" "releaseDate" "updateDate" \
   >     --expected-date-formats "%Y" "%Y-%m-%dT%H:%M:%SZ" 1> /dev/null
   ERROR: Unable to format date string '2020-01' in field 'collectionDate' of record 0.
-  Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y', '%Y-%m-%dT%H:%M:%SZ']. This can be updated with --expected-date-formats. The following date range formats are also acceptable: ['%Y-%m-%d/%Y-%m-%d', '[%Y TO %Y]']. Currently there is no option to specify custom date range formats.
+  Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y', '%Y-%m-%dT%H:%M:%SZ']. This can be updated with --expected-date-formats. The following date range formats are also acceptable: ['%Y-%m-%d/%Y-%m-%d', '%Y/%Y', '[%Y TO %Y]']. Currently there is no option to specify custom date range formats.
   [2]
 
 Test output with unmatched expected date formats with `ERROR_ALL` failure reporting.
@@ -30,7 +30,7 @@ This is expected to fail with an error, so redirecting stdout since we don't car
   ERROR: Unable to format dates for the following (record, field, date string):
   (0, 'collectionDate', '2020-01')
   (0, 'releaseDate', '2020-01')
-  Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y', '%Y-%m-%dT%H:%M:%SZ']. This can be updated with --expected-date-formats. The following date range formats are also acceptable: ['%Y-%m-%d/%Y-%m-%d', '[%Y TO %Y]']. Currently there is no option to specify custom date range formats.
+  Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y', '%Y-%m-%dT%H:%M:%SZ']. This can be updated with --expected-date-formats. The following date range formats are also acceptable: ['%Y-%m-%d/%Y-%m-%d', '%Y/%Y', '[%Y TO %Y]']. Currently there is no option to specify custom date range formats.
   [2]
 
 Test output with unmatched expected date formats while warning on failures.
@@ -43,7 +43,7 @@ This is expected to print warnings for failures and return the masked date strin
   >     --failure-reporting "warn"
   WARNING: Unable to format date string '2020-01' in field 'collectionDate' of record 0.
   WARNING: Unable to format date string '2020-01' in field 'releaseDate' of record 0.
-  WARNING: Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y', '%Y-%m-%dT%H:%M:%SZ']. This can be updated with --expected-date-formats. The following date range formats are also acceptable: ['%Y-%m-%d/%Y-%m-%d', '[%Y TO %Y]']. Currently there is no option to specify custom date range formats.
+  WARNING: Current expected date formats are ['%Y-%m-%d', '%Y-%m-XX', '%Y-XX-XX', 'XXXX-XX-XX', '%Y', '%Y-%m-%dT%H:%M:%SZ']. This can be updated with --expected-date-formats. The following date range formats are also acceptable: ['%Y-%m-%d/%Y-%m-%d', '%Y/%Y', '[%Y TO %Y]']. Currently there is no option to specify custom date range formats.
   {"record": 1, "date": "2020-XX-XX", "collectionDate": "XXXX-XX-XX", "releaseDate": "XXXX-XX-XX", "updateDate": "2020-07-18"}
 
 Test output with unmatched expected date formats while silencing failures.
