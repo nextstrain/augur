@@ -169,6 +169,12 @@ class TestDates:
         assert dates.is_date_ambiguous("2019-XX", "any")
         assert dates.is_date_ambiguous("2019-XX", "day")
 
+        # Test date ranges with ambiguous values.
+        assert dates.is_date_ambiguous("2019-01-01/2020-01-01", "year")
+        assert dates.is_date_ambiguous("2019-01-01/2019-02-01", "month")
+        assert dates.is_date_ambiguous("2019-01-01/2019-01-02", "day")
+        assert dates.is_date_ambiguous("2019-01-01/2019-01-02", "any")
+
         # Test complete date strings without ambiguous dates for the requested field.
         assert not dates.is_date_ambiguous("2019-09-03", "any")
         assert not dates.is_date_ambiguous("2019-03-XX", "month")
@@ -178,6 +184,11 @@ class TestDates:
         # Test incomplete date strings without ambiguous dates for the requested fields.
         assert not dates.is_date_ambiguous("2019", "year")
         assert not dates.is_date_ambiguous("2019-10", "month")
+
+        # Test date ranges without ambiguous dates for the requested fields.
+        assert not dates.is_date_ambiguous("2019-01-01/2019-12-31", "year")
+        assert not dates.is_date_ambiguous("2019-01-01/2019-01-31", "month")
+        assert not dates.is_date_ambiguous("2019-01-01/2019-01-01", "day")
 
     def test_get_numerical_dates_dict_error(self):
         """Using get_numerical_dates with metadata represented as a dict should raise an error."""
