@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* filter: Fix handling of date ranges with `--group-by` and `--exclude-ambiguous-dates-by`. [#2007][] @victorlin
+
+[#2007]: https://github.com/nextstrain/augur/issues/2007
 
 ## 33.4.0 (2 June 2026)
 

@@ -90,34 +90,30 @@ def numeric_date_type(date):
 
 def is_date_ambiguous(date, ambiguous_by):
     """
-    Returns whether a given date string in the format of YYYY-MM-DD is ambiguous by a given part of the date (e.g., day, month, year, or any parts).
+    Returns whether a given date string is ambiguous by a given part of the date
+    (e.g., day, month, year, or any parts).
 
     Parameters
     ----------
     date : str
-        Date string in the format of YYYY-MM-DD
+        Date string
     ambiguous_by : str
         Field of the date string to test for ambiguity ("day", "month", "year", "any")
     """
-    date_components = date.split('-', 2)
-
-    if len(date_components) == 3:
-        year, month, day = date_components
-    elif len(date_components) == 2:
-        year, month = date_components
-        day = "XX"
-    else:
-        year = date_components[0] if date_components[0] else 'X'
-        month = "XX"
-        day = "XX"
+    try:
+        year, month, day = get_year_month_day(date)
+    except InvalidDate:
+        return True
 
     # Determine ambiguity hierarchically such that, for example, an ambiguous
     # month implicates an ambiguous day even when day information is available.
-    return any((
-        "X" in year,
-        "X" in month and ambiguous_by in ("any", "month", "day"),
-        "X" in day and ambiguous_by in ("any", "day")
-    ))
+    if year is None:
+        return True
+    if month is None and ambiguous_by in ("any", "month", "day"):
+        return True
+    if day is None and ambiguous_by in ("any", "day"):
+        return True
+    return False
 
 
 def validate_dates(
