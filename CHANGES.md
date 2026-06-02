@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* curate format-dates: Support date ranges in the formats `YYYY/YYYY`. [#2005][] @victorlin
+
+[#2005]: https://github.com/nextstrain/augur/issues/2005
 
 ## 33.3.0 (19 May 2026)
 
