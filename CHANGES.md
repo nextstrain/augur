@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 33.4.1 (2 June 2026)
+
 ### Bug fixes
 
 * filter: Fix handling of date ranges with `--group-by` and `--exclude-ambiguous-dates-by`. [#2007][] @victorlin
