@@ -71,7 +71,7 @@ setuptools.setup(
         "pyyaml",
         "referencing >=0.29.1, <1.0",
         "scipy ==1.*",
-        "xopen[zstd] >=2.0.0, <3"
+        "xopen >=2.1.0, <3"
     ],
     extras_require = {
         'dev': [
