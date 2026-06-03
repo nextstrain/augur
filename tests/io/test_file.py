@@ -1,5 +1,11 @@
 import pytest
+import sys
 import augur.io.file
+
+if sys.version_info >= (3, 14):
+    from compression import zstd
+else:
+    from backports import zstd
 
 
 class TestFile:
@@ -57,7 +63,6 @@ class TestFile:
 
     def test_open_file_read_zstd(self, tmpdir):
         """Read a text file compressed with zstd."""
-        import zstandard as zstd
         path = str(tmpdir / 'test.txt.zst')
         with zstd.open(path, 'wt') as f_write:
             f_write.write('foo\nbar\n')
@@ -66,7 +71,6 @@ class TestFile:
 
     def test_open_file_write_zstd(self, tmpdir):
         """Write a text file compressed with zstd."""
-        import zstandard as zstd
         path = str(tmpdir / 'test.txt.zst')
         with augur.io.file.open_file(path, 'w') as f_write:
             f_write.write('foo\nbar\n')
@@ -85,7 +89,6 @@ class TestFile:
 
     def test_open_file_nested_read_zstd(self, tmpdir):
         """Open a zstd-compressed text file as a path then buffer for reading."""
-        import zstandard as zstd
         path = str(tmpdir / 'test.txt.zst')
         with zstd.open(path, 'wt') as f_write:
             f_write.write('foo\nbar\n')

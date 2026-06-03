@@ -76,6 +76,7 @@ setuptools.setup(
     extras_require = {
         'dev': [
             "cram >=0.7",
+            "backports.zstd; python_version < '3.14'",
             "deepdiff >=4.3.2, <8.0.0",
             "flake8 >=7.0.0, <8",
             "freezegun >=0.3.15",
@@ -98,8 +99,7 @@ setuptools.setup(
             "types-PyYAML",
             "types-setuptools",
             "wheel >=0.32.3",
-            "ipdb >=0.10.1",
-            "zstandard",
+            "ipdb >=0.10.1"
         ]
     },
     classifiers = [
