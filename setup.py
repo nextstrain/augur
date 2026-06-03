@@ -98,7 +98,8 @@ setuptools.setup(
             "types-PyYAML",
             "types-setuptools",
             "wheel >=0.32.3",
-            "ipdb >=0.10.1"
+            "ipdb >=0.10.1",
+            "zstandard",
         ]
     },
     classifiers = [
