@@ -71,11 +71,12 @@ setuptools.setup(
         "pyyaml",
         "referencing >=0.29.1, <1.0",
         "scipy ==1.*",
-        "xopen[zstd] >=2.0.0, <3"
+        "xopen >=2.1.0, <3"
     ],
     extras_require = {
         'dev': [
             "cram >=0.7",
+            "backports.zstd; python_version < '3.14'",
             "deepdiff >=4.3.2, <8.0.0",
             "flake8 >=7.0.0, <8",
             "freezegun >=0.3.15",
