@@ -9,6 +9,7 @@ from typing import Collection, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from augur.dates import get_year_week, get_year_month_day
 from augur.errors import AugurError
+from augur.io.file import open_file
 from augur.io.metadata import METADATA_DATE_COLUMN
 from augur.io.print import print_err, _n
 from . import constants
@@ -363,7 +364,8 @@ def get_weighted_group_sizes(
             print_err(f"WARNING: Targeted {target_size} {sequences} for group {group} but only {input_size} {are} available.")
 
     if output_sizes_file:
-        weights.to_csv(output_sizes_file, index=False, sep='\t')
+        with open_file(output_sizes_file, "w", newline="") as f:
+            weights.to_csv(f, index=False, sep='\t')
 
     return dict(zip(weights[group_by].apply(tuple, axis=1), weights[TARGET_SIZE_COLUMN]))
 
