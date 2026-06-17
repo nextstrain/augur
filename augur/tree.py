@@ -400,7 +400,8 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
     fasta_file = os.path.join(os.path.dirname(alignment), 'informative_sites.fasta')
 
     #now output this as fasta to read into raxml or iqtree
-    SeqIO.write(toFasta, fasta_file, 'fasta')
+    with open_file(fasta_file, "w") as f:
+        SeqIO.write(toFasta, f, 'fasta')
 
     #If want a position map, print:
     if printPositionMap:
@@ -561,7 +562,8 @@ def run(args):
     print("\nBuilding original tree took {} seconds".format(str(end-start)))
 
     if T:
-        tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
+        with open_file(tree_fname, "w") as f:
+            tree_success = Phylo.write(T, f, 'newick', format_branch_length='%1.8f')
     else:
         return 1
 

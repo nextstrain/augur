@@ -587,7 +587,8 @@ def run(args):
 
     node_data['nodes'] = collect_node_data(tree, root_date_offset, most_recent_tip)
 
-    tree_success = Phylo.write(tree, args.output_tree, 'newick', format_branch_length='%1.8f')
+    with open_file(args.output_tree, "w") as f:
+        tree_success = Phylo.write(tree, f, 'newick', format_branch_length='%1.8f')
     json_success = write_augur_json(node_data, args.output_node_data)
 
     print_what_to_do_next(nodes=node_data['nodes'], mcc_path=args.mcc, tree_path=args.output_tree, node_data_path=args.output_node_data)

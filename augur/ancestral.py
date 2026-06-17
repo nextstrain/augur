@@ -740,7 +740,8 @@ def run(args: argparse.Namespace):
             SeqRecord(Seq(node_data["sequence"]), id=node_name, description="")
             for node_name, node_data in anc_seqs["nodes"].items()
         ]
-        SeqIO.write(records, args.output_sequences, "fasta")
+        with open_file(args.output_sequences, "w") as f:
+            SeqIO.write(records, f, "fasta")
         print("ancestral sequences FASTA written to", args.output_sequences, file=sys.stdout)
 
     # output VCF including new ancestral seqs
