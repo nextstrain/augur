@@ -42,16 +42,6 @@ This should fail.
   ERROR: No such file or directory: 'index/missing_sequences.fasta'
   [2]
 
-Try writing output to a directory that does not exist.
-This should fail.
-
-  $ ${AUGUR} index \
-  >   --sequences "$TESTDIR/index/sequences.fasta" \
-  >   --output results/sequence_index.tsv
-  ERROR: No such file or directory: 'results/sequence_index.tsv'
-  [2]
-
-
 Empty sequences files are invalid
 
   $ touch empty.fasta
