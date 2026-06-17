@@ -10,7 +10,7 @@ from shutil import which
 from tempfile import NamedTemporaryFile
 from textwrap import dedent
 from typing import Iterator, Iterable, Union
-from .file import open_file
+from .file import create_parent_directories, open_file
 from .print import _n, indented_list
 from .shell_command_runner import run_shell_command
 
@@ -582,6 +582,8 @@ def is_vcf(filename):
 
 
 def write_vcf(input_filename, output_filename, dropped_samps):
+    create_parent_directories(output_filename)
+
     if _filename_gz(input_filename):
         input_arg = "--gzvcf"
     else:
