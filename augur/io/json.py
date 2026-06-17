@@ -114,10 +114,6 @@ def write_json(data, file, minify=None, minify_threshold_mb=MINIFY_THRESHOLD_MB,
     indent : int or None, optional
         JSON indentation level when not minifying.
     """
-    if isinstance(file, (str, os.PathLike)):
-        if parent_directory := os.path.dirname(file):
-            os.makedirs(parent_directory, exist_ok=True)
-
     # Should output be minified?
     # Order of precedence:
     # 1. 'minify' parameter

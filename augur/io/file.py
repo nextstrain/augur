@@ -38,6 +38,9 @@ def open_file(path_or_buffer, mode="r", **kwargs):
     kwargs['encoding'] = ENCODING
 
     if isinstance(path_or_buffer, (str, os.PathLike)):
+        if is_write_mode(mode):
+            create_parent_directories(path_or_buffer)
+
         try:
             with xopen(path_or_buffer, mode, **kwargs) as handle:
                 yield handle
@@ -56,3 +59,21 @@ def open_file(path_or_buffer, mode="r", **kwargs):
 
     else:
         raise TypeError(f"Type {type(path_or_buffer)} is not supported.")
+
+
+def is_write_mode(mode):
+    return any(flag in mode for flag in ("w", "a", "x"))
+
+
+def create_parent_directories(file):
+    """Create missing parent directories for path-like files.
+
+    >>> import tempfile
+    >>> path = tempfile.mkdtemp() + "/nested/output.txt"
+    >>> create_parent_directories(path)
+    >>> os.path.isdir(os.path.dirname(path))
+    True
+    """
+    if isinstance(file, (str, os.PathLike)):
+        if parent_directory := os.path.dirname(file):
+            os.makedirs(parent_directory, exist_ok=True)
