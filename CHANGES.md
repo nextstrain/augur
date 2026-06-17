@@ -5,6 +5,7 @@
 ### Features
 
 * distance: Add `--output-edge-list` argument to save pairwise distances between sequences to an edge list TSV file for better compatibility with MicrobeTrace. [#2025][] @huddlej
+* Augur now automatically creates missing parent directories before writing output files. [#2014][] @victorlin
 
 ### Bug fixes
 
@@ -12,6 +13,7 @@
 * filter: Improved the speed of computing groups for `--group-by` subsampling by replacing a row-wise pandas apply with a vectorized operation. [#2018][] @trvrb
 * filter: Improved the speed of writing `--output-metadata` by streaming rows instead of building a dictionary per row. [#2018][] @trvrb
 
+[#2014]: https://github.com/nextstrain/augur/issues/2014
 [#2018]: https://github.com/nextstrain/augur/pull/2018
 [#2025]: https://github.com/nextstrain/augur/pull/2025
 
