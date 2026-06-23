@@ -361,6 +361,7 @@ def requires_aligned_sequences(
     config = _parse_config(config_file, config_section, schema_validator)
     return _includes_proximal_sample(config)
 
+# TODO: drop support for --config-section and replace with augur.config.load_config
 def _parse_config(filename: str, config_section: Optional[List[str]], schema) -> Dict[str, Any]:
     # Create a custom YAML loader to treat timestamps as strings.
     class CustomLoader(yaml.SafeLoader):
