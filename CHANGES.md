@@ -6,6 +6,7 @@
 
 * Bump minimum xopen version to 2.1.0. This removes the indirect dependency on `zstandard` as there is built-in zstd support in Python 3.10 and an equivalent backport for older versions. [#2009][] @victorlin
 * filter: Improved the speed and memory usage of subsampling with `--group-by` and `--subsample-max-sequences` by caching each record's group during the first pass instead of reading the metadata a second time. [#XXXX][] @trvrb
+* filter: Improved the speed of computing groups for `--group-by` subsampling by replacing a row-wise pandas apply with a vectorized operation. [#XXXX][] @trvrb
 
 [#2007]: https://github.com/nextstrain/augur/pull/2009
 [#XXXX]: https://github.com/nextstrain/augur/pull/XXXX
