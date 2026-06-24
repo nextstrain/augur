@@ -564,10 +564,10 @@ class TestMetadataClass:
         """Check Metadata.rows() output format."""
         m = Metadata(metadata_file, delimiters=['\t'], id_columns=['strain'])
         assert list(m.rows()) == [
-            {'country': 'USA', 'date': '2020-10-01', 'strain': 'SEQ_A'},
-            {'country': 'USA', 'date': '2020-10-02', 'strain': 'SEQ_T'},
-            {'country': 'USA', 'date': '2020-10-03', 'strain': 'SEQ_C'},
-            {'country': 'USA', 'date': '2020-10-04', 'strain': 'SEQ_G'},
+            ['SEQ_A', 'USA', '2020-10-01'],
+            ['SEQ_T', 'USA', '2020-10-02'],
+            ['SEQ_C', 'USA', '2020-10-03'],
+            ['SEQ_G', 'USA', '2020-10-04'],
         ]
 
     def test_blank_lines(self, tmpdir):
@@ -586,10 +586,10 @@ class TestMetadataClass:
 
         m = Metadata(path, delimiters=',', id_columns=['a'])
         assert list(m.rows()) == [
-            {'a': '1', 'b': '2', 'c': '3'},
-            {'a': '3', 'b': '2', 'c': '3'},
-            {'a': '' , 'b': '' , 'c': '' },
-            {'a': '5', 'b': '2', 'c': '3'}
+            ['1', '2', '3'],
+            ['3', '2', '3'],
+            ['' , '' , '' ],
+            ['5', '2', '3'],
         ]
 
     def test_rows_strict_extra(self, tmpdir):
@@ -606,9 +606,9 @@ class TestMetadataClass:
             list(m.rows(strict=True))
 
         assert list(m.rows(strict=False)) == [
-            {'a': '1', 'b': '2', 'c': '3'},
-            {'a': '2', 'b': '2', 'c': '3', None: ['4']},
-            {'a': '3', 'b': '2', 'c': '3', None: ['']},
+            ['1', '2', '3'],
+            ['2', '2', '3', '4'],
+            ['3', '2', '3', ''],
         ]
 
     def test_rows_strict_missing(self, tmpdir):
@@ -625,9 +625,9 @@ class TestMetadataClass:
             list(m.rows(strict=True))
 
         assert list(m.rows(strict=False)) == [
-            {'a': '1', 'b': '2', 'c': '3'},
-            {'a': '2', 'b': '2', 'c': ''},
-            {'a': '3', 'b': '2', 'c': None},
+            ['1', '2', '3'],
+            ['2', '2', ''],
+            ['3', '2'],
         ]
 
     def test_rows_embedded_newline(self, tmpdir):
@@ -642,7 +642,7 @@ class TestMetadataClass:
         m = Metadata(path, delimiters=',', id_columns=['a'])
 
         assert list(m.rows()) == [
-            {'a': '1', 'b': '2', 'c': '3'},
-            {'a': '4', 'b': '5\r\n6', 'c': '7'},
-            {'a': '8', 'b': '9', 'c': '10'},
+            ['1', '2', '3'],
+            ['4', '5\r\n6', '7'],
+            ['8', '9', '10'],
         ]
