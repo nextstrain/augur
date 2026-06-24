@@ -9,6 +9,7 @@
 ### Bug fixes
 
 * filter: Improved the speed and memory usage of subsampling with `--group-by` and `--subsample-max-sequences` by caching each record's group during the first pass instead of reading the metadata a second time. [#2018][] @trvrb
+* filter: Improved the speed of computing groups for `--group-by` subsampling by replacing a row-wise pandas apply with a vectorized operation. [#2018][] @trvrb
 
 [#2018]: https://github.com/nextstrain/augur/pull/2018
 [#2025]: https://github.com/nextstrain/augur/pull/2025

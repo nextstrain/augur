@@ -170,8 +170,10 @@ def get_groups_for_subsampling(strains, metadata, group_by=None):
         for group in unknown_groups:
             metadata[group] = 'unknown'
 
-    # Finally, determine groups.
-    group_by_strain = dict(zip(metadata.index, metadata[group_by].apply(tuple, axis=1)))
+    # Finally, determine groups. Use itertuples() rather than a row-wise
+    # apply(tuple, axis=1), which is significantly faster on large inputs while
+    # producing the same group tuples.
+    group_by_strain = dict(zip(metadata.index, metadata[group_by].itertuples(index=False, name=None)))
     return group_by_strain
 
 
