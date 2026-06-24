@@ -6,6 +6,11 @@
 
 * distance: Add `--output-edge-list` argument to save pairwise distances between sequences to an edge list TSV file for better compatibility with MicrobeTrace. [#2025][] @huddlej
 
+### Bug fixes
+
+* filter: Improved the speed and memory usage of subsampling with `--group-by` and `--subsample-max-sequences` by caching each record's group during the first pass instead of reading the metadata a second time. [#2018][] @trvrb
+
+[#2018]: https://github.com/nextstrain/augur/pull/2018
 [#2025]: https://github.com/nextstrain/augur/pull/2025
 
 ## 34.0.0 (7 July 2026)
