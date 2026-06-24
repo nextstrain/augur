@@ -424,8 +424,7 @@ def run(args):
 
     if args.output_metadata:
         print_debug(f"Reading metadata from {args.metadata!r} and writing to {args.output_metadata!r}…")
-        write_output_metadata(args.metadata, args.metadata_delimiters,
-                              args.metadata_id_columns, args.output_metadata,
+        write_output_metadata(metadata_object, args.output_metadata,
                               valid_strains)
 
     # Calculate the number of strains that don't exist in either metadata or
