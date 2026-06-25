@@ -211,27 +211,25 @@ def run(args: argparse.Namespace) -> None:
     # These contain the lists of arguments, but the arguments may be incomplete
     # since some samples depend on others. They will be completed when we create the DAG.
 
-    defaults = config.get("defaults")
     samples: List[Sample] = []
     global_filter_args: AugurArgs = {}
     for cli_option, filter_option in FILTER_GLOBAL_CLI_OPTIONS.items():
         if (value := getattr(args, cli_option)) is not None:
             _add_to_args(global_filter_args, filter_option, value)
 
-    for name, options in config.get("samples", {}).items():
+    merged_config = merge_defaults(config)
+    for name, options in merged_config["samples"].items():
         sample_type = sample_types[name]
 
         # Is this sample an intermediate one and should be dropped from final output?
         drop = bool(options.pop('drop_sample', False))
 
         if sample_type == 'filterSampleProperties':
-            merged_options = _handle_deprecated_arguments(
-                _merge_options(options, defaults)
-            )
+            options = _handle_deprecated_arguments(options)
             # Does this sample define a context sample?
-            context_sample = merged_options.pop('context_sample', None)
+            context_sample = options.pop('context_sample', None)
 
-            sample = FilterSample(name, merged_options, global_filter_args, drop=drop, context_sample=context_sample)
+            sample = FilterSample(name, options, global_filter_args, drop=drop, context_sample=context_sample)
             samples.append(sample)
         elif sample_type == 'proximalSampleProperties':
             # The only potential global argument `augur proximity` needs is sequences (no metadata inputs)
@@ -623,11 +621,24 @@ def _resolve_filepath(
           {indented_list([str(p) for p in search_paths], '        ' + '  ')}"""))
 
 
-def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+def merge_defaults(config: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Merge sample options with default options, with sample options taking precedence.
+    Returns a config object without a defaults section.
+
+    Defaults are applied to all filter samples, with sample options taking
+    precedence.
     """
-    merged = {**sample_options} if defaults is None else {**defaults, **sample_options}
+    types = _get_sample_types(config)
+    defaults = config.get("defaults", {})
+    merged = {"samples": {}}
+
+    for name, sample_options in config.get("samples", {}).items():
+        if types[name] == 'filterSampleProperties':
+            # Sample options go last
+            merged["samples"][name] = {**defaults, **sample_options}
+        else:
+            merged["samples"][name] = {**sample_options}
+
     return merged
 
 
