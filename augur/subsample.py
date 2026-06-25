@@ -194,6 +194,7 @@ def run(args: argparse.Namespace) -> None:
     # Load schema, parse and validate config.
     schema_validator = load_json_schema("schema-subsample-config.json")
     config = _parse_config(args.config, args.config_section, schema_validator)
+    sample_types = _get_sample_types(config)
 
     if _includes_proximal_sample(config) and not args.sequences:
         raise AugurError("Augur subsample with a proximal sample requires (aligned) sequences to be provided.")
@@ -218,7 +219,7 @@ def run(args: argparse.Namespace) -> None:
             _add_to_args(global_filter_args, filter_option, value)
 
     for name, options in config.get("samples", {}).items():
-        sample_type = options.pop("_schema")
+        sample_type = sample_types[name]
 
         # Is this sample an intermediate one and should be dropped from final output?
         drop = bool(options.pop('drop_sample', False))
@@ -392,50 +393,8 @@ def _parse_config(filename: str, config_section: Optional[List[str]], schema) ->
         validate_json(config, schema, filename)
     except ValidateError as e:
         raise AugurError(e)
-        
-    # Resolve oneOf schema matches up-front so downstream code can use _schema.
-    _resolve_one_of_schemas(config, schema.schema)
 
     return config
-
-def _resolve_one_of_schemas(
-    config: Dict[str, Any],
-    schema: Dict[str, Any],
-    root_schema: Optional[Dict[str, Any]] = None,
-):
-    """
-    Walk the config alongside the schema and resolve oneOf matches.
-
-    Sets ``value["_schema"]`` for any dict value matched via oneOf.
-    """
-    if root_schema is None:
-        root_schema = schema
-
-    properties = schema.get("properties", {})
-    pattern_properties = schema.get("patternProperties", {})
-
-    for key, value in config.items():
-        if key.startswith("_"):
-            continue
-        prop_schema = properties.get(key)
-
-        if not prop_schema and pattern_properties:
-            prop_schema = next(iter(pattern_properties.values()))
-
-        if not prop_schema:
-            continue
-
-        # Resolve $ref
-        if ref := prop_schema.get("$ref"):
-            prop_schema = _get_referenced_schema(ref, root_schema)
-
-        # Resolve oneOf for dict values
-        if "oneOf" in prop_schema and isinstance(value, dict):
-            prop_schema = _match_one_of(prop_schema["oneOf"], value, root_schema)
-
-        # Recurse into nested dicts
-        if isinstance(value, dict):
-            _resolve_one_of_schemas(value, prop_schema, root_schema)
 
 def _get_search_paths(
     config_file: str,
@@ -505,15 +464,7 @@ def _resolve_filepaths(
         if ref := prop_schema.get("$ref"):
             prop_schema = _get_referenced_schema(ref, root_schema)
         elif "oneOf" in prop_schema and isinstance(value, dict):
-            # _schema was already set by _resolve_one_of_schemas in _parse_config.
-            # Use it to look up the matched schema variant directly.
-            schema_name = value.get("_schema")
-            if schema_name:
-                for variant in prop_schema["oneOf"]:
-                    ref = variant.get("$ref", "")
-                    if ref.endswith("/" + schema_name):
-                        prop_schema = _get_referenced_schema(ref, root_schema)
-                        break
+            _, prop_schema = _best_matching_variant(prop_schema["oneOf"], value, root_schema)
 
         # Resolve filepath
         if _is_filepath(prop_schema):
@@ -533,9 +484,8 @@ def _resolve_filepaths(
 
     return config, filepaths
 
-def _includes_proximal_sample(config: Dict[str, Any]) -> bool:    
-    # "_schema" is set during config parsing
-    return any([sample["_schema"]=='proximalSampleProperties' for sample in config.get('samples', {}).values()])
+def _includes_proximal_sample(config: Dict[str, Any]) -> bool:
+    return 'proximalSampleProperties' in _get_sample_types(config).values()
 
 def _get_referenced_schema(
     ref: str,
@@ -567,17 +517,18 @@ def _is_filepath(prop_schema: Dict[str, Any]) -> bool:
 
     return False
 
-def _match_one_of(
+def _best_matching_variant(
     variants: List[Dict[str, Any]],
     value: Dict[str, Any],
     root_schema: Dict[str, Any],
-) -> Dict[str, Any]:
+) -> Tuple[str, Dict[str, Any]]:
     """
     Given a oneOf list of schema variants (typically $ref entries), resolve each
-    and return the one whose properties best match the keys in *value*.
+    and return the one whose properties best match the keys in *value*, as a
+    (name, schema) tuple.
 
-    As a side effect, ``value["_schema"]`` is set to the name of the matched
-    ``$ref`` (the last component of the path, e.g. ``"filterSampleProperties"``).
+    The name is the last component of the matched ``$ref`` (e.g.
+    ``"filterSampleProperties"``).
     """
     value_keys = set(value.keys())
     best_schema = None
@@ -595,11 +546,21 @@ def _match_one_of(
             best_overlap = overlap
             best_schema = resolved
             best_ref = ref
-    if best_ref:
-        value["_schema"] = best_ref.rsplit("/", 1)[-1]
     if not best_schema:
         raise AugurError("Couldn't match oneOf schema for config dict")
-    return best_schema
+    return (best_ref.rsplit("/", 1)[-1], best_schema)
+
+def _get_sample_types(config: Dict[str, Any]) -> Dict[str, str]:
+    """
+    Return a mapping of sample name to its schema variant (e.g.
+    ``'filterSampleProperties'`` or ``'proximalSampleProperties'``).
+    """
+    schema = load_json_schema("schema-subsample-config.json").schema
+    variants = schema["properties"]["samples"]["patternProperties"]["^.+$"]["oneOf"]
+    return {
+        name: _best_matching_variant(variants, options, schema)[0]
+        for name, options in config.get("samples", {}).items()
+    }
 
 def _resolve_filepath(
     path: Path,
@@ -667,7 +628,6 @@ def _merge_options(sample_options: Dict[str, Any], defaults: Optional[Dict[str, 
     Merge sample options with default options, with sample options taking precedence.
     """
     merged = {**sample_options} if defaults is None else {**defaults, **sample_options}
-    merged.pop('_schema', None)
     return merged
 
 
