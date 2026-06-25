@@ -219,10 +219,10 @@ def run(args: argparse.Namespace) -> None:
 
     for name, options in config.get("samples", {}).items():
         sample_type = options.pop("_schema")
-        
+
         # Is this sample an intermediate one and should be dropped from final output?
         drop = bool(options.pop('drop_sample', False))
-        
+
         if sample_type == 'filterSampleProperties':
             merged_options = _handle_deprecated_arguments(
                 _merge_options(options, defaults)
