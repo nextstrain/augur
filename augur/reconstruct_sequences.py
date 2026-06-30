@@ -102,4 +102,5 @@ def run(args):
     # write alignments to file
     seqs = [SeqRecord.SeqRecord(seq=Seq.Seq(sequences[strain]), id=strain, name=strain, description='')
             for strain in sequences if is_terminal[strain] or args.internal_nodes]
-    SeqIO.write(seqs, args.output, 'fasta')
+    with open_file(args.output, "w") as f:
+        SeqIO.write(seqs, f, 'fasta')

@@ -218,8 +218,9 @@ def run(args):
             )
 
     df = pd.DataFrame(meta_data.values())
-    df.to_csv(
-        args.output_metadata,
-        index=False,
-        sep='\t' if args.output_metadata.endswith('tsv') else ','
-    )
+    with open_file(args.output_metadata, "w", newline="") as f:
+        df.to_csv(
+            f,
+            index=False,
+            sep='\t' if args.output_metadata.endswith('tsv') else ','
+        )

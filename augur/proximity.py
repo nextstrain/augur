@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 from numpy.typing import NDArray
 from augur.errors import AugurError
+from augur.io.file import open_file
 from augur.io.print import print_err
 from augur.io.sequences import read_sequences, subset_fasta
 from augur.utils import nthreads_value
@@ -420,7 +421,7 @@ def run(args: argparse.Namespace) -> None:
     print_err(f"Found {len(all_neighbour_strain_names):,} unique neighbor strains for {len(focal)} focal strains")
 
     # Write output in deterministic (sorted) order
-    with open(args.output_strains, 'w') as fh:
+    with open_file(args.output_strains, 'w') as fh:
         for strain_name in sorted(all_neighbour_strain_names):
             print(strain_name, file=fh)
     print_err(f"Wrote {len(all_neighbour_strain_names):,} strains to {args.output_strains}")
@@ -432,7 +433,7 @@ def run(args: argparse.Namespace) -> None:
 
     # Write per-focal matches TSV if requested
     if args.output_matches:
-        with open(args.output_matches, 'w') as fh:
+        with open_file(args.output_matches, 'w') as fh:
             print("focal_strain\tcontext_strain\tdistance", file=fh)
             for focal_strain, matches in results.items():
                 for match in matches:

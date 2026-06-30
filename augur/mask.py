@@ -9,7 +9,7 @@ from shutil import copyfile
 from Bio.Seq import MutableSeq
 
 from .argparse_ import ExtendOverwriteDefault
-from .io.file import open_file
+from .io.file import create_parent_directories, open_file
 from .io.sequences import read_sequences, write_sequences, is_vcf
 from .io.shell_command_runner import run_shell_command
 from .utils import load_mask_sites, VALID_NUCLEOTIDES
@@ -64,6 +64,7 @@ def mask_vcf(mask_sites, in_file, out_file, cleanup=True):
     out_call = "| gzip -c" if out_file.lower().endswith(".gz") else ""
 
     call = ["vcftools", "--exclude-positions", shquote(temp_mask_file), in_call, shquote(in_file), "--recode --stdout", out_call, ">", shquote(out_file)]
+    create_parent_directories(out_file)
     print("Removing masked sites from VCF file using vcftools... this may take some time. Call:")
     print(" ".join(call))
     run_shell_command(" ".join(call), raise_errors = True)

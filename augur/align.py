@@ -9,7 +9,7 @@ from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
 from .argparse_ import ExtendOverwriteDefault
-from .io.file import open_file
+from .io.file import create_parent_directories, open_file
 from .io.sequences import read_sequences, read_single_sequence
 from .io.shell_command_runner import run_shell_command
 from .utils import nthreads_value
@@ -121,6 +121,7 @@ def run(args):
 
     try:
         check_arguments(args)
+        create_parent_directories(args.output)
         existing_aln_fname, seqs_to_align_fname, ref_name = prepare(args.sequences, args.existing_alignment, args.output, args.reference_name, args.reference_sequence)
         temp_files_to_remove.append(seqs_to_align_fname)
         if existing_aln_fname != args.existing_alignment:
@@ -438,7 +439,8 @@ def check_duplicates(*values):
 def write_seqs(seqs, fname):
     """A wrapper around SeqIO.write with error handling"""
     try:
-        SeqIO.write(seqs, fname, 'fasta')
+        with open_file(fname, "w") as output:
+            SeqIO.write(seqs, output, 'fasta')
     except FileNotFoundError:
         raise AlignmentError('ERROR: Couldn\'t write "{}" -- perhaps the directory doesn\'t exist?'.format(fname))
 

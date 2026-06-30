@@ -21,7 +21,7 @@ from pathlib import Path
 from textwrap import dedent
 
 from .errors import AugurError
-from .io.file import open_file
+from .io.file import create_parent_directories, open_file
 from .io.sequences import read_sequences
 from .io.shell_command_runner import run_shell_command
 from .utils import nthreads_value, load_mask_sites, read_tree
@@ -120,6 +120,7 @@ def build_raxml(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_args
     '''
     build tree using RAxML
     '''
+    create_parent_directories(out_file)
 
     raxml = find_executable([
         # Users who symlink/install as "raxml" can pick a specific version,
@@ -187,6 +188,7 @@ def build_fasttree(aln_file, out_file, clean_up=True, nthreads=1, tree_builder_a
     '''
     build tree using fasttree
     '''
+    create_parent_directories(out_file)
     log_file = out_file + ".log"
 
     fasttree = find_executable([
@@ -236,6 +238,8 @@ def build_iqtree(aln_file, out_file, substitution_model="GTR", clean_up=True, nt
         aln_file    file name of input aligment
         out_file    file name to write tree to
     '''
+    create_parent_directories(out_file)
+
     iqtree = find_executable([
         "iqtree3",
         "iqtree2",
@@ -400,7 +404,8 @@ def write_out_informative_fasta(compress_seq, alignment, stripFile=None):
     fasta_file = os.path.join(os.path.dirname(alignment), 'informative_sites.fasta')
 
     #now output this as fasta to read into raxml or iqtree
-    SeqIO.write(toFasta, fasta_file, 'fasta')
+    with open_file(fasta_file, "w") as f:
+        SeqIO.write(toFasta, f, 'fasta')
 
     #If want a position map, print:
     if printPositionMap:
@@ -561,7 +566,8 @@ def run(args):
     print("\nBuilding original tree took {} seconds".format(str(end-start)))
 
     if T:
-        tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f')
+        with open_file(tree_fname, "w") as f:
+            tree_success = Phylo.write(T, f, 'newick', format_branch_length='%1.8f')
     else:
         return 1
 

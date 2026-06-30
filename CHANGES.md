@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* Augur now automatically creates missing parent directories before writing output files. [#2014][] @victorlin
+
 ### Bug fixes
 
 * Bump minimum xopen version to 2.1.0. This removes the indirect dependency on `zstandard` as there is built-in zstd support in Python 3.10 and an equivalent backport for older versions. [#2009][] @victorlin
 
 [#2007]: https://github.com/nextstrain/augur/pull/2009
+[#2014]: https://github.com/nextstrain/augur/issues/2014
 
 ## 33.4.1 (2 June 2026)
 
