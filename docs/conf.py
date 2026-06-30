@@ -153,6 +153,11 @@ nitpick_ignore = [
      ("py:class", "numpy.int8"),
      ("py:class", "numpy.int32"),
      ("py:class", "numpy.bool_"),
+     # numpy.typing.NDArray is expanded to GenericAlias which is not in the
+     # intersphinx inventory. Ignore to suppress warning for now, but we should
+     # look into how to avoid the alias expansion for
+     # <https://github.com/nextstrain/augur/issues/2017>
+     ("py:class", "numpy._typing._array_like.GenericAlias"),
 ]
 
 # -- Cross-project references ------------------------------------------------
