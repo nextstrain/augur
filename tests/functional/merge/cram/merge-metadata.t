@@ -9,13 +9,13 @@ Full outer join like behaviour, column coalescing/overwriting, and recording of
 each row's source file(s) in extra columns.
 
   $ cat >x.tsv <<~~
-  > strain	a	b	c
+  > id	a	b	c
   > one	X1a	X1b	X1c
   > two	X2a	X2b	X2c
   > ~~
 
   $ cat >y.tsv <<~~
-  > strain	b	c	f	e	d
+  > id	b	c	f	e	d
   > two		Y2c	Y2f	Y2e	Y2d
   > three			Y3f	Y3e	Y3d
   > ~~
@@ -24,15 +24,15 @@ each row's source file(s) in extra columns.
   >   --metadata X=x.tsv Y=y.tsv \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
-  one     X1a  X1b  X1c                                   1                    0
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
-  three                  Y3f  Y3e  Y3d                    0                    1
+  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  one    X1a  X1b  X1c                                   1                    0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
+  three                 Y3f  Y3e  Y3d                    0                    1
 
 More than two inputs.
 
   $ cat >z.tsv <<~~
-  > strain	g	c
+  > id	g	c
   > one	Z1g	
   > two	Z2g	Z2c
   > three	Z3g	
@@ -42,16 +42,16 @@ More than two inputs.
   >   --metadata X=x.tsv Y=y.tsv Z=z.tsv \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    g    __source_metadata_X  __source_metadata_Y  __source_metadata_Z
-  one     X1a  X1b  X1c                 Z1g                    1                    0                    1
-  two     X2a  X2b  Z2c  Y2f  Y2e  Y2d  Z2g                    1                    1                    1
-  three                  Y3f  Y3e  Y3d  Z3g                    0                    1                    1
+  id     a    b    c    f    e    d    g    __source_metadata_X  __source_metadata_Y  __source_metadata_Z
+  one    X1a  X1b  X1c                 Z1g                    1                    0                    1
+  two    X2a  X2b  Z2c  Y2f  Y2e  Y2d  Z2g                    1                    1                    1
+  three                 Y3f  Y3e  Y3d  Z3g                    0                    1                    1
 
 Supports Augur's standard id column detection.  Note that the first file's id
 column name (e.g. "name" here) is used as the output id column name, per
 Augur's convention of preserving the input id column name.
 
-  $ sed '1s/^strain/name/g' < x.tsv > x-name-column.tsv
+  $ sed '1s/^id/name/g' < x.tsv > x-name-column.tsv
   $ ${AUGUR} merge \
   >   --metadata X=x-name-column.tsv Y=y.tsv \
   >   --source-columns '__source_metadata_{NAME}' \
@@ -61,25 +61,25 @@ Augur's convention of preserving the input id column name.
   two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
   three                 Y3f  Y3e  Y3d                    0                    1
 
-  $ sed '1s/^strain/name/g' < y.tsv > y-name-column.tsv
+  $ sed '1s/^id/name/g' < y.tsv > y-name-column.tsv
   $ ${AUGUR} merge \
   >   --metadata X=x.tsv Y=y-name-column.tsv \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
-  one     X1a  X1b  X1c                                   1                    0
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
-  three                  Y3f  Y3e  Y3d                    0                    1
+  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  one    X1a  X1b  X1c                                   1                    0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
+  three                 Y3f  Y3e  Y3d                    0                    1
 
 Supports --metadata-id-columns.
 
-  $ sed '1s/^strain/id/g' < x.tsv > x-id-column.tsv
+  $ sed '1s/^id/my_id/g' < x.tsv > x-my-id-column.tsv
   $ ${AUGUR} merge \
-  >   --metadata X=x-id-column.tsv Y=y.tsv \
-  >   --metadata-id-columns id strain \
+  >   --metadata X=x-my-id-column.tsv Y=y.tsv \
+  >   --metadata-id-columns my_id id \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  my_id  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
   one    X1a  X1b  X1c                                   1                    0
   two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
   three                 Y3f  Y3e  Y3d                    0                    1
@@ -87,24 +87,24 @@ Supports --metadata-id-columns.
 Supports table-specific --metadata-id-columns.
 
   $ ${AUGUR} merge \
-  >   --metadata X=x-id-column.tsv Y=y.tsv \
-  >   --metadata-id-columns X=id \
+  >   --metadata X=x-my-id-column.tsv Y=y.tsv \
+  >   --metadata-id-columns X=my_id \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  my_id  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
   one    X1a  X1b  X1c                                   1                    0
   two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
   three                 Y3f  Y3e  Y3d                    0                    1
 
   $ ${AUGUR} merge \
   >   --metadata X=x.tsv Y=y-name-column.tsv \
-  >   --metadata-id-columns strain Y=name \
+  >   --metadata-id-columns id Y=name \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
-  one     X1a  X1b  X1c                                   1                    0
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
-  three                  Y3f  Y3e  Y3d                    0                    1
+  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  one    X1a  X1b  X1c                                   1                    0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
+  three                 Y3f  Y3e  Y3d                    0                    1
 
 Supports Augur's standard delimiter detection.
 
@@ -113,10 +113,10 @@ Supports Augur's standard delimiter detection.
   >   --metadata X=x.csv Y=y.tsv \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
-  one     X1a  X1b  X1c                                   1                    0
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
-  three                  Y3f  Y3e  Y3d                    0                    1
+  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  one    X1a  X1b  X1c                                   1                    0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
+  three                 Y3f  Y3e  Y3d                    0                    1
 
 Supports --metadata-delimiters.
 
@@ -126,10 +126,10 @@ Supports --metadata-delimiters.
   >   --metadata-delimiters '|' $'\t' \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
-  one     X1a  X1b  X1c                                   1                    0
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
-  three                  Y3f  Y3e  Y3d                    0                    1
+  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  one    X1a  X1b  X1c                                   1                    0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
+  three                 Y3f  Y3e  Y3d                    0                    1
 
 Supports table-specific --metadata-delimiters.
 
@@ -138,20 +138,20 @@ Supports table-specific --metadata-delimiters.
   >   --metadata-delimiters X='|' \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
-  one     X1a  X1b  X1c                                   1                    0
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
-  three                  Y3f  Y3e  Y3d                    0                    1
+  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  one    X1a  X1b  X1c                                   1                    0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
+  three                 Y3f  Y3e  Y3d                    0                    1
 
   $ ${AUGUR} merge \
   >   --metadata X=x.txt Y=y.tsv \
   >   --metadata-delimiters $'\t' X='|' \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
-  one     X1a  X1b  X1c                                   1                    0
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
-  three                  Y3f  Y3e  Y3d                    0                    1
+  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  one    X1a  X1b  X1c                                   1                    0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
+  three                 Y3f  Y3e  Y3d                    0                    1
 
 Supports Augur's standard accepted compression formats.
 
@@ -161,10 +161,10 @@ Supports Augur's standard accepted compression formats.
   >   --metadata X=x.tsv.xz Y=y.tsv.zst \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
-  one     X1a  X1b  X1c                                   1                    0
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
-  three                  Y3f  Y3e  Y3d                    0                    1
+  id     a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  one    X1a  X1b  X1c                                   1                    0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
+  three                 Y3f  Y3e  Y3d                    0                    1
 
 
 OFF THE BEATEN PATH
@@ -182,7 +182,7 @@ Metadata names are only the part before the first '='.
 Metadata field values with metachars (field or record delimiters) are handled properly.
 
   $ cat >metachars.csv <<~~
-  > strain,comma,tab,newline
+  > id,comma,tab,newline
   > one,"x,x","x	x","x
   > x"
   > two,"","",""
@@ -191,7 +191,7 @@ Metadata field values with metachars (field or record delimiters) are handled pr
   >   --metadata X=x.tsv metachars=metachars.csv \
   >   --source-columns '__source_metadata_{NAME}' \
   >   --output-metadata - --quiet
-  strain	a	b	c	comma	tab	newline	__source_metadata_X	__source_metadata_metachars
+  id	a	b	c	comma	tab	newline	__source_metadata_X	__source_metadata_metachars
   one	X1a	X1b	X1c	x,x	"x	x"	"x
   x"	1	1
   two	X2a	X2b	X2c				1	1
@@ -202,10 +202,10 @@ Source columns template.
   >   --metadata X=x.tsv Y=y.tsv \
   >   --source-columns 'origin_{NAME}' \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d    origin_X  origin_Y
-  one     X1a  X1b  X1c                        1         0
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d         1         1
-  three                  Y3f  Y3e  Y3d         0         1
+  id     a    b    c    f    e    d    origin_X  origin_Y
+  one    X1a  X1b  X1c                        1         0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d         1         1
+  three                 Y3f  Y3e  Y3d         0         1
 
 No source columns (explicitly or by default).
 
@@ -213,18 +213,18 @@ No source columns (explicitly or by default).
   >   --metadata X=x.tsv Y=y.tsv \
   >   --no-source-columns \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d
-  one     X1a  X1b  X1c            
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d
-  three                  Y3f  Y3e  Y3d
+  id     a    b    c    f    e    d
+  one    X1a  X1b  X1c            
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d
+  three                 Y3f  Y3e  Y3d
 
   $ ${AUGUR} merge \
   >   --metadata X=x.tsv Y=y.tsv \
   >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
-  strain  a    b    c    f    e    d
-  one     X1a  X1b  X1c            
-  two     X2a  X2b  Y2c  Y2f  Y2e  Y2d
-  three                  Y3f  Y3e  Y3d
+  id     a    b    c    f    e    d
+  one    X1a  X1b  X1c            
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d
+  three                 Y3f  Y3e  Y3d
 
 
 ERROR HANDLING
@@ -267,7 +267,7 @@ Metadata names must be unique.
 Duplicates.
 
   $ cat >dups.tsv <<~~
-  > strain	a	b	c
+  > id	a	b	c
   > one	1a	1b	1c
   > one	2a	2b	2c
   > ~~
@@ -314,7 +314,7 @@ Unknown metadata names in --metadata-id-columns.
 
   $ ${AUGUR} merge \
   >   --metadata X=x.tsv Y=y.tsv \
-  >   --metadata-id-columns strain whatsit=id \
+  >   --metadata-id-columns id whatsit=id \
   >   --output-metadata -
   ERROR: Unknown metadata table name in --metadata-id-columns:
   
@@ -326,7 +326,7 @@ Unknown metadata names in --metadata-id-columns.
 
   $ ${AUGUR} merge \
   >   --metadata X=x.tsv Y=y.tsv \
-  >   --metadata-id-columns whatsit=id whosit=accession X=strain Y=strain \
+  >   --metadata-id-columns whatsit=id whosit=accession X=id Y=id \
   >   --output-metadata -
   ERROR: Unknown metadata table names in --metadata-id-columns:
   
@@ -340,30 +340,30 @@ Unknown metadata names in --metadata-id-columns.
 No id column found.
 
   $ ${AUGUR} merge \
-  >   --metadata X=x-id-column.tsv Y=y.tsv \
+  >   --metadata X=x.tsv Y=y.tsv \
   >   --metadata-id-columns strain \
   >   --output-metadata /dev/null
-  ERROR: x-id-column.tsv: None of the possible id columns ('strain') were found in the metadata's columns ('id', 'a', 'b', 'c').
+  ERROR: x.tsv: None of the possible id columns ('strain') were found in the metadata's columns ('id', 'a', 'b', 'c').
   [2]
 
 Non-id column names conflicting with output id column name.
 
-  $ cat >id-and-strain.csv <<~~
-  > id,strain
+  $ cat >my-id-and-id.csv <<~~
+  > my_id,id
   > one,1
   > two,2
   > three,3
   > ~~
   $ ${AUGUR} merge \
-  >   --metadata strain-only=x.tsv id-and-strain=id-and-strain.csv \
-  >   --metadata-id-columns id strain \
+  >   --metadata id-only=x.tsv my-id-and-id=my-id-and-id.csv \
+  >   --metadata-id-columns my_id id \
   >   --output-metadata /dev/null --quiet
   ERROR: Non-id column names in metadata inputs may not conflict with the
-  output id column name ('strain', the first input's id column).
+  output id column name ('id', the first input's id column).
   
   The following input column would conflict:
   
-    'strain' in metadata table 'id-and-strain' (id column: 'id')
+    'id' in metadata table 'my-id-and-id' (id column: 'my_id')
   
   Please rename or drop the conflicting column before merging.
   Renaming may be done with `augur curate rename`.
