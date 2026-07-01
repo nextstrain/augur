@@ -53,27 +53,26 @@ This should fail.
   ERROR: Output id field 'notexist' not found in fields ['strain', 'virus', 'accession', 'date', 'region', 'country', 'division', 'city', 'db', 'segment', 'authors', 'url', 'title', 'journal', 'paper_url'].
   [2]
 
-Parse Zika sequences into sequences and metadata, preferred default ids is 'name', then 'strain', then first field.
+Parse Zika sequences into sequences and metadata, preferred default ids is 'strain', then 'name', then first field.
 
   $ ${AUGUR} parse \
   >   --sequences "$TESTDIR/parse/zika.fasta" \
   >   --output-sequences "sequences.fasta" \
   >   --output-metadata "metadata.tsv" \
   >   --fields strain virus name date region country division city db segment authors url title journal paper_url \
-  >   --output-id-field 'name' \
   >   --prettify-fields region country division city \
   >   --fix-dates monthfirst
 
-  $ diff -u "$TESTDIR/parse/sequences_other.fasta" "sequences.fasta"
+  $ diff -u "$TESTDIR/parse/sequences.fasta" "sequences.fasta"
 
-Parse Zika sequences into sequences and metadata when there is no 'name' field.
-This should use the 2nd entry in DEFAULT_ID_COLUMNS ('name', 'strain') instead.
+Parse Zika sequences into sequences and metadata when there is no 'strain' field.
+This should use the 2nd entry in DEFAULT_ID_COLUMNS ('strain', 'name') instead.
 
   $ ${AUGUR} parse \
   >   --sequences "$TESTDIR/parse/zika.fasta" \
   >   --output-sequences "sequences.fasta" \
   >   --output-metadata "metadata.tsv" \
-  >   --fields col1 virus strain date region country division city db segment authors url title journal paper_url \
+  >   --fields col1 virus name date region country division city db segment authors url title journal paper_url \
   >   --prettify-fields region country division city \
   >   --fix-dates monthfirst
 
