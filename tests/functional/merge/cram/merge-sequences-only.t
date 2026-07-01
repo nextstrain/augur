@@ -20,6 +20,25 @@ Merge sequences without metadata.
   > GCTA
   > ~~
 
+A single sequence input is supported, e.g. for decompression, without an actual
+merge taking place.
+
+  $ ${AUGUR} merge \
+  >   --sequences x.fasta \
+  >   --output-sequences merged.fasta
+  Validating 'x.fasta'…
+  Merging sequences and writing to 'merged.fasta'…
+
+  $ cat merged.fasta
+  >seq1
+  ATCG
+  >seq2
+  GCTA
+  >seq3
+  TCGA
+
+Two inputs.
+
   $ ${AUGUR} merge \
   >   --sequences x.fasta y.fasta \
   >   --output-sequences merged.fasta

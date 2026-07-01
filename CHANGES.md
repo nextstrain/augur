@@ -9,12 +9,14 @@
 ### Features
 
 * merge: Add `--output-metadata-id-column` to explicitly name the id column in the merged metadata output, overriding the default of using the first input's id column. [#1780][] @victorlin
+* merge: Support a single `--metadata` or `--sequences` input, instead of requiring at least two. This allows `augur merge` to be used as a general entry point for standardization even when no actual merge is needed. [#1974][] @victorlin
 
 ### Bug fixes
 
 * Bump minimum xopen version to 2.1.0. This removes the indirect dependency on `zstandard` as there is built-in zstd support in Python 3.10 and an equivalent backport for older versions. [#2009][] @victorlin
 
 [#1780]: https://github.com/nextstrain/augur/issues/1780
+[#1974]: https://github.com/nextstrain/augur/issues/1974
 [#2007]: https://github.com/nextstrain/augur/pull/2009
 
 ## 33.4.1 (2 June 2026)

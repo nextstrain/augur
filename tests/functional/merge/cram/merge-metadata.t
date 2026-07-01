@@ -20,6 +20,20 @@ each row's source file(s) in extra columns.
   > three			Y3f	Y3e	Y3d
   > ~~
 
+A single metadata input is supported, e.g. for decompression, adding source
+columns, or standardizing the output id column, without an actual merge taking
+place.
+
+  $ ${AUGUR} merge \
+  >   --metadata X=x.tsv \
+  >   --source-columns '__source_metadata_{NAME}' \
+  >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
+  id   a    b    c    __source_metadata_X
+  one  X1a  X1b  X1c                    1
+  two  X2a  X2b  X2c                    1
+
+Two inputs.
+
   $ ${AUGUR} merge \
   >   --metadata X=x.tsv Y=y.tsv \
   >   --source-columns '__source_metadata_{NAME}' \
@@ -240,14 +254,6 @@ No source columns (explicitly or by default).
 
 
 ERROR HANDLING
-
-At least two metadata inputs are required.
-
-  $ ${AUGUR} merge \
-  >   --metadata X=x.tsv \
-  >   --output-metadata -
-  ERROR: At least two metadata inputs are required for merging.
-  [2]
 
 Metadata names are required.
 

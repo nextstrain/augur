@@ -1,5 +1,5 @@
 """
-Merge two or more datasets into one.
+Merge datasets into one.
 
 Datasets can consist of metadata and/or sequence files. If both are provided,
 the order and file contents are used independently.
@@ -160,9 +160,6 @@ def run(args):
 
 def merge_metadata(args):
     # Parse --metadata arguments
-    if not len(args.metadata) >= 2:
-        raise AugurError(f"At least two metadata inputs are required for merging.")
-
     if unnamed := [repr(x) for x in args.metadata if "=" not in x or x.startswith("=")]:
         raise AugurError(dedent(f"""\
             All metadata inputs must be assigned a name, e.g. with NAME=FILE.
@@ -410,9 +407,6 @@ def merge_metadata(args):
 
 
 def merge_sequences(args):
-    if not len(args.sequences) >= 2:
-        raise AugurError(f"At least two sequence inputs are required for merging.")
-
     if not args.skip_input_sequences_validation:
         for s in args.sequences:
             print_info(f"Validating {s!r}…")
