@@ -416,6 +416,8 @@ def merge_sequences(args):
 
     # Reversed because seqkit rmdup keeps the first entry but this command
     # should keep the last entry.
+    # TODO: use augur read-file once its slowness has been sorted out.
+    # <https://github.com/nextstrain/augur/issues/1838>
     command = f"""
         {seqkit()} --threads {args.nthreads} rmdup {" ".join(shquote(s) for s in reversed(args.sequences))} |
         {augur()} write-file {shquote(args.output_sequences)}
@@ -424,9 +426,9 @@ def merge_sequences(args):
     try:
         run_shell_command(command, raise_errors=True)
     except Exception:
-        # Ideally, read-file, seqkit, and write-file errors would all be handled
-        # separately. That is not possible because everything is done in one
-        # child process with one return code.
+        # Ideally, seqkit and write-file errors would all be handled separately.
+        # That is not possible because everything is done in one child process
+        # with one return code.
         if os.path.isfile(args.output_sequences):
             # Remove the partial output file.
             os.remove(args.output_sequences)
