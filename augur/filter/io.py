@@ -96,25 +96,41 @@ def read_priority_scores(fname):
         raise AugurError(f"missing or malformed priority scores file {fname}")
 
 
-def write_output_metadata(input_metadata_path: str, delimiters: Sequence[str],
-                          id_columns: Sequence[str], output_metadata_path: str,
+def write_output_metadata(input_metadata: Metadata, output_metadata_path: str,
                           ids_to_write: Set[str]):
     """
-    Write output metadata file given input metadata information and a set of IDs
-    to write.
-    """
-    input_metadata = Metadata(input_metadata_path, delimiters, id_columns)
+    Write output metadata file given the input metadata and a set of IDs to
+    write.
 
-    with xopen(output_metadata_path, "w", newline="") as output_metadata_handle:
-        output_metadata = csv.DictWriter(output_metadata_handle, fieldnames=input_metadata.columns,
-                                         delimiter="\t", lineterminator=os.linesep)
-        output_metadata.writeheader()
+    Rows are streamed from the input and selected by the id column, then written
+    as TSV without building a dictionary per row.
+    """
+    columns = input_metadata.columns
+    id_index = columns.index(input_metadata.id_column)
+    num_columns = len(columns)
+
+    with input_metadata.open() as input_metadata_handle, \
+         xopen(output_metadata_path, "w", newline="") as output_metadata_handle:
+        reader = csv.reader(input_metadata_handle, delimiter=input_metadata.delimiter)
+        writer = csv.writer(output_metadata_handle, delimiter="\t", lineterminator=os.linesep)
+
+        # Write the header.
+        writer.writerow(next(reader))
 
         # Write outputs based on rows in the original metadata.
-        for row in input_metadata.rows():
-            row_id = row[input_metadata.id_column]
-            if row_id in ids_to_write:
-                output_metadata.writerow(row)
+        for row in reader:
+            # Empty lines are ignored, matching Metadata.rows().
+            if not row:
+                continue
+
+            # Preserve the strict column-count checks from Metadata.rows().
+            if len(row) > num_columns:
+                raise AugurError(f"{input_metadata.path}: Line {reader.line_num} contains at least one extra column. The inferred delimiter is {input_metadata.delimiter!r}.")
+            if len(row) < num_columns:
+                raise AugurError(f"{input_metadata.path}: Line {reader.line_num} is missing at least one column. The inferred delimiter is {input_metadata.delimiter!r}.")
+
+            if row[id_index] in ids_to_write:
+                writer.writerow(row)
 
 
 # These are the types accepted in the following function.
