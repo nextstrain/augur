@@ -18,8 +18,9 @@ Columns are combined by name, either extending the combined table with a new
 column or overwriting values in an existing column.  For columns appearing in
 more than one table, non-empty values on the right hand side overwrite values
 on the left hand side.  The first table's id column name is used as the output
-id column name.  Non-id columns in other input tables that would conflict with
-this output id column name are not allowed and if present will cause an error.
+id column name, unless overridden with --output-metadata-id-column.  Non-id
+columns in other input tables that would conflict with this output id column
+name are not allowed and if present will cause an error.
 
 One generated column per input table may be optionally appended to the end of
 the output table to identify the source of each row's data.  Column names are
@@ -109,6 +110,7 @@ def register_parser(parent_subparsers):
 
     output_group = parser.add_argument_group("outputs", "options related to output")
     output_group.add_argument('--output-metadata', metavar="FILE", help="Merged metadata as TSV. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    output_group.add_argument('--output-metadata-id-column', metavar="COLUMN", help="Name to use for the id column in the merged metadata output. (default: the first input's id column)" + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--source-columns', metavar="TEMPLATE", help=f"Template with which to generate names for the columns (described above) identifying the source of each row's data. Must contain a literal placeholder, {{NAME}}, which stands in for the metadata table names assigned in --metadata. (default: disabled)" + SKIP_AUTO_DEFAULT_IN_HELP)
     output_group.add_argument('--no-source-columns', dest="source_columns", action="store_const", const=None, help=f"Suppress generated columns (described above) identifying the source of each row's data. This is the default behaviour, but it may be made explicit or used to override a previous --source-columns." + SKIP_AUTO_DEFAULT_IN_HELP)
 
@@ -240,9 +242,11 @@ def merge_metadata(args):
     # Clean up database file by default
     delete_db = True
 
-    # Track columns as we see them, in order.  The first metadata's id column
-    # is always the first output column of the merge, so insert it now.
-    output_id_column = metadata[0].id_column
+    # Track columns as we see them, in order.  The output id column (either
+    # the first metadata's id column, or an explicit override) is always the
+    # first output column of the merge, so insert it now.
+    output_id_column = args.output_metadata_id_column or metadata[0].id_column
+    output_id_column_source = "the given --output-metadata-id-column" if args.output_metadata_id_column else "the first input's id column"
     output_columns = { output_id_column: [] }
 
     if conflicting_columns := [f"{c!r} in metadata table {m.name!r} (id column: {m.id_column!r})"
@@ -252,7 +256,7 @@ def merge_metadata(args):
                                     and c != m.id_column]:
         raise AugurError(dedent(f"""\
             Non-id column names in metadata inputs may not conflict with the
-            output id column name ({output_id_column!r}, the first input's id column).
+            output id column name ({output_id_column!r}, {output_id_column_source}).
 
             The following input {_n("column", "columns", len(conflicting_columns))} would conflict:
 

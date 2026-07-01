@@ -71,6 +71,18 @@ Augur's convention of preserving the input id column name.
   two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
   three                 Y3f  Y3e  Y3d                    0                    1
 
+Supports --output-metadata-id-column to override the output id column name.
+
+  $ ${AUGUR} merge \
+  >   --metadata X=x-name-column.tsv Y=y.tsv \
+  >   --output-metadata-id-column my_id \
+  >   --source-columns '__source_metadata_{NAME}' \
+  >   --output-metadata - --quiet | csv2tsv --csv-delim $'\t' | tsv-pretty
+  my_id  a    b    c    f    e    d    __source_metadata_X  __source_metadata_Y
+  one    X1a  X1b  X1c                                   1                    0
+  two    X2a  X2b  Y2c  Y2f  Y2e  Y2d                    1                    1
+  three                 Y3f  Y3e  Y3d                    0                    1
+
 Supports --metadata-id-columns.
 
   $ sed '1s/^id/my_id/g' < x.tsv > x-my-id-column.tsv
@@ -364,6 +376,24 @@ Non-id column names conflicting with output id column name.
   The following input column would conflict:
   
     'id' in metadata table 'my-id-and-id' (id column: 'my_id')
+  
+  Please rename or drop the conflicting column before merging.
+  Renaming may be done with `augur curate rename`.
+  
+  [2]
+
+Non-id column names conflicting with an explicit --output-metadata-id-column.
+
+  $ ${AUGUR} merge \
+  >   --metadata X=x.tsv Y=y.tsv \
+  >   --output-metadata-id-column a \
+  >   --output-metadata /dev/null --quiet
+  ERROR: Non-id column names in metadata inputs may not conflict with the
+  output id column name ('a', the given --output-metadata-id-column).
+  
+  The following input column would conflict:
+  
+    'a' in metadata table 'X' (id column: 'id')
   
   Please rename or drop the conflicting column before merging.
   Renaming may be done with `augur curate rename`.
