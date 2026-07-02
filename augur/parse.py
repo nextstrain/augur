@@ -12,7 +12,7 @@ from .io.sequences import read_sequences, write_sequences
 from .dates import get_numerical_date_from_value
 from .errors import AugurError
 
-PARSE_DEFAULT_ID_COLUMNS = ("strain", "name")
+PARSE_DEFAULT_ID_COLUMNS = ("id", "strain", "name")
 
 forbidden_characters = str.maketrans(
     {' ': None,
