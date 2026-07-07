@@ -17,7 +17,7 @@
 
 [#1780]: https://github.com/nextstrain/augur/issues/1780
 [#1974]: https://github.com/nextstrain/augur/issues/1974
-[#2007]: https://github.com/nextstrain/augur/pull/2009
+[#2009]: https://github.com/nextstrain/augur/pull/2009
 
 ## 33.4.1 (2 June 2026)
 
