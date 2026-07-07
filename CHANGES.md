@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 34.0.0 (7 July 2026)
+
 ### Major Changes
 
 * A metadata column named `id` is now preferred as the identifier column when present. This applies to all commands that work with metadata id columns (`parse`, `merge`, `filter`, `subsample`, `refine`, `traits`, `frequencies`, `export v2`). Typical Augur usage should start with ensuring your metadata file has an `id` column instead of passing `--metadata-id-columns` to each command. Note this is a behavior change: metadata that already contains an `id` column but relied on `strain`/`name` being inferred will now use `id`; pass `--metadata-id-columns strain name` to restore the previous behavior. [#1780][] @victorlin
