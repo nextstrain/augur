@@ -40,12 +40,14 @@ don't open it in Excel again!).
 Format
 ~~~~~~
 
-**Strain names**
+**Sequence identifiers**
 
-You must have one column named ``strain`` or ``name``. It contains your
-sequence names, and needs to match the identifiers of your sequences (in
-the Fasta or VCF file) *exactly* and must not contain characters such as
-spaces, or ``()[]{}|#><``.
+You must have a column that contains a unique identifier for each row. Augur
+prefers a column named ``id``, falling back to ``strain`` or ``name`` if ``id``
+is not present. A different column can be used by passing
+``--metadata-id-columns`` to commands that support it. Values in this column
+must match the identifiers of your sequences (in the Fasta or VCF file)
+*exactly* and must not contain characters such as spaces, or ``()[]{}|#><``.
 
 **Dates**
 

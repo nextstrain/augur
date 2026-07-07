@@ -17,7 +17,7 @@ from .file import PANDAS_READ_CSV_OPTIONS, open_file
 
 DEFAULT_DELIMITERS = (',', '\t')
 
-DEFAULT_ID_COLUMNS = ("strain", "name")
+DEFAULT_ID_COLUMNS = ("id", "strain", "name")
 
 METADATA_DATE_COLUMN = 'date'
 

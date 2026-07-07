@@ -3,7 +3,7 @@ import shutil
 from io import BytesIO
 
 from augur.errors import AugurError
-from augur.io.metadata import InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv, Metadata
+from augur.io.metadata import DEFAULT_ID_COLUMNS, InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv, Metadata
 from augur.types import DataErrorMethod
 
 
@@ -120,6 +120,17 @@ def metadata_file(tmpdir):
             'SEQ_T\tUSA\t2020-10-02\n',
             'SEQ_C\tUSA\t2020-10-03\n',
             'SEQ_G\tUSA\t2020-10-04\n'
+        ])
+    return path
+
+@pytest.fixture
+def metadata_file_with_id_and_strain(tmpdir):
+    path = str(tmpdir / 'metadata.tsv')
+    with open(path, 'w') as fh:
+        fh.writelines([
+            'strain\tid\tdate\n',
+            'SEQ_A\tID_A\t2020-10-01\n',
+            'SEQ_T\tID_T\t2020-10-02\n',
         ])
     return path
 
@@ -522,6 +533,21 @@ class TestMetadataClass:
         assert m.path == metadata_file
         assert m.delimiter == '\t'
         assert m.columns == ['strain', 'country', 'date']
+        assert m.id_column == 'strain'
+
+    def test_default_prefers_id(self, metadata_file_with_id_and_strain):
+        """By default, an explicit 'id' column is preferred over 'strain'."""
+        m = Metadata(metadata_file_with_id_and_strain, delimiters=['\t'], id_columns=DEFAULT_ID_COLUMNS)
+        assert m.id_column == 'id'
+
+    def test_default_falls_back_to_strain(self, metadata_file):
+        """When 'id' is absent, the default falls back to 'strain'."""
+        m = Metadata(metadata_file, delimiters=['\t'], id_columns=DEFAULT_ID_COLUMNS)
+        assert m.id_column == 'strain'
+
+    def test_explicit_id_columns_override(self, metadata_file_with_id_and_strain):
+        """An explicit id_columns argument overrides the 'id' preference."""
+        m = Metadata(metadata_file_with_id_and_strain, delimiters=['\t'], id_columns=['strain'])
         assert m.id_column == 'strain'
 
     def test_invalid_delimiter(self, metadata_file):
