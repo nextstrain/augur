@@ -675,6 +675,11 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
+    # Check for supported comparisons for edge list output.
+    if args.output_edge_list and args.compare_to != ["pairwise"]:
+        print("ERROR: Edge list output only works for a single pairwise comparison.", file=sys.stderr)
+        sys.exit(1)
+
     # Load tree and annotate parents.
     tree = Bio.Phylo.read(args.tree, "newick")
     tree = annotate_parents_for_tree(tree)
