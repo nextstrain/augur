@@ -180,6 +180,7 @@ import Bio
 import Bio.Phylo
 from collections import defaultdict
 import copy
+import csv
 from itertools import chain
 import json
 import pandas as pd
@@ -796,9 +797,10 @@ def run(args):
     write_augur_json({"params": params, "nodes": final_distances_by_node}, args.output)
 
     if args.output_edge_list and pairwise_distances_by_node is not None:
-        with open(args.output_edge_list, "w", encoding="utf-8") as oh:
-            print("sequence_1\tsequence_2\tdistance", file=oh)
+        with open_file(args.output_edge_list, "wt", encoding="utf-8", newline="") as oh:
+            tsv_writer = csv.writer(oh, delimiter = '\t', lineterminator='\n')
+            tsv_writer.writerow(["sequence_1", "sequence_2", "distance"])
 
             for sequence_1, nodes in pairwise_distances_by_node.items():
                 for sequence_2, distance in nodes.items():
-                    print(f"{sequence_1}\t{sequence_2}\t{distance}", file=oh)
+                    tsv_writer.writerow([sequence_1, sequence_2, distance])
