@@ -670,6 +670,7 @@ def register_parser(parent_subparsers):
     parser.add_argument("--earliest-date", help="earliest date at which samples are considered to be from previous seasons (e.g., 2019-01-01). This date is only used in pairwise comparisons. If omitted, all samples prior to the latest date will be considered.")
     parser.add_argument("--latest-date", help="latest date at which samples are considered to be from previous seasons (e.g., 2019-01-01); samples from any date after this are considered part of the current season")
     parser.add_argument("--output", help="JSON file with calculated distances stored by node name and attribute name", required=True)
+    parser.add_argument("--output-edge-list", help="TSV file of pairwise distances in 'edge list' format with columns for `sequence_1`, `sequence_2`, and `distance`. This argument only works when calculating pairwise distances for a single alignment.")
     return parser
 
 
@@ -717,6 +718,7 @@ def run(args):
 
     final_distances_by_node = {}
     distance_map_names = []
+    pairwise_distances_by_node = None
     for compare_to, attribute, distance_map_file in zip(args.compare_to, args.attribute_name, args.map):
         # Load the given distance map.
         distance_map = read_distance_map(distance_map_file)
@@ -750,6 +752,7 @@ def run(args):
                 earliest_date,
                 latest_date
             )
+            pairwise_distances_by_node = distances_by_node.copy()
         else:
             # If the command line argument choices are defined properly above,
             # this block should never execute.
@@ -786,3 +789,11 @@ def run(args):
 
     # Export distances to JSON.
     write_augur_json({"params": params, "nodes": final_distances_by_node}, args.output)
+
+    if args.output_edge_list and pairwise_distances_by_node is not None:
+        with open(args.output_edge_list, "w", encoding="utf-8") as oh:
+            print("sequence_1\tsequence_2\tdistance", file=oh)
+
+            for sequence_1, nodes in pairwise_distances_by_node.items():
+                for sequence_2, distance in nodes.items():
+                    print(f"{sequence_1}\t{sequence_2}\t{distance}", file=oh)
