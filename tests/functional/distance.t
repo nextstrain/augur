@@ -56,7 +56,7 @@ This should fail because we only support edge lists for pairwise comparisons.
   >   --output distances.json \
   >   --output-edge-list distances_edge_list.tsv
   ERROR: Edge list output only works for a single pairwise comparison.
-  [1]
+  [2]
 
 Try to calculate distances with both root and pairwise comparisons and using edge list output.
 This should fail because we only support edge list output for a single pairwise comparison.
@@ -71,4 +71,4 @@ This should fail because we only support edge list output for a single pairwise 
   >   --output distances.json \
   >   --output-edge-list distances_edge_list.tsv
   ERROR: Edge list output only works for a single pairwise comparison.
-  [1]
+  [2]

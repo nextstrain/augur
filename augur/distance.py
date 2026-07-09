@@ -187,6 +187,7 @@ import pandas as pd
 import sys
 
 from .argparse_ import ExtendOverwriteDefault
+from .errors import AugurError
 from .frequency_estimators import timestamp_to_float
 from .io.file import open_file
 from .reconstruct_sequences import load_alignments
@@ -678,8 +679,7 @@ def register_parser(parent_subparsers):
 def run(args):
     # Check for supported comparisons for edge list output.
     if args.output_edge_list and args.compare_to != ["pairwise"]:
-        print("ERROR: Edge list output only works for a single pairwise comparison.", file=sys.stderr)
-        sys.exit(1)
+        raise AugurError("Edge list output only works for a single pairwise comparison.")
 
     # Load tree and annotate parents.
     tree = Bio.Phylo.read(args.tree, "newick")
