@@ -31,6 +31,7 @@ Submodules
    augur.ancestral
    augur.argparse_
    augur.clades
+   augur.config
    augur.debug
    augur.distance
    augur.errors
