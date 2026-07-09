@@ -1,0 +1,7 @@
+{
+    "name": "nucleotide Hamming distance",
+    "default": 1,
+    "ignored_characters": ["-", "N"],
+    "output_type": "integer",
+    "map": {}
+}

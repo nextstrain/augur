@@ -180,12 +180,14 @@ import Bio
 import Bio.Phylo
 from collections import defaultdict
 import copy
+import csv
 from itertools import chain
 import json
 import pandas as pd
 import sys
 
 from .argparse_ import ExtendOverwriteDefault
+from .errors import AugurError
 from .frequency_estimators import timestamp_to_float
 from .io.file import open_file
 from .reconstruct_sequences import load_alignments
@@ -670,10 +672,15 @@ def register_parser(parent_subparsers):
     parser.add_argument("--earliest-date", help="earliest date at which samples are considered to be from previous seasons (e.g., 2019-01-01). This date is only used in pairwise comparisons. If omitted, all samples prior to the latest date will be considered.")
     parser.add_argument("--latest-date", help="latest date at which samples are considered to be from previous seasons (e.g., 2019-01-01); samples from any date after this are considered part of the current season")
     parser.add_argument("--output", help="JSON file with calculated distances stored by node name and attribute name", required=True)
+    parser.add_argument("--output-edge-list", help="TSV file of pairwise distances in 'edge list' format with columns for `sequence_1`, `sequence_2`, and `distance`. This argument only works when calculating pairwise distances for a single alignment.")
     return parser
 
 
 def run(args):
+    # Check for supported comparisons for edge list output.
+    if args.output_edge_list and args.compare_to != ["pairwise"]:
+        raise AugurError("Edge list output only works for a single pairwise comparison.")
+
     # Load tree and annotate parents.
     tree = Bio.Phylo.read(args.tree, "newick")
     tree = annotate_parents_for_tree(tree)
@@ -786,3 +793,12 @@ def run(args):
 
     # Export distances to JSON.
     write_augur_json({"params": params, "nodes": final_distances_by_node}, args.output)
+
+    if args.output_edge_list:
+        with open_file(args.output_edge_list, "wt", encoding="utf-8", newline="") as oh:
+            tsv_writer = csv.writer(oh, delimiter = '\t', lineterminator='\n')
+            tsv_writer.writerow(["sequence_1", "sequence_2", "distance"])
+
+            for sequence_1, nodes in distances_by_node.items():
+                for sequence_2, distance in nodes.items():
+                    tsv_writer.writerow([sequence_1, sequence_2, distance])
