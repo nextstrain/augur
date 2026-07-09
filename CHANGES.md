@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* distance: Add `--output-edge-list` argument to save pairwise distances between sequences to an edge list TSV file for better compatibility with MicrobeTrace. [#2025][] @huddlej
+
+[#2025]: https://github.com/nextstrain/augur/pull/2025
 
 ## 34.0.0 (7 July 2026)
 
