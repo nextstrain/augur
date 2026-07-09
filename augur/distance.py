@@ -724,7 +724,6 @@ def run(args):
 
     final_distances_by_node = {}
     distance_map_names = []
-    pairwise_distances_by_node = None
     for compare_to, attribute, distance_map_file in zip(args.compare_to, args.attribute_name, args.map):
         # Load the given distance map.
         distance_map = read_distance_map(distance_map_file)
@@ -758,7 +757,6 @@ def run(args):
                 earliest_date,
                 latest_date
             )
-            pairwise_distances_by_node = distances_by_node.copy()
         else:
             # If the command line argument choices are defined properly above,
             # this block should never execute.
@@ -796,11 +794,11 @@ def run(args):
     # Export distances to JSON.
     write_augur_json({"params": params, "nodes": final_distances_by_node}, args.output)
 
-    if args.output_edge_list and pairwise_distances_by_node is not None:
+    if args.output_edge_list:
         with open_file(args.output_edge_list, "wt", encoding="utf-8", newline="") as oh:
             tsv_writer = csv.writer(oh, delimiter = '\t', lineterminator='\n')
             tsv_writer.writerow(["sequence_1", "sequence_2", "distance"])
 
-            for sequence_1, nodes in pairwise_distances_by_node.items():
+            for sequence_1, nodes in distances_by_node.items():
                 for sequence_2, distance in nodes.items():
                     tsv_writer.writerow([sequence_1, sequence_2, distance])
