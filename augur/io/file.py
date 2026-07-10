@@ -55,6 +55,20 @@ def open_file(path_or_buffer, mode="r", **kwargs):
     ...     parent.exists()
     'hello'
     True
+
+    'x' mode is not supported.
+
+    >>> with TemporaryDirectory() as d:
+    ...     parent = Path(d) / "nested"
+    ...     path = parent / "example.txt"
+    ...     try:
+    ...         with open_file(path, mode="x") as handle:
+    ...             _ = handle.write("hello")
+    ...     except ValueError as e:
+    ...         print(e)
+    ...     parent.exists()
+    Mode 'x' not supported
+    False
     """
 
     # Read all files using a specific encoding.
@@ -87,6 +101,10 @@ def open_file(path_or_buffer, mode="r", **kwargs):
 def is_write_mode(mode):
     """Return whether ``mode`` is a write mode.
 
+    Only modes containing ``"w"`` or ``"a"`` are treated as write modes.
+    Exclusive creation mode ``"x"`` is intentionally excluded because xopen does
+    not support it.
+
     Examples
     --------
     >>> is_write_mode("w")
@@ -98,9 +116,9 @@ def is_write_mode(mode):
     >>> is_write_mode("r")
     False
     >>> is_write_mode("x")
-    True
+    False
     """
-    return any(flag in mode for flag in ("w", "a", "x"))
+    return any(flag in mode for flag in ("w", "a"))
 
 
 def create_parent_directories(file):
