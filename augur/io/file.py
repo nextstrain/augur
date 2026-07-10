@@ -32,12 +32,52 @@ def open_file(path_or_buffer, mode="r", **kwargs):
     IO
         File handle object
 
+    Examples
+    --------
+    Pass through an existing buffer unchanged.
+
+    >>> from io import StringIO
+    >>> buf = StringIO("hello")
+    >>> with open_file(buf) as handle:
+    ...     handle.read()
+    'hello'
+
+    Open a normal text file. Parent directories are created.
+
+    >>> from tempfile import TemporaryDirectory
+    >>> from pathlib import Path
+    >>> with TemporaryDirectory() as d:
+    ...     parent = Path(d) / "nested"
+    ...     path = parent / "example.txt"
+    ...     with open_file(path, mode="w") as handle:
+    ...         _ = handle.write("hello")
+    ...     path.read_text(encoding=ENCODING)
+    ...     parent.exists()
+    'hello'
+    True
+
+    'x' mode is not supported.
+
+    >>> with TemporaryDirectory() as d:
+    ...     parent = Path(d) / "nested"
+    ...     path = parent / "example.txt"
+    ...     try:
+    ...         with open_file(path, mode="x") as handle:
+    ...             _ = handle.write("hello")
+    ...     except ValueError as e:
+    ...         print(e)
+    ...     parent.exists()
+    Mode 'x' not supported
+    False
     """
 
     # Read all files using a specific encoding.
     kwargs['encoding'] = ENCODING
 
     if isinstance(path_or_buffer, (str, os.PathLike)):
+        if is_write_mode(mode):
+            create_parent_directories(path_or_buffer)
+
         try:
             with xopen(path_or_buffer, mode, **kwargs) as handle:
                 yield handle
@@ -56,3 +96,40 @@ def open_file(path_or_buffer, mode="r", **kwargs):
 
     else:
         raise TypeError(f"Type {type(path_or_buffer)} is not supported.")
+
+
+def is_write_mode(mode):
+    """Return whether ``mode`` is a write mode.
+
+    Only modes containing ``"w"`` or ``"a"`` are treated as write modes.
+    Exclusive creation mode ``"x"`` is intentionally excluded because xopen does
+    not support it.
+
+    Examples
+    --------
+    >>> is_write_mode("w")
+    True
+    >>> is_write_mode("wb")
+    True
+    >>> is_write_mode("a")
+    True
+    >>> is_write_mode("r")
+    False
+    >>> is_write_mode("x")
+    False
+    """
+    return any(flag in mode for flag in ("w", "a"))
+
+
+def create_parent_directories(file):
+    """Create missing parent directories for path-like files.
+
+    >>> import tempfile
+    >>> path = tempfile.mkdtemp() + "/nested/output.txt"
+    >>> create_parent_directories(path)
+    >>> os.path.isdir(os.path.dirname(path))
+    True
+    """
+    if isinstance(file, (str, os.PathLike)):
+        if parent_directory := os.path.dirname(file):
+            os.makedirs(parent_directory, exist_ok=True)

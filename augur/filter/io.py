@@ -7,7 +7,6 @@ from textwrap import dedent
 from typing import Sequence, Set
 import numpy as np
 from collections import defaultdict
-from xopen import xopen
 
 from augur.errors import AugurError
 from augur.io.file import open_file
@@ -102,7 +101,7 @@ def write_output_metadata(input_metadata: Metadata, output_metadata_path: str,
     Write output metadata file given the input metadata and a set of IDs to
     write.
     """
-    with xopen(output_metadata_path, "w", newline="") as output_metadata_handle:
+    with open_file(output_metadata_path, "w", newline="") as output_metadata_handle:
         output_metadata = csv.writer(output_metadata_handle,
                                      delimiter="\t", lineterminator=os.linesep)
         output_metadata.writerow(input_metadata.columns)

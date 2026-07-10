@@ -402,7 +402,7 @@ def run(args):
 
     if strains_file is not None:
         print_debug(f"Writing strains to {strains_file!r}…")
-        with open(strains_file, "w") as f:
+        with open_file(strains_file, "w") as f:
             for strain in valid_strains:
                 f.write(f"{strain}\n")
 

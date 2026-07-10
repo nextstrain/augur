@@ -15,6 +15,7 @@ mutations are output to a node-data JSON file.
 
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
+from .io.file import open_file
 from .io.sequences import load_features, write_VCF_translation, is_vcf as is_filename_vcf
 from .io.print import print_err
 from .utils import parse_genes_argument, read_node_data, \
@@ -473,8 +474,9 @@ def run(args):
             ## write fasta-style output if requested
             if '%GENE' in args.alignment_output:
                 for fname, seqs in translations.items():
-                    SeqIO.write([SeqRecord.SeqRecord(seq=Seq.Seq(s), id=sname, name=sname, description='')
-                                 for sname, s in seqs.items()],
-                                 args.alignment_output.replace('%GENE', fname), 'fasta')
+                    with open_file(args.alignment_output.replace('%GENE', fname), "w") as f:
+                        SeqIO.write([SeqRecord.SeqRecord(seq=Seq.Seq(s), id=sname, name=sname, description='')
+                                     for sname, s in seqs.items()],
+                                     f, 'fasta')
             else:
                 print_err("ERROR: alignment output file does not contain '%GENE', so will not be written.")

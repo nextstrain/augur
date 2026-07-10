@@ -8,6 +8,7 @@ from textwrap import dedent
 from .argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
+from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
 from .io.strains import read_strains
 from .utils import read_tree, write_augur_json, InvalidTreeError
@@ -435,7 +436,8 @@ def run(args):
         return 1
 
     # Export refined tree and node data
-    tree_success = Phylo.write(T, tree_fname, 'newick', format_branch_length='%1.8f', branch_length_only=True)
+    with open_file(tree_fname, "w") as f:
+        tree_success = Phylo.write(T, f, 'newick', format_branch_length='%1.8f', branch_length_only=True)
     print("updated tree written to",tree_fname, file=sys.stdout)
 
     if args.output_node_data:
