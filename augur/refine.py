@@ -6,6 +6,7 @@ import sys
 from Bio import Phylo
 from textwrap import dedent
 from .argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from .config import add_config_argument, apply_sentinels, merge_config
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
@@ -176,51 +177,54 @@ def register_parser(parent_subparsers):
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
     parser.add_argument('--output-tree', type=str, help='file name to write tree to.  If not provided a file will be created using the alignment or tree input path with a "_tt.nwk" suffix.'+SKIP_AUTO_DEFAULT_IN_HELP)
     parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data. If not provided a file will be created using the alignment or tree input path with a ".node_data.json" suffix.'+SKIP_AUTO_DEFAULT_IN_HELP)
-    parser.add_argument('--use-fft', action="store_true", help="produce timetree using FFT for convolutions")
-    parser.add_argument('--max-iter', default=2, type=int, help="maximal number of iterations TreeTime uses for timetree inference")
-    parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime, requires tree where branch length is in units of average number of nucleotide or protein substitutions per site (and branch lengths do not exceed 4)")
-    parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
-    parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
-    parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
-    parser.add_argument('--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
-    parser.add_argument('--root', nargs="+", action=ExtendOverwriteDefault, default=['best'], help="rooting mechanism ('best', 'least-squares', 'min_dev', 'oldest', 'mid_point') "
+    add_config_argument(parser, '--use-fft', action="store_true", help="produce timetree using FFT for convolutions")
+    add_config_argument(parser, '--max-iter', default=2, type=int, help="maximal number of iterations TreeTime uses for timetree inference")
+    add_config_argument(parser, '--timetree', action="store_true", help="produce timetree using treetime, requires tree where branch length is in units of average number of nucleotide or protein substitutions per site (and branch lengths do not exceed 4)")
+    add_config_argument(parser, '--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
+    add_config_argument(parser, '--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
+    add_config_argument(parser, '--clock-rate', type=float, help="fixed clock rate")
+    add_config_argument(parser, '--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
+    add_config_argument(parser, '--root', nargs="+", action=ExtendOverwriteDefault, default=['best'], help="rooting mechanism ('best', 'least-squares', 'min_dev', 'oldest', 'mid_point') "
                                 "OR node to root by OR two nodes indicating a monophyletic group to root by. "
                                 "Run treetime -h for definitions of rooting methods.")
-    parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
+    add_config_argument(parser, '--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
                                 "Overrides anything specified by --root.")
-    parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'"
+    add_config_argument(parser, '--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'"
                                 "This is only valid when a single strain name has been supplied as the root.")
-    parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
+    add_config_argument(parser, '--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
                                 "rates and/or rerooting. "
                                 "Use --no-covariance to turn off.")
-    parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
+    add_config_argument(parser, '--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
 
     resolve_group = parser.add_mutually_exclusive_group()
-    resolve_group.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
-    resolve_group.add_argument('--stochastic-resolve', action='store_true', help='Resolve polytomies via stochastic subtree building rather than greedy optimization')
-    resolve_group.add_argument('--greedy-resolve', action='store_false', dest='stochastic_resolve') # inverse of `--stochastic-resolve` to facilitate changing defaults in the future
+    add_config_argument(resolve_group, '--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
+    add_config_argument(resolve_group, '--stochastic-resolve', action='store_true', help='Resolve polytomies via stochastic subtree building rather than greedy optimization')
+    add_config_argument(resolve_group, '--greedy-resolve', action='store_false', dest='stochastic_resolve') # inverse of `--stochastic-resolve` to facilitate changing defaults in the future
 
-    parser.add_argument('--precision', type=int, choices=[0,1,2,3], help="precision used by TreeTime to determine the number of grid points that are used for the evaluation of the branch length interpolation objects. Values range from 0 (rough) to 3 (ultra fine) and default to 'auto'.")
-    parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
-    parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
-    parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
+    add_config_argument(parser, '--precision', type=int, choices=[0,1,2,3], help="precision used by TreeTime to determine the number of grid points that are used for the evaluation of the branch length interpolation objects. Values range from 0 (rough) to 3 (ultra fine) and default to 'auto'.")
+    add_config_argument(parser, '--date-format', default="%Y-%m-%d", help="date format")
+    add_config_argument(parser, '--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
+    add_config_argument(parser, '--date-inference', default='joint', choices=["joint", "marginal"],
                                 help="assign internal nodes to their marginally most likely dates, not jointly most likely")
-    parser.add_argument('--branch-length-inference', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
+    add_config_argument(parser, '--branch-length-inference', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
                                 help='branch length mode of treetime to use')
-    parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
+    add_config_argument(parser, '--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
                                 'interquartile ranges from the root-to-tip vs time regression')
-    parser.add_argument('--keep-ids', metavar="FILE", help="file containing ids to keep in tree regardless of clock filtering (one per line)")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    parser.add_argument('--year-bounds', type=int, nargs='+', action=ExtendOverwriteDefault, help='specify min or max & min prediction bounds for samples with XX in year')
-    parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
+    add_config_argument(parser, '--keep-ids', metavar="FILE", help="file containing ids to keep in tree regardless of clock filtering (one per line)")
+    add_config_argument(parser, '--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    add_config_argument(parser, '--year-bounds', type=int, nargs='+', action=ExtendOverwriteDefault, help='specify min or max & min prediction bounds for samples with XX in year')
+    add_config_argument(parser, '--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
     parser.add_argument('--seed', type=int, help='seed for random number generation')
     parser.add_argument('--verbosity', type=int, default=1, help='treetime verbosity, between 0 and 6 (higher values more output)')
     parser.set_defaults(covariance=True)
+    parser.add_argument('--config', type=str, metavar='FILE', help='YAML config file for refine options'+SKIP_AUTO_DEFAULT_IN_HELP)
+    apply_sentinels(parser)
     return parser
 
 
 def run(args):
+    merge_config(args, 'refine')
 
     # check alignment type, set flags, read in if VCF
     is_vcf = False
