@@ -7,8 +7,8 @@ Use a YAML config file for selected refine options.
   $ cat >refine.yaml <<~~
   > root:
   >   - Colombia/2016/ZC204Se
-  > no_covariance: true
-  > greedy_resolve: true
+  > covariance: false
+  > stochastic_resolve: false
   > max_iter: 5
   > ~~
 

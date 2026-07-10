@@ -8,7 +8,6 @@ from augur.errors import AugurError
 
 CONFIG_OPTION_TYPES = {
     "flag": bool,
-    "no_flag": (bool, "flag", True),
     "two_words": bool,
     "count": int,
     "names": list,
@@ -93,48 +92,6 @@ def test_apply_config_supports_underscored_config_options(tmp_path):
     args = apply_config(parse_args(config), CONFIG_OPTION_TYPES, "test-command")
 
     assert args.two_words is True
-
-
-def test_apply_config_supports_inverted_config_options(tmp_path):
-    config = tmp_path / "config.yaml"
-    config.write_text("no_flag: true\n")
-
-    args = apply_config(parse_args(config), CONFIG_OPTION_TYPES, "test-command")
-
-    assert args.flag is False
-
-
-def test_apply_config_rejects_cli_options_for_inverted_config_options(tmp_path):
-    config = tmp_path / "config.yaml"
-    config.write_text("no_flag: true\n")
-
-    args = parse_args(config, ["--flag"])
-
-    with pytest.raises(AugurError, match="--flag"):
-        apply_config(args, CONFIG_OPTION_TYPES, "test-command")
-
-
-def test_apply_config_rejects_inverted_cli_options_for_inverted_config_options(tmp_path):
-    config = tmp_path / "config.yaml"
-    config.write_text("no_flag: true\n")
-
-    args = parse_args(config, ["--no-flag"])
-
-    with pytest.raises(AugurError, match="--no-flag"):
-        apply_config(args, CONFIG_OPTION_TYPES, "test-command")
-
-
-def test_apply_config_rejects_duplicate_config_option_destinations(tmp_path):
-    config = tmp_path / "config.yaml"
-    config.write_text("""\
-flag: true
-no_flag: true
-""")
-
-    args = parse_args(config)
-
-    with pytest.raises(AugurError, match="multiple config keys map to the same option"):
-        apply_config(args, CONFIG_OPTION_TYPES, "test-command")
 
 
 def test_apply_config_rejects_hyphenated_config_options(tmp_path):

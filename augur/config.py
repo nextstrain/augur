@@ -13,7 +13,7 @@ from .errors import AugurError
 
 CONFIG_CLI_OPTIONS_ATTR = "_augur_config_cli_options"
 CONFIG_CLI_OPTION_DESTS_ATTR = "_augur_config_cli_option_dests"
-ConfigOption: TypeAlias = Any | tuple[Any, str] | tuple[Any, str, bool]
+ConfigOption: TypeAlias = Any | tuple[Any, str]
 ConfigOptionTypes: TypeAlias = dict[str, ConfigOption]
 
 
@@ -140,7 +140,7 @@ def apply_config(
         )
 
     for key, option_type in option_types.items():
-        _, dest, _ = config_option_spec(key, option_type)
+        _, dest = config_option_spec(key, option_type)
         value = getattr(config, dest)
         if value is not None:
             setattr(args, dest, value)
@@ -162,7 +162,7 @@ def parse_config(filename: str, option_types: ConfigOptionTypes, command_name: s
 
     config = Namespace()
     for option, option_type in option_types.items():
-        value_type, dest, invert = config_option_spec(option, option_type)
+        value_type, dest = config_option_spec(option, option_type)
         value = config_data.get(option) if option in config_data else None
 
         if value is not None:
@@ -170,8 +170,6 @@ def parse_config(filename: str, option_types: ConfigOptionTypes, command_name: s
                 # allow scalars to represent single-item lists
                 value = [value]
 
-        if value is not None and invert:
-            value = not value
         setattr(config, dest, value)
 
     config_keys = {
@@ -250,22 +248,22 @@ def validation_error_message(error: jsonschema.ValidationError) -> str:
     return error.message
 
 
-def config_option_spec(option: str, option_type: ConfigOption) -> tuple[Any, str, bool]:
+def config_option_spec(option: str, option_type: ConfigOption) -> tuple[Any, str]:
     """
-    Return the value type, destination, and inversion flag for a config option.
+    Return the value type and destination for a config option.
     """
     if isinstance(option_type, tuple):
-        value_type, dest, *invert = option_type
-        return value_type, dest, invert[0] if invert else False
+        value_type, dest = option_type
+        return value_type, dest
 
-    return option_type, option, False
+    return option_type, option
 
 
 def json_schema_for_type(value_type: Any) -> dict[str, Any]:
     """
     Return a JSON Schema fragment for a Python type annotation.
     """
-    value_type, _, _ = config_option_spec("", value_type)
+    value_type, _ = config_option_spec("", value_type)
     origin = get_origin(value_type)
 
     import typing
