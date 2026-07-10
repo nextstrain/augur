@@ -21,12 +21,13 @@ def setup(app):
     }
 
 
+# FIXME: make this generic
 class YAMLOptionTableDirective(SphinxDirective):
     """
     A directive to generate a table with 2 columns:
 
     1. YAML config option
-    2. augur filter CLI option
+    2. CLI option
 
     Usage:
         .. yaml-option-table:: module.path.DICT_NAME
@@ -59,7 +60,7 @@ class YAMLOptionTableDirective(SphinxDirective):
         thead.append(header_row)
 
         header_row.append(nodes.entry('', nodes.paragraph('', 'YAML config option')))
-        header_row.append(nodes.entry('', nodes.paragraph('', 'augur filter CLI option')))
+        header_row.append(nodes.entry('', nodes.paragraph('', 'CLI option')))
 
         # Create table body
         tbody = nodes.tbody()

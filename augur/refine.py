@@ -12,6 +12,7 @@ from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_C
 from .io.strains import read_strains
 from .utils import read_tree, write_augur_json, InvalidTreeError
 from .errors import AugurError
+from .config import merge_config
 from treetime.vcf_utils import read_vcf
 from treetime.seq_utils import profile_maps
 
@@ -164,6 +165,29 @@ def root_outside_of_treetime(T, root, is_timetree, remove_outgroup):
 
     return treetime_reroot
 
+CONFIG_MAPPING = {
+    "root": {
+        "type": list,
+        "cli": ["--root"]
+    },
+    "covariance": {
+        "type": bool,
+        "cli": ["--covariance", "--no-covariance"]
+    },
+    "stochastic_resolve": {
+        "type": bool,
+        "cli": ["--stochastic-resolve", "--greedy-resolve"]
+    },
+    "max_iter": {
+        "type": int,
+        "cli": ["--max-iter"]
+    },
+    "coalescent": {
+        "type": (str, float, int),
+        "cli": ["--coalescent"]
+    }
+}
+
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("refine", help=__doc__)
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
@@ -216,11 +240,15 @@ def register_parser(parent_subparsers):
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
     parser.add_argument('--seed', type=int, help='seed for random number generation')
     parser.add_argument('--verbosity', type=int, default=1, help='treetime verbosity, between 0 and 6 (higher values more output)')
+    parser.add_argument('--config', type=str, help='YAML configuration file')
     parser.set_defaults(covariance=True)
     return parser
 
 
 def run(args):
+
+    if not merge_config(args, CONFIG_MAPPING):
+        return 2
 
     # check alignment type, set flags, read in if VCF
     is_vcf = False
