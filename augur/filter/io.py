@@ -96,23 +96,20 @@ def read_priority_scores(fname):
         raise AugurError(f"missing or malformed priority scores file {fname}")
 
 
-def write_output_metadata(input_metadata_path: str, delimiters: Sequence[str],
-                          id_columns: Sequence[str], output_metadata_path: str,
+def write_output_metadata(input_metadata: Metadata, output_metadata_path: str,
                           ids_to_write: Set[str]):
     """
-    Write output metadata file given input metadata information and a set of IDs
-    to write.
+    Write output metadata file given the input metadata and a set of IDs to
+    write.
     """
-    input_metadata = Metadata(input_metadata_path, delimiters, id_columns)
-
     with xopen(output_metadata_path, "w", newline="") as output_metadata_handle:
-        output_metadata = csv.DictWriter(output_metadata_handle, fieldnames=input_metadata.columns,
-                                         delimiter="\t", lineterminator=os.linesep)
-        output_metadata.writeheader()
+        output_metadata = csv.writer(output_metadata_handle,
+                                     delimiter="\t", lineterminator=os.linesep)
+        output_metadata.writerow(input_metadata.columns)
 
         # Write outputs based on rows in the original metadata.
         for row in input_metadata.rows():
-            row_id = row[input_metadata.id_column]
+            row_id = row[input_metadata.columns.index(input_metadata.id_column)]
             if row_id in ids_to_write:
                 output_metadata.writerow(row)
 

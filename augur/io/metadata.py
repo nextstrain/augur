@@ -697,27 +697,28 @@ class Metadata:
         raise AugurError(f"{self.path}: None of the possible id columns ({', '.join(map(repr, columns))}) were found in the metadata's columns ({', '.join(map(repr, self.columns))}).")
 
     def rows(self, strict: bool = True):
-        """Yield rows in a dictionary format. Empty lines are ignored.
+        """Yield rows as lists of values, in column order. Empty lines are ignored.
 
         Parameters
         ----------
         strict
             If True, raise an error when a row contains more or less than the number of expected columns.
         """
+        num_columns = len(self.columns)
         with self.open() as f:
-            reader = csv.DictReader(f, delimiter=self.delimiter, fieldnames=self.columns, restkey=None, restval=None)
+            reader = csv.reader(f, delimiter=self.delimiter)
 
             # Skip the header row.
             next(reader)
 
-            # NOTE: Empty lines are ignored by csv.DictReader.
-            # <https://github.com/python/cpython/blob/647b6cc7f16c03535cede7e1748a58ab884135b2/Lib/csv.py#L181-L185>
             for row in reader:
+                # Ignore empty lines.
+                if not row:
+                    continue
                 if strict:
-                    if None in row.keys():
+                    if len(row) > num_columns:
                         raise AugurError(f"{self.path}: Line {reader.line_num} contains at least one extra column. The inferred delimiter is {self.delimiter!r}.")
-                    if None in row.values():
-                        # This is distinct from a blank value (empty string).
+                    if len(row) < num_columns:
                         raise AugurError(f"{self.path}: Line {reader.line_num} is missing at least one column. The inferred delimiter is {self.delimiter!r}.")
                 yield row
 

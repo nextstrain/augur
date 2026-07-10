@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# Benchmark representative `augur filter` invocations against a metadata file.
+#
+# Useful for measuring the performance impact of changes to the filter command.
+# Times a few representative invocations (a query, a query writing metadata, and
+# a group-by subsample) and reports wall-clock time for each.
+#
+# Usage:
+#
+#     devel/benchmark-filter <metadata-file> [output-dir]
+#
+# <metadata-file> may be compressed (e.g. .tsv.zst, .tsv.xz). Outputs are
+# written to a temporary directory (or [output-dir] if given) and removed
+# afterwards unless an output directory is provided.
+set -euo pipefail
+
+if [[ $# -lt 1 ]]; then
+    echo "usage: devel/benchmark-filter <metadata-file> [output-dir]" >&2
+    exit 1
+fi
+
+metadata="$1"
+augur="${AUGUR:-./bin/augur}"
+
+if [[ $# -ge 2 ]]; then
+    outdir="$2"
+    keep=1
+    mkdir -p "$outdir"
+else
+    outdir="$(mktemp -d)"
+    keep=0
+fi
+
+cleanup() {
+    if [[ "$keep" -eq 0 ]]; then
+        rm -rf "$outdir"
+    fi
+}
+trap cleanup EXIT
+
+run() {
+    local label="$1"; shift
+    echo "=== ${label} ==="
+    # Print the command, then time it. Errors/summary go to stderr as usual.
+    echo "+ ${augur} filter --metadata ${metadata} $*"
+    /usr/bin/time -p "${augur}" filter --metadata "$metadata" "$@"
+    echo
+}
+
+run "query, output-strains" \
+    --query "country == 'USA'" \
+    --output-strains "$outdir/strains.txt"
+
+run "query, output-metadata" \
+    --query "country == 'USA'" \
+    --output-metadata "$outdir/metadata.tsv"
+
+run "group-by + subsample-max-sequences, output-strains" \
+    --group-by region year month \
+    --subsample-max-sequences 50000 \
+    --subsample-seed 0 \
+    --output-strains "$outdir/subsampled.txt"
