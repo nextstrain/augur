@@ -32,6 +32,29 @@ def open_file(path_or_buffer, mode="r", **kwargs):
     IO
         File handle object
 
+    Examples
+    --------
+    Pass through an existing buffer unchanged.
+
+    >>> from io import StringIO
+    >>> buf = StringIO("hello")
+    >>> with open_file(buf) as handle:
+    ...     handle.read()
+    'hello'
+
+    Open a normal text file. Parent directories are created.
+
+    >>> from tempfile import TemporaryDirectory
+    >>> from pathlib import Path
+    >>> with TemporaryDirectory() as d:
+    ...     parent = Path(d) / "nested"
+    ...     path = parent / "example.txt"
+    ...     with open_file(path, mode="w") as handle:
+    ...         _ = handle.write("hello")
+    ...     path.read_text(encoding=ENCODING)
+    ...     parent.exists()
+    'hello'
+    True
     """
 
     # Read all files using a specific encoding.
@@ -62,6 +85,21 @@ def open_file(path_or_buffer, mode="r", **kwargs):
 
 
 def is_write_mode(mode):
+    """Return whether ``mode`` is a write mode.
+
+    Examples
+    --------
+    >>> is_write_mode("w")
+    True
+    >>> is_write_mode("wb")
+    True
+    >>> is_write_mode("a")
+    True
+    >>> is_write_mode("r")
+    False
+    >>> is_write_mode("x")
+    True
+    """
     return any(flag in mode for flag in ("w", "a", "x"))
 
 
