@@ -18,6 +18,9 @@ from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEA
 from ._shared import shared_parser, validate
 
 
+COMMAND_NAME = "format-dates"
+
+
 # Builtin date formats that this command should parse
 # without additional input from the user.
 BUILTIN_DATE_FORMATS = [
@@ -47,7 +50,7 @@ BUILTIN_RANGE_FORMATS = {
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("format-dates",
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
         parents=[shared_parser],
         help=first_line(__doc__))
 
@@ -257,7 +260,7 @@ def format_to_iso_interval(date_string):
     return None
 
 
-@validate
+@validate(COMMAND_NAME)
 def run(args, records):
     expected_date_formats = BUILTIN_DATE_FORMATS
     if args.expected_date_formats:
