@@ -112,9 +112,8 @@ def register_commands(parser: ArgumentParser, commands, command_attribute='__com
         if command_attribute:
             subparser.set_defaults(**{command_attribute: command})
 
-        # Use the same formatting class for every command for consistency.
-        # Set here to avoid repeating it in every command's register_parser().
-        subparser.formatter_class = HelpFormatter
+        # Ensure all subparsers format like the top-level parser
+        subparser.formatter_class = parser.formatter_class
 
         if not subparser.description and command.__doc__:
             subparser.description = command.__doc__
