@@ -15,7 +15,7 @@ from augur.io.print import print_err, indented_list
 from augur.types import DataErrorMethod
 from augur.utils import first_line
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
-from ._shared import shared_parser
+from ._shared import shared_parser, validate
 
 
 # Builtin date formats that this command should parse
@@ -257,6 +257,7 @@ def format_to_iso_interval(date_string):
     return None
 
 
+@validate
 def run(args, records):
     expected_date_formats = BUILTIN_DATE_FORMATS
     if args.expected_date_formats:

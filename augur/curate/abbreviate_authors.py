@@ -10,7 +10,7 @@ import re
 from typing import Generator, List
 from augur.io.print import print_err
 from augur.utils import first_line
-from ._shared import shared_parser
+from ._shared import shared_parser, validate
 
 
 def parse_authors(
@@ -76,6 +76,7 @@ def register_parser(
     return parser
 
 
+@validate
 def run(args: argparse.Namespace, records: List[dict]) -> Generator[dict, None, None]:
     for index, record in enumerate(records):
         parse_authors(

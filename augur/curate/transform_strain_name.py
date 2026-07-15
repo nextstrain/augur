@@ -9,7 +9,7 @@ from typing import Generator, List
 from augur.argparse_ import ExtendOverwriteDefault
 from augur.io.print import print_err
 from augur.utils import first_line
-from ._shared import shared_parser
+from ._shared import shared_parser, validate
 
 
 def transform_name(
@@ -66,6 +66,7 @@ def register_parser(
     return parser
 
 
+@validate
 def run(args: argparse.Namespace, records: List[dict]) -> Generator[dict, None, None]:
     strain_name_pattern = re.compile(args.strain_regex)
 
