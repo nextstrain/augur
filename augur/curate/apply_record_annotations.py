@@ -7,11 +7,15 @@ from collections import defaultdict
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.utils import first_line
+from ._shared import shared_parser, validate
+
+
+COMMAND_NAME = "apply-record-annotations"
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("apply-record-annotations",
-        parents=[parent_subparsers.shared_parser],
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
+        parents=[shared_parser],
         help=first_line(__doc__))
 
     parser.add_argument("--annotations", metavar="TSV", required=True,
@@ -27,6 +31,7 @@ def register_parser(parent_subparsers):
     return parser
 
 
+@validate(COMMAND_NAME)
 def run(args, records):
     annotations = defaultdict(dict)
     with open(args.annotations, 'r', newline='') as annotations_fh:

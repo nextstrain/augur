@@ -7,6 +7,10 @@ from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.utils import first_line
 from augur.version import __version__
+from ._shared import shared_parser, validate
+
+
+COMMAND_NAME = "apply-geolocation-rules"
 
 
 class NoGeolocationRulesProvidedError(AugurError):
@@ -200,8 +204,8 @@ def transform_geolocations(geolocation_rules, geolocation, case_sensitive):
 
 
 def register_parser(parent_subparsers):
-    parser = parent_subparsers.add_parser("apply-geolocation-rules",
-        parents=[parent_subparsers.shared_parser],
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
+        parents=[shared_parser],
         help=first_line(__doc__))
 
     parser.add_argument("--region-field", default="region",
@@ -230,6 +234,7 @@ def register_parser(parent_subparsers):
     return parser
 
 
+@validate(COMMAND_NAME)
 def run(args, records):
 
     if args.no_default_rules and not args.geolocation_rules:

@@ -10,6 +10,10 @@ import re
 from typing import Generator, List
 from augur.io.print import print_err
 from augur.utils import first_line
+from ._shared import shared_parser, validate
+
+
+COMMAND_NAME = "abbreviate-authors"
 
 
 def parse_authors(
@@ -50,9 +54,8 @@ def parse_authors(
 def register_parser(
     parent_subparsers: argparse._SubParsersAction,
 ) -> argparse._SubParsersAction:
-    parser = parent_subparsers.add_parser(
-        "abbreviate-authors",
-        parents=[parent_subparsers.shared_parser],  # type: ignore[attr-defined]
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
+        parents=[shared_parser],
         help=first_line(__doc__),
     )
 
@@ -75,6 +78,7 @@ def register_parser(
     return parser
 
 
+@validate(COMMAND_NAME)
 def run(args: argparse.Namespace, records: List[dict]) -> Generator[dict, None, None]:
     for index, record in enumerate(records):
         parse_authors(

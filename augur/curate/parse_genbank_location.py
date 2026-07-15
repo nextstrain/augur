@@ -9,6 +9,10 @@ import argparse
 from typing import Generator, List
 from augur.io.print import print_err
 from augur.utils import first_line
+from ._shared import shared_parser, validate
+
+
+COMMAND_NAME = "parse-genbank-location"
 
 
 def parse_location(
@@ -47,9 +51,8 @@ def parse_location(
 def register_parser(
     parent_subparsers: argparse._SubParsersAction,
 ) -> argparse._SubParsersAction:
-    parser = parent_subparsers.add_parser(
-        "parse-genbank-location",
-        parents=[parent_subparsers.shared_parser],  # type: ignore[attr-defined]
+    parser = parent_subparsers.add_parser(COMMAND_NAME,
+        parents=[shared_parser],
         help=first_line(__doc__),
     )
 
