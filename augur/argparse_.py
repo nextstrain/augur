@@ -109,8 +109,7 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         subparser = command.register_parser(subparsers)
 
         # Add default attribute for command module
-        if command_attribute:
-            subparser.set_defaults(**{command_attribute: command})
+        subparser.set_defaults(**{command_attribute: command})
 
         # Use the same formatting class for every command for consistency.
         # Set here to avoid repeating it in every command's register_parser().
