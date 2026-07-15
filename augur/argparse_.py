@@ -85,16 +85,14 @@ def add_subparser(parent_subparsers: _SubParsersAction, *args, **kwargs) -> Argu
     return parent_subparsers.add_parser(*args, **kwargs)
 
 
-def add_command_subparsers(subparsers, commands, command_attribute='__command__'):
+def register_commands(parser: ArgumentParser, commands, command_attribute='__command__'):
     """
     Add subparsers for each command module.
 
     Parameters
     ----------
-    subparsers: argparse._SubParsersAction
-        The special subparsers action object created by the parent parser
-        via `parser.add_subparsers()`.
-
+    parser
+        ArgumentParser object.
     commands: list[types.ModuleType]
         A list of modules that are commands that require their own subparser.
         Each module is required to have a `register_parser` function to add its own
@@ -104,6 +102,8 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         Optional attribute name for the commands. The default is `__command__`,
         which allows top level augur to run commands directly via `args.__command__.run()`.
     """
+    subparsers = parser.add_subparsers(dest="subcommand", required=False)
+
     for command in commands:
         # Allow each command to register its own subparser
         subparser = command.register_parser(subparsers)
@@ -122,6 +122,10 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         # If a command doesn't have its own run() function, then print its help when called.
         if not getattr(command, "run", None):
             add_default_command(subparser)
+
+        # Recursively register any subcommands
+        if getattr(subparser, "subcommands", None):
+            register_commands(subparser, subparser.subcommands)
 
 
 class HideAsFalseAction(Action):
