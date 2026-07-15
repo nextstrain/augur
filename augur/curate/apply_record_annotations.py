@@ -7,11 +7,12 @@ from collections import defaultdict
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.utils import first_line
+from ._shared import shared_parser
 
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("apply-record-annotations",
-        parents=[parent_subparsers.shared_parser],
+        parents=[shared_parser],
         help=first_line(__doc__))
 
     parser.add_argument("--annotations", metavar="TSV", required=True,

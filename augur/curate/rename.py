@@ -8,10 +8,11 @@ from augur.argparse_ import ExtendOverwriteDefault
 from augur.io.print import print_err
 from augur.errors import AugurError
 from augur.utils import first_line
+from ._shared import shared_parser
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("rename",
-    parents = [parent_subparsers.shared_parser],
+    parents = [shared_parser],
     help = first_line(__doc__))
 
     required = parser.add_argument_group(title="REQUIRED")

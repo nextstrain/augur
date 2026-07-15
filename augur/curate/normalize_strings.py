@@ -7,11 +7,12 @@ in cases where strings contain diacritics (see https://web.archive.org/web/20250
 import unicodedata
 
 from augur.utils import first_line
+from ._shared import shared_parser
 
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("normalize-strings",
-        parents=[parent_subparsers.shared_parser],
+        parents=[shared_parser],
         help=first_line(__doc__))
 
     optional = parser.add_argument_group(title="OPTIONAL")

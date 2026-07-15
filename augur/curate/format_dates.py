@@ -15,6 +15,7 @@ from augur.io.print import print_err, indented_list
 from augur.types import DataErrorMethod
 from augur.utils import first_line
 from .format_dates_directives import YEAR_DIRECTIVES, YEAR_MONTH_DIRECTIVES, YEAR_MONTH_DAY_DIRECTIVES
+from ._shared import shared_parser
 
 
 # Builtin date formats that this command should parse
@@ -47,7 +48,7 @@ BUILTIN_RANGE_FORMATS = {
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("format-dates",
-        parents=[parent_subparsers.shared_parser],
+        parents=[shared_parser],
         help=first_line(__doc__))
 
     required = parser.add_argument_group(title="REQUIRED")
