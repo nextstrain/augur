@@ -12,10 +12,12 @@
 * filter: Improved the speed and memory usage of subsampling with `--group-by` and `--subsample-max-sequences` by caching each record's group during the first pass instead of reading the metadata a second time. [#2018][] @trvrb
 * filter: Improved the speed of computing groups for `--group-by` subsampling by replacing a row-wise pandas apply with a vectorized operation. [#2018][] @trvrb
 * filter: Improved the speed of writing `--output-metadata` by streaming rows instead of building a dictionary per row. [#2018][] @trvrb
+* Improved the error message for unrecognized arguments. [#2028][] @victorlin
 
 [#2014]: https://github.com/nextstrain/augur/issues/2014
 [#2018]: https://github.com/nextstrain/augur/pull/2018
 [#2025]: https://github.com/nextstrain/augur/pull/2025
+[#2028]: https://github.com/nextstrain/augur/issues/2028
 
 ## 34.0.0 (7 July 2026)
 

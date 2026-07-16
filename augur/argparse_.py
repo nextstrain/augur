@@ -85,6 +85,8 @@ def add_subparser(parent_subparsers: _SubParsersAction, *args, **kwargs) -> Argu
     return parent_subparsers.add_parser(*args, **kwargs)
 
 
+SUBPARSER_ATTRIBUTE = '__subparser__'
+
 def add_command_subparsers(subparsers, commands, command_attribute='__command__'):
     """
     Add subparsers for each command module.
@@ -109,8 +111,10 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         subparser = command.register_parser(subparsers)
 
         # Add default attribute for command module
-        if command_attribute:
-            subparser.set_defaults(**{command_attribute: command})
+        subparser.set_defaults(**{command_attribute: command})
+
+        # Add a reference to the subparser
+        subparser.set_defaults(**{SUBPARSER_ATTRIBUTE: subparser})
 
         # Use the same formatting class for every command for consistency.
         # Set here to avoid repeating it in every command's register_parser().
