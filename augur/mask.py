@@ -8,7 +8,7 @@ from shutil import copyfile
 
 from Bio.Seq import MutableSeq
 
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, resolvable_filepath
 from .io.file import create_parent_directories, open_file
 from .io.sequences import read_sequences, write_sequences, is_vcf
 from .io.shell_command_runner import run_shell_command
@@ -173,7 +173,7 @@ def register_arguments(parser):
     Kept as a separate function than `register_parser` to continue to support
     unit tests that use this function to create argparser.
     """
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
+    parser.add_argument('--sequences', '-s', required=True, type=resolvable_filepath, help="sequences in VCF or FASTA format")
     parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in either BED file format, DRM format, or one 1-indexed site per line.")
     parser.add_argument('--mask-from-beginning', type=int, default=0, help="FASTA Only: Number of sites to mask from beginning")
     parser.add_argument('--mask-from-end', type=int, default=0, help="FASTA Only: Number of sites to mask from end")

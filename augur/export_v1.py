@@ -9,7 +9,7 @@ import numpy as np
 from Bio import Phylo
 from argparse import SUPPRESS
 from collections import defaultdict
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, resolvable_filepath
 from .errors import AugurError
 from .io.json import write_json
 from .io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_metadata
@@ -313,21 +313,21 @@ def get_root_sequence(root_node, ref=None, translations=None):
 
 def add_core_args(parser):
     core = parser.add_argument_group("REQUIRED")
-    core.add_argument('--tree','-t', required=True, help="tree to perform trait reconstruction on")
-    core.add_argument('--metadata', required=True, metavar="FILE", help="sequence metadata")
+    core.add_argument('--tree','-t', required=True, type=resolvable_filepath, help="tree to perform trait reconstruction on")
+    core.add_argument('--metadata', required=True, metavar="FILE", type=resolvable_filepath, help="sequence metadata")
     core.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                       help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    core.add_argument('--node-data', required=True, nargs='+', action=ExtendOverwriteDefault, help="JSON files with meta data for each node")
+    core.add_argument('--node-data', required=True, nargs='+', action=ExtendOverwriteDefault, type=resolvable_filepath, help="JSON files with meta data for each node")
     core.add_argument('--output-tree', help="JSON file name that is passed on to auspice (e.g., zika_tree.json).")
     core.add_argument('--output-meta', help="JSON file name that is passed on to auspice (e.g., zika_meta.json).")
-    core.add_argument('--auspice-config', help="file with auspice configuration")
+    core.add_argument('--auspice-config', type=resolvable_filepath, help="file with auspice configuration")
     return core
 
 
 def add_option_args(parser):
     options = parser.add_argument_group("OPTIONS")
-    options.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
-    options.add_argument('--lat-longs', help="file latitudes and longitudes, overrides built in mappings")
+    options.add_argument('--colors', metavar="FILE", type=resolvable_filepath, help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
+    options.add_argument('--lat-longs', type=resolvable_filepath, help="file latitudes and longitudes, overrides built in mappings")
     options.add_argument('--tree-name', default=False, help="Tree name (needed for tangle tree functionality)")
     options.add_argument('--minify-json', action="store_true", help="export JSONs without indentation or line returns")
     options.add_argument('--output-sequence', help="JSON file name that is passed on to auspice (e.g., zika_seq.json).")

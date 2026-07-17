@@ -4,6 +4,7 @@
 from itertools import combinations
 import csv
 
+from .argparse_ import resolvable_filepath
 from .io.file import open_file
 from .io.sequences import read_sequences, is_vcf
 from .errors import AugurError
@@ -53,7 +54,7 @@ AMINO_ACID_CHARACTERS = {
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("index", help=__doc__)
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in FASTA or VCF formats. Augur will summarize the content of FASTA sequences and only report the names of strains found in a given VCF.")
+    parser.add_argument('--sequences', '-s', required=True, type=resolvable_filepath, help="sequences in FASTA or VCF formats. Augur will summarize the content of FASTA sequences and only report the names of strains found in a given VCF.")
     parser.add_argument('--output', '-o', help="tab-delimited file containing the number of bases per sequence in the given file. Output columns include strain, length, counts for each valid character, and a count of invalid characters. For nucleotide sequences: A, C, G, T, N, other_IUPAC, -, ?. For amino acid sequences: the 20 standard amino acids, *, X, -.", required=True)
     parser.add_argument('--seq-type', default='nuc', choices=['nuc', 'aa'], help="Sequence type: 'nuc' or 'aa'")
     parser.add_argument('--verbose', '-v', action="store_true", help="print index statistics to stdout")

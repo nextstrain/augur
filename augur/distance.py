@@ -186,7 +186,7 @@ import json
 import pandas as pd
 import sys
 
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, resolvable_filepath
 from .errors import AugurError
 from .frequency_estimators import timestamp_to_float
 from .io.file import open_file
@@ -662,8 +662,8 @@ def get_distances_to_all_pairs(tree, sequences_by_node_and_gene, distance_map, e
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("distance", help=first_line(__doc__))
-    parser.add_argument("--tree", help="Newick tree", required=True)
-    parser.add_argument("--alignment", nargs="+", action=ExtendOverwriteDefault, help="sequence(s) to be used, supplied as FASTA files", required=True)
+    parser.add_argument("--tree", type=resolvable_filepath, help="Newick tree", required=True)
+    parser.add_argument("--alignment", nargs="+", action=ExtendOverwriteDefault, type=resolvable_filepath, help="sequence(s) to be used, supplied as FASTA files", required=True)
     parser.add_argument('--gene-names', nargs="+", action=ExtendOverwriteDefault, type=str, help="names of the sequences in the alignment, same order assumed", required=True)
     parser.add_argument("--attribute-name", nargs="+", action=ExtendOverwriteDefault, help="name to store distances associated with the given distance map; multiple attribute names are linked to corresponding positional comparison method and distance map arguments", required=True)
     parser.add_argument("--compare-to", nargs="+", action=ExtendOverwriteDefault, choices=["root", "ancestor", "pairwise"], help="type of comparison between samples in the given tree including comparison of all nodes to the root (root), all tips to their last ancestor from a previous season (ancestor), or all tips from the current season to all tips in previous seasons (pairwise)", required=True)

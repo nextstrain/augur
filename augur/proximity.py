@@ -12,6 +12,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 from numpy.typing import NDArray
+from augur.argparse_ import resolvable_filepath
 from augur.errors import AugurError
 from augur.io.file import open_file
 from augur.io.print import print_err
@@ -79,8 +80,8 @@ proximity_argument_descriptions: dict[str, str] = {
 
 def register_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--method', default="hamming", choices=['hamming'], help=proximity_argument_descriptions['method'])
-    parser.add_argument('--context-sequences', required=True, help=proximity_argument_descriptions['context_sequences'])
-    parser.add_argument('--focal-sequences', required=True, help=proximity_argument_descriptions['focal_sequences'])
+    parser.add_argument('--context-sequences', required=True, type=resolvable_filepath, help=proximity_argument_descriptions['context_sequences'])
+    parser.add_argument('--focal-sequences', required=True, type=resolvable_filepath, help=proximity_argument_descriptions['focal_sequences'])
     parser.add_argument('--output-strains', required=True, help=proximity_argument_descriptions['output_strains'])
     parser.add_argument('--output-matches', help=proximity_argument_descriptions['output_matches'])
     parser.add_argument('--output-sequences', metavar="FASTA", help=proximity_argument_descriptions['output_sequences'])

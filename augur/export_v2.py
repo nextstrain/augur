@@ -15,7 +15,7 @@ from inspect import cleandoc
 from typing import Dict, Union, TypedDict, Any, Tuple
 from urllib.parse import urlparse
 
-from .argparse_ import SKIP_AUTO_DEFAULT_IN_HELP, ExtendOverwriteDefault, add_validation_arguments
+from .argparse_ import SKIP_AUTO_DEFAULT_IN_HELP, ExtendOverwriteDefault, add_validation_arguments, resolvable_filepath
 from .errors import AugurError
 from .io.file import open_file
 from .io.json import MINIFY_THRESHOLD_MB, write_json
@@ -904,7 +904,7 @@ def register_parser(parent_subparsers):
     required = parser.add_argument_group(
         title="REQUIRED"
     )
-    required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
+    required.add_argument('--tree','-t', metavar="newick", required=True, type=resolvable_filepath, help="Phylogenetic tree, usually output from `augur refine`")
     required.add_argument('--output', metavar="JSON", required=True, help="Output file (typically for visualisation in auspice)")
 
     config = parser.add_argument_group(
@@ -914,7 +914,7 @@ def register_parser(parent_subparsers):
             Supplying both is fine too, command line args will overrule what is set in the config file. \
             Multiple JSONs will be merged together, and lists present in multiple configs will be merged by extending the original list."
     )
-    config.add_argument('--auspice-config', metavar="JSON", nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice configuration file(s)")
+    config.add_argument('--auspice-config', metavar="JSON", nargs='+', action=ExtendOverwriteDefault, default=[], type=resolvable_filepath, help="Auspice configuration file(s)")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", action=ExtendOverwriteDefault, nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
@@ -934,20 +934,20 @@ def register_parser(parent_subparsers):
         title="OPTIONAL INPUT FILES"
     )
     optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action=ExtendOverwriteDefault,
-        help="JSON files containing metadata for nodes in the tree. " +
+        type=resolvable_filepath, help="JSON files containing metadata for nodes in the tree. " +
              "Keys are automatically exported as colorings unless special-cased. " +
              "URLs for a key 'X' can be stored under key 'X__url' and will be automatically exported.")
     optional_inputs.add_argument('--metadata', metavar="FILE",
-        help="Additional metadata for strains in the tree. " +
+        type=resolvable_filepath, help="Additional metadata for strains in the tree. " +
              "Columns are not typically exported by default and must be specified via arguments or within the config JSON. "
              "URLs for a column 'X' can be stored in column 'X__url' and will be automatically exported.")
     optional_inputs.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                                  help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
+    optional_inputs.add_argument('--colors', metavar="FILE", type=resolvable_filepath, help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
     optional_inputs.add_argument('--lat-longs', metavar="TSV",
-        help=cleandoc(f"""
+        type=resolvable_filepath, help=cleandoc(f"""
             Latitudes and longitudes for geography traits. See this file for the format:
             <https://github.com/nextstrain/augur/blob/{__version__}/augur/data/lat_longs.tsv>.
             This file provides the default set of latitudes and longitudes. An additional file

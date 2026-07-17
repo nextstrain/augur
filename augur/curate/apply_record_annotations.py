@@ -4,6 +4,7 @@ This does not do any additional transformations on top of the annotations.
 """
 import csv
 from collections import defaultdict
+from augur.argparse_ import resolvable_filepath
 from augur.errors import AugurError
 from augur.io.print import print_err
 from augur.utils import first_line
@@ -15,7 +16,7 @@ def register_parser(parent_subparsers):
         help=first_line(__doc__))
 
     parser.add_argument("--annotations", metavar="TSV", required=True,
-        help="Manually curated annotations TSV file. " +
+        type=resolvable_filepath, help="Manually curated annotations TSV file. " +
              "The TSV should not have a header and should have exactly three columns: " +
              "id to match existing metadata, field name, and field value. " +
              "If there are multiple annotations for the same id and field, then the last value is used. " +

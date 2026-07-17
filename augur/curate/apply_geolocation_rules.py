@@ -2,6 +2,7 @@
 Applies user curated geolocation rules to the geolocation fields.
 """
 from collections import defaultdict
+from augur.argparse_ import resolvable_filepath
 from augur.data import as_file
 from augur.errors import AugurError
 from augur.io.print import print_err
@@ -213,7 +214,7 @@ def register_parser(parent_subparsers):
     parser.add_argument("--location-field", default="location",
         help="Field that contains location in NDJSON records.")
     parser.add_argument("--geolocation-rules", metavar="TSV",
-        help="TSV file of geolocation rules with the format: " +
+        type=resolvable_filepath, help="TSV file of geolocation rules with the format: " +
              "'<raw_geolocation><tab><annotated_geolocation>' where the raw and annotated geolocations " +
              "are formatted as '<region>/<country>/<division>/<location>'. " +
              "If creating a general rule, then the raw field value can be substituted with '*'." +

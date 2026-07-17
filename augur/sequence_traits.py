@@ -6,6 +6,7 @@ import sys
 import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
+from .argparse_ import resolvable_filepath
 from .io.file import PANDAS_READ_CSV_OPTIONS, open_file
 from .io.sequences import read_sequences
 from .utils import write_augur_json, get_json_name
@@ -296,10 +297,10 @@ def attach_features(annotations, label, count):
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("sequence-traits", help=__doc__)
     parser.add_argument('--ancestral-sequences', type=str, help="nucleotide alignment (VCF) to search for sequence traits in (can be generated from 'ancestral' using '--output-vcf')")
-    parser.add_argument('--translations', type=str, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the nucleotide VCF was mapped to')
+    parser.add_argument('--translations', type=resolvable_filepath, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
+    parser.add_argument('--vcf-reference', type=resolvable_filepath, help='fasta file of the sequence the nucleotide VCF was mapped to')
     parser.add_argument('--vcf-translate-reference', type=str, help='fasta file of the sequence the translated VCF was mapped to')
-    parser.add_argument('--features', type=str,
+    parser.add_argument('--features', type=resolvable_filepath,
         help='file that specifies sites defining the features in a tab-delimited format: "GENE SITE ALT DISPLAY_NAME FEATURE". For nucleotide sites, GENE can be "nuc" (or column excluded entirely for all-nuc sites). "DISPLAY_NAME" can be blank or excluded entirely.')
     parser.add_argument('--count', type=str, choices=['traits','mutations'], default='traits', help='Whether to count traits (ex: # drugs resistant to) or mutations')
     parser.add_argument('--label', type=str, default="# Traits", help='How to label the counts (ex: Drug_Resistance)')

@@ -20,6 +20,7 @@ from treetime.vcf_utils import read_vcf
 from pathlib import Path
 from textwrap import dedent
 
+from .argparse_ import resolvable_filepath
 from .errors import AugurError
 from .io.file import create_parent_directories, open_file
 from .io.sequences import read_sequences
@@ -465,14 +466,14 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("tree", help=__doc__)
-    parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
+    parser.add_argument('--alignment', '-a', required=True, type=resolvable_filepath, help="alignment in fasta or VCF format")
     parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
     parser.add_argument('--substitution-model', default=DEFAULT_SUBSTITUTION_MODEL,
         help="substitution model to use. Specify ``'auto'`` to run ModelTest. Currently, only available for IQ-TREE.")
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
         help="maximum number of threads to use; specifying the value ``'auto'`` will cause the number of available CPU cores on your system, if determinable, to be used")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    parser.add_argument('--vcf-reference', type=resolvable_filepath, help='fasta file of the sequence the VCF was mapped to')
     parser.add_argument('--exclude-sites', type=str, help='file name of one-based sites to exclude for raw tree building (BED format in .bed files, second column in tab-delimited files, or one position per line)')
     parser.add_argument('--tree-builder-args', type=str,
         help=dedent(f"""\

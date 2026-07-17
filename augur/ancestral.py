@@ -22,7 +22,7 @@ nucleotide sequences, please use `augur translate`.
 
     The mutation positions in the node-data JSON are one-based.
 """
-from augur.argparse_ import ExtendOverwriteDefault
+from augur.argparse_ import ExtendOverwriteDefault, resolvable_filepath
 import argparse
 from augur.errors import AugurError
 import sys
@@ -329,16 +329,16 @@ def register_parser(parent_subparsers):
         "inputs",
         "Tree and sequences to use for ancestral reconstruction"
     )
-    input_group.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
+    input_group.add_argument('--tree', '-t', required=True, type=resolvable_filepath, help="prebuilt Newick")
     
     # ------------------- NUCLEOTIDE (TRANSLATION) OPTIONS ONLY ------------------------ 
     nucleotide_options_group = parser.add_argument_group(
         "nucleotide options",
         "Options to configure reconstruction of nucleotide sequences."
     )
-    nucleotide_options_group.add_argument('--alignment', '-a', help="alignment in FASTA or VCF format")
+    nucleotide_options_group.add_argument('--alignment', '-a', type=resolvable_filepath, help="alignment in FASTA or VCF format")
     nucleotide_options_exclusive_group = nucleotide_options_group.add_mutually_exclusive_group()
-    nucleotide_options_exclusive_group.add_argument('--vcf-reference', type=str, metavar='FASTA',
+    nucleotide_options_exclusive_group.add_argument('--vcf-reference', type=resolvable_filepath, metavar='FASTA',
                                  help='[VCF alignment only] file of the sequence the VCF was mapped to.'
                                       ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
     nucleotide_options_exclusive_group.add_argument('--root-sequence', type=str,metavar='FASTA/GenBank',
@@ -371,7 +371,7 @@ def register_parser(parent_subparsers):
         help="gene(s) to translate (list or file containing list).")
     amino_acid_options_group.add_argument('--annotation',
                         help='GenBank or GFF file containing the annotation. Optional if reconstructing a single gene without nuc data.')
-    amino_acid_options_group.add_argument('--translations', type=str, help="Translated alignments for each CDS/Gene."
+    amino_acid_options_group.add_argument('--translations', type=resolvable_filepath, help="Translated alignments for each CDS/Gene."
                            " If you are translating multiple genes you must specify the file name via a template"
                            f" like 'aa_sequences_%{GENE_PATTERN}.fasta' where %{GENE_PATTERN} will be replaced,"
                            " If you are translating a single gene using a pattern is optional."
@@ -379,7 +379,7 @@ def register_parser(parent_subparsers):
     amino_acid_options_group.add_argument('--report-inconsistent-translation', action="store_true",
                                 help="Report where amino acid reconstruction differed from a translation of the reconstructed nuc sequence."
                                 " Requires nucleotide reconstruction.")
-    amino_acid_options_group.add_argument('--aa-root-sequence', type=str, metavar='FASTA',
+    amino_acid_options_group.add_argument('--aa-root-sequence', type=resolvable_filepath, metavar='FASTA',
                                  help='File(s) of the AA root sequence(s). Differences between this sequence and the inferred root will be'
                                       ' reported as mutations on the root branch for each gene. For more than one gene this must include'
                                       f' %{GENE_PATTERN} like other arguments.')

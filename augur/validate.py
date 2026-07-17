@@ -12,7 +12,7 @@ from itertools import groupby
 from referencing import Registry
 from textwrap import indent
 from typing import Iterable, Union
-from augur.argparse_ import add_subparser
+from augur.argparse_ import add_subparser, resolvable_filepath
 from augur.data import as_file
 from augur.io.file import open_file
 from augur.io.print import print_err
@@ -464,20 +464,20 @@ def register_parser(parent_subparsers):
     subparsers = parser.add_subparsers(dest="subcommand", help="Which file(s) do you want to validate?")
 
     add_subparser(subparsers, "export-v2", help="validate JSON intended for auspice v2") \
-        .add_argument('main_json', metavar='JSON', help="exported (main) v2 auspice JSON")
+        .add_argument('main_json', metavar='JSON', type=resolvable_filepath, help="exported (main) v2 auspice JSON")
 
     export_v1 = add_subparser(subparsers, "export-v1", help="validate tree+meta JSONs intended for auspice v1")
     export_v1.add_argument('meta_json', metavar='META-JSON', help="exported (v1) meta JSON")
     export_v1.add_argument('tree_json', metavar='TREE-JSON', help="exported (v1) tree JSON")
 
     add_subparser(subparsers, "auspice-config-v2", help="validate auspice config intended for `augur export v2`") \
-        .add_argument('config_json', metavar='JSON', help="auspice config JSON")
+        .add_argument('config_json', metavar='JSON', type=resolvable_filepath, help="auspice config JSON")
 
     add_subparser(subparsers, "measurements", help="validate measurements JSON intended for auspice measurements panel") \
-        .add_argument("measurements_json", metavar="JSON", help="exported measurements JSON")
+        .add_argument("measurements_json", metavar="JSON", type=resolvable_filepath, help="exported measurements JSON")
 
     add_subparser(subparsers, "measurements-collection-config", help="validate measurement collection config intended for `augur measurements export`") \
-        .add_argument("collection_config_json", metavar="JSON", help="collection config JSON")
+        .add_argument("collection_config_json", metavar="JSON", type=resolvable_filepath, help="collection config JSON")
     return parser
 
 

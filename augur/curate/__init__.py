@@ -8,7 +8,7 @@ from inspect import cleandoc
 from textwrap import dedent
 from typing import Iterable, Set
 
-from augur.argparse_ import ExtendOverwriteDefault, add_command_subparsers
+from augur.argparse_ import ExtendOverwriteDefault, add_command_subparsers, resolvable_filepath
 from augur.errors import AugurError
 from augur.io.json import dump_ndjson, load_ndjson
 from augur.io.metadata import DEFAULT_DELIMITERS, InvalidDelimiter, read_table_to_dict, read_metadata_with_sequences, write_records_to_tsv
@@ -56,7 +56,7 @@ def create_shared_parser():
             If no input options are provided, commands will try to read NDJSON records from stdin.
         """))
     shared_inputs.add_argument("--metadata",
-        help="Input metadata file. May be plain text (TSV, CSV) or an Excel or OpenOffice spreadsheet workbook file. When an Excel or OpenOffice workbook, only the first visible worksheet will be read and initial empty rows/columns will be ignored. Accepts '-' to read plain text from stdin.")
+        type=resolvable_filepath, help="Input metadata file. May be plain text (TSV, CSV) or an Excel or OpenOffice spreadsheet workbook file. When an Excel or OpenOffice workbook, only the first visible worksheet will be read and initial empty rows/columns will be ignored. Accepts '-' to read plain text from stdin.")
     shared_inputs.add_argument("--id-column",
         help="Name of the metadata column that contains the record identifier for reporting duplicate records. "
              "Uses the first column of the metadata file if not provided. "

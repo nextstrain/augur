@@ -5,7 +5,7 @@ import Bio.Phylo
 from collections import defaultdict
 import json
 import numpy as np
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, resolvable_filepath
 from .io.file import open_file
 from .utils import write_augur_json
 
@@ -83,7 +83,7 @@ def calculate_LBI(tree, attr="lbi", tau=0.4, transform=lambda x:x, normalize=Tru
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("lbi", help=__doc__)
-    parser.add_argument("--tree", help="Newick tree", required=True)
+    parser.add_argument("--tree", type=resolvable_filepath, help="Newick tree", required=True)
     parser.add_argument("--branch-lengths", help="JSON with branch lengths and internal node dates estimated by TreeTime", required=True)
     parser.add_argument("--output", help="JSON file with calculated distances stored by node name and attribute name", required=True)
     parser.add_argument("--attribute-names", nargs="+", action=ExtendOverwriteDefault, help="names to store distances associated with the corresponding masks", required=True)

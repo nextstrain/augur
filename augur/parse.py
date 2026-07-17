@@ -6,7 +6,7 @@ import pandas as pd
 import sys
 from typing import Dict, Sequence, Tuple
 
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, resolvable_filepath
 from .io.file import open_file
 from .io.sequences import read_sequences, write_sequences
 from .dates import get_numerical_date_from_value
@@ -160,7 +160,7 @@ def parse_sequence(
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("parse", help=__doc__)
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in fasta or VCF format")
+    parser.add_argument('--sequences', '-s', required=True, type=resolvable_filepath, help="sequences in fasta or VCF format")
     parser.add_argument('--output-sequences', required=True, help="output sequences file")
     parser.add_argument('--output-metadata', required=True, help="output metadata file")
     parser.add_argument('--output-id-field', required=False,

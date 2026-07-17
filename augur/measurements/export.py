@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import sys
 
-from augur.argparse_ import ExtendOverwriteDefault, HideAsFalseAction
+from augur.argparse_ import ExtendOverwriteDefault, HideAsFalseAction, resolvable_filepath
 from augur.io.file import PANDAS_READ_CSV_OPTIONS
 from augur.io.json import write_json
 from augur.utils import first_line
@@ -31,7 +31,7 @@ def register_parser(parent_subparsers):
         title="REQUIRED"
     )
     required.add_argument("--collection", required=True, metavar="TSV",
-        help="Collection of measurements and metadata in a TSV file. " +
+        type=resolvable_filepath, help="Collection of measurements and metadata in a TSV file. " +
              "Keep in mind duplicate columns will be renamed as 'X', 'X.1', 'X.2'...'X.N'")
     required.add_argument("--strain-column", default="strain",
         help="Name of the column containing strain names. " +
@@ -55,7 +55,7 @@ def register_parser(parent_subparsers):
                     "Command line arguments will override the values set in the config JSON."
     )
     config.add_argument("--collection-config", metavar="JSON",
-        help="Collection configuration file for advanced configurations. ")
+        type=resolvable_filepath, help="Collection configuration file for advanced configurations. ")
     config.add_argument("--grouping-column", nargs="+", action=ExtendOverwriteDefault,
         help="Name of the column(s) that should be used as grouping(s) for measurements. " +
              "Note that if groupings are provided via command line args, the default group-by " +

@@ -65,7 +65,7 @@ from tempfile import mkstemp
 from textwrap import dedent
 from typing import Iterable, Tuple, TypeVar
 
-from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP, resolvable_filepath
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, Metadata
 from augur.io.print import print_err, print_debug, indented_list, _n
@@ -105,7 +105,7 @@ def register_parser(parent_subparsers):
     input_group.add_argument("--metadata-id-columns", default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]COLUMN", help=f"Possible metadata column names containing identifiers, considered in the order given. Columns will be considered for all metadata tables by default. Table-specific column names may be given using the same names assigned in --metadata. Only one ID column will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_ID_COLUMNS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
     input_group.add_argument("--metadata-delimiters", default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault, metavar="[TABLE=]CHARACTER", help=f"Possible field delimiters to use for reading metadata tables, considered in the order given. Delimiters will be considered for all metadata tables by default. Table-specific delimiters may be given using the same names assigned in --metadata. Only one delimiter will be inferred for each table. (default: {' '.join(map(shquote_humanized, DEFAULT_DELIMITERS))})" + SKIP_AUTO_DEFAULT_IN_HELP)
 
-    input_group.add_argument("--sequences", nargs="+", action=ExtendOverwriteDefault, metavar="FILE", help="Sequence files in FASTA format. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
+    input_group.add_argument("--sequences", nargs="+", action=ExtendOverwriteDefault, metavar="FILE", type=resolvable_filepath, help="Sequence files in FASTA format. Compressed files are supported." + SKIP_AUTO_DEFAULT_IN_HELP)
     input_group.add_argument("--skip-input-sequences-validation", action="store_true", default=False, help="Skip validation of --sequences (checking for no duplicates) to improve run time. Note that this may result in unexpected behavior in cases where validation would fail.")
 
     output_group = parser.add_argument_group("outputs", "options related to output")

@@ -7,7 +7,7 @@ import numpy as np
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, resolvable_filepath
 from .dates import validate_dates
 from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
@@ -25,7 +25,7 @@ def register_parser(parent_subparsers):
     # Shared arguments
     parser.add_argument('--method', choices=["diffusion", "kde"], required=True,
                         help="method by which frequencies should be estimated")
-    parser.add_argument('--metadata', type=str, required=True, metavar="FILE",
+    parser.add_argument('--metadata', type=resolvable_filepath, required=True, metavar="FILE",
                         help="metadata including dates for given samples")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
@@ -45,7 +45,7 @@ def register_parser(parent_subparsers):
                         help=f"date to end frequencies calculations; may be specified as:\n\n{SUPPORTED_DATE_HELP_TEXT}")
 
     # Tree-specific arguments
-    parser.add_argument('--tree', '-t', type=str,
+    parser.add_argument('--tree', '-t', type=resolvable_filepath,
                         help="tree to estimate clade frequencies for")
     parser.add_argument("--include-internal-nodes", action="store_true",
                         help="calculate frequencies for internal nodes as well as tips")
