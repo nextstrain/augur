@@ -2,10 +2,13 @@
 Custom helpers for the argparse standard library.
 """
 import os
-from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
+from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction, ArgumentTypeError
 from itertools import chain
+from pathlib import Path
 from textwrap import dedent, indent as indent_text
 from typing import Iterable, Optional, Tuple, Union
+from .config import resolve_filepath, get_search_paths
+from .errors import AugurError
 from .rst import rst_to_text
 from .types import ValidationMode
 
@@ -210,3 +213,15 @@ def walk_commands(parser: ArgumentParser, command: Optional[Tuple[str, ...]] = N
         visited.add(subparser)
 
         yield from walk_commands(subparser, (*command, subname))
+
+
+def resolvable_filepath(value: str) -> str:
+    """
+    An argparse type that resolves a filepath using `get_search_paths()`.
+    
+    Returns the resolved path as a string.
+    """
+    try:
+        return str(resolve_filepath(Path(value), get_search_paths()))
+    except AugurError as error:
+        raise ArgumentTypeError(str(error)) from error

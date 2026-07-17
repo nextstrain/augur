@@ -1,6 +1,7 @@
 """
 Helpers for YAML-based configuration files.
 """
+import os
 from pathlib import Path
 from textwrap import dedent
 from augur.errors import AugurError
@@ -76,3 +77,17 @@ def resolve_filepath(
         File {str(path)!r} not resolvable from any of the following paths:
 
           {indented_list([str(p) for p in search_paths], '        ' + '  ')}"""))
+
+
+def get_search_paths() -> list[Path]:
+    """
+    Returns the paths to search for relative filepaths.
+    
+    Reads from the AUGUR_SEARCH_PATHS environment variable, and falls back to
+    the current working directory.
+    """
+    search_paths = []
+    if from_env := os.environ.get('AUGUR_SEARCH_PATHS'):
+        search_paths.extend(Path(p) for p in from_env.split(':'))
+    search_paths.append(Path.cwd())
+    return search_paths
