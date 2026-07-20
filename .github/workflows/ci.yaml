@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
     - run: pip install .[dev]
     - run: mypy
 
@@ -346,7 +346,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
       - run: pip install coverage
 
       - uses: actions/download-artifact@v8
@@ -366,7 +366,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           # This should match the python version in .readthedocs.yml
           python-version: '3.11'
@@ -390,7 +390,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
 
       - run: pip install .[dev]
 
@@ -415,7 +415,7 @@ jobs:
         with:
           # Fetch all branches and tags.
           fetch-depth: 0
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.10'
       - name: Set Nextstrain bot as git user
