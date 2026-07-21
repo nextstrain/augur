@@ -156,3 +156,19 @@ class TestFilterGroupBy:
             'SEQ_4': ('B', '2020', '2020-01'),
             'SEQ_5': ('B', '2020', '2020-01')
         }
+
+
+class TestWeightedGroupSizes:
+    def test_get_weighted_group_sizes_empty_records(self, tmp_path):
+        weights_file = tmp_path / "weights.tsv"
+        weights_file.write_text("country\tweight\nA\t1\n")
+
+        result = augur.filter.subsample.get_weighted_group_sizes(
+            records_per_group={},
+            group_by=['country', 'year'],
+            weights_file=str(weights_file),
+            target_total_size=10,
+            output_sizes_file=None,
+            random_seed=None,
+        )
+        assert result == {}

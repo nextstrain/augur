@@ -321,6 +321,12 @@ def get_weighted_group_sizes(
     ) -> Dict[Group, int]:
     """Return target group sizes based on weights defined in ``weights_file``.
     """
+    if not records_per_group:
+        if output_sizes_file:
+            with open_file(output_sizes_file, "w", newline="") as f:
+                f.write("")
+        return {}
+
     groups = records_per_group.keys()
 
     weights = read_weights_file(weights_file)
