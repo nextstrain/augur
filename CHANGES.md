@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* filter: Fix unhandled `ValueError` with `--group-by-weights` when no sequences pass earlier filters. [#2032] @victorlin
+
+[#2032]: https://github.com/nextstrain/augur/issues/2032
 
 ## 34.1.0 (20 July 2026)
 
