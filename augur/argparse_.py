@@ -2,12 +2,94 @@
 Custom helpers for the argparse standard library.
 """
 import os
-from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
+import sys
+import re
+import textwrap
+import configargparse
+from argparse import Action, ArgumentDefaultsHelpFormatter, _ArgumentGroup, _SubParsersAction
 from itertools import chain
+from collections import OrderedDict
 from textwrap import dedent, indent as indent_text
 from typing import Iterable, Optional, Tuple, Union
+from configargparse import YAMLConfigFileParser
 from .rst import rst_to_text
 from .types import ValidationMode
+
+
+class AugurYAMLConfigFileParser(YAMLConfigFileParser):
+    """
+    Custom YAML parser that maps config keys with underscores to dashes.
+    This allows users to specify options like `use_fft: true` in the YAML
+    config, while mapping internally to the `--use-fft` argparse flag.
+    """
+    def parse(self, stream):
+        parsed = super().parse(stream)
+        new_parsed = OrderedDict()
+        for k, v in parsed.items():
+            new_parsed[k.replace('_', '-')] = v
+        return new_parsed
+
+
+def _is_option_in_args(option_string, args_list):
+    for arg in args_list:
+        if arg == option_string or arg.startswith(option_string + "="):
+            return True
+        if option_string.startswith("-") and not option_string.startswith("--") and len(option_string) == 2 and arg.startswith(option_string):
+            return True
+    return False
+
+
+class CustomArgumentParser(configargparse.ArgumentParser):
+    """
+    Subclass of configargparse.ArgumentParser that prevents command-line arguments
+    from overriding config file values. If an argument is provided both in a config file
+    and on the command line, an error is raised.
+    """
+    def parse_known_args(self, args=None, namespace=None, **kwargs):
+        parsed_args, argv = super().parse_known_args(args=args, namespace=namespace, **kwargs)
+
+        config_file_path = getattr(parsed_args, "config", None)
+        if config_file_path:
+            try:
+                with open(config_file_path) as fp:
+                    config_keys = set(self._config_file_parser.parse(fp).keys())
+            except Exception:
+                config_keys = set()
+
+            args_list = sys.argv[1:] if args is None else args
+            cli_dests = set()
+            for action in self._actions:
+                if getattr(action, "is_config_file_arg", False):
+                    continue
+                for opt in action.option_strings:
+                    if _is_option_in_args(opt, args_list):
+                        cli_dests.add(opt.lstrip("-"))
+                        break
+
+            conflicts = sorted(config_keys & cli_dests)
+            if conflicts:
+                self.error(
+                    f"The following option(s) were specified both in the config file and on the CLI: "
+                    f"{', '.join(conflicts)}"
+                )
+
+        return parsed_args, argv
+
+    def format_help(self):
+        help_text = super().format_help()
+        pattern = r"In general, command-line values\s+override config file values which override defaults\."
+        replacement = "Specifying an option on both the command line and in a config file will result in an error."
+        help_text = re.sub(pattern, replacement, help_text)
+
+        if "Args that start with" in help_text:
+            main_help, footer = help_text.rsplit("Args that start with", 1)
+            footer = "Args that start with" + footer
+            text_width = max(self._get_formatter()._width, 11)
+            footer_clean = " ".join(footer.split())
+            refilled = textwrap.fill(footer_clean, text_width)
+            help_text = main_help + refilled + "\n"
+
+        return help_text
 
 
 # Include this in an argument help string to suppress the automatic appending
@@ -75,7 +157,7 @@ def add_default_command(parser):
     parser.set_defaults(__command__ = default_command)
 
 
-def add_subparser(parent_subparsers: _SubParsersAction, *args, **kwargs) -> ArgumentParser:
+def add_subparser(parent_subparsers: _SubParsersAction, *args, **kwargs) -> CustomArgumentParser:
     """
     Add a subparser to a parent subparser.
     """
@@ -109,6 +191,9 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
     for command in commands:
         # Allow each command to register its own subparser
         subparser = command.register_parser(subparsers)
+        
+        # Ensure subparsers use the custom YAML parser
+        subparser._config_file_parser = AugurYAMLConfigFileParser()
 
         subparser.set_defaults(**{
             # Add default attribute for command module
@@ -156,7 +241,7 @@ class ExtendOverwriteDefault(Action):
         setattr(namespace, self.dest, [*current, *value])
 
 
-def add_validation_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
+def add_validation_arguments(parser: Union[CustomArgumentParser, _ArgumentGroup]):
     """
     Add arguments to configure validation mode of node data JSON files.
     """
@@ -190,7 +275,7 @@ def add_validation_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
 # Originally copied from nextstrain/cli/argparse.py in the Nextstrain CLI project¹.
 #
 # ¹ <https://github.com/nextstrain/cli/blob/4a00d7100eff811eab6df34db73c7f6d4196e22b/nextstrain/cli/argparse.py#L252-L271>
-def walk_commands(parser: ArgumentParser, command: Optional[Tuple[str, ...]] = None) -> Iterable[Tuple[Tuple[str, ...], ArgumentParser]]:
+def walk_commands(parser: CustomArgumentParser, command: Optional[Tuple[str, ...]] = None) -> Iterable[Tuple[Tuple[str, ...], CustomArgumentParser]]:
     if command is None:
         command = (parser.prog,)
 

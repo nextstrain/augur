@@ -3,6 +3,7 @@ The top-level augur command which dispatches to subcommands.
 """
 
 import argparse
+from configargparse import YAMLConfigFileParser
 import os
 import sys
 import importlib
@@ -14,7 +15,7 @@ from treetime import TreeTimeError, TreeTimeUnknownError
 from .debug import DEBUGGING
 from .errors import AugurError
 from .io.print import print_err
-from .argparse_ import HelpFormatter, add_command_subparsers, add_default_command, SUBPARSER_ATTRIBUTE
+from .argparse_ import CustomArgumentParser, HelpFormatter, add_command_subparsers, add_default_command, SUBPARSER_ATTRIBUTE, AugurYAMLConfigFileParser
 
 DEFAULT_AUGUR_RECURSION_LIMIT = 10000
 sys.setrecursionlimit(int(os.environ.get("AUGUR_RECURSION_LIMIT") or DEFAULT_AUGUR_RECURSION_LIMIT))
@@ -52,10 +53,12 @@ command_strings = [
 
 
 def make_parser():
-    parser = argparse.ArgumentParser(
+    parser = CustomArgumentParser(
         prog        = "augur",
         description = "Augur: A bioinformatics toolkit for phylogenetic analysis.",
-        formatter_class = HelpFormatter)
+        formatter_class = HelpFormatter,
+        config_file_parser_class = AugurYAMLConfigFileParser
+    )
 
     add_default_command(parser)
     add_version_alias(parser)

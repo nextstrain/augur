@@ -167,6 +167,7 @@ def root_outside_of_treetime(T, root, is_timetree, remove_outgroup):
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("refine", help=__doc__)
+    parser.add_argument('--config', is_config_file=True, help="config file path")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--seq-type', default='nuc', choices=['nuc', 'aa'], help="Sequence type: 'nuc' or 'aa'")
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
