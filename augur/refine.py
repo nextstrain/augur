@@ -189,7 +189,7 @@ def register_parser(parent_subparsers):
                                 "Run treetime -h for definitions of rooting methods.")
     parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
                                 "Overrides anything specified by --root.")
-    parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'"
+    parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'. "
                                 "This is only valid when a single strain name has been supplied as the root.")
     parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
                                 "rates and/or rerooting. "
