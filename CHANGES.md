@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 34.1.1 (23 July 2026)
+
 ### Bug fixes
 
 * filter: Fix unhandled `ValueError` with `--group-by-weights` when no sequences pass earlier filters. [#2032] @victorlin
