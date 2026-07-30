@@ -1,3 +1,4 @@
+import json
 import pytest
 import random
 
@@ -6,6 +7,7 @@ from augur.validate import (
     validate_collection_display_defaults,
     validate_measurements_config,
     load_json_schema,
+    load_json_schema_locally,
     validate_json,
     ValidateError
 )
@@ -159,3 +161,36 @@ class TestValidateGenomeAnnotations():
         with pytest.raises(ValidateError):
             validate_json(d, genome_annotation_schema, "<test-json>")
         capsys.readouterr() # suppress validation error printing
+
+
+def test_load_json_schema_locally(tmp_path):
+    schema_file = tmp_path / "test-schema.json"
+    raw_schema = {
+        "type": "object",
+        "properties": {
+            "subsample": {
+                "type": "object",
+                "patternProperties": {
+                    "^.*$": {
+                        "$ref": "https://nextstrain.org/schemas/augur/subsample-config/v1"
+                    }
+                }
+            }
+        }
+    }
+    with open(schema_file, "w") as f:
+        json.dump(raw_schema, f)
+
+    validator = load_json_schema_locally(schema_file)
+    valid_data = {
+        "subsample": {
+            "global": {
+                "samples": {
+                    "focal": {
+                        "group_by": ["country"]
+                    }
+                }
+            }
+        }
+    }
+    validate_json(valid_data, validator, "")
