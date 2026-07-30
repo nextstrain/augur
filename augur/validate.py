@@ -38,6 +38,21 @@ def validation_failure(mode: ValidationMode):
     else:
         raise ValueError(f"unknown validation mode: {mode!r}")
 
+
+def load_json_schema_locally(path):
+    # Schemas can reference other schemas via URL. Use local schema files for
+    # references to our own Augur schemas. This has advantages over URL:
+    # 1. it uses the schema expected by the current Augur version (URL may serve
+    #    schema for a newer version)
+    # 2. it doesn't require an internet connection
+    local_refs = {
+        'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json",
+        'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
+        'https://nextstrain.org/schemas/auspice/config/v2': "schema-auspice-config-v2.json",
+    }
+    return load_json_schema(path, refs=local_refs)
+
+
 def load_json_schema(path, refs=None):
     '''
     Load a JSON schema from the augur included set of schemas
@@ -245,17 +260,7 @@ def auspice_config_v2(config_json: Union[str,dict], **kwargs):
     validate(config, schema, filename)
 
 def export_v2(main_json, **kwargs):
-    # The main_schema uses references to other schemas, and the suggested use is
-    # to define these refs as valid URLs. Augur itself should not access schemas
-    # over the wire so we provide a mapping between URLs and filepaths here. The
-    # filepath is specified relative to ./augur/data (where all the schemas
-    # live).
-    refs = {
-        'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json",
-        'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
-        'https://nextstrain.org/schemas/auspice/config/v2': "schema-auspice-config-v2.json",
-    }
-    main_schema = load_json_schema("schema-export-v2.json", refs)
+    main_schema = load_json_schema_locally("schema-export-v2.json")
 
     if main_json.endswith("frequencies.json") or main_json.endswith("entropy.json") or main_json.endswith("sequences.json"):
         raise ValidateError("This validation subfunction is for the main `augur export v2` JSON only.")
