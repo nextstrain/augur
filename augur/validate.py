@@ -8,7 +8,9 @@ import json
 import jsonschema
 import jsonschema.exceptions
 import re
+import yaml
 from itertools import groupby
+from pathlib import Path
 from referencing import Registry
 from textwrap import indent
 from typing import Iterable, Union
@@ -59,11 +61,15 @@ def load_json_schema(path, refs=None):
     Load a JSON schema from the augur included set of schemas
     (located in augur/data)
     '''
+    is_yaml = Path(path).suffix in ('.yaml', '.yml')
     try:
         with as_file(path) as file, open_file(file, "r") as fh:
-            schema = json.load(fh)
-    except json.JSONDecodeError as err:
-        raise ValidateError(f"Schema {path} is not a valid JSON file. Error: {err}")
+            if is_yaml:
+                schema = yaml.safe_load(fh)
+            else:
+                schema = json.load(fh)
+    except (json.JSONDecodeError, yaml.YAMLError) as err:
+        raise ValidateError(f"Schema {path} is not a valid {'YAML' if is_yaml else 'JSON'} file. Error: {err}")
     # check loaded schema is itself valid -- see http://python-jsonschema.readthedocs.io/en/latest/errors/
     Validator = jsonschema.validators.validator_for(schema)
     try:

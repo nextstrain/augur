@@ -1,6 +1,7 @@
 import json
 import pytest
 import random
+import yaml
 
 from augur.validate import (
     validate_collection_config_fields,
@@ -193,4 +194,23 @@ def test_load_json_schema_locally(tmp_path):
             }
         }
     }
+    validate_json(valid_data, validator, "")
+
+
+@pytest.mark.parametrize("ext", ["yaml", "yml"])
+def test_load_yaml_schema(tmp_path, ext):
+    schema_file = tmp_path / f"test-schema.{ext}"
+    raw_schema = {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            }
+        }
+    }
+    with open(schema_file, "w") as f:
+        yaml.dump(raw_schema, f)
+
+    validator = load_json_schema(schema_file)
+    valid_data = {"name": "test"}
     validate_json(valid_data, validator, "")
