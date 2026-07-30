@@ -47,7 +47,7 @@ def load_json_schema(path, refs=None):
         with as_file(path) as file, open_file(file, "r") as fh:
             schema = json.load(fh)
     except json.JSONDecodeError as err:
-        raise ValidateError("Schema {} is not a valid JSON file. Error: {}".format(path, err))
+        raise ValidateError(f"Schema {path} is not a valid JSON file. Error: {err}")
     # check loaded schema is itself valid -- see http://python-jsonschema.readthedocs.io/en/latest/errors/
     Validator = jsonschema.validators.validator_for(schema)
     try:
