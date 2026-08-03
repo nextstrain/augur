@@ -556,7 +556,8 @@ def _best_matching_variant(
             best_ref = ref
     if not best_schema:
         raise AugurError("Couldn't match oneOf schema for config dict")
-    return (best_ref.rsplit("/", 1)[-1], best_schema)
+    name = best_ref.rsplit("/", 1)[-1] if best_ref else ""
+    return (name, best_schema)
 
 def _get_sample_types(config: Dict[str, Any]) -> Dict[str, str]:
     """
