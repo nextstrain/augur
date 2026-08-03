@@ -13,7 +13,7 @@ from itertools import groupby
 from pathlib import Path
 from referencing import Registry
 from textwrap import indent
-from typing import Iterable, Union
+from typing import Dict, Iterable, Union
 from augur.argparse_ import add_subparser
 from augur.data import as_file
 from augur.io.file import open_file
@@ -41,19 +41,50 @@ def validation_failure(mode: ValidationMode):
         raise ValueError(f"unknown validation mode: {mode!r}")
 
 
+LOCAL_REFS = {
+    'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json",
+    'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
+    'https://nextstrain.org/schemas/auspice/config/v2': "schema-auspice-config-v2.json",
+    'https://nextstrain.org/schemas/augur/subsample-config/v1': "schema-subsample-config.json",
+}
+
+
 def load_json_schema_locally(path):
     # Schemas can reference other schemas via URL. Use local schema files for
     # references to our own Augur schemas. This has advantages over URL:
     # 1. it uses the schema expected by the current Augur version (URL may serve
     #    schema for a newer version)
     # 2. it doesn't require an internet connection
-    local_refs = {
-        'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json",
-        'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
-        'https://nextstrain.org/schemas/auspice/config/v2': "schema-auspice-config-v2.json",
-        'https://nextstrain.org/schemas/augur/subsample-config/v1': "schema-subsample-config.json",
-    }
-    return load_json_schema(path, refs=local_refs)
+    return load_json_schema(path, refs=LOCAL_REFS)
+
+
+def create_local_schema_registry() -> Registry:
+    return create_schema_registry(LOCAL_REFS)
+
+
+def create_schema_registry(refs: Dict[str, str]) -> Registry:
+    """
+    Create a referencing.Registry from a mapping of URI keys to schema filepaths.
+    """
+    # Make the validator aware of additional schemas
+    schema_store = dict()
+    for k, v in refs.items():
+        with as_file(v) as file, open_file(file, "r") as fh:
+            schema_store[k] = json.load(fh)
+
+    # Create a dummy retrieval function to handle URIs not present in
+    # schema_store. This often indicates a typo (the $ref doesn't match the
+    # key of the schema_store) or we forgot to add a local mapping for a new
+    # $ref.
+    def retrieve(uri):
+        # Take advantage of the fact that BaseException is not handled by
+        # Registry.get_or_retrieve. This means the custom error message is
+        # printed instead of the less helpful default:
+        #    jsonschema.exceptions._WrappedReferencingError: Unresolvable: https://…
+        raise BaseException(f"The schema used for validation could not resolve a local file for {uri!r}. " +
+                        "Please check the schema used and update the appropriate schema_store as needed." )
+
+    return Registry(retrieve=retrieve).with_contents(schema_store.items())
 
 
 def load_json_schema(path, refs=None):
@@ -78,25 +109,7 @@ def load_json_schema(path, refs=None):
         raise ValidateError(f"Schema {path} is not a valid JSON Schema ({Validator.META_SCHEMA['$schema']}). Error: {err}")
 
     if refs:
-        # Make the validator aware of additional schemas
-        schema_store = dict()
-        for k, v in refs.items():
-            with as_file(v) as file, open_file(file, "r") as fh:
-                schema_store[k] = json.load(fh)
-
-        # Create a dummy retrieval function to handle URIs not present in
-        # schema_store. This often indicates a typo (the $ref doesn't match the
-        # key of the schema_store) or we forgot to add a local mapping for a new
-        # $ref.
-        def retrieve(uri):
-            # Take advantage of the fact that BaseException is not handled by
-            # Registry.get_or_retrieve. This means the custom error message is
-            # printed instead of the less helpful default:
-            #    jsonschema.exceptions._WrappedReferencingError: Unresolvable: https://…
-            raise BaseException(f"The schema used for validation could not resolve a local file for {uri!r}. " +
-                            "Please check the schema used and update the appropriate schema_store as needed." )
-
-        registry = Registry(retrieve=retrieve).with_contents(schema_store.items())
+        registry = create_schema_registry(refs)
         schema_validator = Validator(schema, registry=registry)
     else:
         schema_validator = Validator(schema)

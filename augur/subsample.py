@@ -18,6 +18,7 @@ from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, Future, wait
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from referencing import Resource
 from augur import filter as augur_filter
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
 from augur.config import resolve_filepath
@@ -25,7 +26,7 @@ from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
 from augur.io.print import print_err
 from augur.utils import augur
-from augur.validate import load_json_schema, validate_json, ValidateError
+from augur.validate import create_local_schema_registry, load_json_schema, validate_json, ValidateError
 from augur.io.print import print_debug
 
 BooleanFlags = Tuple[str, Optional[str]]
@@ -462,6 +463,10 @@ def _resolve_filepaths(
         # Get referenced property schema
         if ref := prop_schema.get("$ref"):
             prop_schema = _get_referenced_schema(ref, root_schema)
+            # Update root for external schemas.
+            # References within these are relative to itself rather than the outer schema.
+            if prop_schema.get("$id"):
+                root_schema = prop_schema
         elif "oneOf" in prop_schema and isinstance(value, dict):
             _, prop_schema = _best_matching_variant(prop_schema["oneOf"], value, root_schema)
 
@@ -491,13 +496,17 @@ def _get_referenced_schema(
     root_schema: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Resolve a JSON schema reference. Example: '#/$defs/filterSampleProperties'
+    Resolve a JSON schema reference.
+    Examples:
+        '#/$defs/filterSampleProperties'
+        'https://nextstrain.org/schemas/augur/subsample-config/v1'
+        'https://nextstrain.org/schemas/augur/subsample-config/v1#/$defs/filterSampleProperties'
     """
-    keys = ref.lstrip("#/").split("/")
-    schema = root_schema
-    for key in keys:
-        schema = schema[key]
-    return schema
+    root_id = root_schema.get("$id", "")
+    registry = create_local_schema_registry()
+    registry = registry.with_resource(root_id, Resource.from_contents(root_schema))
+    resolver = registry.resolver(base_uri=root_id)
+    return resolver.lookup(ref).contents
 
 
 def _is_filepath(prop_schema: Dict[str, Any]) -> bool:
