@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 34.1.2 (5 August 2026)
+
 ### Development
 
 * Refactored JSON schema validation functions for external use. [#2034] @victorlin
