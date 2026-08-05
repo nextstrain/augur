@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Development
+
+* Refactored JSON schema validation functions for external use. [#2034] @victorlin
+
+[#2034]: https://github.com/nextstrain/augur/pull/2034
 
 ## 34.1.1 (23 July 2026)
 
