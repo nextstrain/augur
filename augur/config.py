@@ -53,6 +53,18 @@ def get_referenced_files(config_file: str | Path, schema=None) -> set[str]:
 
 
 def parse_config(filename: str | Path) -> dict[str, Any]:
+    yaml = custom_yaml_loader()
+
+    with open(filename) as f:
+        try:
+            config = yaml.load(f)
+        except YAMLError as e:
+            raise AugurError(f"The configuration file {filename!r} is not valid YAML.\n" + str(e)) from e
+
+    return config
+
+
+def custom_yaml_loader() -> YAML:
     # Create a custom YAML constructor to treat timestamps as strings.
     class CustomConstructor(constructor.SafeConstructor):
         pass
@@ -62,14 +74,7 @@ def parse_config(filename: str | Path) -> dict[str, Any]:
 
     yaml = YAML(typ="safe")
     yaml.Constructor = CustomConstructor
-
-    with open(filename) as f:
-        try:
-            config = yaml.load(f)
-        except YAMLError as e:
-            raise AugurError(f"The configuration file {filename!r} is not valid YAML.\n" + str(e)) from e
-
-    return config
+    return yaml
 
 
 def get_search_paths(config_file: str | Path) -> list[Path]:
