@@ -167,6 +167,7 @@ def root_outside_of_treetime(T, root, is_timetree, remove_outgroup):
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("refine", help=__doc__)
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
     parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
     parser.add_argument('--seq-type', default='nuc', choices=['nuc', 'aa'], help="Sequence type: 'nuc' or 'aa'")
     parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
@@ -188,12 +189,12 @@ def register_parser(parent_subparsers):
                                 "OR node to root by OR two nodes indicating a monophyletic group to root by. "
                                 "Run treetime -h for definitions of rooting methods.")
     parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
-                                "Overrides anything specified by --root.")
-    parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'. "
+                                "Overrides anything specified by '--root'/'root'.")
+    parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'/'root'. "
                                 "This is only valid when a single strain name has been supplied as the root.")
     parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
                                 "rates and/or rerooting. "
-                                "Use --no-covariance to turn off.")
+                                "Use '--no-covariance'/'no_covariance' to turn off.")
     parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
 
     resolve_group = parser.add_mutually_exclusive_group()
