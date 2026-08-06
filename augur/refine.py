@@ -5,7 +5,8 @@ import numpy as np
 import sys
 from Bio import Phylo
 from textwrap import dedent
-from .argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from .argparse_ import SKIP_AUTO_DEFAULT_IN_HELP
+from .config import CommandOptions, OptionInfo, add_arguments
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
 from .io.file import open_file
@@ -168,58 +169,178 @@ def root_outside_of_treetime(T, root, is_timetree, remove_outgroup):
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("refine", help=__doc__)
     parser.add_argument('--config', is_config_file_arg=True, help="config file path")
-    parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
-    parser.add_argument('--seq-type', default='nuc', choices=['nuc', 'aa'], help="Sequence type: 'nuc' or 'aa'")
-    parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
-    parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata")
-    parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
-                        help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
-    parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
-                        help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    parser.add_argument('--output-tree', type=str, help='file name to write tree to.  If not provided a file will be created using the alignment or tree input path with a "_tt.nwk" suffix.'+SKIP_AUTO_DEFAULT_IN_HELP)
-    parser.add_argument('--output-node-data', type=str, help='file name to write branch lengths as node data. If not provided a file will be created using the alignment or tree input path with a ".node_data.json" suffix.'+SKIP_AUTO_DEFAULT_IN_HELP)
-    parser.add_argument('--use-fft', action="store_true", help="produce timetree using FFT for convolutions")
-    parser.add_argument('--max-iter', default=2, type=int, help="maximal number of iterations TreeTime uses for timetree inference")
-    parser.add_argument('--timetree', action="store_true", help="produce timetree using treetime, requires tree where branch length is in units of average number of nucleotide or protein substitutions per site (and branch lengths do not exceed 4)")
-    parser.add_argument('--coalescent', help="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')")
-    parser.add_argument('--gen-per-year', default=50, type=float, help="number of generations per year, relevant for skyline output('skyline')")
-    parser.add_argument('--clock-rate', type=float, help="fixed clock rate")
-    parser.add_argument('--clock-std-dev', type=float, help="standard deviation of the fixed clock_rate estimate")
-    parser.add_argument('--root', nargs="+", action=ExtendOverwriteDefault, default=['best'], help="rooting mechanism ('best', 'least-squares', 'min_dev', 'oldest', 'mid_point') "
-                                "OR node to root by OR two nodes indicating a monophyletic group to root by. "
-                                "Run treetime -h for definitions of rooting methods.")
-    parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
-                                "Overrides anything specified by --root.")
-    parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'. "
-                                "This is only valid when a single strain name has been supplied as the root.")
-    parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
-                                "rates and/or rerooting. "
-                                "Use --no-covariance to turn off.")
-    parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
-
-    resolve_group = parser.add_mutually_exclusive_group()
-    resolve_group.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
-    resolve_group.add_argument('--stochastic-resolve', action='store_true', help='Resolve polytomies via stochastic subtree building rather than greedy optimization')
-    resolve_group.add_argument('--greedy-resolve', action='store_false', dest='stochastic_resolve') # inverse of `--stochastic-resolve` to facilitate changing defaults in the future
-
-    parser.add_argument('--precision', type=int, choices=[0,1,2,3], help="precision used by TreeTime to determine the number of grid points that are used for the evaluation of the branch length interpolation objects. Values range from 0 (rough) to 3 (ultra fine) and default to 'auto'.")
-    parser.add_argument('--date-format', default="%Y-%m-%d", help="date format")
-    parser.add_argument('--date-confidence', action="store_true", help="calculate confidence intervals for node dates")
-    parser.add_argument('--date-inference', default='joint', choices=["joint", "marginal"],
-                                help="assign internal nodes to their marginally most likely dates, not jointly most likely")
-    parser.add_argument('--branch-length-inference', default='auto', choices = ['auto', 'joint', 'marginal', 'input'],
-                                help='branch length mode of treetime to use')
-    parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
-                                'interquartile ranges from the root-to-tip vs time regression')
-    parser.add_argument('--keep-ids', metavar="FILE", help="file containing ids to keep in tree regardless of clock filtering (one per line)")
-    parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
-    parser.add_argument('--year-bounds', type=int, nargs='+', action=ExtendOverwriteDefault, help='specify min or max & min prediction bounds for samples with XX in year')
-    parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
-                        default='mutations-per-site', help='Units in which sequence divergences is exported.')
-    parser.add_argument('--seed', type=int, help='seed for random number generation')
-    parser.add_argument('--verbosity', type=int, default=1, help='treetime verbosity, between 0 and 6 (higher values more output)')
-    parser.set_defaults(covariance=True)
+    add_arguments(parser, refine_options)
     return parser
+
+
+refine_options: CommandOptions = {
+    "alignment": OptionInfo(
+        additional_cli_flags=["-a"],
+        description="alignment in fasta or VCF format",
+        is_file=True,
+    ),
+    "seq_type": OptionInfo(
+        type="string",
+        choices=["nuc", "aa"],
+        default="nuc",
+        description="Sequence type: 'nuc' or 'aa'",
+    ),
+    "tree": OptionInfo(
+        additional_cli_flags=["-t"],
+        required=True,
+        description="prebuilt Newick",
+        is_file=True,
+    ),
+    "metadata": OptionInfo(
+        description="sequence metadata",
+        is_file=True,
+    ),
+    "metadata_delimiters": OptionInfo(
+        type="list of strings",
+        default=DEFAULT_DELIMITERS,
+        description="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.",
+    ),
+    "metadata_id_columns": OptionInfo(
+        type="list of strings",
+        default=DEFAULT_ID_COLUMNS,
+        description="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.",
+    ),
+    "output_tree": OptionInfo(
+        description='file name to write tree to.  If not provided a file will be created using the alignment or tree input path with a "_tt.nwk" suffix.' + SKIP_AUTO_DEFAULT_IN_HELP,
+        is_file=True,
+    ),
+    "output_node_data": OptionInfo(
+        description='file name to write branch lengths as node data. If not provided a file will be created using the alignment or tree input path with a ".node_data.json" suffix.' + SKIP_AUTO_DEFAULT_IN_HELP,
+        is_file=True,
+    ),
+    "use_fft": OptionInfo(
+        type="boolean",
+        description="produce timetree using FFT for convolutions",
+    ),
+    "max_iter": OptionInfo(
+        type="integer",
+        default=2,
+        description="maximal number of iterations TreeTime uses for timetree inference",
+    ),
+    "timetree": OptionInfo(
+        type="boolean",
+        description="produce timetree using treetime, requires tree where branch length is in units of average number of nucleotide or protein substitutions per site (and branch lengths do not exceed 4)",
+    ),
+    "coalescent": OptionInfo(
+        description="coalescent time scale in units of inverse clock rate (float), optimize as scalar ('opt'), or skyline ('skyline')",
+        oneOf=[
+            {"type": "number"},
+            {"type": "string", "enum": ["opt", "skyline"]}
+        ],
+    ),
+    "gen_per_year": OptionInfo(
+        type="number",
+        default=50,
+        description="number of generations per year, relevant for skyline output('skyline')",
+    ),
+    "clock_rate": OptionInfo(
+        type="number",
+        description="fixed clock rate",
+    ),
+    "clock_std_dev": OptionInfo(
+        type="number",
+        description="standard deviation of the fixed clock_rate estimate",
+    ),
+    "root": OptionInfo(
+        type="list of strings",
+        default=["best"],
+        description="rooting mechanism ('best', 'least-squares', 'min_dev', 'oldest', 'mid_point') OR node to root by OR two nodes indicating a monophyletic group to root by. Run treetime -h for definitions of rooting methods.",
+    ),
+    "keep_root": OptionInfo(
+        type="boolean",
+        description="do not reroot the tree; use it as-is. Overrides anything specified by --root.",
+    ),
+    "remove_outgroup": OptionInfo(
+        type="boolean",
+        description="Remove the outgroup supplied via '--root'. This is only valid when a single strain name has been supplied as the root.",
+    ),
+    "covariance": OptionInfo(
+        type="boolean",
+        default=True,
+        description="Account for covariation when estimating rates and/or rerooting. Use --no-covariance to turn off.",
+    ),
+    "no_covariance": OptionInfo(
+        type="boolean",
+        negates="covariance",
+    ),
+    "keep_polytomies": OptionInfo(
+        type="boolean",
+        mutually_exclusive_group="resolve",
+        description="Do not attempt to resolve polytomies",
+    ),
+    "stochastic_resolve": OptionInfo(
+        type="boolean",
+        mutually_exclusive_group="resolve",
+        description="Resolve polytomies via stochastic subtree building rather than greedy optimization",
+    ),
+    "greedy_resolve": OptionInfo(
+        type="boolean",
+        mutually_exclusive_group="resolve",
+        negates="stochastic_resolve",
+    ),
+    "precision": OptionInfo(
+        type="integer",
+        choices=[0, 1, 2, 3],
+        description="precision used by TreeTime to determine the number of grid points that are used for the evaluation of the branch length interpolation objects. Values range from 0 (rough) to 3 (ultra fine) and default to 'auto'.",
+    ),
+    "date_format": OptionInfo(
+        type="string",
+        default="%Y-%m-%d",
+        description="date format",
+    ),
+    "date_confidence": OptionInfo(
+        type="boolean",
+        description="calculate confidence intervals for node dates",
+    ),
+    "date_inference": OptionInfo(
+        type="string",
+        choices=["joint", "marginal"],
+        default="joint",
+        description="assign internal nodes to their marginally most likely dates, not jointly most likely",
+    ),
+    "branch_length_inference": OptionInfo(
+        type="string",
+        choices=["auto", "joint", "marginal", "input"],
+        default="auto",
+        description="branch length mode of treetime to use",
+    ),
+    "clock_filter_iqd": OptionInfo(
+        type="number",
+        description="clock-filter: remove tips that deviate more than n_iqd interquartile ranges from the root-to-tip vs time regression",
+    ),
+    "keep_ids": OptionInfo(
+        description="file containing ids to keep in tree regardless of clock filtering (one per line)",
+        is_file=True,
+    ),
+    "vcf_reference": OptionInfo(
+        description="fasta file of the sequence the VCF was mapped to",
+        is_file=True,
+    ),
+    "year_bounds": OptionInfo(
+        type="list of integers",
+        description="specify min or max & min prediction bounds for samples with XX in year",
+    ),
+    "divergence_units": OptionInfo(
+        type="string",
+        choices=["mutations", "mutations-per-site"],
+        default="mutations-per-site",
+        description="Units in which sequence divergences is exported.",
+    ),
+    "seed": OptionInfo(
+        type="integer",
+        description="seed for random number generation",
+    ),
+    "verbosity": OptionInfo(
+        type="integer",
+        default=1,
+        description="treetime verbosity, between 0 and 6 (higher values more output)",
+    )
+}
 
 
 def run(args):

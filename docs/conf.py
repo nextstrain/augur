@@ -68,6 +68,7 @@ extensions = [
     'sphinx_tabs.tabs',
     'nextstrain.sphinx.theme',
     'augur_subsample_helpers',
+    'argparse_config_table',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -141,6 +142,10 @@ nitpick_ignore = [
      # This class can't be referenced.
      # <https://github.com/python/cpython/issues/101503>
      ("py:class", "argparse._SubParsersAction"),
+
+     # configargparse classes not in intersphinx
+     ("py:class", "configargparse.YAMLConfigFileParser"),
+     ("py:class", "configargparse.ArgumentParser"),
 
      # sphinx-autodoc-typehints resolves pd.DataFrame to the internal path
      # pandas.core.frame.DataFrame, which is not in pandas' intersphinx
