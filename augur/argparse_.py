@@ -1,13 +1,185 @@
 """
 Custom helpers for the argparse standard library.
 """
+import argparse
+import configargparse
 import os
-from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
+from argparse import Action, ArgumentDefaultsHelpFormatter, _ArgumentGroup, _SubParsersAction
 from itertools import chain
 from textwrap import dedent, indent as indent_text
 from typing import Iterable, Optional, Tuple, Union
+from .io.print import indented_list, _n
 from .rst import rst_to_text
 from .types import ValidationMode
+
+
+CONFIG_FILE_ARG = "--config"
+
+
+class CustomArgumentParser(configargparse.ArgumentParser):
+    """
+    Custom argument parser for ConfigArgParse.
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("config_file_parser_class", configargparse.YAMLConfigFileParser)
+        super().__init__(*args, **kwargs)
+        self.config_file_action = None
+
+    def add_argument(self, *args, **kwargs):
+        action = super().add_argument(*args, **kwargs)
+
+        # Default allows multiple config file arguments, but we want only one
+        # and with a specific name.
+        if kwargs.get("is_config_file_arg"):
+            if self.config_file_action is not None:
+                raise ValueError("More than one argument with is_config_file_arg=True is not supported.")
+            assert action.option_strings == [CONFIG_FILE_ARG]
+
+            # Save it for easy access by other methods.
+            self.config_file_action = action
+
+        return action
+
+    def get_possible_config_keys(self, action):
+        """
+        This method decides which actions can be set in a config file and what
+        their keys will be. It returns a list of 0 or more keys which can be
+        used in a config YAML file.
+        """
+        keys = super().get_possible_config_keys(action)
+
+        # Default uses dashes for config key names (`foo-bar`), but we want
+        # underscores (`foo_bar`).
+        keys = [k.replace('-', '_') for k in keys]
+
+        # Only expose one key per option.
+        return keys[:1]
+
+    def convert_item_to_command_line_arg(self, action, key, value):
+        """
+        This method converts a config file entry into CLI arguments to be used
+        by argparse.
+        """
+        # Default converts invalid options into CLI arguments, which causes
+        # argparse to fail with misleading CLI syntax errors. Instead, omit them
+        # so our custom validation in parse_known_args() can show the error with
+        # config file syntax.
+        if action is None:
+            return []
+
+        # Default only converts lists for actions that subclass
+        # argparse._StoreAction or argparse._AppendAction, which excludes our
+        # custom ExtendOverwriteDefault. Handle those here so that any option
+        # taking a variable number of arguments can be set to a list.
+        if isinstance(value, list):
+            # Simplified condition from super().convert_item_to_command_line_arg()
+            accepts_list_and_has_nargs = (
+                action.nargs in ("+", "*")
+                or (isinstance(action.nargs, int) and action.nargs > 1)
+            )
+            if accepts_list_and_has_nargs:
+                command_line_key = action.option_strings[-1]
+                return [command_line_key, *map(str, value)]
+
+        return super().convert_item_to_command_line_arg(action, key, value)
+
+    def parse_known_args(self, args, namespace=None, **kwargs):
+        """
+        Add custom validation of the config file. Do this before calling
+        super().parse_known_args() to prevent synthesized CLI args from being
+        shown in argparse errors.
+        """
+        # Exit early when --config is not used.
+        if (
+            self.config_file_action is None
+            or not (config_file := self._get_config_file_path(args))
+        ):
+            return super().parse_known_args(args=args, namespace=namespace, **kwargs)
+
+        # Collect config keys.
+        with open(config_file) as f:
+            config_keys = set(self._config_file_parser.parse(f).keys())
+
+        # Default shows the CLI error for unknown args defined in the file,
+        # which is misleading. Instead, show a file-specific message.
+        valid_config_keys = set()
+        for action in self._actions:
+            if action != self.config_file_action:
+                valid_config_keys.update(self.get_possible_config_keys(action))
+
+        if invalid_keys := config_keys - valid_config_keys:
+            self.error_only(dedent(f"""\
+                The following {_n("invalid option was", "invalid options were", len(invalid_keys))} specified in {CONFIG_FILE_ARG}:
+
+                  {indented_list(sorted(invalid_keys), '                ' + '  ')}
+                """))
+
+        # Default allows command line arguments to override config file values
+        # that share the same dest, but we want them to be mutually exclusive.
+        conflicts = []
+        for key in config_keys:
+            # Find the dest associated with this config key.
+            for action in self._actions:
+                if key in self.get_possible_config_keys(action):
+                    config_dest = action.dest
+                    break
+
+            # Check if any CLI option targeting this dest appears on the command line.
+            for action in self._actions:
+                if action.dest == config_dest:
+                    for opt in action.option_strings:
+                        if configargparse.already_on_command_line(args, [opt], self.prefix_chars):
+                            conflicts.append((key, opt))
+
+        if conflicts:
+            conflict_strings = [
+                f"{key} (config YAML), {cli_opt} (CLI)"
+                for key, cli_opt in sorted(conflicts)
+            ]
+            self.error_only(dedent(f"""\
+                Options can be specified in either {CONFIG_FILE_ARG} or on the CLI, but not both.
+
+                The following {_n("option was", "options were", len(conflicts))} specified in both:
+
+                  {indented_list(conflict_strings, '                ' + '  ')}
+                """))
+
+        # NOTE: `namespace` needs to be separated from `kwargs` because it's
+        # sometimes used positionally in argparse.
+        return super().parse_known_args(args=args, namespace=namespace, **kwargs)
+
+    def _get_config_file_path(self, args):
+        """
+        Extract the path to the config file from CLI arguments.
+
+        This duplicates work done by super().parse_known_args(), but doing it
+        separately allows us to add early custom validation of the config file.
+        """
+        if self.config_file_action is None:
+            return None
+
+        for i, arg in enumerate(args):
+            if arg == CONFIG_FILE_ARG and i + 1 < len(args):
+                return args[i + 1]
+            elif arg.startswith(f"{CONFIG_FILE_ARG}="):
+                return arg.split("=", 1)[1]
+
+        return None
+
+    def format_help(self):
+        # Default adds a final paragraph about CLI values overriding YAML
+        # values, but that doesn't apply for us.
+        return argparse.ArgumentParser.format_help(self)
+
+    def error_only(self, message):
+        """
+        An alternative to self.error, without the usage message.
+        """
+        self.exit(2, f'ERROR: {message}')
+
+
+def config_key_to_cli_option(key: str) -> str:
+    return f"--{key.replace('_', '-')}"
 
 
 # Include this in an argument help string to suppress the automatic appending
@@ -75,7 +247,7 @@ def add_default_command(parser):
     parser.set_defaults(__command__ = default_command)
 
 
-def add_subparser(parent_subparsers: _SubParsersAction, *args, **kwargs) -> ArgumentParser:
+def add_subparser(parent_subparsers: _SubParsersAction, *args, **kwargs) -> CustomArgumentParser:
     """
     Add a subparser to a parent subparser.
     """
@@ -156,7 +328,7 @@ class ExtendOverwriteDefault(Action):
         setattr(namespace, self.dest, [*current, *value])
 
 
-def add_validation_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
+def add_validation_arguments(parser: Union[CustomArgumentParser, _ArgumentGroup]):
     """
     Add arguments to configure validation mode of node data JSON files.
     """
@@ -190,7 +362,7 @@ def add_validation_arguments(parser: Union[ArgumentParser, _ArgumentGroup]):
 # Originally copied from nextstrain/cli/argparse.py in the Nextstrain CLI project¹.
 #
 # ¹ <https://github.com/nextstrain/cli/blob/4a00d7100eff811eab6df34db73c7f6d4196e22b/nextstrain/cli/argparse.py#L252-L271>
-def walk_commands(parser: ArgumentParser, command: Optional[Tuple[str, ...]] = None) -> Iterable[Tuple[Tuple[str, ...], ArgumentParser]]:
+def walk_commands(parser: CustomArgumentParser, command: Optional[Tuple[str, ...]] = None) -> Iterable[Tuple[Tuple[str, ...], CustomArgumentParser]]:
     if command is None:
         command = (parser.prog,)
 
