@@ -166,6 +166,7 @@ intersphinx_mapping = {
     'Bio': ('https://biopython.org/docs/latest/', None),
     'docs.nextstrain.org': ('https://docs.nextstrain.org/en/latest/', None),
     'cli': ('https://docs.nextstrain.org/projects/cli/en/stable', None),
+    'configargparse': ('https://bw2.github.io/ConfigArgParse/', None),
     # Use Python 3.13 to prevent typing.Union warnings
     # <https://github.com/nextstrain/augur/issues/1903>
     'python': ('https://docs.python.org/3.13', None),
