@@ -2,6 +2,8 @@
 Applies user curated geolocation rules to the geolocation fields.
 """
 from collections import defaultdict
+from typing import Optional
+
 from augur.data import as_file
 from augur.errors import AugurError
 from augur.io.print import print_err
@@ -76,7 +78,7 @@ def load_geolocation_rules(geolocation_rules_file, case_sensitive):
     return geolocation_rules
 
 
-def get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, rule_traversal = None):
+def get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, rule_traversal: Optional[list[str]] = None):
     """
     Gets the annotated geolocation for the *raw_geolocation* in the provided
     *geolocation_rules*.
@@ -98,7 +100,12 @@ def get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive
     # Traverse the geolocation rules based using the rule_traversal values
     for field_value in rule_traversal:
         # Use lowercase for field_value for case-insensitive rule matching
-        current_rules = current_rules.get(field_value.lower())
+        try:
+            lower_field_value = field_value.lower()
+        except AttributeError:
+            print_err(f"WARNING: Could not convert {field_value!r} to lowercase.")
+            continue
+        current_rules = current_rules.get(lower_field_value)
         # If we hit `None`, then we know there are no matching rules, so stop the rule traversal
         if current_rules is None:
             break
@@ -111,6 +118,13 @@ def get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive
     # so try to traverse the rules with the next target in raw_geolocation
     if isinstance(current_rules, dict):
         next_traversal_target = raw_geolocation[len(rule_traversal)]
+        if type(next_traversal_target) is not str:
+            # Error out if the next traversal target is not a string
+            raise Exception(
+                f"Expected the next traversal target to be a string, but got {type(next_traversal_target)} instead. " +
+                f"Raw geolocation: {raw_geolocation}, rule traversal: {rule_traversal}. " +
+                f"Current rules: {current_rules}."
+            )
         rule_traversal.append(next_traversal_target)
         return get_annotated_geolocation(geolocation_rules, raw_geolocation, case_sensitive, rule_traversal)
 
