@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Development
+
+* Added a subsample config schema definition for workflows that use unaligned sequences. [#2037] @victorlin
+
+[#2037]: https://github.com/nextstrain/augur/pull/2037
 
 ## 34.1.2 (5 August 2026)
 

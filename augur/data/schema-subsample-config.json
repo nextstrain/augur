@@ -343,6 +343,25 @@
             "required": [
                 "focal_sample"
             ]
+        },
+        "schemaForUnalignedSequences": {
+            "title": "Configuration schema for unaligned sequences",
+            "allOf": [
+                {
+                    "$ref": "#"
+                },
+                {
+                    "properties": {
+                        "samples": {
+                            "patternProperties": {
+                                "^.+$": {
+                                    "$ref": "#/$defs/filterSampleProperties"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
         }
     },
     "properties": {

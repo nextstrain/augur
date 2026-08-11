@@ -249,6 +249,21 @@ def create_schema():
             "additionalProperties": False,
             "properties": proximal_sample_options,
             **_required_properties(proximal_sample_options),
+        },
+        "schemaForUnalignedSequences": {
+            "title": "Configuration schema for unaligned sequences",
+            "allOf": [
+                {"$ref": "#"},
+                {
+                    "properties": {
+                        "samples": {
+                            "patternProperties": {
+                                "^.+$": {"$ref": "#/$defs/filterSampleProperties"}
+                            }
+                        }
+                    }
+                }
+            ]
         }
     }
 
