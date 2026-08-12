@@ -4,9 +4,11 @@
 
 ### Development
 
+* subsample: Refactored helper functions to only validate config during run time. [#2039] @victorlin
 * Added a subsample config schema for workflows that use unaligned sequences. [#2038] @victorlin
 
 [#2038]: https://github.com/nextstrain/augur/pull/2038
+[#2039]: https://github.com/nextstrain/augur/pull/2039
 
 ## 34.1.2 (5 August 2026)
 
