@@ -52,6 +52,7 @@ def load_json_schema_locally(path):
         'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
         'https://nextstrain.org/schemas/auspice/config/v2': "schema-auspice-config-v2.json",
         'https://nextstrain.org/schemas/augur/subsample-config/v1': "schema-subsample-config.json",
+        'https://nextstrain.org/schemas/augur/subsample-config-unaligned/v1': "schema-subsample-config-unaligned.json",
     }
     return load_json_schema(path, refs=local_refs)
 
