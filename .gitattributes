@@ -2,3 +2,4 @@
 # routinely show the diff of.  A diff can be forced as needed, e.g. with `git
 # diff --text`.
 /augur/data/schema-subsample-config.json -diff
+/augur/data/schema-subsample-config-unaligned.json -diff
