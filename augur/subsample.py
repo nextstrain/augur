@@ -191,10 +191,14 @@ def run(args: argparse.Namespace) -> None:
       worth it if a proper input reuse approach such as database/parquet file
       support is adopted: <https://github.com/nextstrain/augur/issues/1574>
     """
-
-    # Load schema, parse and validate config.
     schema_validator = load_json_schema("schema-subsample-config.json")
-    config = _parse_config(args.config, args.config_section, schema_validator)
+    config = _parse_config(args.config, args.config_section)
+
+    try:
+        validate_json(config, schema_validator, args.config)
+    except ValidateError as e:
+        raise AugurError(e)
+
     sample_types = _get_sample_types(config)
 
     if _includes_proximal_sample(config) and not args.sequences:
@@ -324,9 +328,8 @@ def get_referenced_files(
     set
         Resolved filepaths
     """
-    # Load schema, parse and validate config.
     schema_validator = load_json_schema("schema-subsample-config.json")
-    config = _parse_config(config_file, config_section, schema_validator)
+    config = _parse_config(config_file, config_section)
 
     # Resolve filepaths.
     search_path_objs = _get_search_paths(config_file, search_paths)
@@ -357,11 +360,10 @@ def requires_aligned_sequences(
     bool
         Does augur subsample require aligned sequences?
     """
-    schema_validator = load_json_schema("schema-subsample-config.json")
-    config = _parse_config(config_file, config_section, schema_validator)
+    config = _parse_config(config_file, config_section)
     return _includes_proximal_sample(config)
 
-def _parse_config(filename: str, config_section: Optional[List[str]], schema) -> Dict[str, Any]:
+def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> Dict[str, Any]:
     # Create a custom YAML loader to treat timestamps as strings.
     class CustomLoader(yaml.SafeLoader):
         pass
@@ -386,12 +388,6 @@ def _parse_config(filename: str, config_section: Optional[List[str]], schema) ->
             traversed_section = traversed_section[key]
 
         config = traversed_section
-
-    # Validate against schema.
-    try:
-        validate_json(config, schema, filename)
-    except ValidateError as e:
-        raise AugurError(e)
 
     return config
 
