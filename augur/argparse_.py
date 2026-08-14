@@ -353,6 +353,13 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
             add_default_command(subparser)
 
 
+def InputFile(path: str) -> str:
+    """
+    Custom type for argparse representing an input file path.
+    """
+    return path
+
+
 class HideAsFalseAction(Action):
     """
     Custom argparse Action that stores False for arguments passed as `--hide*`

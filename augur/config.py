@@ -6,6 +6,10 @@ from textwrap import dedent
 from augur.errors import AugurError
 from augur.io.print import indented_list
 
+COMMAND_SCHEMAS = {
+    "refine": "v1",
+}
+
 def resolve_filepath(
     path: Path,
     search_paths: list[Path],
