@@ -67,7 +67,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_tabs.tabs',
     'nextstrain.sphinx.theme',
-    'augur_subsample_helpers',
+    'config_schema_helpers',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
