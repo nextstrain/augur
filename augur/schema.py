@@ -16,6 +16,11 @@ class InvalidSchemaError(Exception):
     pass
 
 
+COMMAND_SCHEMAS = {
+    "refine": "v1",
+}
+
+
 def load_augur_json_schema(schema: str):
     """
     Load a JSON schema from the augur included set of schemas
@@ -64,6 +69,11 @@ def _get_local_refs() -> dict[str, str]:
         'https://nextstrain.org/schemas/augur/subsample-config/v1': "schema-subsample-config.json",
         'https://nextstrain.org/schemas/augur/subsample-config-unaligned/v1': "schema-subsample-config-unaligned.json",
     }
+
+    for command, version in COMMAND_SCHEMAS.items():
+        command_name = command.replace(' ', '-')
+        local_refs[f"https://nextstrain.org/schemas/augur/{command_name}-config/{version}"] = f"schema-{command_name}-config.json"
+
     return local_refs
 
 

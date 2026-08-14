@@ -3,3 +3,4 @@
 # diff --text`.
 /augur/data/schema-subsample-config.json -diff
 /augur/data/schema-subsample-config-unaligned.json -diff
+/augur/data/schema-*-config.json -diff
