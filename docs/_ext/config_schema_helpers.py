@@ -1,5 +1,5 @@
 """
-Custom Sphinx directives for augur subsample documentation.
+Custom Sphinx directives for config schema documentation.
 """
 from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
@@ -167,7 +167,8 @@ class CLIOptionTableDirective(SphinxDirective):
 
 class SchemaOptionsTableDirective(SphinxDirective):
     """
-    A directive to generate a table with options from the JSON schema.
+    A directive to generate a table of YAML configuration options from a flat
+    JSON schema.
 
     Creates a table with columns:
     1. Option - YAML config option
@@ -175,17 +176,15 @@ class SchemaOptionsTableDirective(SphinxDirective):
     3. Description - Human-readable description
 
     Usage:
-        .. schema-options-table:: path/to/schema.json schema_def_name
-
-    Where schema_def_name is either 'sampleProperties' or 'defaultProperties'
+        .. schema-options-table:: path/to/schema.json [schema_def_name]
     """
-    required_arguments = 2
-    optional_arguments = 0
+    required_arguments = 1
+    optional_arguments = 1
     has_content = False
 
     def run(self):
         schema_path = self.arguments[0]
-        schema_def_name = self.arguments[1]
+        schema_def_name = self.arguments[1] if len(self.arguments) > 1 else None
 
         # Open the schema file relative to the augur root
         base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -193,12 +192,15 @@ class SchemaOptionsTableDirective(SphinxDirective):
         with open(full_schema_path, 'r') as f:
             schema = json.load(f)
 
-        # Validate that the requested schema definition exists
-        if '$defs' not in schema or schema_def_name not in schema['$defs']:
-            raise ValueError(f"Schema definition '{schema_def_name}' not found in {schema_path}")
+        if schema_def_name:
+            # Validate that the requested schema definition exists
+            if '$defs' not in schema or schema_def_name not in schema['$defs']:
+                raise ValueError(f"Schema definition '{schema_def_name}' not found in {schema_path}")
 
-        # Extract options from the specified schema definition
-        options = schema['$defs'][schema_def_name]['properties']
+            # Extract options from the specified schema definition
+            options = schema['$defs'][schema_def_name]['properties']
+        else:
+            options = schema.get('properties', {})
 
         # Create the table structure
         table = nodes.table()
@@ -281,8 +283,13 @@ class SchemaOptionsTableDirective(SphinxDirective):
             container += bullet_list
             return container
 
+        # Array type
+        if prop_def.get('type') == 'array':
+            item_type = prop_def.get('items', {}).get('type', 'string')
+            return nodes.paragraph('', f'array of {item_type}s')
+
         # Basic types
-        if prop_def.get('type') in ('boolean', 'integer', 'string'):
+        if prop_def.get('type') in ('boolean', 'integer', 'number', 'string'):
             return nodes.paragraph('', prop_def['type'])
 
         # Fail the build if something new comes up so the code can be updated.
