@@ -66,6 +66,7 @@ extensions = [
     'sphinx_markdown_tables',
     'sphinx.ext.intersphinx',
     'sphinx_tabs.tabs',
+    'sphinx-jsonschema',
     'nextstrain.sphinx.theme',
     'augur_subsample_helpers',
 ]

@@ -53,6 +53,8 @@ Terminology
 Configuration
 =============
 
+.. jsonschema:: ../../../augur/data/schema-subsample-config.json
+
 The ``--config`` option expects a YAML-formatted configuration file. This
 section describes how the file should be structured.
 
