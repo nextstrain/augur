@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* refine: Added a new option `--config` to support configuration of other options in a YAML file. Please see the [usage docs](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/refine.html) for details. [#2040][] @victorlin
+
+[#2040]: https://github.com/nextstrain/augur/pull/2040
 
 ## 34.1.3 (13 August 2026)
 
