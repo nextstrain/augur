@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+### Features
+
+* refine: Added a new option `--config` to support configuration of other options in a YAML file. Please see the [usage docs](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/refine.html) for details. [#2040][] @victorlin
+
 ### Bug fixes
 
 * frequencies: Fix `AttributeError` when using numpy >= 2.4.0 with `--method diffusion`. [#2048] @joverlee521
@@ -10,6 +14,7 @@
 
 * Switched to `ruamel.yaml` for processing YAML files. [#2046][] @victorlin
 
+[#2040]: https://github.com/nextstrain/augur/pull/2040
 [#2046]: https://github.com/nextstrain/augur/pull/2046
 [#2048]: https://github.com/nextstrain/augur/pull/2048
 
