@@ -4,13 +4,14 @@
 
 ### Features
 
-* refine: Added a new option `--config` to support configuration of other options in a YAML file. Please see the [usage docs](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/refine.html) for details. [#2040][] @victorlin
+* refine, ancestral: Added a new option `--config` to support configuration of other options in a YAML file. Please see the usage docs for more details: [refine](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/refine.html), [ancestral](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/ancestral.html) [#2040][], [#2041][] @victorlin
 
 ### Bug fixes
 
 * refine: Previously, `--covariance` and `--no-covariance` were allowed at the same time, with the first one specified in the command string being ignored. Now, the command will show an error when both are used at the same time. [#2040][] @victorlin
 
 [#2040]: https://github.com/nextstrain/augur/pull/2040
+[#2041]: https://github.com/nextstrain/augur/pull/2041
 
 ## 34.1.3 (13 August 2026)
 

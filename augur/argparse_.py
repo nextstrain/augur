@@ -471,7 +471,7 @@ def add_validation_arguments(parser: Union[CustomArgumentParser, _ArgumentGroup]
         dest="validation_mode",
         action="store_const",
         const=ValidationMode.SKIP,
-        help="Skip validation of input/output files, equivalent to --validation-mode=skip. Use at your own risk!")
+        help="Skip validation of input/output files, equivalent to a '--validation-mode'/'validation_mode' value of 'skip'. Use at your own risk!")
 
 
 # Originally copied from nextstrain/cli/argparse.py in the Nextstrain CLI project¹.

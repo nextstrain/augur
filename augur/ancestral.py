@@ -323,6 +323,7 @@ def run_ancestral(
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("ancestral", help=__doc__)
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
 
     # ----------------------------- INPUTS ----------------------------- 
     input_group = parser.add_argument_group(
@@ -342,9 +343,9 @@ def register_parser(parent_subparsers):
                                  help='[VCF alignment only] file of the sequence the VCF was mapped to.'
                                       ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
     nucleotide_options_exclusive_group.add_argument('--root-sequence', type=str,metavar='FASTA/GenBank',
-                                 help='[FASTA alignment only] file of the sequence that is used as root for mutation calling.'
-                                      ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.'
-                                      ' If also reconstructing AA sequences, this (nuc) sequence will be translated to form the AA root sequences unless --aa-root-sequence is provided.')
+                                 help="[FASTA alignment only] file of the sequence that is used as root for mutation calling."
+                                      " Differences between this sequence and the inferred root will be reported as mutations on the root branch."
+                                      " If also reconstructing AA sequences, this (nuc) sequence will be translated to form the AA root sequences unless '--aa-root-sequence'/'aa_root_sequence' is provided.")
 
     # ----------------------------- GLOBAL OPTIONS -----------------------------
     global_options_group = parser.add_argument_group(
