@@ -9,6 +9,7 @@
 ### Bug fixes
 
 * frequencies: Fix `AttributeError` when using numpy >= 2.4.0 with `--method diffusion`. [#2048] @joverlee521
+* refine: Previously, `--covariance` and `--no-covariance` were allowed at the same time, with the first one specified in the command string being ignored. Now, the command will show an error when both are used at the same time. [#2040][] @victorlin
 
 ### Development
 
