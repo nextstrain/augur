@@ -32,13 +32,6 @@ class CustomArgumentParser(configargparse.ArgumentParser):
 
         # Inject the custom `cli_only` parameter as an attribute on the action
         # for downstream use.
-        #
-        # NOTE: This only works for add_argument() calls on the parser, not
-        # argument groups. To support those, we could apply the same treatment
-        # to add_argument() on argparse._ArgumentGroup and
-        # argparse._MutuallyExclusiveGroup, or monkeypatch the underlying
-        # argparse._ActionsContainer.add_argument(). Both options aren't great,
-        # but probably inevitable.
         setattr(action, "cli_only", cli_only)
 
         # Default allows multiple config file arguments, but we want only one
@@ -52,6 +45,20 @@ class CustomArgumentParser(configargparse.ArgumentParser):
             self.config_file_action = action
 
         return action
+
+    def add_argument_group(self, *args, **kwargs):
+        # Use custom class to support the custom `cli_only` parameter on
+        # arguments added to groups.
+        group = CustomArgumentGroup(self, *args, **kwargs)
+        self._action_groups.append(group)
+        return group
+
+    def add_mutually_exclusive_group(self, **kwargs):
+        # Use custom class to support the custom `cli_only` parameter on
+        # arguments added to mutually exclusive groups.
+        group = CustomMutuallyExclusiveGroup(self, **kwargs)
+        self._mutually_exclusive_groups.append(group)
+        return group
 
     def get_possible_config_keys(self, action):
         """
@@ -255,6 +262,39 @@ class YAMLConfigFileParser(configargparse.YAMLConfigFileParser):
 
 def config_key_to_cli_option(key: str) -> str:
     return f"--{key.replace('_', '-')}"
+
+
+class CustomMutuallyExclusiveGroup(argparse._MutuallyExclusiveGroup):
+    """
+    Custom class to support the `cli_only` parameter on added arguments.
+    """
+    def add_argument(self, *args, cli_only: bool = False, **kwargs):
+        action = super().add_argument(*args, **kwargs)
+
+        # Inject the custom `cli_only` parameter as an attribute on the action
+        # for downstream use.
+        setattr(action, "cli_only", cli_only)
+
+        return action
+
+
+class CustomArgumentGroup(argparse._ArgumentGroup):
+    """
+    Custom class to support the `cli_only` parameter on added arguments.
+    """
+    def add_argument(self, *args, cli_only: bool = False, **kwargs):
+        action = super().add_argument(*args, **kwargs)
+
+        # Inject the custom `cli_only` parameter as an attribute on the action
+        # for downstream use.
+        setattr(action, "cli_only", cli_only)
+
+        return action
+
+    def add_mutually_exclusive_group(self, **kwargs):
+        group = CustomMutuallyExclusiveGroup(self, **kwargs)
+        self._mutually_exclusive_groups.append(group)
+        return group
 
 
 # Include this in an argument help string to suppress the automatic appending

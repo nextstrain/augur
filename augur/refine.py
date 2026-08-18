@@ -192,10 +192,11 @@ def register_parser(parent_subparsers):
                                 "Overrides anything specified by '--root'/'root'.")
     parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'/'root'. "
                                 "This is only valid when a single strain name has been supplied as the root.")
-    parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
+    covariance_group = parser.add_mutually_exclusive_group()
+    covariance_group.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
                                 "rates and/or rerooting. "
                                 "In CLI, use --no-covariance to turn off. In a YAML config file, set to False to turn off.")
-    parser.add_argument('--no-covariance', dest='covariance', action='store_false', cli_only=True)  #If you set help here, it displays 'default: True' - which is confusing!
+    covariance_group.add_argument('--no-covariance', dest='covariance', action='store_false', cli_only=True)  #If you set help here, it displays 'default: True' - which is confusing!
 
     resolve_group = parser.add_mutually_exclusive_group()
     resolve_group.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')
