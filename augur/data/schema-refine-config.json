@@ -114,12 +114,9 @@
             "default": false
         },
         "covariance": {
-            "description": "Account for covariation when estimating rates and/or rerooting. Use '--no-covariance'/'no_covariance' to turn off.",
+            "description": "Account for covariation when estimating rates and/or rerooting. In CLI, use --no-covariance to turn off. In a YAML config file, set to False to turn off.",
             "type": "boolean",
             "default": true
-        },
-        "no_covariance": {
-            "type": "boolean"
         },
         "keep_polytomies": {
             "description": "Do not attempt to resolve polytomies",
@@ -213,14 +210,6 @@
         }
     },
     "allOf": [
-        {
-            "not": {
-                "required": [
-                    "covariance",
-                    "no_covariance"
-                ]
-            }
-        },
         {
             "not": {
                 "required": [
