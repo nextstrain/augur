@@ -85,6 +85,10 @@ def extract_properties(subparser: CustomArgumentParser) -> dict[str, Any]:
         if not action.option_strings:
             continue
 
+        # Skip CLI-only
+        if getattr(action, "cli_only", False):
+            continue
+
         # Skip --config
         if action.option_strings == [CONFIG_FILE_ARG]:
             continue
