@@ -42,6 +42,22 @@ def test_config_scalar_for_list(tmp_path):
     assert args.root == ["ROOT"]
 
 
+@pytest.mark.parametrize("value", [False, True])
+def test_config_boolean(tmp_path, value):
+    """
+    Test that boolean values in --config are correctly mapped.
+    """
+    config_file = write_config_file(tmp_path, {"covariance": value})
+
+    parser = make_parser()
+    args = parser.parse_args([
+        "refine",
+        "--config", str(config_file),
+        "--tree", "tree.nwk",
+    ])
+    assert args.covariance is value
+
+
 def test_config_error_with_cli_same_option(tmp_path, capsys):
     """
     Test that an error is shown when an option used in CLI is also used in
@@ -98,7 +114,7 @@ def test_config_error_with_invalid(tmp_path, capsys):
     """
     Test that an error is shown when an invalid option is used in --config.
     """
-    config_file = write_config_file(tmp_path, {"invalid": 0})
+    config_file = write_config_file(tmp_path, {"no_covariance": True})
 
     parser = make_parser()
     with pytest.raises(SystemExit) as exc_info:
@@ -112,7 +128,7 @@ def test_config_error_with_invalid(tmp_path, capsys):
     assert captured.err == dedent("""\
         ERROR: The following invalid option was specified in --config:
 
-          invalid
+          no_covariance
         """)
 
 
