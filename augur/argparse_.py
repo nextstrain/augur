@@ -30,8 +30,19 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         super().__init__(*args, **kwargs)
         self.config_file_action = None
 
-    def add_argument(self, *args, **kwargs):
+    def add_argument(self, *args, cli_only: bool = False, **kwargs):
         action = super().add_argument(*args, **kwargs)
+
+        # Inject the custom `cli_only` parameter as an attribute on the action
+        # for downstream use.
+        #
+        # NOTE: This only works for add_argument() calls on the parser, not
+        # argument groups. To support those, we could apply the same treatment
+        # to add_argument() on argparse._ArgumentGroup and
+        # argparse._MutuallyExclusiveGroup, or monkeypatch the underlying
+        # argparse._ActionsContainer.add_argument(). Both options aren't great,
+        # but probably inevitable.
+        setattr(action, "cli_only", cli_only)
 
         # Default allows multiple config file arguments, but we want only one
         # and with a specific name.
@@ -72,6 +83,19 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         # config file syntax.
         if action is None:
             return []
+
+        # Default ignores False values for action="store_true". This behavior
+        # makes sense on the CLI which has no distinction between False and None
+        # (unset), but not in a config file.
+        #
+        # Allow explicit False values by finding and returning an option string
+        # for the action="store_false" pair. Note that this only works when
+        # there is a matching action="store_false" pair.
+        if isinstance(action, argparse._StoreTrueAction):
+            if value.lower() == "false":
+                for a in self._actions:
+                    if a.dest == action.dest and isinstance(a, argparse._StoreFalseAction):
+                        return [a.option_strings[0]]
 
         # Default only converts lists for actions that subclass
         # argparse._StoreAction or argparse._AppendAction, which excludes our
