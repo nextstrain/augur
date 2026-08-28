@@ -71,6 +71,7 @@ setuptools.setup(
         "python_calamine >=0.2.0",
         "pyyaml",
         "referencing >=0.29.1, <1.0",
+        "ruamel.yaml ==0.*",
         "scipy ==1.*",
         "xopen >=2.1.0, <3"
     ],

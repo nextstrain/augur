@@ -137,3 +137,25 @@ def test_config_error_with_dashes(tmp_path, capsys):
 
           date-confidence
         """)
+
+
+def test_config_error_with_duplicate(tmp_path, capsys):
+    """
+    Test that an error is shown when a duplicate option is used in --config.
+    """
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text(dedent("""\
+        timetree: true
+        timetree: false
+    """))
+
+    parser = make_parser()
+    with pytest.raises(SystemExit) as exc_info:
+        parser.parse_args([
+            "refine",
+            "--tree", "tree.nwk",
+            "--config", str(config_file),
+        ])
+    assert exc_info.value.code == 2
+    captured = capsys.readouterr()
+    assert 'found duplicate key "timetree"' in captured.err

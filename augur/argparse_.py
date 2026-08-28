@@ -5,7 +5,9 @@ import argparse
 import configargparse
 import os
 from argparse import Action, ArgumentDefaultsHelpFormatter, _ArgumentGroup, _SubParsersAction
+from collections import OrderedDict
 from itertools import chain
+from ruamel.yaml import YAML
 from textwrap import dedent, indent as indent_text
 from typing import Iterable, Optional, Tuple, Union
 from .io.print import indented_list, _n
@@ -16,12 +18,51 @@ from .types import ValidationMode
 CONFIG_FILE_ARG = "--config"
 
 
+class YAMLConfigFileParser(configargparse.YAMLConfigFileParser):
+    """
+    Parses YAML config files.
+
+    The default parser uses PyYAML which has a longstanding bug¹ of silently
+    dropping duplicate keys in a file (not good). ruamel.yaml correctly errors
+    instead.
+    # ¹ <https://github.com/yaml/pyyaml/issues/165>
+    """
+    def parse(self, stream):
+        yaml = YAML(typ="safe")
+
+        try:
+            parsed_obj = yaml.load(stream)
+
+        # The rest of this function is copied from configargparse.YAMLConfigFileParser.parse().
+        except Exception as e:
+            raise configargparse.ConfigFileParserException("Couldn't parse config file: %s" % e)
+
+        if not isinstance(parsed_obj, dict):
+            raise configargparse.ConfigFileParserException(
+                "The config file doesn't appear to "
+                "contain 'key: value' pairs (aka. a YAML mapping). "
+                "yaml.load('%s') returned type '%s' instead of 'dict'."
+                % (getattr(stream, "name", "stream"), type(parsed_obj).__name__)
+            )
+
+        result = OrderedDict()
+        for key, value in parsed_obj.items():
+            if isinstance(value, list):
+                result[key] = value
+            elif value is None:
+                pass
+            else:
+                result[key] = str(value)
+
+        return result
+
+
 class CustomArgumentParser(configargparse.ArgumentParser):
     """
     Custom argument parser for ConfigArgParse.
     """
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("config_file_parser_class", configargparse.YAMLConfigFileParser)
+        kwargs.setdefault("config_file_parser_class", YAMLConfigFileParser)
         super().__init__(*args, **kwargs)
         self.config_file_action = None
 
@@ -128,8 +169,11 @@ class CustomArgumentParser(configargparse.ArgumentParser):
             return super().parse_known_args(args=args, namespace=namespace, **kwargs)
 
         # Collect config keys.
-        with open(config_file) as f:
-            config_keys = set(self._config_file_parser.parse(f).keys())
+        try:
+            with open(config_file) as f:
+                config_keys = set(self._config_file_parser.parse(f).keys())
+        except configargparse.ConfigFileParserException as err:
+            self.error_only(str(err))
 
         # Default shows the CLI error for unknown args defined in the file,
         # which is misleading. Instead, show a file-specific message.
