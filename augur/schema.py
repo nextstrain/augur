@@ -17,6 +17,7 @@ class InvalidSchemaError(Exception):
 
 
 CONFIG_COMMANDS = {
+    "ancestral",
     "refine",
 }
 

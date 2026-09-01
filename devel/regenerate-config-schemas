@@ -9,6 +9,7 @@ import itertools
 import json
 import os
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,7 @@ from augur.argparse_ import (
     walk_commands,
 )
 from augur.schema import CONFIG_COMMANDS
+from augur.types import ValidationMode
 
 
 OUTPUT_DIR = Path(__file__).parent.parent / "augur" / "data"
@@ -121,7 +123,7 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
         prop["description"] = description
 
     # Determine type and values
-    if isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction)):
+    if isinstance(action, argparse._StoreConstAction):  # includes store_true/store_false
         prop["type"] = "boolean"
     elif isinstance(action, (argparse._StoreAction, ExtendOverwriteDefault)):
         # Mapping of argparse type to JSON Schema type
@@ -132,6 +134,7 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
             float: {"type": "number"},
             InputFile: {"type": "string", "format": "filepath"},
             InputDir: {"type": "string", "format": "dirpath"},
+            ValidationMode: {"type": "string"},
         }
         if action.type not in type_info:
             raise UnsupportedOption(f"{action.option_strings[0]}: unsupported type {action.type!r}; add it to extract_property()")
@@ -149,7 +152,7 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
         raise UnsupportedOption(f"{action.option_strings[0]}: unsupported action {type(action).__name__}")
 
     if action.choices:
-        prop["enum"] = list(action.choices)
+        prop["enum"] = list(map(serialize_choice, action.choices))
 
     # Default values
     if action.default not in (None, argparse.SUPPRESS):
@@ -157,9 +160,15 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
         if isinstance(action, argparse._StoreFalseAction) and action.default is True:
             pass
         else:
-            prop["default"] = action.default
+            prop["default"] = serialize_choice(action.default)
 
     return prop
+
+
+def serialize_choice(choice: Any) -> Any:
+    if isinstance(choice, Enum):
+        return choice.value
+    return choice
 
 
 def extract_constraints(
