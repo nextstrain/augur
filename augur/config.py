@@ -13,6 +13,7 @@ COMMAND_SCHEMAS = {
     "align": "v1",
     "tree": "v1",
     "translate": "v1",
+    "traits": "v1",
 }
 
 def resolve_filepath(

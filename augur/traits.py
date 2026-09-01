@@ -171,6 +171,7 @@ class BranchLabeller():
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("traits", help=__doc__)
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
     parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
     parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
