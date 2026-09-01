@@ -42,6 +42,7 @@ def register_arguments(parser):
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("align", help=__doc__)
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
     register_arguments(parser)
     return parser
 

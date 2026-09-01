@@ -10,6 +10,7 @@ COMMAND_SCHEMAS = {
     "refine": "v1",
     "ancestral": "v1",
     "mask": "v1",
+    "align": "v1",
 }
 
 def resolve_filepath(
