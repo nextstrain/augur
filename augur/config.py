@@ -9,6 +9,7 @@ from augur.io.print import indented_list
 COMMAND_SCHEMAS = {
     "refine": "v1",
     "ancestral": "v1",
+    "mask": "v1",
 }
 
 def resolve_filepath(
