@@ -63,3 +63,18 @@ Augur should warn that there were no discrete states found for reconstruction, s
   >  --columns virus \
   >  --output-node-data "traits.json" > /dev/null
   WARNING: no states found for discrete state reconstruction.
+
+Run with a config file.
+
+  $ cat > config.yaml <<~~
+  > tree: "$TESTDIR/traits/tree.nwk"
+  > metadata: "$TESTDIR/traits/metadata.tsv"
+  > columns:
+  >   - region
+  > output_node_data: "traits.json"
+  > ~~
+
+  $ ${AUGUR} traits --config config.yaml > /dev/null
+
+  $ python3 "$TESTDIR/../../scripts/diff_jsons.py" "$TESTDIR/traits/traits_region.json" "traits.json" --significant-digits 5
+  {}
