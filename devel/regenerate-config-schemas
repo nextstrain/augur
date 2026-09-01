@@ -9,6 +9,7 @@ import itertools
 import json
 import os
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -126,7 +127,7 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
             prop["type"] = schema_type
 
     if action.choices:
-        prop["enum"] = list(action.choices)
+        prop["enum"] = list(map(serialize_choice, action.choices))
 
     # Default values
     if action.default not in (None, argparse.SUPPRESS):
@@ -134,7 +135,7 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
         if isinstance(action, argparse._StoreFalseAction) and action.default is True:
             pass
         else:
-            prop["default"] = action.default
+            prop["default"] = serialize_choice(action.default)
 
     return prop
 
@@ -149,6 +150,12 @@ def get_schema_type(action_type: Any) -> str:
         return "number"
     else:
         return "string"
+
+
+def serialize_choice(choice: Any) -> Any:
+    if isinstance(choice, Enum):
+        return choice.value
+    return choice
 
 
 def extract_constraints(
