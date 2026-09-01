@@ -28,7 +28,7 @@ def register_arguments(parser):
     unit tests that use this function to create argparser.
     """
     parser.add_argument('--sequences', '-s', required=True, nargs="+", action=ExtendOverwriteDefault, metavar="FASTA", help="sequences to align")
-    parser.add_argument('--output', '-o', default="alignment.fasta", help="output file (default: %(default)s)")
+    parser.add_argument('--output', '-o', default="alignment.fasta", help="output file")
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--method', default='mafft', choices=["mafft"], help="alignment program to use")
