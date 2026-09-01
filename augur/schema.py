@@ -17,6 +17,7 @@ class InvalidSchemaError(Exception):
 
 
 COMMAND_SCHEMAS = {
+    "ancestral": "v1",
     "refine": "v1",
 }
 
