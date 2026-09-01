@@ -465,6 +465,7 @@ def mask_sites_in_multiple_sequence_alignment(alignment_file, excluded_sites_fil
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("tree", help=__doc__)
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
     parser.add_argument('--alignment', '-a', required=True, help="alignment in fasta or VCF format")
     parser.add_argument('--method', default='iqtree', choices=["fasttree", "raxml", "iqtree"], help="tree builder to use")
     parser.add_argument('--output', '-o', type=str, help='file name to write tree to')
@@ -495,7 +496,7 @@ def register_parser(parent_subparsers):
             IQ-TREE options (e.g., ``-g``) which rely on matching names between
             the FASTA and other input files.
             """))
-    parser.add_argument('--override-default-args', action="store_true", help="override default tree builder arguments with the values provided by the user in ``--tree-builder-args`` instead of augmenting the existing defaults.")
+    parser.add_argument('--override-default-args', action="store_true", help="override default tree builder arguments with the values provided by the user in ``--tree-builder-args``/``tree_builder_args`` instead of augmenting the existing defaults.")
 
     parser.epilog = cleandoc("""
         For example, to build a tree with IQ-TREE, use the following format:

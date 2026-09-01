@@ -11,6 +11,7 @@ COMMAND_SCHEMAS = {
     "ancestral": "v1",
     "mask": "v1",
     "align": "v1",
+    "tree": "v1",
 }
 
 def resolve_filepath(
