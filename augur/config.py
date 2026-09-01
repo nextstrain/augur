@@ -12,6 +12,7 @@ COMMAND_SCHEMAS = {
     "mask": "v1",
     "align": "v1",
     "tree": "v1",
+    "translate": "v1",
 }
 
 def resolve_filepath(
