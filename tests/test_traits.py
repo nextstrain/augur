@@ -1,11 +1,11 @@
-import argparse
 import pytest
 from augur import traits
+from augur.argparse_ import CustomArgumentParser
 from augur.errors import AugurError
 
 @pytest.fixture
 def branch_labels_args():
-    parser = argparse.ArgumentParser(prog="augur")
+    parser = CustomArgumentParser(prog="augur")
     traits.register_parser(parser.add_subparsers())
     def parse(branch_labels_args):
         arg_str = f"traits --tree X --metadata Y --columns A B C {branch_labels_args}"
