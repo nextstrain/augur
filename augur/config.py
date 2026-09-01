@@ -7,6 +7,7 @@ from augur.errors import AugurError
 from augur.io.print import indented_list
 
 COMMAND_SCHEMAS = {
+    "align": "v1",
     "ancestral": "v1",
     "refine": "v1",
 }
