@@ -9,13 +9,14 @@
 
 ### Features
 
-* refine: Added a new option `--config` to support configuration of other options in a YAML file. Please see the [usage docs](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/refine.html) for details. [#2040][] @victorlin
+* align, ancestral, frequencies, mask, refine, traits, translate, tree: Added a new option `--config` to support configuration of other options in a YAML file. Please see individual commands' [usage docs](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/cli.html) for details. [#2040][], [#2041][] @victorlin
 
 ### Bug fixes
 
 * refine: Previously, `--covariance` and `--no-covariance` were allowed at the same time, with the first one specified in the command string being ignored. Now, the command will show an error when both are used at the same time. [#2040][] @victorlin
 
 [#2040]: https://github.com/nextstrain/augur/pull/2040
+[#2041]: https://github.com/nextstrain/augur/pull/2041
 [Filtering and Subsampling guide]: https://docs.nextstrain.org/en/latest/guides/bioinformatics/filtering-and-subsampling.html#within-snakemake-workflow-config
 
 ## 34.1.4 (9 September 2026)
