@@ -21,6 +21,7 @@ COMMAND_SCHEMAS = {
     "ancestral": "v1",
     "mask": "v1",
     "refine": "v1",
+    "tree": "v1",
 }
 
 
