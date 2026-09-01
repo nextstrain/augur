@@ -38,7 +38,7 @@ def register_arguments(parser):
     add_nextclade_dataset_argument(parser)
     parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
     parser.add_argument('--fill-gaps', action="store_true", default=False, help="If gaps represent missing data rather than true indels, replace by N after aligning.")
-    parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
+    parser.add_argument('--existing-alignment', metavar="FASTA", help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
 
@@ -429,7 +429,7 @@ def check_duplicates(*values):
     for sample in values:
         if not sample:
             # allows false-like values (e.g. always provide existing_alignment, allowing
-            # the default which is `False`)
+            # the default which is `None`)
             continue
         elif isinstance(sample, (list, Align.MultipleSeqAlignment)):
             for s in sample:
