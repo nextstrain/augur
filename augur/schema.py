@@ -19,6 +19,7 @@ class InvalidSchemaError(Exception):
 COMMAND_SCHEMAS = {
     "align": "v1",
     "ancestral": "v1",
+    "mask": "v1",
     "refine": "v1",
 }
 
