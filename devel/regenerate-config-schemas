@@ -114,8 +114,14 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
     if isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction)):
         prop["type"] = "boolean"
     elif action.type is InputFile:
-        prop["type"] = "string"
-        prop["format"] = "filepath"
+        if action.nargs in (argparse.ZERO_OR_MORE, argparse.ONE_OR_MORE):
+            prop["oneOf"] = [
+                {"type": "string", "format": "filepath"},
+                {"type": "array", "items": {"type": "string", "format": "filepath"}},
+            ]
+        else:
+            prop["type"] = "string"
+            prop["format"] = "filepath"
     else:
         schema_type = get_schema_type(action.type)
         if action.nargs in (argparse.ZERO_OR_MORE, argparse.ONE_OR_MORE):
