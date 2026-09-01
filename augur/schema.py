@@ -19,6 +19,7 @@ class InvalidSchemaError(Exception):
 CONFIG_COMMANDS = {
     "align",
     "ancestral",
+    "mask",
     "refine",
 }
 
