@@ -21,6 +21,7 @@ CONFIG_COMMANDS = {
     "ancestral",
     "mask",
     "refine",
+    "translate",
     "tree",
 }
 
