@@ -23,7 +23,7 @@ from .utils import parse_genes_argument, read_node_data, \
 from treetime.vcf_utils import read_vcf
 from augur.errors import AugurError
 from textwrap import dedent
-from .argparse_ import add_validation_arguments, ExtendOverwriteDefault
+from .argparse_ import add_validation_arguments, ExtendOverwriteDefault, InputFile
 from .util_support.node_data_file import NodeDataObject
 
 class MissingNodeError(Exception):
@@ -347,9 +347,10 @@ def sequences_json(node_data_json, tree, validation_mode):
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("translate", help=__doc__)
-    parser.add_argument('--tree', required=True, help="prebuilt Newick -- no tree will be built if provided")
-    parser.add_argument('--ancestral-sequences', required=True, type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
-    parser.add_argument('--reference-sequence', required=True,
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
+    parser.add_argument('--tree', type=InputFile, required=True, help="prebuilt Newick -- no tree will be built if provided")
+    parser.add_argument('--ancestral-sequences', type=InputFile, required=True, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
+    parser.add_argument('--reference-sequence', type=InputFile, required=True,
                         help='GenBank or GFF file containing the annotation')
     parser.add_argument('--genes', nargs='+', action=ExtendOverwriteDefault, help="genes to translate (list or file containing list)")
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save aa-mutations to')
@@ -360,9 +361,9 @@ def register_parser(parent_subparsers):
 
     vcf_only = parser.add_argument_group(
         title="VCF specific",
-        description="These arguments are only applicable if the input (--ancestral-sequences) is in VCF format."
+        description="These arguments are only applicable if the input ('--ancestral-sequences'/'ancestral_sequences') is in VCF format."
     )
-    vcf_only.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    vcf_only.add_argument('--vcf-reference', type=InputFile, help='fasta file of the sequence the VCF was mapped to')
     vcf_only.add_argument('--vcf-reference-output', type=str, help="fasta file where reference sequence translations for VCF input will be written")
 
     return parser
