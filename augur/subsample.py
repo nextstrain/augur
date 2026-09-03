@@ -12,7 +12,7 @@ import os
 import subprocess
 import sys
 import tempfile
-import yaml
+from ruamel.yaml import YAML, YAMLError, constructor
 from collections import defaultdict, deque
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, Future, wait
 from pathlib import Path
@@ -364,17 +364,20 @@ def requires_aligned_sequences(
     return _includes_proximal_sample(config)
 
 def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> Dict[str, Any]:
-    # Create a custom YAML loader to treat timestamps as strings.
-    class CustomLoader(yaml.SafeLoader):
+    # Create a custom YAML constructor to treat timestamps as strings.
+    class CustomConstructor(constructor.SafeConstructor):
         pass
     def string_constructor(loader, node):
         return loader.construct_scalar(node)
-    CustomLoader.add_constructor('tag:yaml.org,2002:timestamp', string_constructor)
+    CustomConstructor.add_constructor('tag:yaml.org,2002:timestamp', string_constructor)
+
+    yaml = YAML(typ="safe")
+    yaml.Constructor = CustomConstructor
 
     with open(filename) as f:
         try:
-            config = yaml.load(f, Loader=CustomLoader)
-        except yaml.YAMLError as e:
+            config = yaml.load(f)
+        except YAMLError as e:
             raise AugurError(f"The configuration file {filename!r} is not valid YAML.\n" + str(e)) from e
 
     # Handle --config-section.

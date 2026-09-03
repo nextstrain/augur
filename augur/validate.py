@@ -8,7 +8,7 @@ import json
 import jsonschema
 import jsonschema.exceptions
 import re
-import yaml
+from ruamel.yaml import YAML, YAMLError
 from itertools import groupby
 from pathlib import Path
 from referencing import Registry
@@ -66,10 +66,10 @@ def load_json_schema(path, refs=None):
     try:
         with as_file(path) as file, open_file(file, "r") as fh:
             if is_yaml:
-                schema = yaml.safe_load(fh)
+                schema = YAML(typ="safe").load(fh)
             else:
                 schema = json.load(fh)
-    except (json.JSONDecodeError, yaml.YAMLError) as err:
+    except (json.JSONDecodeError, YAMLError) as err:
         raise ValidateError(f"Schema {path} is not a valid {'YAML' if is_yaml else 'JSON'} file. Error: {err}")
     # check loaded schema is itself valid -- see http://python-jsonschema.readthedocs.io/en/latest/errors/
     Validator = jsonschema.validators.validator_for(schema)
