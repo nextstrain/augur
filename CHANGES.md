@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Development
+
+* Switched to `ruamel.yaml` for processing YAML files. [#2046][] @victorlin
+
+[#2046]: https://github.com/nextstrain/augur/pull/2046
 
 ## 34.1.3 (13 August 2026)
 

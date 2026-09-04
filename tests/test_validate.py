@@ -1,7 +1,7 @@
 import json
 import pytest
 import random
-import yaml
+from ruamel.yaml import YAML
 
 from augur.validate import (
     validate_collection_config_fields,
@@ -209,7 +209,7 @@ def test_load_yaml_schema(tmp_path, ext):
         }
     }
     with open(schema_file, "w") as f:
-        yaml.dump(raw_schema, f)
+        YAML(typ="safe").dump(raw_schema, f)
 
     validator = load_json_schema(schema_file)
     valid_data = {"name": "test"}
