@@ -543,7 +543,7 @@ class tree_frequencies(object):
 
             for c in node.clades:
                 if len(c.leafs)>self.min_clades:
-                    obs_to_estimate[c.clade] = np.in1d(node.leafs, c.leafs)
+                    obs_to_estimate[c.clade] = np.isin(node.leafs, c.leafs)
                 else:
                     # Only include internal nodes or tips that pass the node
                     # filter as small clades.
@@ -553,7 +553,7 @@ class tree_frequencies(object):
                 if len(small_clades):
                     remainder = {}
                     for c in small_clades:
-                        remainder[c.clade] = np.in1d(node.leafs, c.leafs)
+                        remainder[c.clade] = np.isin(node.leafs, c.leafs)
                     if len(small_clades)==1:
                         obs_to_estimate.update(remainder)
                     else:

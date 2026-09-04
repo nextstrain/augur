@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* frequencies: Fix `AttributeError` when using numpy >= 2.4.0 with `--method diffusion`. [#2048] @joverlee521
+
 ### Development
 
 * Switched to `ruamel.yaml` for processing YAML files. [#2046][] @victorlin
 
 [#2046]: https://github.com/nextstrain/augur/pull/2046
+[#2048]: https://github.com/nextstrain/augur/pull/2048
 
 ## 34.1.3 (13 August 2026)
 
@@ -182,7 +187,7 @@
 
 * export v2: Improved the error message that is displayed when a deprecated coloring key is used. [#1882][] (@corneliusroemer)
 * export v2: `--no-minify-json` now properly overrides any truthy value in `AUGUR_MINIFY_JSON`. [#1943][] (@victorlin)
-* export v2: Skip unhashable node attr values with warning message to avoid previously unhandled `TypeError`. [#1948][] (@joverlee521) 
+* export v2: Skip unhashable node attr values with warning message to avoid previously unhandled `TypeError`. [#1948][] (@joverlee521)
 
 [#1304]: https://github.com/nextstrain/augur/issues/1304
 [#1768]: https://github.com/nextstrain/augur/issues/1768
