@@ -5,7 +5,7 @@ import numpy as np
 import sys
 from Bio import Phylo
 from textwrap import dedent
-from .argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from .argparse_ import ExtendOverwriteDefault, InputFile, SKIP_AUTO_DEFAULT_IN_HELP
 from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
 from .io.file import open_file
@@ -167,10 +167,11 @@ def root_outside_of_treetime(T, root, is_timetree, remove_outgroup):
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("refine", help=__doc__)
-    parser.add_argument('--alignment', '-a', help="alignment in fasta or VCF format")
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
+    parser.add_argument('--alignment', '-a', type=InputFile, help="alignment in fasta or VCF format")
     parser.add_argument('--seq-type', default='nuc', choices=['nuc', 'aa'], help="Sequence type: 'nuc' or 'aa'")
-    parser.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
-    parser.add_argument('--metadata', type=str, metavar="FILE", help="sequence metadata")
+    parser.add_argument('--tree', '-t', type=InputFile, required=True, help="prebuilt Newick")
+    parser.add_argument('--metadata', type=InputFile, metavar="FILE", help="sequence metadata")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
@@ -188,13 +189,14 @@ def register_parser(parent_subparsers):
                                 "OR node to root by OR two nodes indicating a monophyletic group to root by. "
                                 "Run treetime -h for definitions of rooting methods.")
     parser.add_argument('--keep-root', action="store_true", help="do not reroot the tree; use it as-is. "
-                                "Overrides anything specified by --root.")
-    parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'"
+                                "Overrides anything specified by '--root'/'root'.")
+    parser.add_argument('--remove-outgroup', action="store_true", help="Remove the outgroup supplied via '--root'/'root'. "
                                 "This is only valid when a single strain name has been supplied as the root.")
-    parser.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
+    covariance_group = parser.add_mutually_exclusive_group()
+    covariance_group.add_argument('--covariance', dest='covariance', action='store_true', help="Account for covariation when estimating "
                                 "rates and/or rerooting. "
-                                "Use --no-covariance to turn off.")
-    parser.add_argument('--no-covariance', dest='covariance', action='store_false')  #If you set help here, it displays 'default: True' - which is confusing!
+                                "In CLI, use --no-covariance to turn off. In a YAML config file, set to False to turn off.")
+    covariance_group.add_argument('--no-covariance', dest='covariance', action='store_false', cli_only=True)  #If you set help here, it displays 'default: True' - which is confusing!
 
     resolve_group = parser.add_mutually_exclusive_group()
     resolve_group.add_argument('--keep-polytomies', action='store_true', help='Do not attempt to resolve polytomies')

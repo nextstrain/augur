@@ -15,6 +15,7 @@ from referencing import Registry
 from textwrap import indent
 from typing import Iterable, Union
 from augur.argparse_ import add_subparser
+from augur.config import COMMAND_SCHEMAS
 from augur.data import as_file
 from augur.io.file import open_file
 from augur.io.print import print_err
@@ -54,6 +55,11 @@ def load_json_schema_locally(path):
         'https://nextstrain.org/schemas/augur/subsample-config/v1': "schema-subsample-config.json",
         'https://nextstrain.org/schemas/augur/subsample-config-unaligned/v1': "schema-subsample-config-unaligned.json",
     }
+
+    for command, version in COMMAND_SCHEMAS.items():
+        command_name = command.replace(' ', '-')
+        local_refs[f"https://nextstrain.org/schemas/augur/{command_name}-config/{version}"] = f"schema-{command_name}-config.json"
+
     return load_json_schema(path, refs=local_refs)
 
 
