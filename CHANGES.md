@@ -4,7 +4,7 @@
 
 ### Features
 
-* refine: Added a new option `--config` to support configuration of other options in a YAML file. Please see the [usage docs](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/refine.html) for details. [#2040][] @victorlin
+* align, ancestral, mask, refine, traits, translate, tree: Added a new option `--config` to support configuration of other options in a YAML file. Please see individual commands' [usage docs](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/cli.html) for details. [#2040][],[#2041][] @victorlin
 
 ### Bug fixes
 
@@ -16,6 +16,7 @@
 * Switched to `ruamel.yaml` for processing YAML files. [#2046][] @victorlin
 
 [#2040]: https://github.com/nextstrain/augur/pull/2040
+[#2041]: https://github.com/nextstrain/augur/pull/2041
 [#2046]: https://github.com/nextstrain/augur/pull/2046
 [#2048]: https://github.com/nextstrain/augur/pull/2048
 
