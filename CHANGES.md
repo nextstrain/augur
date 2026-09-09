@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 34.1.4 (9 September 2026)
+
 ### Bug fixes
 
 * frequencies: Fix `AttributeError` when using numpy >= 2.4.0 with `--method diffusion`. [#2048] @joverlee521
