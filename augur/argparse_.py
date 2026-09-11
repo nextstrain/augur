@@ -139,6 +139,7 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         try:
             with open(config_file) as f:
                 config_keys = set(self._config_file_parser.parse(f).keys())
+                config_keys.discard("$schema")
         except configargparse.ConfigFileParserException as err:
             self.error_only(str(err))
 
