@@ -5,6 +5,9 @@
 ### Major Changes
 
 * subsample: Removed the `--search-paths` option. Search paths should be configured through the `AUGUR_SEARCH_PATHS` environment variable. [#XXXX][] @victorlin
+* subsample: Removed the `--config-section` option. It was initially added for use in Snakemake workflows, but we now prefer a more robust approach. See the [Filtering and Subsampling guide][] for details. [#XXXX][] @victorlin
+
+[Filtering and Subsampling guide]: https://docs.nextstrain.org/en/latest/guides/bioinformatics/filtering-and-subsampling.html#within-snakemake-workflow-config
 
 ## 34.1.4 (9 September 2026)
 
