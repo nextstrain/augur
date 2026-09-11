@@ -6,6 +6,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+        "$schema": {
+            "const": "https://nextstrain.org/schemas/augur/export-v2-config/v1"
+        },
         "tree": {
             "description": "Phylogenetic tree, usually output from `augur refine`",
             "type": "string",

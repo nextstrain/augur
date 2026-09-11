@@ -6,6 +6,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+        "$schema": {
+            "const": "https://nextstrain.org/schemas/augur/ancestral-config/v1"
+        },
         "tree": {
             "description": "prebuilt Newick",
             "type": "string",
