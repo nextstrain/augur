@@ -137,8 +137,7 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     input_group.add_argument('--seq-type', default='nuc', choices=['nuc', 'aa'], help="Sequence type: 'nuc' or 'aa'")
 
     config_group = parser.add_argument_group("Configuration options", "options related to configuration")
-    config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file. The expected config options must be defined at the top level, or within a specific section using --config-section." + SKIP_AUTO_DEFAULT_IN_HELP)
-    config_group.add_argument("--config-section", metavar="KEY", nargs="+", action=ExtendOverwriteDefault, help="Use a section of the file given to --config by listing the keys leading to the section. Provide one or more keys. (default: use the entire file)" + SKIP_AUTO_DEFAULT_IN_HELP)
+    config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file." + SKIP_AUTO_DEFAULT_IN_HELP)
     config_group.add_argument("--search-paths", "--search-path", metavar="DIR", nargs="+", action=ExtendOverwriteDefault,
         help=dedent(f"""\
             One or more directories to search for relative filepaths specified
@@ -192,7 +191,7 @@ def run(args: argparse.Namespace) -> None:
       support is adopted: <https://github.com/nextstrain/augur/issues/1574>
     """
     schema_validator = load_json_schema("schema-subsample-config.json")
-    config = _parse_config(args.config, args.config_section)
+    config = _parse_config(args.config)
 
     try:
         validate_json(config, schema_validator, args.config)
@@ -298,7 +297,6 @@ def run(args: argparse.Namespace) -> None:
 
 def get_referenced_files(
     config_file: str,
-    config_section: Optional[List[str]] = None,
     search_paths: Optional[List[str]] = None,
 ) -> Set[str]:
     """Get the files referenced in a subsample config file.
@@ -310,9 +308,6 @@ def get_referenced_files(
     ----------
     config_file
         Path to the subsample config file.
-
-    config_section
-        Optional list of keys to navigate to a specific section of the config file.
 
     search_paths
         Optional list of directories to search for relative filepaths specified
@@ -329,7 +324,7 @@ def get_referenced_files(
         Resolved filepaths
     """
     schema_validator = load_json_schema("schema-subsample-config.json")
-    config = _parse_config(config_file, config_section)
+    config = _parse_config(config_file)
 
     # Resolve filepaths.
     search_path_objs = _get_search_paths(config_file, search_paths)
@@ -337,10 +332,7 @@ def get_referenced_files(
 
     return set(filepaths)
 
-def requires_aligned_sequences(
-    config_file: str,
-    config_section: Optional[List[str]] = None,
-) -> bool:
+def requires_aligned_sequences(config_file: str) -> bool:
     """NOTE: This function may change without warning & is for internal Snakemake
     development / testing purposes.
 
@@ -352,18 +344,15 @@ def requires_aligned_sequences(
     config_file
         Path to the subsample config file.
 
-    config_section
-        Optional list of keys to navigate to a specific section of the config file.
-
     Returns
     -------
     bool
         Does augur subsample require aligned sequences?
     """
-    config = _parse_config(config_file, config_section)
+    config = _parse_config(config_file)
     return _includes_proximal_sample(config)
 
-def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> Dict[str, Any]:
+def _parse_config(filename: str) -> Dict[str, Any]:
     # Create a custom YAML constructor to treat timestamps as strings.
     class CustomConstructor(constructor.SafeConstructor):
         pass
@@ -379,18 +368,6 @@ def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> 
             config = yaml.load(f)
         except YAMLError as e:
             raise AugurError(f"The configuration file {filename!r} is not valid YAML.\n" + str(e)) from e
-
-    # Handle --config-section.
-    if config_section is not None:
-        traversed_section = config
-
-        for i, key in enumerate(config_section):
-            if not isinstance(traversed_section, dict) or key not in traversed_section:
-                traversed_path = ' → '.join(repr(key) for key in config_section[:i+1])
-                raise AugurError(f"Config section {traversed_path} not found in {filename!r}")
-            traversed_section = traversed_section[key]
-
-        config = traversed_section
 
     return config
 
