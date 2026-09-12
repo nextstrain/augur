@@ -25,7 +25,7 @@ from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
 from augur.io.print import print_err
 from augur.utils import augur
-from augur.validate import load_json_schema, validate_json, ValidateError
+from augur.validate import load_augur_json_schema, validate_json, ValidateError
 from augur.io.print import print_debug
 
 BooleanFlags = Tuple[str, Optional[str]]
@@ -190,7 +190,7 @@ def run(args: argparse.Namespace) -> None:
       worth it if a proper input reuse approach such as database/parquet file
       support is adopted: <https://github.com/nextstrain/augur/issues/1574>
     """
-    schema_validator = load_json_schema("schema-subsample-config.json")
+    schema_validator = load_augur_json_schema("schema-subsample-config.json")
     config = _parse_config(args.config)
 
     try:
@@ -530,7 +530,7 @@ def _get_sample_types(config: Dict[str, Any]) -> Dict[str, str]:
     Return a mapping of sample name to its schema variant (e.g.
     ``'filterSampleProperties'`` or ``'proximalSampleProperties'``).
     """
-    schema = load_json_schema("schema-subsample-config.json").schema
+    schema = load_augur_json_schema("schema-subsample-config.json").schema
     variants = schema["properties"]["samples"]["patternProperties"]["^.+$"]["oneOf"]
     return {
         name: _best_matching_variant(variants, options, schema)[0]
