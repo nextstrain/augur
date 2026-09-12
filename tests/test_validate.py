@@ -7,8 +7,9 @@ from augur.validate import (
     validate_collection_config_fields,
     validate_collection_display_defaults,
     validate_measurements_config,
-    load_json_schema,
+    load_augur_json_schema,
     load_json_schema_locally,
+    _load_json_schema,
     validate_json,
     ValidateError
 )
@@ -98,7 +99,7 @@ class TestValidateMeasurements():
 
 @pytest.fixture
 def genome_annotation_schema():
-    return load_json_schema("schema-annotations.json")
+    return load_augur_json_schema("schema-annotations.json")
 
 class TestValidateGenomeAnnotations():
     def test_negative_strand_nuc(self, capsys, genome_annotation_schema):
@@ -197,8 +198,13 @@ def test_load_json_schema_locally(tmp_path):
     validate_json(valid_data, validator, "")
 
 
-@pytest.mark.parametrize("ext", ["yaml", "yml"])
-def test_load_yaml_schema(tmp_path, ext):
+def test_load_augur_json_schema():
+    validator = load_augur_json_schema("schema-annotations.json")
+    assert validator.schema["$id"] == "https://nextstrain.org/schemas/augur/annotations"
+
+
+@pytest.mark.parametrize("ext", ["json", "yaml", "yml"])
+def test_load_json_schema(tmp_path, ext):
     schema_file = tmp_path / f"test-schema.{ext}"
     raw_schema = {
         "type": "object",
@@ -209,8 +215,11 @@ def test_load_yaml_schema(tmp_path, ext):
         }
     }
     with open(schema_file, "w") as f:
-        YAML(typ="safe").dump(raw_schema, f)
+        if ext == "json":
+            json.dump(raw_schema, f)
+        else:
+            YAML(typ="safe").dump(raw_schema, f)
 
-    validator = load_json_schema(schema_file)
+    validator = _load_json_schema(schema_file)
     valid_data = {"name": "test"}
     validate_json(valid_data, validator, "")
