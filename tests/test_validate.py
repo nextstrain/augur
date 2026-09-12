@@ -202,6 +202,12 @@ def test_load_augur_json_schema():
     validator = load_augur_json_schema("schema-annotations.json")
     assert validator.schema["$id"] == "https://nextstrain.org/schemas/augur/annotations"
 
+    validator = load_augur_json_schema("https://nextstrain.org/schemas/augur/tree-config")
+    assert validator.schema["$id"] == "https://nextstrain.org/schemas/augur/tree-config"
+
+    with pytest.raises(FileNotFoundError, match="No local file for schema"):
+        load_augur_json_schema("https://nextstrain.org/schemas/augur/invalid-config")
+
 
 @pytest.mark.parametrize("ext", ["json", "yaml", "yml"])
 def test_load_json_schema(tmp_path, ext):
