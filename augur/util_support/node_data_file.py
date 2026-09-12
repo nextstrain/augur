@@ -6,7 +6,7 @@ from augur.errors import AugurError
 from augur.io.file import open_file
 from augur.io.print import print_err
 from augur.types import ValidationMode
-from augur.validate import validate_json, ValidateError, load_json_schema
+from augur.validate import validate_json, ValidateError, load_augur_json_schema
 
 
 FILTERED_ATTRS = ["generated_by"]
@@ -69,7 +69,7 @@ class NodeDataFile:
                     # validate_json will print any errors to STDERR
                     validate_json(
                         self.annotations,
-                        load_json_schema("schema-annotations.json"),
+                        load_augur_json_schema("schema-annotations.json"),
                         self.fname,
                     )
                 except ValidateError as err:
