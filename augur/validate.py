@@ -42,13 +42,24 @@ def validation_failure(mode: ValidationMode):
         raise ValueError(f"unknown validation mode: {mode!r}")
 
 
-def load_augur_json_schema(path: str):
+def load_augur_json_schema(schema: str):
     """
     Load a JSON schema from the augur included set of schemas
-    (located in augur/data).
+    (located in augur/data), specified by URL or local file name.
     """
-    with as_file(path) as file:
-        return load_json_schema_locally(file)
+    local_refs = _get_local_refs()
+    if schema in local_refs:
+        # Convert URL to local reference
+        filename = local_refs[schema]
+    else:
+        # Assume everything else is already a local reference
+        filename = schema
+
+    try:
+        with as_file(filename) as file:
+            return load_json_schema_locally(file)
+    except FileNotFoundError as err:
+        raise FileNotFoundError(f"No local file for schema: {schema}") from err
 
 
 def load_json_schema_locally(path):
@@ -65,6 +76,13 @@ def load_json_schema_locally(path):
        schema for a newer version)
     2. it doesn't require an internet connection
     """
+    return _load_json_schema(path, refs=_get_local_refs())
+
+
+def _get_local_refs() -> dict[str, str]:
+    """
+    Return a mapping of Augur schema URL to local file name under augur/data.
+    """
     local_refs = {
         'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json",
         'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
@@ -77,7 +95,7 @@ def load_json_schema_locally(path):
         command_name = command.replace(' ', '-')
         local_refs[f"https://nextstrain.org/schemas/augur/{command_name}-config/{version}"] = f"schema-{command_name}-config.json"
 
-    return _load_json_schema(path, refs=local_refs)
+    return local_refs
 
 
 def _load_json_schema(path, refs=None):
