@@ -107,20 +107,11 @@ def read_in_clade_definitions(clade_file):
     if not nx.is_directed_acyclic_graph(G):
         raise ValueError(f"Clade definitions contain cycles {list(nx.simple_cycles(G))}")
 
-    # Traverse graph top down, so that children can inherit from parents and grandparents
-    # Topological sort ensures parents are visited before children
-    # islice is used to skip the root node (which has no parent)
-    for clade in islice(nx.topological_sort(G),1,None):
-        # Get name of parent clade
-        # G.predecessors(clade) returns iterator, thus next() necessary
-        # despite the fact that there should only be one parent
-        parent_clade = next(G.predecessors(clade))
-        # Inheritance from parents happens here
-        # Allele dict is initialized with alleles from parent
-        clades[clade] = clades[parent_clade].copy()
-        for _, row in df[(df.clade == clade) & (df.gene != 'clade')].iterrows():
-            # Overwrite of parent alleles is possible and happens here
-            clades[clade][(row.gene, int(row.site)-1)] = row.alt
+    simple_graph_viz(G)
+
+    # Don't use the clade inheritance to copy alleles, just read the defs in the TSV
+    for _, row in df[(df.gene != 'clade')].iterrows():
+        clades[row.clade][(row.gene, int(row.site)-1)] = row.alt
 
     # Convert items from dict[str, dict[(str,int),str]] to dict[str, list[(str,int,str)]]
     clades = {
@@ -136,7 +127,7 @@ def read_in_clade_definitions(clade_file):
     if not len(clades.keys()):
         raise AugurError(f"No clades were defined in {clade_file}")
 
-    return clades
+    return (clades, G)
 
 
 def is_node_in_clade(clade_alleles, node, root_sequence):
@@ -194,7 +185,18 @@ def ensure_no_multiple_mutations(all_muts):
     if multiples:
         raise AugurError(f"Multiple mutations at the same position on a single branch were found: {', '.join(multiples)}")
 
-def assign_clades(clade_designations, all_muts, tree, ref=None):
+def simple_graph_viz(G):
+    print()
+    print("Clade relationships:")
+    out = defaultdict(list)
+    for u, v in G.edges():
+        out[u].append(v)
+    for u in G.nodes():
+        if children:=(", ".join(out[u]) or False):
+            print(f"\t{u if u!=0 else '[NO PARENT]'} → {children}")
+    print()
+
+def assign_clades(clade_designations, clade_graph, all_muts, tree, ref=None):
     '''
     Ensures all nodes have an entry (or auspice doesn't display nicely), tests each node
     to see if it's the first member of a clade (this is the label), and sets the membership of each
@@ -205,6 +207,7 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
     ----------
     clade_designations :     dict
         clade definitions as :code:`{clade_name:[(gene, site, allele),...]}`
+    clade_graph: TKTK XXX
     all_muts : dict
         mutations in each node
     tree : Bio.Phylo.BaseTree.Tree
@@ -219,8 +222,8 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
         [1]: mapping of node to clade label (where applicable)
     '''
 
-    clade_membership = {}
-    clade_labels = {}
+    clade_membership = {} # node name -> clade name (for all nodes in clade)
+    clade_labels = {} # node object -> clade name (the originating node only)
     parents = get_parent_name_by_child_name_for_tree(tree)
 
     # first pass to set all nodes to unassigned as precaution to ensure attribute is set
@@ -254,29 +257,40 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
                         node.sequences[gene]={}
                     node.sequences[gene][pos] = d
 
-
-    # second pass to assign basal nodes within each clade to the clade_labels dict
-    # if multiple nodes match, assign annotation to largest
-    # otherwise occasional unwanted cousin nodes get assigned the annotation
-    for clade_name, clade_alleles in clade_designations.items():
+    # Traverse the clades via a pre-order traversal of the graph constructed from their
+    # inheritance in the original definitions TSV
+    for clade_name in islice(nx.topological_sort(clade_graph),1,None):
+        clade_alleles = clade_designations[clade_name]
         node_counts = []
-        for node in tree.find_clades(order = 'preorder'):
+        # If the clade inherits from another clade, only consider the subtree downstream from
+        # where that clade starts
+        if parent_clade:=next(iter(clade_graph.predecessors(clade_name))): # 0 if no parent
+            start_node = {v:k for k,v in clade_labels.items()}.get(parent_clade, None)
+            if start_node is None:
+                print(f"WARNING: clade {clade_name} not identified as it inherits from clade {parent_clade} which was itself not identified", file=sys.stderr)
+                continue
+        else:
+            start_node = tree
+
+        for node in start_node.find_clades(order = 'preorder'):
             if is_node_in_clade(clade_alleles, node, ref):
                 node_counts.append(node)
         sorted_nodes = sorted(node_counts, key=lambda x: x.leaf_count, reverse=True)
         if len(sorted_nodes) > 0:
             target_node = sorted_nodes[0]
             clade_membership[target_node.name] = clade_name
-            clade_labels[target_node.name] = clade_name
+            clade_labels[target_node] = clade_name
+        else:
+            print(f"WARNING: clade {clade_name} not identified in tree", file=sys.stderr)
 
     # third pass to propagate clade_membership to descendant nodes
     # (until we encounter a node with its own clade_membership)
     for node in tree.find_clades(order = 'preorder'):
         for child in node:
-            if child.name not in clade_labels:
+            if child not in clade_labels:
                 clade_membership[child.name] = clade_membership[node.name]
 
-    return (clade_membership, clade_labels)
+    return (clade_membership, {n.name: label for n,label in clade_labels.items()})
 
 def warn_if_clades_not_found(membership, clade_designations):
     clades = set(clade_designations.keys())
@@ -346,7 +360,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--mutations', required=True, metavar="NODE_DATA_JSON", nargs='+', action=ExtendOverwriteDefault, help='JSON(s) containing ancestral and tip nucleotide and/or amino-acid mutations ')
     parser.add_argument('--reference', nargs='+', action=ExtendOverwriteDefault, help=SUPPRESS)
     parser.add_argument('--clades', required=True, metavar="TSV", type=str, help='TSV file containing clade definitions by amino-acid')
-    parser.add_argument('--output-node-data', type=str,  metavar="NODE_DATA_JSON", help='name of JSON file to save clade assignments to')
+    parser.add_argument('--output-node-data', type=str, required=True, metavar="NODE_DATA_JSON", help='name of JSON file to save clade assignments to')
     parser.add_argument('--membership-name', type=str, default="clade_membership", help='Key to store clade membership under; use "None" to not export this')
     parser.add_argument('--label-name', type=str, default="clade", help='Key to store clade labels under; use "None" to not export this')
     add_validation_arguments(parser)
@@ -367,8 +381,8 @@ def run(args):
         # if this doesn't exist, it will complain but not error.
         ref = get_reference_sequence_from_root_node(all_muts, tree.root.name)
 
-    clade_designations = read_in_clade_definitions(args.clades)
-    membership, labels = assign_clades(clade_designations, all_muts, tree, ref)
+    clade_designations, clade_graph = read_in_clade_definitions(args.clades)
+    membership, labels = assign_clades(clade_designations, clade_graph, all_muts, tree, ref)
     warn_if_clades_not_found(membership, clade_designations)
 
     membership_key= args.membership_name if args.membership_name.upper() != "NONE" else None
