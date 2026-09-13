@@ -13,15 +13,15 @@ more generic wildcard matches.
 
   $ echo '{"region": "a", "country": "b", "division": "c", "location": "x"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "1", "country": "2", "division": "3", "location": "x"}
 
   $ echo '{"region": "a", "country": "b", "division": "x", "location": "x"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "1", "country": "2", "division": "x", "location": "x"}
 
   $ echo '{"region": "a", "country": "x", "division": "x", "location": "x"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "1", "country": "x", "division": "x", "location": "x"}
