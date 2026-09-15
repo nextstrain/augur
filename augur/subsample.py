@@ -12,15 +12,18 @@ import os
 import subprocess
 import sys
 import tempfile
-from ruamel.yaml import YAML, YAMLError, constructor
 from collections import defaultdict, deque
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, Future, wait
-from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from augur import filter as augur_filter
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
-from augur.config import resolve_filepath
+from augur.config import (
+    best_matching_variant,
+    get_search_paths,
+    parse_config,
+    resolve_filepaths,
+)
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
 from augur.io.print import print_err
@@ -182,7 +185,7 @@ def run(args: argparse.Namespace) -> None:
       support is adopted: <https://github.com/nextstrain/augur/issues/1574>
     """
     schema_validator = load_augur_json_schema("schema-subsample-config.json")
-    config = _parse_config(args.config)
+    config = parse_config(args.config)
 
     try:
         validate_json(config, schema_validator, args.config)
@@ -198,8 +201,8 @@ def run(args: argparse.Namespace) -> None:
         raise AugurError("Proximal sampling for AA sequences is not yet supported.")
 
     # Resolve filepaths.
-    search_paths = _get_search_paths(args.config)
-    config, filepaths = _resolve_filepaths(config, search_paths, schema_validator.schema)
+    search_paths = get_search_paths(args.config)
+    config, filepaths = resolve_filepaths(config, search_paths, schema_validator.schema)
     print_debug(f"\nResolved filepaths: {filepaths}")
 
     # Construct sample objects for augur filter calls
@@ -286,31 +289,6 @@ def run(args: argparse.Namespace) -> None:
                 s.remove_temporary_files()
 
 
-def get_referenced_files(config_file: str) -> Set[str]:
-    """Get the files referenced in a subsample config file.
-
-    Extracts and resolves all filepath values referenced in the config,
-    including defaults and individual sample options.
-
-    Parameters
-    ----------
-    config_file
-        Path to the subsample config file.
-
-    Returns
-    -------
-    set
-        Resolved filepaths
-    """
-    schema_validator = load_json_schema("schema-subsample-config.json")
-    config = _parse_config(config_file)
-
-    # Resolve filepaths.
-    search_paths = _get_search_paths(config_file)
-    config, filepaths = _resolve_filepaths(config, search_paths, schema_validator.schema)
-
-    return set(filepaths)
-
 def requires_aligned_sequences(config_file: str) -> bool:
     """NOTE: This function may change without warning & is for internal Snakemake
     development / testing purposes.
@@ -328,169 +306,11 @@ def requires_aligned_sequences(config_file: str) -> bool:
     bool
         Does augur subsample require aligned sequences?
     """
-    config = _parse_config(config_file)
+    config = parse_config(config_file)
     return _includes_proximal_sample(config)
-
-def _parse_config(filename: str) -> Dict[str, Any]:
-    # Create a custom YAML constructor to treat timestamps as strings.
-    class CustomConstructor(constructor.SafeConstructor):
-        pass
-    def string_constructor(loader, node):
-        return loader.construct_scalar(node)
-    CustomConstructor.add_constructor('tag:yaml.org,2002:timestamp', string_constructor)
-
-    yaml = YAML(typ="safe")
-    yaml.Constructor = CustomConstructor
-
-    with open(filename) as f:
-        try:
-            config = yaml.load(f)
-        except YAMLError as e:
-            raise AugurError(f"The configuration file {filename!r} is not valid YAML.\n" + str(e)) from e
-
-    return config
-
-def _get_search_paths(
-    config_file: str,
-) -> List[Path]:
-    """
-    Returns the paths to search for relative filepaths in config.
-    """
-    default = [
-        Path(config_file).parent,
-        Path.cwd(),
-    ]
-
-    from_env = os.environ.get('AUGUR_SEARCH_PATHS')
-
-    if from_env:
-        return [
-            *(Path(p) for p in from_env.split(':')),
-            *default,
-        ]
-
-    return default
-
-
-def _resolve_filepaths(
-    config: Dict[str, Any],
-    search_paths: List[Path],
-    schema: Dict[str, Any],
-    root_schema: Optional[Dict[str, Any]] = None,
-) -> Tuple[Dict[str, Any], List[str]]:
-    """
-    Resolve filepaths in config.
-
-    Recursively walks the config alongside the schema to determine which fields
-    contain filepaths, resolves them, and collects the resolved filepaths.
-    """
-    if root_schema is None:
-        root_schema = schema
-
-    filepaths = []
-
-    # Get properties schema for current section
-    properties = schema.get("properties", {})
-    pattern_properties = schema.get("patternProperties", {})
-
-    for key, value in config.items():
-        if key.startswith("_"):
-            continue
-        prop_schema = properties.get(key)
-
-        if not prop_schema and pattern_properties:
-            # Use first pattern property schema (for dynamic keys like samples)
-            prop_schema = next(iter(pattern_properties.values()))
-
-        # Get referenced property schema
-        if ref := prop_schema.get("$ref"):
-            prop_schema = _get_referenced_schema(ref, root_schema)
-        elif "oneOf" in prop_schema and isinstance(value, dict):
-            _, prop_schema = _best_matching_variant(prop_schema["oneOf"], value, root_schema)
-
-        # Resolve filepath
-        if _is_filepath(prop_schema):
-            if isinstance(value, list):
-                config[key] = [str(resolve_filepath(Path(v), search_paths)) for v in value]
-                filepaths.extend(config[key])
-            elif isinstance(value, str):
-                config[key] = str(resolve_filepath(Path(value), search_paths))
-                filepaths.append(config[key])
-
-        # Recurse into config section
-        elif isinstance(value, dict):
-            config[key], downstream_filepaths = _resolve_filepaths(
-                value, search_paths, prop_schema, root_schema
-            )
-            filepaths.extend(downstream_filepaths)
-
-    return config, filepaths
 
 def _includes_proximal_sample(config: Dict[str, Any]) -> bool:
     return 'proximalSampleProperties' in _get_sample_types(config).values()
-
-def _get_referenced_schema(
-    ref: str,
-    root_schema: Dict[str, Any],
-) -> Dict[str, Any]:
-    """
-    Resolve a JSON schema reference. Example: '#/$defs/filterSampleProperties'
-    """
-    keys = ref.lstrip("#/").split("/")
-    schema = root_schema
-    for key in keys:
-        schema = schema[key]
-    return schema
-
-
-def _is_filepath(prop_schema: Dict[str, Any]) -> bool:
-    """
-    Check if the property schema declares it is a filepath.
-    """
-    # Direct 'format: filepath'
-    if prop_schema.get("format") == "filepath":
-        return True
-
-    # Check oneOf variants for 'format: filepath'
-    if "oneOf" in prop_schema:
-        for variant in prop_schema["oneOf"]:
-            if variant.get("format") == "filepath":
-                return True
-
-    return False
-
-def _best_matching_variant(
-    variants: List[Dict[str, Any]],
-    value: Dict[str, Any],
-    root_schema: Dict[str, Any],
-) -> Tuple[str, Dict[str, Any]]:
-    """
-    Given a oneOf list of schema variants (typically $ref entries), resolve each
-    and return the one whose properties best match the keys in *value*, as a
-    (name, schema) tuple.
-
-    The name is the last component of the matched ``$ref`` (e.g.
-    ``"filterSampleProperties"``).
-    """
-    value_keys = set(value.keys())
-    best_schema = None
-    best_ref = None
-    best_overlap = -1
-    for variant in variants:
-        ref = variant.get("$ref")
-        if ref:
-            resolved = _get_referenced_schema(ref, root_schema)
-        else:
-            resolved = variant
-        props = set(resolved.get("properties", {}).keys())
-        overlap = len(value_keys & props)
-        if overlap > best_overlap:
-            best_overlap = overlap
-            best_schema = resolved
-            best_ref = ref
-    if not best_schema:
-        raise AugurError("Couldn't match oneOf schema for config dict")
-    return (best_ref.rsplit("/", 1)[-1], best_schema)
 
 def _get_sample_types(config: Dict[str, Any]) -> Dict[str, str]:
     """
@@ -500,7 +320,7 @@ def _get_sample_types(config: Dict[str, Any]) -> Dict[str, str]:
     schema = load_augur_json_schema("schema-subsample-config.json").schema
     variants = schema["properties"]["samples"]["patternProperties"]["^.+$"]["oneOf"]
     return {
-        name: _best_matching_variant(variants, options, schema)[0]
+        name: best_matching_variant(variants, options, schema)[0]
         for name, options in config.get("samples", {}).items()
     }
 
