@@ -1,10 +1,14 @@
 """
 Helpers for YAML-based configuration files.
 """
+import os
 from pathlib import Path
 from textwrap import dedent
+from typing import Any, Optional
+from ruamel.yaml import YAML, YAMLError, constructor
 from augur.errors import AugurError
-from augur.io.print import indented_list
+from augur.io.print import indented_list, print_err
+from augur.validate import load_augur_json_schema, ValidateError
 
 COMMAND_SCHEMAS = {
     "align": "v1",
@@ -17,6 +21,226 @@ COMMAND_SCHEMAS = {
     "translate": "v1",
     "tree": "v1",
 }
+
+
+def get_referenced_files(
+    config_file: str | Path,
+    search_paths: Optional[list[str]] = None,
+) -> set[str]:
+    """Get the files referenced in an augur config file.
+
+    Extracts and resolves all filepath values referenced in the config.
+
+    Parameters
+    ----------
+    config_file
+        Path to the config file.
+
+    search_paths
+        Optional list of directories to search for relative filepaths specified
+        in the config file. If a file exists in multiple directories, only
+        the file from the first directory will be used. This can also be set
+        via the environment variable 'AUGUR_SEARCH_PATHS'. Specified
+        directories will be considered before the defaults, which are:
+        (1) directory containing the config file
+        (2) current working directory
+
+    Returns
+    -------
+    set
+        Resolved filepaths
+    """
+    config = parse_config(config_file)
+
+    schema_ref = config.get("$schema")
+    if not schema_ref:
+        raise AugurError(f"The configuration file {str(config_file)!r} does not specify a '$schema'.")
+
+    try:
+        schema_validator = load_augur_json_schema(str(schema_ref))
+    except (FileNotFoundError, ValidateError) as e:
+        raise AugurError(f"Schema {schema_ref!r} not found: {e}") from e
+
+    # Resolve filepaths.
+    search_path_objs = get_search_paths(config_file, search_paths)
+    config, filepaths = resolve_filepaths(config, search_path_objs, schema_validator.schema)
+
+    return set(filepaths)
+
+
+def parse_config(filename: str | Path) -> dict[str, Any]:
+    # Create a custom YAML constructor to treat timestamps as strings.
+    class CustomConstructor(constructor.SafeConstructor):
+        pass
+    def string_constructor(loader, node):
+        return loader.construct_scalar(node)
+    CustomConstructor.add_constructor('tag:yaml.org,2002:timestamp', string_constructor)
+
+    yaml = YAML(typ="safe")
+    yaml.Constructor = CustomConstructor
+
+    with open(filename) as f:
+        try:
+            config = yaml.load(f)
+        except YAMLError as e:
+            raise AugurError(f"The configuration file {filename!r} is not valid YAML.\n" + str(e)) from e
+
+    return config
+
+
+def get_search_paths(
+    config_file: str | Path,
+    from_cli: list[str],
+) -> list[Path]:
+    """
+    Returns the paths to search for relative filepaths in config.
+    """
+    default = [
+        Path(config_file).parent,
+        Path.cwd(),
+    ]
+
+    from_env = os.environ.get('AUGUR_SEARCH_PATHS')
+
+    if from_cli:
+        if from_env:
+            print_err(dedent(f"""\
+                WARNING: Both the command line argument --search-paths
+                and the environment variable AUGUR_SEARCH_PATHS are set.
+                Only the command line argument will be used."""))
+        return [
+            *(Path(p) for p in from_cli),
+            *default,
+        ]
+
+    if from_env:
+        return [
+            *(Path(p) for p in from_env.split(':')),
+            *default,
+        ]
+
+    return default
+
+
+def resolve_filepaths(
+    config: dict[str, Any],
+    search_paths: list[Path],
+    schema: dict[str, Any],
+    root_schema: Optional[dict[str, Any]] = None,
+) -> tuple[dict[str, Any], list[str]]:
+    """
+    Resolve filepaths in config.
+
+    Recursively walks the config alongside the schema to determine which fields
+    contain filepaths, resolves them, and collects the resolved filepaths.
+    """
+    if root_schema is None:
+        root_schema = schema
+
+    filepaths = []
+
+    # Get properties schema for current section
+    properties = schema.get("properties", {})
+    pattern_properties = schema.get("patternProperties", {})
+
+    for key, value in config.items():
+        if key == "$schema" or key.startswith("_"):
+            continue
+        prop_schema = properties.get(key)
+
+        if not prop_schema and pattern_properties:
+            # Use first pattern property schema (for dynamic keys like samples)
+            prop_schema = next(iter(pattern_properties.values()))
+
+        # Get referenced property schema
+        if ref := prop_schema.get("$ref"):
+            prop_schema = _get_referenced_schema(ref, root_schema)
+        elif "oneOf" in prop_schema and isinstance(value, dict):
+            _, prop_schema = best_matching_variant(prop_schema["oneOf"], value, root_schema)
+
+        # Resolve filepath
+        if _is_filepath(prop_schema):
+            if isinstance(value, list):
+                config[key] = [str(resolve_filepath(Path(v), search_paths)) for v in value]
+                filepaths.extend(config[key])
+            elif isinstance(value, str):
+                config[key] = str(resolve_filepath(Path(value), search_paths))
+                filepaths.append(config[key])
+
+        # Recurse into config section
+        elif isinstance(value, dict):
+            config[key], downstream_filepaths = resolve_filepaths(
+                value, search_paths, prop_schema, root_schema
+            )
+            filepaths.extend(downstream_filepaths)
+
+    return config, filepaths
+
+
+def best_matching_variant(
+    variants: list[dict[str, Any]],
+    value: dict[str, Any],
+    root_schema: dict[str, Any],
+) -> tuple[str, dict[str, Any]]:
+    """
+    Given a oneOf list of schema variants (typically $ref entries), resolve each
+    and return the one whose properties best match the keys in *value*, as a
+    (name, schema) tuple.
+
+    The name is the last component of the matched ``$ref`` (e.g.
+    ``"filterSampleProperties"``).
+    """
+    value_keys = set(value.keys())
+    best_schema = None
+    best_ref = None
+    best_overlap = -1
+    for variant in variants:
+        ref = variant.get("$ref")
+        if ref:
+            resolved = _get_referenced_schema(ref, root_schema)
+        else:
+            resolved = variant
+        props = set(resolved.get("properties", {}).keys())
+        overlap = len(value_keys & props)
+        if overlap > best_overlap:
+            best_overlap = overlap
+            best_schema = resolved
+            best_ref = ref
+    if not best_schema:
+        raise AugurError("Couldn't match oneOf schema for config dict")
+    return (best_ref.rsplit("/", 1)[-1], best_schema)
+
+
+def _get_referenced_schema(
+    ref: str,
+    root_schema: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Resolve a JSON schema reference. Example: '#/$defs/filterSampleProperties'
+    """
+    keys = ref.lstrip("#/").split("/")
+    schema = root_schema
+    for key in keys:
+        schema = schema[key]
+    return schema
+
+
+def _is_filepath(prop_schema: dict[str, Any]) -> bool:
+    """
+    Check if the property schema declares it is a filepath.
+    """
+    # Direct 'format: filepath'
+    if prop_schema.get("format") == "filepath":
+        return True
+
+    # Check oneOf variants for 'format: filepath'
+    if "oneOf" in prop_schema:
+        for variant in prop_schema["oneOf"]:
+            if variant.get("format") == "filepath":
+                return True
+
+    return False
+
 
 def resolve_filepath(
     path: Path,

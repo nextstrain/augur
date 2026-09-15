@@ -15,7 +15,6 @@ from referencing import Registry
 from textwrap import indent
 from typing import Iterable, Union
 from augur.argparse_ import add_subparser
-from augur.config import COMMAND_SCHEMAS
 from augur.data import as_file
 from augur.io.file import open_file
 from augur.io.print import print_err
@@ -80,6 +79,9 @@ def _get_local_refs() -> dict[str, str]:
     """
     Return a mapping of Augur schema URL to local file name under augur/data.
     """
+    # Import here to avoid circular top-level imports.
+    from augur.config import COMMAND_SCHEMAS
+
     local_refs = {
         'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json",
         'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
