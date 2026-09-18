@@ -7,6 +7,7 @@ import os
 from argparse import Action, ArgumentDefaultsHelpFormatter, _ArgumentGroup, _SubParsersAction
 from collections import OrderedDict
 from itertools import chain
+from pathlib import Path
 from ruamel.yaml import YAML
 from textwrap import dedent, indent as indent_text
 from typing import Iterable, Optional, Tuple, Union
@@ -422,7 +423,15 @@ def InputFile(path: str) -> str:
     """
     Custom type for argparse representing an input file path.
     """
-    return path
+    # Import here to avoid circular top-level imports.
+    from .config import resolve_filepath
+
+    search_paths = (
+        [Path(p) for p in from_env.split(":") if p]
+        if (from_env := os.environ.get("AUGUR_SEARCH_PATHS"))
+        else [Path.cwd()]
+    )
+    return str(resolve_filepath(Path(path), search_paths))
 
 
 class HideAsFalseAction(Action):
