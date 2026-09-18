@@ -67,10 +67,6 @@ section describes how the file should be structured.
        # sample options
      …
 
-.. tip::
-
-    Use ``--config-section`` to read from a configuration file that puts these
-    options under a specific section.
 
 
 defaults
