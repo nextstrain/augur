@@ -60,3 +60,26 @@ class TestGetDistancesToRoot:
 
         with pytest.raises(AugurError, match="Could not find a sequence for the root node 'root'"):
             get_distances_to_root(tree, sequences_by_node_and_gene, distance_map)
+
+    def test_root_missing_one_of_multiple_genes(self, tree, distance_map):
+        # The root is aligned for "ha" but not "na": it must not silently skip
+        # the gene it lacks.
+        sequences_by_node_and_gene = {
+            "root": {"ha": "ACGT"},
+            "A": {"ha": "ACGT", "na": "ACGT"},
+            "B": {"ha": "ACTA", "na": "ACTA"},
+        }
+
+        with pytest.raises(AugurError, match="has no sequence for the following gene\\(s\\).*'na'"):
+            get_distances_to_root(tree, sequences_by_node_and_gene, distance_map)
+
+    def test_root_with_all_genes(self, tree, distance_map):
+        sequences_by_node_and_gene = {
+            "root": {"ha": "ACGT", "na": "ACGT"},
+            "A": {"ha": "ACGT", "na": "ACGA"},
+            "B": {"ha": "ACTA", "na": "ACGT"},
+        }
+
+        distances = get_distances_to_root(tree, sequences_by_node_and_gene, distance_map)
+
+        assert distances == {"root": 0.0, "A": 1.0, "B": 2.0}
