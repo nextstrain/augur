@@ -25,6 +25,7 @@ from augur.argparse_ import (
     SKIP_AUTO_DEFAULT_IN_HELP,
     walk_commands,
 )
+from augur.dates import numeric_date_type
 from augur.schema import CONFIG_COMMANDS
 from augur.types import ValidationMode
 from augur.utils import nthreads_value
@@ -137,6 +138,7 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
             InputDir: {"type": "string", "format": "dirpath"},
             ValidationMode: {"type": "string"},
             nthreads_value: {"type": ["integer", "string"]},
+            numeric_date_type: {"type": ["string", "number"]},
         }
         if action.type not in type_info:
             raise UnsupportedOption(f"{action.option_strings[0]}: unsupported type {action.type!r}; add it to extract_property()")
