@@ -107,7 +107,7 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
     """
     prop: dict[str, Any] = {}
 
-    if description := clean_help_string(action.help):
+    if description := clean_help_string(action):
         prop["description"] = description
 
     # Determine type and values
@@ -125,15 +125,18 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
     else:
         schema_type = get_schema_type(action.type)
         if action.nargs in (argparse.ZERO_OR_MORE, argparse.ONE_OR_MORE):
+            item_type: dict[str, Any] = {"type": schema_type}
+            if action.choices:
+                item_type["enum"] = list(map(serialize_choice, action.choices))
             prop["oneOf"] = [
-                {"type": schema_type},
-                {"type": "array", "items": {"type": schema_type}},
+                item_type,
+                {"type": "array", "items": item_type},
             ]
         else:
             prop["type"] = schema_type
 
-    if action.choices:
-        prop["enum"] = list(map(serialize_choice, action.choices))
+            if action.choices:
+                prop["enum"] = list(map(serialize_choice, action.choices))
 
     # Default values
     if action.default not in (None, argparse.SUPPRESS):
@@ -210,9 +213,15 @@ def extract_constraints(
     ]
 
 
-def clean_help_string(help_text: str | None) -> str:
-    if not help_text:
+def clean_help_string(action: argparse.Action) -> str:
+    if not action.help:
         return ""
+
+    help_text = action.help
+
+    # Expand choices placeholder
+    if "%(choices)s" in help_text and action.choices:
+        help_text = help_text % {"choices": ", ".join(map(str, action.choices))}
 
     # Remove argparse-specific formatting tokens.
     return help_text.replace(SKIP_AUTO_DEFAULT_IN_HELP, "")
