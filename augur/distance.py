@@ -519,8 +519,17 @@ def get_distances_to_root(tree, sequences_by_node_and_gene, distance_map):
     """
     distances_by_node = {}
 
-    # Find the root node's sequences.
-    root_node_sequences = sequences_by_node_and_gene[tree.root.name]
+    # Find the root node's sequences. The alignment must include a sequence for
+    # the root node (e.g., an ancestral sequence reconstructed by `augur
+    # ancestral`), otherwise every distance would silently be calculated
+    # against an empty sequence and reported as zero.
+    root_node_sequences = sequences_by_node_and_gene.get(tree.root.name)
+    if not root_node_sequences:
+        raise AugurError(
+            f"Could not find a sequence for the root node '{tree.root.name}' in the given alignment(s). "
+            "Comparisons to the root require the alignment to include sequences for internal nodes "
+            "(e.g., ancestral sequences from `augur ancestral`)."
+        )
 
     # Calculate distance between root and all other nodes.
     for node_name, node_sequences in sequences_by_node_and_gene.items():
