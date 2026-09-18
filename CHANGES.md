@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* distance: Raise a clear error when the root node's sequence is missing from the alignment instead of silently reporting all root distances as zero. [#842][] @RonitBStudent
+
+[#842]: https://github.com/nextstrain/augur/issues/842
+
 
 ## 34.1.4 (9 September 2026)
 

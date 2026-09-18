@@ -72,3 +72,17 @@ This should fail because we only support edge list output for a single pairwise 
   >   --output-edge-list distances_edge_list.tsv
   ERROR: Edge list output only works for a single pairwise comparison.
   [2]
+
+Try to calculate distances from the root with an alignment that only contains tips.
+This should fail with a clear error instead of silently reporting zero distances.
+
+  $ ${AUGUR} distance \
+  >   --tree "tree.nwk" \
+  >   --alignment "$TESTDIR/distance/aligned.fasta" \
+  >   --gene-names nuc \
+  >   --attribute-name snvs \
+  >   --compare-to root \
+  >   --map "$TESTDIR/distance/distance_map_hamming.json" \
+  >   --output distances.json
+  ERROR: Could not find a sequence for the root node 'NODE_0000000' in the given alignment(s). Comparisons to the root require the alignment to include sequences for internal nodes (e.g., ancestral sequences from `augur ancestral`).
+  [2]
