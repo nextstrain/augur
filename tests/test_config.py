@@ -19,12 +19,14 @@ def test_config_list(tmp_path):
     Test that list values in --config are correctly mapped.
     """
     config_file = write_config_file(tmp_path, {"year_bounds": [2000, 2020]})
+    tree_file = tmp_path / "tree.nwk"
+    tree_file.touch()
 
     parser = make_parser()
     args = parser.parse_args([
         "refine",
         "--config", str(config_file),
-        "--tree", "tree.nwk",
+        "--tree", str(tree_file),
     ])
     assert args.year_bounds == [2000, 2020]
 
@@ -34,12 +36,14 @@ def test_config_scalar_for_list(tmp_path):
     Test that scalar values in --config can also represent single-item lists.
     """
     config_file = write_config_file(tmp_path, {"root": "ROOT"})
+    tree_file = tmp_path / "tree.nwk"
+    tree_file.touch()
 
     parser = make_parser()
     args = parser.parse_args([
         "refine",
         "--config", str(config_file),
-        "--tree", "tree.nwk",
+        "--tree", str(tree_file),
     ])
     assert args.root == ["ROOT"]
 
@@ -50,12 +54,14 @@ def test_config_boolean(tmp_path, value):
     Test that boolean values in --config are correctly mapped.
     """
     config_file = write_config_file(tmp_path, {"covariance": value})
+    tree_file = tmp_path / "tree.nwk"
+    tree_file.touch()
 
     parser = make_parser()
     args = parser.parse_args([
         "refine",
         "--config", str(config_file),
-        "--tree", "tree.nwk",
+        "--tree", str(tree_file),
     ])
     assert args.covariance is value
 
@@ -66,13 +72,15 @@ def test_config_error_with_cli_same_option(tmp_path, capsys):
     --config.
     """
     config_file = write_config_file(tmp_path, {"timetree": True})
+    tree_file = tmp_path / "tree.nwk"
+    tree_file.touch()
 
     parser = make_parser()
     with pytest.raises(SystemExit) as exc_info:
         parser.parse_args([
             "refine",
             "--config", str(config_file),
-            "--tree", "tree.nwk",
+            "--tree", str(tree_file),
             "--timetree",
         ])
     assert exc_info.value.code == 2
@@ -92,13 +100,15 @@ def test_config_error_with_cli_same_dest(tmp_path, capsys):
     argparse destination as another option used in --config.
     """
     config_file = write_config_file(tmp_path, {"covariance": True})
+    tree_file = tmp_path / "tree.nwk"
+    tree_file.touch()
 
     parser = make_parser()
     with pytest.raises(SystemExit) as exc_info:
         parser.parse_args([
             "refine",
             "--config", str(config_file),
-            "--tree", "tree.nwk",
+            "--tree", str(tree_file),
             "--no-covariance",
         ])
     assert exc_info.value.code == 2
@@ -117,12 +127,14 @@ def test_config_error_with_invalid(tmp_path, capsys):
     Test that an error is shown when an invalid option is used in --config.
     """
     config_file = write_config_file(tmp_path, {"no_covariance": True})
+    tree_file = tmp_path / "tree.nwk"
+    tree_file.touch()
 
     parser = make_parser()
     with pytest.raises(SystemExit) as exc_info:
         parser.parse_args([
             "refine",
-            "--tree", "tree.nwk",
+            "--tree", str(tree_file),
             "--config", str(config_file),
         ])
     assert exc_info.value.code == 2
@@ -139,12 +151,14 @@ def test_config_error_with_dashes(tmp_path, capsys):
     Test that an error is shown when a dashed option name is used in --config.
     """
     config_file = write_config_file(tmp_path, {"date-confidence": True})
+    tree_file = tmp_path / "tree.nwk"
+    tree_file.touch()
 
     parser = make_parser()
     with pytest.raises(SystemExit) as exc_info:
         parser.parse_args([
             "refine",
-            "--tree", "tree.nwk",
+            "--tree", str(tree_file),
             "--config", str(config_file),
         ])
     assert exc_info.value.code == 2
@@ -165,12 +179,14 @@ def test_config_error_with_duplicate(tmp_path, capsys):
         timetree: true
         timetree: false
     """))
+    tree_file = tmp_path / "tree.nwk"
+    tree_file.touch()
 
     parser = make_parser()
     with pytest.raises(SystemExit) as exc_info:
         parser.parse_args([
             "refine",
-            "--tree", "tree.nwk",
+            "--tree", str(tree_file),
             "--config", str(config_file),
         ])
     assert exc_info.value.code == 2
