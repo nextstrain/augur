@@ -9,6 +9,7 @@ import itertools
 import json
 import os
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,7 @@ from augur.argparse_ import (
     walk_commands,
 )
 from augur.config import COMMAND_SCHEMAS
+from augur.dates import numeric_date_type
 
 
 OUTPUT_DIR = Path(__file__).parent.parent / "augur" / "data"
@@ -106,27 +108,36 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
     """
     prop: dict[str, Any] = {}
 
-    if description := clean_help_string(action.help):
+    if description := clean_help_string(action):
         prop["description"] = description
 
     # Determine type and values
     if isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction)):
         prop["type"] = "boolean"
     elif action.type is InputFile:
-        prop["type"] = "string"
-        prop["format"] = "filepath"
+        if action.nargs in (argparse.ZERO_OR_MORE, argparse.ONE_OR_MORE):
+            prop["oneOf"] = [
+                {"type": "string", "format": "filepath"},
+                {"type": "array", "items": {"type": "string", "format": "filepath"}},
+            ]
+        else:
+            prop["type"] = "string"
+            prop["format"] = "filepath"
     else:
         schema_type = get_schema_type(action.type)
         if action.nargs in (argparse.ZERO_OR_MORE, argparse.ONE_OR_MORE):
+            item_type: dict[str, Any] = {"type": schema_type}
+            if action.choices:
+                item_type["enum"] = list(map(serialize_choice, action.choices))
             prop["oneOf"] = [
-                {"type": schema_type},
-                {"type": "array", "items": {"type": schema_type}},
+                item_type,
+                {"type": "array", "items": item_type},
             ]
         else:
             prop["type"] = schema_type
 
-    if action.choices:
-        prop["enum"] = list(action.choices)
+            if action.choices:
+                prop["enum"] = list(map(serialize_choice, action.choices))
 
     # Default values
     if action.default not in (None, argparse.SUPPRESS):
@@ -134,12 +145,12 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
         if isinstance(action, argparse._StoreFalseAction) and action.default is True:
             pass
         else:
-            prop["default"] = action.default
+            prop["default"] = serialize_choice(action.default)
 
     return prop
 
 
-def get_schema_type(action_type: Any) -> str:
+def get_schema_type(action_type: Any) -> str | list[str]:
     """
     Map an argparse.Action's type to a JSON Schema primitive type.
     """
@@ -147,8 +158,16 @@ def get_schema_type(action_type: Any) -> str:
         return "integer"
     elif action_type is float:
         return "number"
+    elif action_type is numeric_date_type:
+        return ["string", "number"]
     else:
         return "string"
+
+
+def serialize_choice(choice: Any) -> Any:
+    if isinstance(choice, Enum):
+        return choice.value
+    return choice
 
 
 def extract_constraints(
@@ -197,9 +216,15 @@ def extract_constraints(
     ]
 
 
-def clean_help_string(help_text: str | None) -> str:
-    if not help_text:
+def clean_help_string(action: argparse.Action) -> str:
+    if not action.help:
         return ""
+
+    help_text = action.help
+
+    # Expand choices placeholder
+    if "%(choices)s" in help_text and action.choices:
+        help_text = help_text % {"choices": ", ".join(map(str, action.choices))}
 
     # Remove argparse-specific formatting tokens.
     return help_text.replace(SKIP_AUTO_DEFAULT_IN_HELP, "")
