@@ -23,6 +23,7 @@ from augur.argparse_ import (
     SKIP_AUTO_DEFAULT_IN_HELP,
     walk_commands,
 )
+from augur.dates import numeric_date_type
 from augur.schema import COMMAND_SCHEMAS
 
 
@@ -152,7 +153,7 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
     return prop
 
 
-def get_schema_type(action_type: Any) -> str:
+def get_schema_type(action_type: Any) -> str | list[str]:
     """
     Map an argparse.Action's type to a JSON Schema primitive type.
     """
@@ -160,6 +161,8 @@ def get_schema_type(action_type: Any) -> str:
         return "integer"
     elif action_type is float:
         return "number"
+    elif action_type is numeric_date_type:
+        return ["string", "number"]
     else:
         return "string"
 
