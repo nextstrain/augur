@@ -232,7 +232,7 @@ class TestAlign:
         assert len(result) == 4
 
     def test_read_seq_compare(self):
-        data_file = pathlib.Path("tests/data/align/aa-seq_h3n2_ha_2y_2HA1_dup.fasta")
+        data_file = pathlib.Path("tests/data/align/aa-seq_h3n2_ha_2y_HA1_dup.fasta")
         with pytest.raises(align.AlignmentError):
             assert align.read_and_validate_sequences(str(data_file))
 
