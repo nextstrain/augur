@@ -7,7 +7,7 @@ import numpy as np
 from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, InputFile
 from .dates import validate_dates
 from .errors import AugurError
 from .frequency_estimators import get_pivots, alignment_frequencies, tree_frequencies
@@ -25,7 +25,7 @@ def register_parser(parent_subparsers):
     # Shared arguments
     parser.add_argument('--method', choices=["diffusion", "kde"], required=True,
                         help="method by which frequencies should be estimated")
-    parser.add_argument('--metadata', type=str, required=True, metavar="FILE",
+    parser.add_argument('--metadata', type=InputFile, required=True, metavar="FILE",
                         help="metadata including dates for given samples")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
@@ -45,13 +45,13 @@ def register_parser(parent_subparsers):
                         help=f"date to end frequencies calculations; may be specified as:\n\n{SUPPORTED_DATE_HELP_TEXT}")
 
     # Tree-specific arguments
-    parser.add_argument('--tree', '-t', type=str,
+    parser.add_argument('--tree', '-t', type=InputFile,
                         help="tree to estimate clade frequencies for")
     parser.add_argument("--include-internal-nodes", action="store_true",
                         help="calculate frequencies for internal nodes as well as tips")
 
     # Alignment-specific arguments
-    parser.add_argument('--alignments', type=str, nargs='+', action=ExtendOverwriteDefault,
+    parser.add_argument('--alignments', type=InputFile, nargs='+', action=ExtendOverwriteDefault,
                         help="alignments to estimate mutations frequencies for")
     parser.add_argument('--gene-names', nargs='+', action=ExtendOverwriteDefault, type=str,
                         help="names of the sequences in the alignment, same order assumed")
@@ -64,7 +64,7 @@ def register_parser(parent_subparsers):
     parser.add_argument("--narrow-bandwidth", type=float, default=1 / 12.0, help="the bandwidth for the narrow KDE")
     parser.add_argument("--wide-bandwidth", type=float, default=3 / 12.0, help="the bandwidth for the wide KDE")
     parser.add_argument("--proportion-wide", type=float, default=0.2, help="the proportion of the wide bandwidth to use in the KDE mixture model")
-    parser.add_argument("--weights", help="a dictionary of key/value mappings in JSON format used to weight KDE tip frequencies")
+    parser.add_argument("--weights", type=InputFile, help="a dictionary of key/value mappings in JSON format used to weight KDE tip frequencies")
     parser.add_argument("--weights-attribute", help="name of the attribute on each tip whose values map to the given weights dictionary")
     parser.add_argument("--censored", action="store_true", help="calculate censored frequencies at each pivot")
 

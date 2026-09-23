@@ -136,7 +136,7 @@ Duplicated index values are properly detected
   >  --metadata-columns "field_A" "field_B" \
   >  --maintainers "Nextstrain Team" \
   >  --output dataset.json > /dev/null
-  ERROR: The following strain values are duplicated in 'metadata_with_duplicates.tsv':
+  ERROR: The following strain values are duplicated in '.+/metadata_with_duplicates.tsv': (re)
   tipA
   tipC
   tipE

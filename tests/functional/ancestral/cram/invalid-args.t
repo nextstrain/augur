@@ -54,7 +54,7 @@ Missing tree file
   >  --alignment $TESTDIR/../data/aligned.fasta \
   >  --seed 314159 \
   >  --output-sequences "output.fasta" > /dev/null
-  ERROR: The provided tree file .* doesn't exist (re)
+  ERROR: File '.+/tree-doesnt-exist.nwk' does not exist. (re)
   [2]
 
 

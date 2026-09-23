@@ -13,6 +13,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from augur import mask
+from augur.errors import AugurError
 from augur.utils import VALID_NUCLEOTIDES
 
 # Test inputs for the commands. Writing these here so tests are self-contained.
@@ -237,9 +238,8 @@ class TestMask:
 
     def test_run_handle_missing_sequence_file(self, vcf_file, argparser):
         os.remove(vcf_file)
-        args = argparser("-s %s" % vcf_file)
-        with pytest.raises(SystemExit):
-            mask.run(args)
+        with pytest.raises(AugurError, match="does not exist"):
+            argparser("-s %s" % vcf_file)
 
     def test_run_handle_empty_sequence_file(self, vcf_file, argparser):
         open(vcf_file,"w").close()
@@ -249,9 +249,8 @@ class TestMask:
 
     def test_run_handle_missing_mask_file(self, vcf_file, bed_file, argparser):
         os.remove(bed_file)
-        args = argparser("-s %s --mask %s" % (vcf_file, bed_file))
-        with pytest.raises(SystemExit):
-            mask.run(args)
+        with pytest.raises(AugurError, match="does not exist"):
+            argparser("-s %s --mask %s" % (vcf_file, bed_file))
 
     def test_run_handle_empty_mask_file(self, vcf_file, bed_file, argparser):
         open(bed_file, "w").close()
