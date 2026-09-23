@@ -205,8 +205,6 @@ def read_and_validate_sequences(*fnames):
                     raise AlignmentError("Detected duplicate input strains \"%s\" but the sequences are different." % record.name)
                     # if the same sequence then we can proceed (and we only take one)
                 seqs[record.name] = record
-    except FileNotFoundError:
-        raise AlignmentError("\nCannot read sequences -- make sure the file %s exists and contains sequences in fasta format" % fname)
     except ValueError as error:
         raise AlignmentError("\nERROR: Problem reading in {}: {}".format(fname, str(error)))
     return list(seqs.values())
@@ -240,9 +238,6 @@ def ensure_reference_strain_present(ref_name, existing_alignment, seqs):
     #     cmd = "mafft --reorder --anysymbol --thread %d %s 1> %s 2> %s.log"%(args.nthreads, shname, shoutput, shoutput)
 
 def read_reference(ref_fname):
-    if not os.path.isfile(ref_fname):
-        raise AlignmentError("ERROR: Cannot read reference sequence."
-                             "\n\tmake sure the file \"%s\" exists"%ref_fname)
     try:
         ref_seq = read_single_sequence(ref_fname, format='genbank' if ref_fname.split('.')[-1] in ['gb', 'genbank'] else 'fasta')
     except:

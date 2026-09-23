@@ -236,7 +236,7 @@ def run(args):
     try:
         T = read_tree(args.tree)
         node_data['input_tree'] = args.tree
-    except (FileNotFoundError, InvalidTreeError) as error:
+    except InvalidTreeError as error:
         print("ERROR: %s" % error, file=sys.stderr)
         return 1
 

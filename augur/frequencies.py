@@ -1,7 +1,7 @@
 """
 infer frequencies of mutations or clades
 """
-import json, os, sys
+import json, sys
 from textwrap import dedent
 import numpy as np
 from Bio import Phylo, AlignIO
@@ -232,10 +232,6 @@ def run(args):
     elif args.alignments:
         frequencies = None
         for gene, fname in zip(args.gene_names, args.alignments):
-            if not os.path.isfile(fname):
-                print("ERROR: alignment file not found", file=sys.stderr)
-                return 1
-
             aln = MultipleSeqAlignment([seq for seq in AlignIO.read(fname, 'fasta')
                                         if not seq.name.startswith('NODE_')])
 

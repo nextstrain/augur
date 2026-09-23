@@ -200,18 +200,12 @@ def run(args):
 
     If users don't specify output, will overwrite the input file.
     '''
-    # Check files exist and are not empty
-    if not os.path.isfile(args.sequences):
-        print("ERROR: File {} does not exist!".format(args.sequences))
-        sys.exit(1)
+    # Check files are not empty
     if os.path.getsize(args.sequences) == 0:
         print("ERROR: {} is empty. Please check how this file was produced. "
               "Did an error occur in an earlier step?".format(args.sequences))
         sys.exit(1)
     if args.mask_file:
-        if not os.path.isfile(args.mask_file):
-            print("ERROR: File {} does not exist!".format(args.mask_file))
-            sys.exit(1)
         if os.path.getsize(args.mask_file) == 0:
             print("ERROR: {} is an empty file.".format(args.mask_file))
             sys.exit(1)

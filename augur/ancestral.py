@@ -460,8 +460,6 @@ def validate_arguments(args: argparse.Namespace, genes: None|list[str]) -> Mode:
 def _read_tree(fname: str) -> Tree:
     try:
         T = read_tree(fname)
-    except FileNotFoundError:
-        raise AugurError(f"The provided tree file {fname!r} doesn't exist")
     except InvalidTreeError as error:
         raise AugurError(error)
     # Note that a number of other errors may be thrown by `read_tree` such as Bio.Phylo.NewickIO.NewickError

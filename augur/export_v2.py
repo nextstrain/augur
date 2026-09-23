@@ -1040,12 +1040,9 @@ def set_description(data_json, cmd_line_description_file):
     Read Markdown file provided by *cmd_line_description_file* and set
     `meta.description` in *data_json* to the text provided.
     """
-    try:
-        with open_file(cmd_line_description_file) as description_file:
-            markdown_text = description_file.read()
-        data_json['meta']['description'] = markdown_text
-    except FileNotFoundError:
-        raise AugurError("Provided description file {} does not exist".format(cmd_line_description_file))
+    with open_file(cmd_line_description_file) as description_file:
+        markdown_text = description_file.read()
+    data_json['meta']['description'] = markdown_text
 
 def set_warning(data_json, text_or_file):
     """
@@ -1162,11 +1159,7 @@ def run(args):
 
     #load input files
     if args.node_data is not None:
-      try:
-          node_data_file = read_node_data(args.node_data, validation_mode=args.validation_mode) # node_data_files is an array of multiple files (or a single file)
-      except FileNotFoundError:
-          print(f"ERROR: node data file ({args.node_data}) does not exist")
-          sys.exit(2)
+        node_data_file = read_node_data(args.node_data, validation_mode=args.validation_mode) # node_data_files is an array of multiple files (or a single file)
     else:
         node_data_file = {'nodes': {}}
 
@@ -1180,9 +1173,6 @@ def run(args):
             )
 
             metadata_file = metadata_df.to_dict(orient="index")
-        except FileNotFoundError:
-            print(f"ERROR: meta data file ({args.metadata}) does not exist", file=sys.stderr)
-            sys.exit(2)
         except InvalidDelimiter:
             raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "
@@ -1226,20 +1216,16 @@ def run(args):
     if args.warning:
         set_warning(data_json, args.warning)
 
-    try:
-        set_colorings(
-            data_json=data_json,
-            config=get_config_colorings_as_dict(config),
-            command_line_colorings=args.color_by_metadata,
-            metadata_names=metadata_names,
-            node_data_colorings=node_data_names,
-            provided_colors=read_colors(args.colors),
-            node_attrs=node_attrs,
-            branch_attrs=branch_attrs
-        )
-    except FileNotFoundError as e:
-        print(f"ERROR: required file could not be read: {e}")
-        sys.exit(2)
+    set_colorings(
+        data_json=data_json,
+        config=get_config_colorings_as_dict(config),
+        command_line_colorings=args.color_by_metadata,
+        metadata_names=metadata_names,
+        node_data_colorings=node_data_names,
+        provided_colors=read_colors(args.colors),
+        node_attrs=node_attrs,
+        branch_attrs=branch_attrs
+    )
     set_filters(data_json, config)
 
     # set tree structure
