@@ -16,7 +16,7 @@ GFF file with no valid rows
   >  --ancestral-sequences $ANC_DATA/nt_muts.ref-seq.json \
   >  --reference-sequence "reference.empty.gff" \
   >  --output-node-data "aa_muts.json" > /dev/null
-  ERROR: Reference 'reference.empty.gff' contains no valid data rows. .+ (re)
+  ERROR: Reference '.+/reference.empty.gff' contains no valid data rows. .+ (re)
   [2]
 
 GFF file with an extra record
@@ -30,7 +30,7 @@ GFF file with an extra record
   >  --ancestral-sequences $ANC_DATA/nt_muts.ref-seq.json \
   >  --reference-sequence "reference.double.gff" \
   >  --output-node-data "aa_muts.json"
-  ERROR: Reference 'reference.double.gff' contains multiple seqids .+ (re)
+  ERROR: Reference '.+/reference.double.gff' contains multiple seqids .+ (re)
   [2]
 
 

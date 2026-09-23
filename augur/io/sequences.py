@@ -212,12 +212,9 @@ def load_features(reference, feature_names=None):
     Raises
     ------
     AugurError
-        If the reference file doesn't exist, is malformed / empty, or has errors
+        If the reference file is malformed / empty, or has errors
     """
     #checks explicitly for GFF otherwise assumes Genbank
-    if not os.path.isfile(reference):
-        raise AugurError(f"reference sequence file {reference!r} not found")
-
     if '.gff' in reference.lower():
         features = _read_gff(reference, feature_names)
     else:

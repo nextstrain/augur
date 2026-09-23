@@ -11,7 +11,7 @@ Missing reference file
   >  --ancestral-sequences $ANC_DATA/nt_muts.ref-seq.json \
   >  --reference-sequence $DATA/reference.doesnt-exist.gff \
   >  --output-node-data "aa_muts.json" > /dev/null
-  ERROR: reference sequence file '.+/reference.doesnt-exist.gff' not found (re)
+  ERROR: File '.+/reference.doesnt-exist.gff' does not exist. (re)
   [2]
 
 Gene length not divisible by 3
@@ -29,7 +29,7 @@ Gene length not divisible by 3
   >  --ancestral-sequences $ANC_DATA/nt_muts.ref-seq.json \
   >  --reference-sequence invalid.gff \
   >  --output-node-data "aa_muts.json"
-  ERROR: Reference file 'invalid.gff' has errors:
+  ERROR: Reference file '.+/invalid.gff' has errors: (re)
       'gene1' has length 14 which is not a multiple of 3.
       'gene2' has length 13 which is not a multiple of 3.
   [2]
@@ -59,6 +59,6 @@ Gene with compound location not divisible by 3
   .* (re)
   .* (re)
   .* (re)
-  ERROR: Reference file 'invalid.gb' has errors:
+  ERROR: Reference file '.+/invalid.gb' has errors: (re)
       'test_gene' has length 26 which is not a multiple of 3.
   [2]

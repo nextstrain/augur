@@ -4,6 +4,7 @@ Custom helpers for the argparse standard library.
 import os
 from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser, _ArgumentGroup, _SubParsersAction
 from itertools import chain
+from pathlib import Path
 from textwrap import dedent, indent as indent_text
 from typing import Iterable, Optional, Tuple, Union
 from .rst import rst_to_text
@@ -128,6 +129,24 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
         # If a command doesn't have its own run() function, then print its help when called.
         if not getattr(command, "run", None):
             add_default_command(subparser)
+
+
+def InputFile(path: str) -> str:
+    """
+    Custom type for argparse representing an input file path.
+
+    A relative path is converted to an absolute path by searching in:
+
+    1. :envvar:`AUGUR_SEARCH_PATHS` (if set)
+    2. parent directory of config file (if set)
+    3. current working directory
+    """
+    # Import here to avoid circular top-level imports.
+    from .config import get_search_paths, resolve_filepath
+
+    # Pass args manually since argparse types don't have direct access to those.
+    search_paths = get_search_paths()
+    return str(resolve_filepath(Path(path), search_paths))
 
 
 class HideAsFalseAction(Action):

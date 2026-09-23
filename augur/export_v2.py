@@ -15,7 +15,7 @@ from inspect import cleandoc
 from typing import Dict, Union, TypedDict, Any, Tuple
 from urllib.parse import urlparse
 
-from .argparse_ import SKIP_AUTO_DEFAULT_IN_HELP, ExtendOverwriteDefault, add_validation_arguments
+from .argparse_ import SKIP_AUTO_DEFAULT_IN_HELP, ExtendOverwriteDefault, InputFile, add_validation_arguments
 from .errors import AugurError
 from .io.file import open_file
 from .io.json import MINIFY_THRESHOLD_MB, write_json
@@ -904,7 +904,7 @@ def register_parser(parent_subparsers):
     required = parser.add_argument_group(
         title="REQUIRED"
     )
-    required.add_argument('--tree','-t', metavar="newick", required=True, help="Phylogenetic tree, usually output from `augur refine`")
+    required.add_argument('--tree','-t', metavar="newick", type=InputFile, required=True, help="Phylogenetic tree, usually output from `augur refine`")
     required.add_argument('--output', metavar="JSON", required=True, help="Output file (typically for visualisation in auspice)")
 
     config = parser.add_argument_group(
@@ -914,11 +914,11 @@ def register_parser(parent_subparsers):
             Supplying both is fine too, command line args will overrule what is set in the config file. \
             Multiple JSONs will be merged together, and lists present in multiple configs will be merged by extending the original list."
     )
-    config.add_argument('--auspice-config', metavar="JSON", nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice configuration file(s)")
+    config.add_argument('--auspice-config', metavar="JSON", type=InputFile, nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice configuration file(s)")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", action=ExtendOverwriteDefault, nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
-    config.add_argument('--description', metavar="description.md", help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
+    config.add_argument('--description', metavar="description.md", type=InputFile, help="Markdown file with description of build and/or acknowledgements to be displayed by Auspice")
     config.add_argument('--warning', metavar="text or file", help="Text or file in Markdown format to be displayed as a warning banner by Auspice")
     config.add_argument('--geo-resolutions', metavar="trait", nargs='+', action=ExtendOverwriteDefault, help="Geographic traits to be displayed on map")
     config.add_argument('--color-by-metadata', metavar="trait", nargs='+', action=ExtendOverwriteDefault,
@@ -933,11 +933,11 @@ def register_parser(parent_subparsers):
     optional_inputs = parser.add_argument_group(
         title="OPTIONAL INPUT FILES"
     )
-    optional_inputs.add_argument('--node-data', metavar="JSON", nargs='+', action=ExtendOverwriteDefault,
+    optional_inputs.add_argument('--node-data', metavar="JSON", type=InputFile, nargs='+', action=ExtendOverwriteDefault,
         help="JSON files containing metadata for nodes in the tree. " +
              "Keys are automatically exported as colorings unless special-cased. " +
              "URLs for a key 'X' can be stored under key 'X__url' and will be automatically exported.")
-    optional_inputs.add_argument('--metadata', metavar="FILE",
+    optional_inputs.add_argument('--metadata', metavar="FILE", type=InputFile,
         help="Additional metadata for strains in the tree. " +
              "Columns are not typically exported by default and must be specified via arguments or within the config JSON. "
              "URLs for a column 'X' can be stored in column 'X__url' and will be automatically exported.")
@@ -945,8 +945,8 @@ def register_parser(parent_subparsers):
                                  help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     optional_inputs.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                                  help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    optional_inputs.add_argument('--colors', metavar="FILE", help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
-    optional_inputs.add_argument('--lat-longs', metavar="TSV",
+    optional_inputs.add_argument('--colors', metavar="FILE", type=InputFile, help="Custom color definitions, one per line in the format `TRAIT_TYPE\\tTRAIT_VALUE\\tHEX_CODE`")
+    optional_inputs.add_argument('--lat-longs', metavar="TSV", type=InputFile,
         help=cleandoc(f"""
             Latitudes and longitudes for geography traits. See this file for the format:
             <https://github.com/nextstrain/augur/blob/{__version__}/augur/data/lat_longs.tsv>.
@@ -1040,12 +1040,9 @@ def set_description(data_json, cmd_line_description_file):
     Read Markdown file provided by *cmd_line_description_file* and set
     `meta.description` in *data_json* to the text provided.
     """
-    try:
-        with open_file(cmd_line_description_file) as description_file:
-            markdown_text = description_file.read()
-        data_json['meta']['description'] = markdown_text
-    except FileNotFoundError:
-        raise AugurError("Provided description file {} does not exist".format(cmd_line_description_file))
+    with open_file(cmd_line_description_file) as description_file:
+        markdown_text = description_file.read()
+    data_json['meta']['description'] = markdown_text
 
 def set_warning(data_json, text_or_file):
     """
@@ -1162,11 +1159,7 @@ def run(args):
 
     #load input files
     if args.node_data is not None:
-      try:
-          node_data_file = read_node_data(args.node_data, validation_mode=args.validation_mode) # node_data_files is an array of multiple files (or a single file)
-      except FileNotFoundError:
-          print(f"ERROR: node data file ({args.node_data}) does not exist")
-          sys.exit(2)
+        node_data_file = read_node_data(args.node_data, validation_mode=args.validation_mode) # node_data_files is an array of multiple files (or a single file)
     else:
         node_data_file = {'nodes': {}}
 
@@ -1180,9 +1173,6 @@ def run(args):
             )
 
             metadata_file = metadata_df.to_dict(orient="index")
-        except FileNotFoundError:
-            print(f"ERROR: meta data file ({args.metadata}) does not exist", file=sys.stderr)
-            sys.exit(2)
         except InvalidDelimiter:
             raise AugurError(
                 f"Could not determine the delimiter of {args.metadata!r}. "
@@ -1226,20 +1216,16 @@ def run(args):
     if args.warning:
         set_warning(data_json, args.warning)
 
-    try:
-        set_colorings(
-            data_json=data_json,
-            config=get_config_colorings_as_dict(config),
-            command_line_colorings=args.color_by_metadata,
-            metadata_names=metadata_names,
-            node_data_colorings=node_data_names,
-            provided_colors=read_colors(args.colors),
-            node_attrs=node_attrs,
-            branch_attrs=branch_attrs
-        )
-    except FileNotFoundError as e:
-        print(f"ERROR: required file could not be read: {e}")
-        sys.exit(2)
+    set_colorings(
+        data_json=data_json,
+        config=get_config_colorings_as_dict(config),
+        command_line_colorings=args.color_by_metadata,
+        metadata_names=metadata_names,
+        node_data_colorings=node_data_names,
+        provided_colors=read_colors(args.colors),
+        node_attrs=node_attrs,
+        branch_attrs=branch_attrs
+    )
     set_filters(data_json, config)
 
     # set tree structure

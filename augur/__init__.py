@@ -67,7 +67,8 @@ def make_parser():
     return parser
 
 
-def run(argv):
+def _run(argv):
+    """Parse arguments and run the command."""
     parser = make_parser()
     args, extras = parser.parse_known_args(argv)
 
@@ -80,8 +81,13 @@ def run(argv):
         else:
             parser.error(msg)
 
+    return args.__command__.run(args)
+
+
+def run(argv):
+    """Run the command with error handling."""
     try:
-        return args.__command__.run(args)
+        return _run(argv)
     except AugurError as e:
         if DEBUGGING:
             traceback.print_exc(file=sys.stderr)

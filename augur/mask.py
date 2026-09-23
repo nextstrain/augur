@@ -8,7 +8,7 @@ from shutil import copyfile
 
 from Bio.Seq import MutableSeq
 
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, InputFile
 from .io.file import create_parent_directories, open_file
 from .io.sequences import read_sequences, write_sequences, is_vcf
 from .io.shell_command_runner import run_shell_command
@@ -173,8 +173,8 @@ def register_arguments(parser):
     Kept as a separate function than `register_parser` to continue to support
     unit tests that use this function to create argparser.
     """
-    parser.add_argument('--sequences', '-s', required=True, help="sequences in VCF or FASTA format")
-    parser.add_argument('--mask', dest="mask_file", required=False, help="locations to be masked in either BED file format, DRM format, or one 1-indexed site per line.")
+    parser.add_argument('--sequences', '-s', type=InputFile, required=True, help="sequences in VCF or FASTA format")
+    parser.add_argument('--mask', dest="mask_file", type=InputFile, required=False, help="locations to be masked in either BED file format, DRM format, or one 1-indexed site per line.")
     parser.add_argument('--mask-from-beginning', type=int, default=0, help="FASTA Only: Number of sites to mask from beginning")
     parser.add_argument('--mask-from-end', type=int, default=0, help="FASTA Only: Number of sites to mask from end")
     parser.add_argument('--mask-invalid', action='store_true', help="FASTA Only: Mask invalid nucleotides")
@@ -200,18 +200,12 @@ def run(args):
 
     If users don't specify output, will overwrite the input file.
     '''
-    # Check files exist and are not empty
-    if not os.path.isfile(args.sequences):
-        print("ERROR: File {} does not exist!".format(args.sequences))
-        sys.exit(1)
+    # Check files are not empty
     if os.path.getsize(args.sequences) == 0:
         print("ERROR: {} is empty. Please check how this file was produced. "
               "Did an error occur in an earlier step?".format(args.sequences))
         sys.exit(1)
     if args.mask_file:
-        if not os.path.isfile(args.mask_file):
-            print("ERROR: File {} does not exist!".format(args.mask_file))
-            sys.exit(1)
         if os.path.getsize(args.mask_file) == 0:
             print("ERROR: {} is an empty file.".format(args.mask_file))
             sys.exit(1)
