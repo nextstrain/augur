@@ -20,7 +20,7 @@ from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from augur import filter as augur_filter
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
-from augur.config import resolve_filepath
+from augur.config import resolve_filepath, get_search_paths
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
 from augur.io.print import print_err
@@ -199,7 +199,7 @@ def run(args: argparse.Namespace) -> None:
         raise AugurError("Proximal sampling for AA sequences is not yet supported.")
 
     # Resolve filepaths.
-    search_paths = _get_search_paths(args.config)
+    search_paths = get_search_paths(args.config)
     config, filepaths = _resolve_filepaths(config, search_paths, schema_validator.schema)
     print_debug(f"\nResolved filepaths: {filepaths}")
 
@@ -313,7 +313,7 @@ def get_referenced_files(
     config = _parse_config(config_file, config_section)
 
     # Resolve filepaths.
-    search_paths = _get_search_paths(config_file)
+    search_paths = get_search_paths(config_file)
     config, filepaths = _resolve_filepaths(config, search_paths, schema_validator.schema)
 
     return set(filepaths)
@@ -374,28 +374,6 @@ def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> 
         config = traversed_section
 
     return config
-
-def _get_search_paths(
-    config_file: str,
-) -> List[Path]:
-    """
-    Returns the paths to search for relative filepaths in config.
-    """
-    default = [
-        Path(config_file).parent,
-        Path.cwd(),
-    ]
-
-    from_env = os.environ.get('AUGUR_SEARCH_PATHS')
-
-    if from_env:
-        return [
-            *(Path(p) for p in from_env.split(':')),
-            *default,
-        ]
-
-    return default
-
 
 def _resolve_filepaths(
     config: Dict[str, Any],

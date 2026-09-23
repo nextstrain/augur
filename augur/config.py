@@ -1,10 +1,46 @@
 """
 Helpers for YAML-based configuration files.
 """
+import os
 from pathlib import Path
 from textwrap import dedent
+from typing import Optional
 from augur.errors import AugurError
 from augur.io.print import indented_list
+
+
+def get_search_paths(
+    config_file: Optional[str | Path] = None,
+) -> list[Path]:
+    """
+    Returns search paths for relative filepaths.
+
+    The working directory is always included.
+
+    If ``config_file`` is set, its parent directory is included.
+
+    If :envvar:`AUGUR_SEARCH_PATHS` is set, each path in the colon-delimited
+    list is included.
+    """
+
+    default = [Path.cwd()]
+
+    if config_file:
+        default = [
+            Path(config_file).parent,
+            *default,
+        ]
+
+    from_env = os.environ.get('AUGUR_SEARCH_PATHS')
+
+    if from_env:
+        return [
+            *(Path(p) for p in from_env.split(':')),
+            *default,
+        ]
+
+    return default
+
 
 def resolve_filepath(
     path: Path,
