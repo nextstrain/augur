@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+### Major Changes
+
+* subsample: Removed the `--search-paths` option. Search paths should be configured through the `AUGUR_SEARCH_PATHS` environment variable. [#XXXX][] @victorlin
 
 ## 34.1.4 (9 September 2026)
 
