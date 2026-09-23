@@ -139,15 +139,6 @@ def register_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.A
     config_group = parser.add_argument_group("Configuration options", "options related to configuration")
     config_group.add_argument("--config", metavar="FILE", required=True, help="augur subsample config file. The expected config options must be defined at the top level, or within a specific section using --config-section." + SKIP_AUTO_DEFAULT_IN_HELP)
     config_group.add_argument("--config-section", metavar="KEY", nargs="+", action=ExtendOverwriteDefault, help="Use a section of the file given to --config by listing the keys leading to the section. Provide one or more keys. (default: use the entire file)" + SKIP_AUTO_DEFAULT_IN_HELP)
-    config_group.add_argument("--search-paths", "--search-path", metavar="DIR", nargs="+", action=ExtendOverwriteDefault,
-        help=dedent(f"""\
-            One or more directories to search for relative filepaths specified
-            in the config file. If a file exists in multiple directories, only
-            the file from the first directory will be used. This can also be set
-            via the environment variable 'AUGUR_SEARCH_PATHS'. Specified
-            directories will be considered before the defaults, which are:
-            (1) directory containing the config file
-            (2) current working directory""" + SKIP_AUTO_DEFAULT_IN_HELP))
     config_group.add_argument('--nthreads', metavar="N", type=int, default=1, 
         help=dedent(f"""\
             Number of CPUs/cores/threads/jobs to utilize at once. This controls both parallelism across
@@ -208,7 +199,7 @@ def run(args: argparse.Namespace) -> None:
         raise AugurError("Proximal sampling for AA sequences is not yet supported.")
 
     # Resolve filepaths.
-    search_paths = _get_search_paths(args.config, args.search_paths)
+    search_paths = _get_search_paths(args.config)
     config, filepaths = _resolve_filepaths(config, search_paths, schema_validator.schema)
     print_debug(f"\nResolved filepaths: {filepaths}")
 
@@ -299,7 +290,6 @@ def run(args: argparse.Namespace) -> None:
 def get_referenced_files(
     config_file: str,
     config_section: Optional[List[str]] = None,
-    search_paths: Optional[List[str]] = None,
 ) -> Set[str]:
     """Get the files referenced in a subsample config file.
 
@@ -314,15 +304,6 @@ def get_referenced_files(
     config_section
         Optional list of keys to navigate to a specific section of the config file.
 
-    search_paths
-        Optional list of directories to search for relative filepaths specified
-        in the config file. If a file exists in multiple directories, only
-        the file from the first directory will be used. This can also be set
-        via the environment variable 'AUGUR_SEARCH_PATHS'. Specified
-        directories will be considered before the defaults, which are:
-        (1) directory containing the config file
-        (2) current working directory
-
     Returns
     -------
     set
@@ -332,8 +313,8 @@ def get_referenced_files(
     config = _parse_config(config_file, config_section)
 
     # Resolve filepaths.
-    search_path_objs = _get_search_paths(config_file, search_paths)
-    config, filepaths = _resolve_filepaths(config, search_path_objs, schema_validator.schema)
+    search_paths = _get_search_paths(config_file)
+    config, filepaths = _resolve_filepaths(config, search_paths, schema_validator.schema)
 
     return set(filepaths)
 
@@ -396,7 +377,6 @@ def _parse_config(filename: str, config_section: Optional[List[str]] = None) -> 
 
 def _get_search_paths(
     config_file: str,
-    from_cli: List[str],
 ) -> List[Path]:
     """
     Returns the paths to search for relative filepaths in config.
@@ -407,17 +387,6 @@ def _get_search_paths(
     ]
 
     from_env = os.environ.get('AUGUR_SEARCH_PATHS')
-
-    if from_cli:
-        if from_env:
-            print_err(dedent(f"""\
-                WARNING: Both the command line argument --search-paths
-                and the environment variable AUGUR_SEARCH_PATHS are set.
-                Only the command line argument will be used."""))
-        return [
-            *(Path(p) for p in from_cli),
-            *default,
-        ]
 
     if from_env:
         return [
