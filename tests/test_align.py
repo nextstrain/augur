@@ -404,7 +404,7 @@ class TestAlign:
     
     def test_run_with_reference_name_remove_reference(self, test_with_ref, ref_seq, run):
         expected_length = len(ref_seq.seq) - ref_seq.seq.count("-")
-        output = run("-s %s --reference-name %s --remove-reference" % (test_file, ref_seq.id))
+        output = run("-s %s --reference-name %s --remove-reference" % (test_with_ref, ref_seq.id))
         assert ref_seq.id not in output
 
     def test_run_with_reference_sequence_remove_reference(self, test_file, ref_file, ref_seq, run):

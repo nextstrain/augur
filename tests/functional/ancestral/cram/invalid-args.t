@@ -12,11 +12,11 @@ Input FASTA + VCF output is not possible
   ERROR: VCF output has been requested but the input alignment is not VCF.
   [2]
 
-Input VCF + FASTA output is not possible (Note that the input file doesn't exist, but we exit before that's checked)
+Input VCF + FASTA output is not possible
 
   $ ${AUGUR} ancestral \
   >  --tree $TESTDIR/../data/tree.nwk \
-  >  --alignment $TESTDIR/../data/snps.vcf \
+  >  --alignment $TESTDIR/../data/simple-genome/snps.vcf \
   >  --seed 314159 \
   >  --output-sequences "output.fasta" > /dev/null
   ERROR: Sequence (fasta) output has been requested but the input alignment is VCF.
@@ -59,13 +59,12 @@ Missing tree file
 
 
 Attempting to use FASTA-input reference and VCF-input reference args
-(The files here don't exist, but we exit before they're checked)
 
   $ ${AUGUR} ancestral \
-  >  --tree $TESTDIR/../data/tree-doesnt-exist.nwk \
+  >  --tree $TESTDIR/../data/tree.nwk \
   >  --alignment $TESTDIR/../data/aligned.fasta \
-  >  --root-sequence $TESTDIR/../data/reference.fasta \
-  >  --vcf-reference $TESTDIR/../data/reference.fasta \
+  >  --root-sequence $TESTDIR/../data/simple-genome/reference.fasta \
+  >  --vcf-reference $TESTDIR/../data/simple-genome/reference.fasta \
   >  --seed 314159 \
   >  --output-sequences "output.fasta" > /dev/null 2>"err-args.txt"
   [2]
