@@ -128,6 +128,8 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         3. Augur (us), to validate the config file. We do this before calling
            ConfigArgParse's parse_known_args() to prevent synthesized CLI args
            from being shown in argparse errors.
+        4. Augur (us), to resolve relative filepaths specified in the config
+           file.
         """
         # Exit early when --config is not used.
         if (
@@ -190,7 +192,26 @@ class CustomArgumentParser(configargparse.ArgumentParser):
 
         # NOTE: `namespace` needs to be separated from `kwargs` because it's
         # sometimes used positionally in argparse.
-        return super().parse_known_args(args=args, namespace=namespace, **kwargs)
+        parsed_args, unknown_args = super().parse_known_args(args=args, namespace=namespace, **kwargs)
+
+        # Resolve relative filepaths specified in the config file.
+
+        # Import here to avoid circular top-level imports.
+        from .config import get_search_paths, resolve_filepath
+
+        search_paths = get_search_paths(config_file)
+        for action in self._actions:
+            if action.type is InputFile and any(k in config_keys for k in self.get_possible_config_keys(action)):
+                val = getattr(parsed_args, action.dest, None)
+                if isinstance(val, list):
+                    setattr(parsed_args, action.dest, [
+                        str(resolve_filepath(Path(item), search_paths))
+                        for item in val
+                    ])
+                elif isinstance(val, (str, Path)):
+                    setattr(parsed_args, action.dest, str(resolve_filepath(Path(val), search_paths)))
+
+        return parsed_args, unknown_args
 
     def _get_config_file_path(self, args):
         """
@@ -423,15 +444,7 @@ def InputFile(path: str) -> str:
     """
     Custom type for argparse representing an input file path.
     """
-    # Import here to avoid circular top-level imports.
-    from .config import resolve_filepath
-
-    search_paths = (
-        [Path(p) for p in from_env.split(":") if p]
-        if (from_env := os.environ.get("AUGUR_SEARCH_PATHS"))
-        else [Path.cwd()]
-    )
-    return str(resolve_filepath(Path(path), search_paths))
+    return path
 
 
 class HideAsFalseAction(Action):
