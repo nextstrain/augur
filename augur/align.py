@@ -8,7 +8,7 @@ from shlex import quote as shquote
 from shutil import copyfile
 import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, InputFile
 from .io.file import create_parent_directories, open_file
 from .io.sequences import read_sequences, read_single_sequence
 from .io.shell_command_runner import run_shell_command
@@ -27,21 +27,22 @@ def register_arguments(parser):
     Kept as a separate function than `register_parser` to continue to support
     unit tests that use this function to create argparser.
     """
-    parser.add_argument('--sequences', '-s', required=True, nargs="+", action=ExtendOverwriteDefault, metavar="FASTA", help="sequences to align")
-    parser.add_argument('--output', '-o', default="alignment.fasta", help="output file (default: %(default)s)")
+    parser.add_argument('--sequences', '-s', type=InputFile, required=True, nargs="+", action=ExtendOverwriteDefault, metavar="FASTA", help="sequences to align")
+    parser.add_argument('--output', '-o', default="alignment.fasta", help="output file")
     parser.add_argument('--nthreads', type=nthreads_value, default=1,
                                 help="number of threads to use; specifying the value 'auto' will cause the number of available CPU cores on your system, if determinable, to be used")
     parser.add_argument('--method', default='mafft', choices=["mafft"], help="alignment program to use")
     parser.add_argument('--reference-name', metavar="NAME", type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
-    parser.add_argument('--reference-sequence', metavar="PATH", type=str, help="Add this reference sequence to the dataset & strip insertions relative to this. Use if the reference is NOT already in the input sequences")
+    parser.add_argument('--reference-sequence', metavar="PATH", type=InputFile, help="Add this reference sequence to the dataset & strip insertions relative to this. Use if the reference is NOT already in the input sequences")
     parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
     parser.add_argument('--fill-gaps', action="store_true", default=False, help="If gaps represent missing data rather than true indels, replace by N after aligning.")
-    parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
+    parser.add_argument('--existing-alignment', type=InputFile, metavar="FASTA", help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
     parser.add_argument('--debug', action="store_true", default=False, help="Produce extra files (e.g. pre- and post-aligner files) which can help with debugging poor alignments.")
 
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("align", help=__doc__)
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
     register_arguments(parser)
     return parser
 
@@ -426,7 +427,7 @@ def check_duplicates(*values):
     for sample in values:
         if not sample:
             # allows false-like values (e.g. always provide existing_alignment, allowing
-            # the default which is `False`)
+            # the default which is `None`)
             continue
         elif isinstance(sample, (list, Align.MultipleSeqAlignment)):
             for s in sample:
