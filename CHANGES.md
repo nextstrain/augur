@@ -7,6 +7,15 @@
 * subsample: Removed the `--search-paths` option. Search paths should be configured through the `AUGUR_SEARCH_PATHS` environment variable. [#2053][] @victorlin
 * subsample: Removed the `--config-section` option. It was initially added for use in Snakemake workflows, but we now prefer a more robust approach. See the [Filtering and Subsampling guide][] for details. [#2053][] @victorlin
 
+### Features
+
+* refine: Added a new option `--config` to support configuration of other options in a YAML file. Please see the [usage docs](https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/refine.html) for details. [#2040][] @victorlin
+
+### Bug fixes
+
+* refine: Previously, `--covariance` and `--no-covariance` were allowed at the same time, with the first one specified in the command string being ignored. Now, the command will show an error when both are used at the same time. [#2040][] @victorlin
+
+[#2040]: https://github.com/nextstrain/augur/pull/2040
 [Filtering and Subsampling guide]: https://docs.nextstrain.org/en/latest/guides/bioinformatics/filtering-and-subsampling.html#within-snakemake-workflow-config
 
 ## 34.1.4 (9 September 2026)
