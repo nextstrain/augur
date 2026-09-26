@@ -346,6 +346,9 @@
         }
     },
     "properties": {
+        "$schema": {
+            "const": "https://nextstrain.org/schemas/augur/subsample-config/v1"
+        },
         "defaults": {
             "$ref": "#/$defs/defaultProperties"
         },

@@ -6,6 +6,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+        "$schema": {
+            "const": "https://nextstrain.org/schemas/augur/align-config/v1"
+        },
         "sequences": {
             "description": "sequences to align",
             "oneOf": [
