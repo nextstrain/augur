@@ -10,6 +10,7 @@ from datetime import datetime
 from textwrap import dedent
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from augur.dates import get_numerical_date_from_value
 from augur.dates.ambiguous_date import max_day_for_year_month
 from augur.errors import AugurError
 from augur.io.print import print_err, indented_list
@@ -138,14 +139,26 @@ def format_date(date_string, expected_formats):
     '2020-01-15'
     >>> format_date("[2001 TO 2002]", BUILTIN_DATE_FORMATS)
     '2001-01-01/2002-12-31'
+    >>> format_date("2026-01-01/2020-01-01", BUILTIN_DATE_FORMATS) is None
+    True
     """
+    formatted_value = None
     if formatted_date := format_to_iso_date(date_string, expected_formats):
-        return formatted_date
+        formatted_value = formatted_date
 
     if formatted_range := format_to_iso_interval(date_string):
-        return formatted_range
+        formatted_value = formatted_range
 
-    return None
+    # Validate that the downstream Augur date handling can parse new value
+    # If it raises an error, then return None to let downstream error/warning
+    # handler output messages as appropriate.
+    if formatted_value is not None:
+        try:
+            get_numerical_date_from_value(formatted_value, "%Y-%m-%d")
+        except Exception:
+            formatted_value = None
+
+    return formatted_value
 
 
 def format_to_iso_date(date_string, expected_formats):
