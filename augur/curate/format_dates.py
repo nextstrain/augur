@@ -10,6 +10,7 @@ from datetime import datetime
 from textwrap import dedent
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from augur.dates.ambiguous_date import max_day_for_year_month
 from augur.errors import AugurError
 from augur.io.print import print_err, indented_list
 from augur.types import DataErrorMethod
@@ -30,11 +31,14 @@ BUILTIN_RANGE_FORMATS = {
         r'^([0-9]{4}-[0-9]{2}-[0-9]{2})/([0-9]{4}-[0-9]{2}-[0-9]{2})$'
     ),
 
+    # Pathoplexus/Loculus can return date ranges in 'YYYY-MM/YYYY-MM' format
+    # <https://github.com/loculus-project/loculus/blob/378824559f9b6d90b9174d394539ea2a2dc48c4d/preprocessing/nextclade/src/loculus_preprocessing/processing_functions.py#L227-L236>
+    '%Y-%m/%Y-%m': re.compile(r'^([0-9]{4})-([0-9]{2})/([0-9]{4})-([0-9]{2})$'),
+
     # NCBI Datasets can return dates in 'YYYY/YYYY' format.
     # There is no mention of this in Datasets docs, but it is a valid range
     # format for collection dates under submission guidelines.
     # <https://www.ncbi.nlm.nih.gov/WebSub/html/help/collection-date.html>
-    # TODO: support all combinations of '<value>/<value>'?
     '%Y/%Y': re.compile(r'^([0-9]{4})/([0-9]{4})$'),
 
     # NCBI Datasets can return dates in '[YYYY TO YYYY]' format.
@@ -237,11 +241,19 @@ def format_to_iso_interval(date_string):
     '2001-01-01/2002-12-31'
     >>> format_to_iso_interval("2001-01-01/2002-12-31")
     '2001-01-01/2002-12-31'
+    >>> format_to_iso_interval("2001-01/2001-11")
+    '2001-01-01/2001-11-30'
     >>> format_to_iso_interval("2001/2002")
     '2001-01-01/2002-12-31'
     """
     if BUILTIN_RANGE_FORMATS['%Y-%m-%d/%Y-%m-%d'].match(date_string):
         return date_string
+
+    if match := BUILTIN_RANGE_FORMATS['%Y-%m/%Y-%m'].match(date_string):
+        start_year, start_month, end_year, end_month = match.groups()
+        start_day = "01"
+        end_day = max_day_for_year_month(int(end_year), int(end_month))
+        return f"{start_year}-{start_month}-{start_day}/{end_year}-{end_month}-{end_day}"
 
     if match := BUILTIN_RANGE_FORMATS['%Y/%Y'].match(date_string):
         start_year, end_year = match.groups()
