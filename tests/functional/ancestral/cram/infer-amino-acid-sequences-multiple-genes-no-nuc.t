@@ -48,5 +48,5 @@ Catches this bug <https://github.com/nextstrain/augur/pull/1958#discussion_r3034
   >  --seed 314159 \
   >  --output-node-data "ancestral_mutations_error.json" \
   >  --output-translations "ancestral_aa_sequences_error.fasta" > /dev/null
-  ERROR: --translations must contain %GENE for multiple-gene amino acid reconstructions
+  ERROR: --translations must contain %GENE or {cds} for multiple-gene amino acid reconstructions
   [2]
