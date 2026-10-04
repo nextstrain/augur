@@ -2,11 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* ancestral, translate: Added `--use-nextclade-gff-style` to read GFF annotations the way Nextclade does. CDS features are used, with CDSs spanning multiple rows (e.g. due to ribosomal slippage or splicing) joined into a single feature; genes without any CDS are used as CDSs themselves; and features are named using Nextclade's attribute priority (e.g. `Name` for CDSs) instead of `gene`/`gene_name`/`locus_tag`. Multi-segment CDSs are not supported for VCF input to `augur translate`. [#2066][] @rneher
+
 ### Bug fixes
 
 * ancestral: Fixed a crash when reconstructing amino acid sequences with `--keep-ambiguous`. [#2061][] @rneher
 
 [#2061]: https://github.com/nextstrain/augur/pull/2061
+[#2066]: https://github.com/nextstrain/augur/pull/2066
 
 ## 34.2.1 (13 October 2026)
 
