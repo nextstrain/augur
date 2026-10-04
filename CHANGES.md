@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* ancestral: Fixed a crash when reconstructing amino acid sequences with `--keep-ambiguous`. [#2061][] @rneher
+
+[#2061]: https://github.com/nextstrain/augur/pull/2061
 
 ## 34.2.1 (13 October 2026)
 
