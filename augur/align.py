@@ -10,6 +10,7 @@ import numpy as np
 from Bio import AlignIO, SeqIO, Seq, Align
 from .argparse_ import ExtendOverwriteDefault
 from .io.file import create_parent_directories, open_file
+from .io.nextclade_dataset import add_nextclade_dataset_argument, apply_nextclade_dataset
 from .io.sequences import read_sequences, read_single_sequence
 from .io.shell_command_runner import run_shell_command
 from .utils import nthreads_value
@@ -34,6 +35,7 @@ def register_arguments(parser):
     parser.add_argument('--method', default='mafft', choices=["mafft"], help="alignment program to use")
     parser.add_argument('--reference-name', metavar="NAME", type=str, help="strip insertions relative to reference sequence; use if the reference is already in the input sequences")
     parser.add_argument('--reference-sequence', metavar="PATH", type=str, help="Add this reference sequence to the dataset & strip insertions relative to this. Use if the reference is NOT already in the input sequences")
+    add_nextclade_dataset_argument(parser)
     parser.add_argument('--remove-reference', action="store_true", default=False, help="remove reference sequence from the alignment")
     parser.add_argument('--fill-gaps', action="store_true", default=False, help="If gaps represent missing data rather than true indels, replace by N after aligning.")
     parser.add_argument('--existing-alignment', metavar="FASTA", default=False, help="An existing alignment to which the sequences will be added. The ouput alignment will be the same length as this existing alignment.")
@@ -120,6 +122,7 @@ def run(args):
     temp_files_to_remove = []
 
     try:
+        apply_nextclade_dataset(args, reference="reference_sequence")
         check_arguments(args)
         create_parent_directories(args.output)
         existing_aln_fname, seqs_to_align_fname, ref_name = prepare(args.sequences, args.existing_alignment, args.output, args.reference_name, args.reference_sequence)
