@@ -2,6 +2,10 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* ancestral: Fixed a crash when reconstructing amino acid sequences with `--keep-ambiguous`. @rneher
+
 
 ## 34.1.4 (9 September 2026)
 
