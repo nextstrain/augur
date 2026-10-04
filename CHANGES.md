@@ -6,6 +6,13 @@
 
 * ancestral, translate: Added `--use-nextclade-gff-style` to read GFF annotations the way Nextclade does. CDS features are used, with CDSs spanning multiple rows (e.g. due to ribosomal slippage or splicing) joined into a single feature; genes without any CDS are used as CDSs themselves; and features are named using Nextclade's attribute priority (e.g. `Name` for CDSs) instead of `gene`/`gene_name`/`locus_tag`. Multi-segment CDSs are not supported for VCF input to `augur translate`. @rneher
 * align, ancestral, translate, tree, refine, sequence-traits: Added `--nextclade-dataset` to source the reference sequence and/or genome annotation from a Nextclade dataset directory (via the `files` section of its `pathogen.json`). It fills `--reference-sequence` (align), `--annotation` (ancestral), `--reference-sequence` (translate) and, for VCF input, `--vcf-reference`, and can't be combined with the arguments it fills. A genome annotation sourced from a dataset is read with `--use-nextclade-gff-style`. @rneher
+* ancestral: `--genes` is now optional when an `--annotation` is provided; all CDSs in the annotation are then reconstructed, skipping those without a (non-empty) translations file. @rneher
+* ancestral: The `--translations`, `--output-translations` and `--aa-root-sequence` templates now also accept Nextclade's `{cds}` placeholder in place of `%GENE`, so the same template can be used for `nextclade run --output-translations` and `augur ancestral`. @rneher
+
+### Bug fixes
+
+* ancestral: Tips without a sequence in a translations file (common for Nextclade translations) are now reported with a clear warning and treated as fully ambiguous, instead of a TreeTime warning suggesting a possible error. @rneher
+* ancestral: Requesting a gene that isn't in the annotation, or whose translations file doesn't exist, now results in an error message (listing the available genes, or checked before any reconstruction) instead of an unhandled error. @rneher
 
 ## 34.1.4 (9 September 2026)
 

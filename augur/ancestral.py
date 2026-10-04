@@ -24,6 +24,7 @@ nucleotide sequences, please use `augur translate`.
 """
 from augur.argparse_ import ExtendOverwriteDefault
 import argparse
+import os
 from augur.errors import AugurError
 import sys
 import numpy as np
@@ -36,6 +37,7 @@ from .translate import safe_translate
 from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_augur_json, get_json_name, \
     genome_features_to_auspice_annotation
 from .io.file import open_file
+from .io.print import print_err
 from .io.sequences import read_single_sequence, is_vcf as is_filename_vcf
 from .io.nextclade_dataset import add_nextclade_dataset_argument, apply_nextclade_dataset
 from treetime.vcf_utils import read_vcf, write_vcf
@@ -76,6 +78,16 @@ class Ancestral_JSON(TypedDict):
     nodes: Any
 
 GENE_PATTERN = "%GENE"
+# Nextclade's placeholder for --output-translations, accepted as an alternative to GENE_PATTERN
+CDS_PATTERN = "{cds}"
+
+
+def _has_gene_pattern(fname: str) -> bool:
+    return GENE_PATTERN in fname or CDS_PATTERN in fname
+
+
+def _gene_fname(pattern: str, gene: str) -> str:
+    return pattern.replace(GENE_PATTERN, gene).replace(CDS_PATTERN, gene)
 """String pattern used for gene replacement in filenames etc"""
 
 def _make_seq_corrector(alphabet: str) -> Callable[[str], str]:
@@ -369,7 +381,8 @@ def register_parser(parent_subparsers):
         "Options to configure reconstruction of ancestral amino acid sequences."
     )
     amino_acid_options_group.add_argument('--genes', nargs='+', action=ExtendOverwriteDefault,
-        help="gene(s) to translate (list or file containing list).")
+        help="gene(s) to translate (list or file containing list). If omitted, all CDSs in the --annotation are used, skipping"
+             " those without a --translations file.")
     amino_acid_options_group.add_argument('--annotation',
                         help='GenBank or GFF file containing the annotation. Optional if reconstructing a single gene without nuc data.')
     add_nextclade_dataset_argument(amino_acid_options_group)
@@ -378,8 +391,10 @@ def register_parser(parent_subparsers):
                              " genes without CDSs, and name features via Nextclade's attribute priority (e.g. 'Name' for CDSs).")
     amino_acid_options_group.add_argument('--translations', type=str, help="Translated alignments for each CDS/Gene."
                            " If you are translating multiple genes you must specify the file name via a template"
-                           f" like 'aa_sequences_%{GENE_PATTERN}.fasta' where %{GENE_PATTERN} will be replaced,"
+                           f" like 'aa_sequences_%{GENE_PATTERN}.fasta' where %{GENE_PATTERN} will be replaced"
+                           f" (Nextclade's {CDS_PATTERN} placeholder may be used instead of %{GENE_PATTERN})."
                            " If you are translating a single gene using a pattern is optional."
+                           " Tips without a sequence (common for Nextclade translations) are treated as fully ambiguous."
                            " Currently only supported for FASTA-input.")
     amino_acid_options_group.add_argument('--report-inconsistent-translation', action="store_true",
                                 help="Report where amino acid reconstruction differed from a translation of the reconstructed nuc sequence."
@@ -429,14 +444,22 @@ def validate_arguments(args: argparse.Namespace, genes: None|list[str]) -> Mode:
     # For single-genes, the annotation is optional if you are only reconstructing a single AA alignment (no nuc reconstruction)
     if any((args.annotation, args.genes, args.translations, args.aa_root_sequence)):
         # The presence of ANY of these arguments means we are translating AA sequences in some form.
-        if not args.genes or not len(genes):
+        if genes is None:
+            # All CDSs in the annotation will be reconstructed
+            if not all((args.annotation, args.translations)):
+                raise AugurError("For amino acid sequence reconstruction without a list of genes, you must provide an annotation file and a path to amino acid sequences.")
+        elif not len(genes):
             raise AugurError("For amino acid sequence reconstruction, you must provide a list of genes, a path to amino acid sequences, and (if multiple genes) an annotations file.")
-        if len(genes)>1 or mode.nuc_reconstruction:
+        elif len(genes)>1 or mode.nuc_reconstruction:
             if not all((args.annotation, args.translations)):
                 raise AugurError("For amino acid sequence reconstruction with multiple genes (or a single gene with nuc reconstruction), you must provide an annotation file and a path to amino acid sequences (as well as the list of genes)")
         else: # single gene, aa-only
             if not args.translations:
                 raise AugurError("For amino acid sequence reconstruction you must provide a path to amino acid sequences.")
+        if genes and args.translations:
+            # Check up-front so that we don't fail after nucleotide reconstruction
+            for gene in genes:
+                _translations_fname(args.translations, gene)
         if not mode.nuc_reconstruction and args.root_sequence and args.aa_root_sequence:
             raise AugurError("--root-sequence and --aa-root-sequence can not be used together for reconstruction of only AA sequences")
         mode.aa_reconstruction = True
@@ -585,6 +608,45 @@ def construct_cds_feature(name: str, aa_len: int):
     return feat
 
 
+def _check_gene_patterns(genes: list[str], translations_fname_pattern: str, output_fname_pattern: str|None, aa_ref_fname: str|None):
+    if len(genes)>1:
+        if not _has_gene_pattern(translations_fname_pattern):
+            raise AugurError(f"--translations must contain {GENE_PATTERN} or {CDS_PATTERN} for multiple-gene amino acid reconstructions")
+        if output_fname_pattern and not _has_gene_pattern(output_fname_pattern):
+            raise AugurError(f"--output-translations must contain {GENE_PATTERN} or {CDS_PATTERN} for multiple-gene amino acid reconstructions")
+        if aa_ref_fname and not _has_gene_pattern(aa_ref_fname):
+            raise AugurError(f"--aa-root-sequence must contain {GENE_PATTERN} or {CDS_PATTERN} for multiple-gene amino acid reconstructions")
+
+
+def _nonempty_file(fname: str) -> bool:
+    return os.path.isfile(fname) and os.path.getsize(fname) > 0
+
+
+def _translations_fname(translations_fname_pattern: str, gene: str) -> str:
+    fname = _gene_fname(translations_fname_pattern, gene)
+    if not os.path.isfile(fname):
+        raise AugurError(f"The translations file {fname!r} for gene {gene!r} does not exist.")
+    return fname
+
+
+def _add_missing_tips(aln: MultipleSeqAlignment, T: Tree, gene: str, fname: str) -> MultipleSeqAlignment:
+    """
+    Add fully ambiguous sequences for tips of *T* missing from *aln*. Missing
+    tips are common for Nextclade translations, e.g. for sequences with poor
+    coverage of the CDS. TreeTime treats them the same way, but warns in a
+    way that suggests an error.
+    """
+    present = {record.id for record in aln}
+    missing = [tip.name for tip in T.get_terminals() if tip.name not in present]
+    if missing:
+        examples = ", ".join(missing[:5]) + (", ..." if len(missing) > 5 else "")
+        print_err(f"WARNING: {len(missing)} of {T.count_terminals()} tips have no sequence in {fname!r} and are treated as fully ambiguous for {gene!r}: {examples}")
+        length = aln.get_alignment_length()
+        for name in missing:
+            aln.append(SeqRecord(Seq("X" * length), id=name, description=""))
+    return aln
+
+
 def reconstruct_translations(
     anc_seqs: None|Ancestral_JSON,
     nuc_ref: str|None,
@@ -603,26 +665,40 @@ def reconstruct_translations(
 ) -> Ancestral_JSON:
     correct_aa = _make_seq_corrector('aa')
 
-    if genes is None or not len(genes):
+    if genes is not None and not len(genes):
         raise AugurError("Empty list of genes provided")
 
-    if len(genes)>1:
-        if GENE_PATTERN not in translations_fname_pattern:
-            raise AugurError(f"--translations must contain {GENE_PATTERN} for multiple-gene amino acid reconstructions")
-        if output_fname_pattern and GENE_PATTERN not in output_fname_pattern:
-            raise AugurError(f"--output-translations must contain {GENE_PATTERN} for multiple-gene amino acid reconstructions")
-        if aa_ref_fname and GENE_PATTERN not in aa_ref_fname:
-            raise AugurError(f"--aa-root-sequence must contain {GENE_PATTERN} for multiple-gene amino acid reconstructions") 
-
     if annotation_fname is None:
-        assert len(genes)==1 and anc_seqs is None # already checked in validate_arguments
+        assert genes is not None and len(genes)==1 and anc_seqs is None # already checked in validate_arguments
         # This adds a duplicate read of the gene alignment - computational cost for code clarity
-        gene_aln = correct_alignment(translations_fname_pattern.replace(GENE_PATTERN, genes[0]), correct_aa)        
+        gene_aln = correct_alignment(_translations_fname(translations_fname_pattern, genes[0]), correct_aa)
         features = {genes[0]: construct_cds_feature(genes[0], gene_aln.get_alignment_length())}
     else:
-        ## load features (only requested features)
+        ## load features (only requested features, or all if no genes were requested)
         from .io.sequences import load_features
         features = load_features(annotation_fname, genes, nextclade_gff=nextclade_gff)
+        if genes is None:
+            genes = [name for name in features if name != 'nuc']
+            _check_gene_patterns(genes, translations_fname_pattern, output_fname_pattern, aa_ref_fname)
+            # Skip CDSs without translations, e.g. because Nextclade couldn't translate them in any sequence
+            without_translations = [gene for gene in genes if not _nonempty_file(_gene_fname(translations_fname_pattern, gene))]
+            if without_translations:
+                print_err(f"WARNING: Skipping {len(without_translations)} of {len(genes)} CDSs in {annotation_fname!r} without a (non-empty) translations file: {', '.join(without_translations)}")
+                genes = [gene for gene in genes if gene not in without_translations]
+            if not genes:
+                raise AugurError(f"None of the CDSs in {annotation_fname!r} have a translations file matching {translations_fname_pattern!r}.")
+            print(f"Reconstructing all {len(genes)} CDSs with translations: {', '.join(genes)}")
+        else:
+            not_found = [gene for gene in genes if gene not in features]
+            if not_found:
+                msg = f"Gene(s) {', '.join(not_found)} not found in {annotation_fname!r}."
+                try:
+                    available = [name for name in load_features(annotation_fname, nextclade_gff=nextclade_gff) if name != 'nuc']
+                    msg += f" Available genes/CDSs: {', '.join(available)}"
+                except AugurError:
+                    pass
+                raise AugurError(msg)
+    _check_gene_patterns(genes, translations_fname_pattern, output_fname_pattern, aa_ref_fname)
 
     # anc_seqs was populated by the nucleotide reconstruction, which is optional. Create an ~empty structure if we
     # didn't run nucleotide reconstruction.
@@ -648,7 +724,7 @@ def reconstruct_translations(
         # There are various ways to provide the (optional) root-sequence
         # Preferentially we use the explicitly provided sequence (--aa-root-sequence) if provided:
         if aa_ref_fname:
-            root_fname = aa_ref_fname.replace(GENE_PATTERN, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
+            root_fname = _gene_fname(aa_ref_fname, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
             reference_sequence = correct_aa(str(read_single_sequence(root_fname, format='fasta').seq).upper())
             if len(reference_sequence)!=int(len(feat)/3):
                 raise AugurError(f"The provided root-sequence AA fasta for {gene} has length {len(reference_sequence):,} which doesn't match the length of the CDS {int(len(feat)/3):,} (amino acids)")
@@ -657,8 +733,8 @@ def reconstruct_translations(
         else:
             reference_sequence = None
             
-        aln_fname = translations_fname_pattern.replace(GENE_PATTERN, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
-        aa_aln = correct_alignment(aln_fname, correct_aa)
+        aln_fname = _translations_fname(translations_fname_pattern, gene) # GENE_PATTERN may not be in the filename if len(genes)==1
+        aa_aln = _add_missing_tips(correct_alignment(aln_fname, correct_aa), T, gene, aln_fname)
         aa_result = run_ancestral(T, aa_aln, reference_sequence=reference_sequence, is_vcf=False, fill_overhangs=fill_overhangs,
                                     marginal=marginal, infer_ambiguous=infer_ambiguous, alphabet='aa', rng_seed=rng_seed)
         len_translated_alignment = aa_result['tt'].data.full_length*3
@@ -687,7 +763,7 @@ def reconstruct_translations(
 
         # For each translated gene, save ancestral amino acid sequences to FASTA
         if output_fname_pattern:
-            with open_file(output_fname_pattern.replace(GENE_PATTERN, gene), "w") as oh:
+            with open_file(_gene_fname(output_fname_pattern, gene), "w") as oh:
                 for node in aa_result["tt"].tree.find_clades():
                     oh.write(f">{node.name}\n{aa_result['tt'].sequence(node, as_string=True, reconstructed=True)}\n")
 
