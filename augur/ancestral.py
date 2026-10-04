@@ -37,6 +37,7 @@ from .utils import parse_genes_argument, read_tree, InvalidTreeError, write_augu
     genome_features_to_auspice_annotation
 from .io.file import open_file
 from .io.sequences import read_single_sequence, is_vcf as is_filename_vcf
+from .io.nextclade_dataset import add_nextclade_dataset_argument, apply_nextclade_dataset
 from treetime.vcf_utils import read_vcf, write_vcf
 from collections import defaultdict
 from .argparse_ import add_validation_arguments
@@ -371,6 +372,7 @@ def register_parser(parent_subparsers):
         help="gene(s) to translate (list or file containing list).")
     amino_acid_options_group.add_argument('--annotation',
                         help='GenBank or GFF file containing the annotation. Optional if reconstructing a single gene without nuc data.')
+    add_nextclade_dataset_argument(amino_acid_options_group)
     amino_acid_options_group.add_argument('--use-nextclade-gff-style', action="store_true",
                         help="Read the GFF --annotation the way Nextclade does: use CDS features (joining multi-row CDSs), fall back to"
                              " genes without CDSs, and name features via Nextclade's attribute priority (e.g. 'Name' for CDSs).")
@@ -693,6 +695,9 @@ def reconstruct_translations(
 
 
 def run(args: argparse.Namespace):
+    apply_nextclade_dataset(args,
+        reference="vcf_reference" if is_filename_vcf(args.alignment) else None,
+        annotation="annotation" if (args.genes or args.translations) else None)
 
     genes = parse_genes_argument(args.genes)
 
