@@ -16,6 +16,7 @@ mutations are output to a node-data JSON file.
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.file import open_file
+from .io.nextclade_dataset import add_nextclade_dataset_argument, apply_nextclade_dataset
 from .io.sequences import load_features, write_VCF_translation, is_vcf as is_filename_vcf
 from .io.print import print_err
 from .utils import parse_genes_argument, read_node_data, \
@@ -349,8 +350,10 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("translate", help=__doc__)
     parser.add_argument('--tree', required=True, help="prebuilt Newick -- no tree will be built if provided")
     parser.add_argument('--ancestral-sequences', required=True, type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
-    parser.add_argument('--reference-sequence', required=True,
+    reference_group = parser.add_mutually_exclusive_group(required=True)
+    reference_group.add_argument('--reference-sequence',
                         help='GenBank or GFF file containing the annotation')
+    add_nextclade_dataset_argument(reference_group)
     parser.add_argument('--use-nextclade-gff-style', action="store_true",
                         help="Read the GFF --reference-sequence the way Nextclade does: use CDS features (joining multi-row CDSs), fall back to"
                              " genes without CDSs, and name features via Nextclade's attribute priority (e.g. 'Name' for CDSs).")
@@ -402,6 +405,7 @@ def run(args):
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
     is_vcf = is_filename_vcf(args.ancestral_sequences)
+    apply_nextclade_dataset(args, reference="vcf_reference" if is_vcf else None, annotation="reference_sequence")
     check_arg_combinations(args, is_vcf)
 
     genes = parse_genes_argument(args.genes)
