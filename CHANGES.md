@@ -5,8 +5,10 @@
 ### Features
 
 * curate format-dates: Support date ranges in the formats `YYYY-MM/YYYY-MM`. [#2056][] @joverlee521
+* curate format-dates: Validate formatted dates are compatible with downstream Augur uses. [#2057][] @joverlee521
 
 [#2056]: https://github.com/nextstrain/augur/pull/2056
+[#2057]: https://github.com/nextstrain/augur/pull/2057
 
 ## 34.1.4 (9 September 2026)
 

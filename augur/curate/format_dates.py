@@ -7,9 +7,12 @@ the incomplete dates are masked with 'XX'. For example, providing
 """
 import re
 from datetime import datetime
+from functools import cache
 from textwrap import dedent
+from typing import Optional
 
 from augur.argparse_ import ExtendOverwriteDefault, SKIP_AUTO_DEFAULT_IN_HELP
+from augur.dates import get_numerical_date_from_value
 from augur.dates.ambiguous_date import max_day_for_year_month
 from augur.errors import AugurError
 from augur.io.print import print_err, indented_list
@@ -130,22 +133,35 @@ def directive_is_included(potential_directives, date_format):
     )
 
 
-def format_date(date_string, expected_formats):
+@cache
+def format_date(date_string: str, expected_formats: tuple[str, ...]) -> Optional[str]:
     """
     Format *date_string* to an Augur-compatible format.
 
-    >>> format_date("2020-01-15", BUILTIN_DATE_FORMATS)
+    >>> format_date("2020-01-15", tuple(BUILTIN_DATE_FORMATS))
     '2020-01-15'
-    >>> format_date("[2001 TO 2002]", BUILTIN_DATE_FORMATS)
+    >>> format_date("[2001 TO 2002]", tuple(BUILTIN_DATE_FORMATS))
     '2001-01-01/2002-12-31'
+    >>> format_date("2026-01-01/2020-01-01", tuple(BUILTIN_DATE_FORMATS)) is None
+    True
     """
+    formatted_value = None
     if formatted_date := format_to_iso_date(date_string, expected_formats):
-        return formatted_date
+        formatted_value = formatted_date
 
     if formatted_range := format_to_iso_interval(date_string):
-        return formatted_range
+        formatted_value = formatted_range
 
-    return None
+    # Validate that the downstream Augur date handling can parse new value
+    # If it raises an error, then return None to let downstream error/warning
+    # handler output messages as appropriate.
+    if formatted_value is not None:
+        try:
+            get_numerical_date_from_value(formatted_value, "%Y-%m-%d")
+        except Exception:
+            formatted_value = None
+
+    return formatted_value
 
 
 def format_to_iso_date(date_string, expected_formats):
@@ -157,7 +173,7 @@ def format_to_iso_date(date_string, expected_formats):
     ----------
     date_string: str
         Date string to format
-    expected_formats: list[str]
+    expected_formats: Sequence[str]
         List of expected formats for the provided date string
 
     Returns
@@ -273,10 +289,13 @@ def run(args, records):
     if args.expected_date_formats:
         expected_date_formats.extend(args.expected_date_formats)
 
+    # Convert to tuple for format_date which needs it hashable for caching
+    expected_date_formats = tuple(expected_date_formats)
+
     failures = []
     failure_reporting = args.failure_reporting
     failure_suggestion = (
-        f"Current expected date formats are {expected_date_formats!r}. "
+        f"Current expected date formats are {list(expected_date_formats)!r}. "
         "This can be updated with --expected-date-formats. "
         f"The following date range formats are also acceptable: {list(BUILTIN_RANGE_FORMATS)!r}. "
         "Currently there is no option to specify custom date range formats."
