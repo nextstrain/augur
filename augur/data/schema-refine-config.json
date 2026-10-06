@@ -6,6 +6,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+        "$schema": {
+            "const": "https://nextstrain.org/schemas/augur/refine-config/v1"
+        },
         "alignment": {
             "description": "alignment in fasta or VCF format",
             "type": "string",

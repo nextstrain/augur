@@ -227,6 +227,10 @@ class SchemaOptionsTableDirective(SphinxDirective):
         tgroup.append(tbody)
 
         for prop_name in options.keys():
+            # Keep the table focused on options from command line.
+            if prop_name == '$schema':
+                continue
+
             prop_def = options[prop_name]
             row = nodes.row()
             tbody.append(row)

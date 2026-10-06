@@ -6,6 +6,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+        "$schema": {
+            "const": "https://nextstrain.org/schemas/augur/translate-config/v1"
+        },
         "tree": {
             "description": "prebuilt Newick -- no tree will be built if provided",
             "type": "string",

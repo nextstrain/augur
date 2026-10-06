@@ -6,6 +6,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+        "$schema": {
+            "const": "https://nextstrain.org/schemas/augur/traits-config/v1"
+        },
         "tree": {
             "description": "tree to perform trait reconstruction on",
             "type": "string",

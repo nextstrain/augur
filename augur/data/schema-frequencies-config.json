@@ -6,6 +6,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+        "$schema": {
+            "const": "https://nextstrain.org/schemas/augur/frequencies-config/v1"
+        },
         "method": {
             "description": "method by which frequencies should be estimated",
             "type": "string",
