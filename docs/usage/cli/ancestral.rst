@@ -4,12 +4,24 @@ augur ancestral
 
 .. contents::
     :local:
+    :depth: 1
+
+Command-line arguments
+======================
 
 .. argparse::
     :module: augur
     :func: make_parser
     :prog: augur
     :path: ancestral
+
+Configuration
+=============
+
+Options can also be specified in a YAML configuration file supplied to
+``--config`` with the following top-level keys:
+
+.. schema-options-table:: augur/data/schema-ancestral-config.json
 
 Example Node Data JSON
 ======================
