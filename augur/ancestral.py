@@ -371,6 +371,9 @@ def register_parser(parent_subparsers):
         help="gene(s) to translate (list or file containing list).")
     amino_acid_options_group.add_argument('--annotation',
                         help='GenBank or GFF file containing the annotation. Optional if reconstructing a single gene without nuc data.')
+    amino_acid_options_group.add_argument('--use-nextclade-gff-style', action="store_true",
+                        help="Read the GFF --annotation the way Nextclade does: use CDS features (joining multi-row CDSs), fall back to"
+                             " genes without CDSs, and name features via Nextclade's attribute priority (e.g. 'Name' for CDSs).")
     amino_acid_options_group.add_argument('--translations', type=str, help="Translated alignments for each CDS/Gene."
                            " If you are translating multiple genes you must specify the file name via a template"
                            f" like 'aa_sequences_%{GENE_PATTERN}.fasta' where %{GENE_PATTERN} will be replaced,"
@@ -435,6 +438,9 @@ def validate_arguments(args: argparse.Namespace, genes: None|list[str]) -> Mode:
         if not mode.nuc_reconstruction and args.root_sequence and args.aa_root_sequence:
             raise AugurError("--root-sequence and --aa-root-sequence can not be used together for reconstruction of only AA sequences")
         mode.aa_reconstruction = True
+
+    if args.use_nextclade_gff_style and not args.annotation:
+        raise AugurError("--use-nextclade-gff-style requires an --annotation file.")
 
     if not mode.nuc_reconstruction and not mode.aa_reconstruction:
         raise AugurError("Neither nucleotide nor AA reconstruction requested")
@@ -591,6 +597,7 @@ def reconstruct_translations(
     rng_seed: int,
     output_fname_pattern: str|None,
     report_inconsistent_translation: bool,
+    nextclade_gff: bool = False,
 ) -> Ancestral_JSON:
     correct_aa = _make_seq_corrector('aa')
 
@@ -613,7 +620,7 @@ def reconstruct_translations(
     else:
         ## load features (only requested features)
         from .io.sequences import load_features
-        features = load_features(annotation_fname, genes)
+        features = load_features(annotation_fname, genes, nextclade_gff=nextclade_gff)
 
     # anc_seqs was populated by the nucleotide reconstruction, which is optional. Create an ~empty structure if we
     # didn't run nucleotide reconstruction.
@@ -724,7 +731,8 @@ def run(args: argparse.Namespace):
         assert not mode.is_vcf # guaranteed by validate_arguments() but good to double check
         anc_seqs = reconstruct_translations(anc_seqs, ref, args.aa_root_sequence, T, genes, args.annotation, args.translations,
             infer_ambiguous, fill_overhangs, marginal_inference, rng_seed,
-            args.output_translations, args.report_inconsistent_translation)
+            args.output_translations, args.report_inconsistent_translation,
+            nextclade_gff=args.use_nextclade_gff_style)
     
     default_json_fname = '.'.join(args.alignment.split('.')[:-1]) + '_mutations.json' if args.alignment else None
     out_name = get_json_name(args, default_json_fname)

@@ -351,6 +351,9 @@ def register_parser(parent_subparsers):
     parser.add_argument('--ancestral-sequences', required=True, type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
     parser.add_argument('--reference-sequence', required=True,
                         help='GenBank or GFF file containing the annotation')
+    parser.add_argument('--use-nextclade-gff-style', action="store_true",
+                        help="Read the GFF --reference-sequence the way Nextclade does: use CDS features (joining multi-row CDSs), fall back to"
+                             " genes without CDSs, and name features via Nextclade's attribute priority (e.g. 'Name' for CDSs).")
     parser.add_argument('--genes', nargs='+', action=ExtendOverwriteDefault, help="genes to translate (list or file containing list)")
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save aa-mutations to')
     parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
@@ -404,7 +407,7 @@ def run(args):
     genes = parse_genes_argument(args.genes)
 
     ## load features; only requested features if genes given
-    features = load_features(args.reference_sequence, genes)
+    features = load_features(args.reference_sequence, genes, nextclade_gff=args.use_nextclade_gff_style)
     print_err("Read in {} features from reference sequence file".format(len(features)))
 
     ## Read in sequences & for each sequence translate each feature _except for_ the 'nuc' feature name
@@ -420,6 +423,8 @@ def run(args):
         for fname, feat in features.items():
             if fname=='nuc':
                 continue
+            if args.use_nextclade_gff_style and len(feat.location.parts)>1:
+                raise AugurError(f"{fname!r} consists of multiple segments, which is not supported for VCF input.")
             try:
                 translations[fname] = translate_vcf_feature(sequences, ref, feat)
                 reference_translations[fname] = translations[fname]['reference']
