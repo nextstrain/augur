@@ -170,6 +170,7 @@ intersphinx_mapping = {
     # <https://github.com/nextstrain/augur/issues/1903>
     'python': ('https://docs.python.org/3.13', None),
     'numpy': ('https://numpy.org/doc/stable', None),
+    'packaging': ('https://packaging.pypa.io/en/stable/', None),
     'pandas': ('https://pandas.pydata.org/docs', None),
     'treetime': ('https://treetime.readthedocs.io/en/stable/', None),
 }

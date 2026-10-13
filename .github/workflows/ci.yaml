@@ -53,6 +53,9 @@ jobs:
           - { conda-args: 'python=3.14', pip-args: 'biopython numpy'               }
           # Latest Biopython with Numpy v1
           - { conda-args: 'python=3.12', pip-args: 'biopython numpy==1.*'          }
+          # Earlier SQLite versions
+          - { conda-args: 'sqlite=3.39.0', pip-args: '' }
+          - { conda-args: 'sqlite=3.53.0', pip-args: '' }
 
     defaults:
       run:
