@@ -2,6 +2,9 @@
 
 ## __NEXT__
 
+
+## 34.2.1 (13 October 2026)
+
 ### Bug fixes
 
 * merge: Fix TSV output format with SQLite 3.54.0. [#2064][] @victorlin
