@@ -59,6 +59,7 @@ import re
 import subprocess
 from functools import reduce
 from itertools import starmap
+from packaging.version import Version
 from shlex import quote as shquote
 from shutil import which
 from tempfile import mkstemp
@@ -383,10 +384,22 @@ def merge_metadata(args):
         # Assume TSV like nearly all other extant --output-metadata options.
         print_info(f"Merging metadata and writing to {args.output_metadata!r}…")
         print_debug(query)
+
+        if sqlite3_version() >= Version("3.53.0"):
+            # Prefer explicit options, only available in SQLite ≥3.53.0.
+            mode = [
+                f'.mode list --quote csv --colsep "\\t" --rowsep "\\n"',
+            ]
+        else:
+            # TODO: Remove when dropping support for SQLite <3.53.0.
+            mode = [
+                f'.mode csv',
+                f'.separator "\\t" "\\n"',
+            ]
+
         # TODO: Use .once after SQLite bug is fixed: <https://sqlite.org/forum/forumpost/ea9c546fdf>
         sqlite3(db_path,
-            f'.mode csv',
-            f'.separator "\\t" "\\n"',
+            *mode,
             f'.headers on',
             f'.output {sqlite_quote_dot(f"|{augur()} write-file {shquote(args.output_metadata)}")}',
             query,
@@ -463,6 +476,14 @@ def sqlite3(*args, **kwargs):
         raise SQLiteError(proc, f"sqlite3 invocation failed") from err
 
     return proc
+
+
+def sqlite3_version() -> Version:
+    """
+    Return the version of the installed SQLite 3 CLI program.
+    """
+    proc = sqlite3("-version", stdout=subprocess.PIPE)
+    return Version(proc.stdout.split()[0])
 
 
 class SQLiteError(Exception):
