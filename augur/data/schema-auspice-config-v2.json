@@ -11,6 +11,23 @@
             "description": "Title to be displayed in auspice",
             "type" : "string"
         },
+        "description": {
+            "description": "Markdown file with description of build and/or acknowledgements to be displayed by Auspice",
+            "type": "string",
+            "format": "filepath"
+        },
+        "warning": {
+            "description": "Text or file in Markdown format to be displayed as a warning banner by Auspice",
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "string",
+                    "format": "filepath"
+                }
+            ]
+        },
         "colorings": {
             "description": "Traits available as color-by options",
             "type": "array",

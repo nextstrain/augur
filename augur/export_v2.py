@@ -1035,29 +1035,44 @@ def set_build_avatar(data_json, config):
     if config.get("build_avatar"):
         data_json['meta']['build_avatar'] = config.get("build_avatar")
 
-def set_description(data_json, cmd_line_description_file):
+def set_description(data_json, config, cmd_line_description_file):
     """
-    Read Markdown file provided by *cmd_line_description_file* and set
-    `meta.description` in *data_json* to the text provided.
+    Read Markdown file provided by *cmd_line_description_file* or in config, and
+    set `meta.description` in *data_json* to the text provided.
     """
-    try:
-        with open_file(cmd_line_description_file) as description_file:
-            markdown_text = description_file.read()
-        data_json['meta']['description'] = markdown_text
-    except FileNotFoundError:
-        raise AugurError("Provided description file {} does not exist".format(cmd_line_description_file))
+    # Cmd line args override any config settings
+    if cmd_line_description_file:
+        description_file = cmd_line_description_file
+    elif config.get("description"):
+        description_file = config.get("description")
+    else:
+        return
 
-def set_warning(data_json, text_or_file):
+    try:
+        with open_file(description_file) as f:
+            data_json['meta']['description'] = f.read()
+    except FileNotFoundError:
+        raise AugurError(f"Provided description file {description_file} does not exist")
+
+def set_warning(data_json, config, cmd_line_text_or_file):
     """
-    Read warning provided by *text_or_file* and set
-    `meta.warning` in *data_json* to the text provided.
+    Read warning provided by *text_or_file* or in config, and set `meta.warning`
+    in *data_json* to the text provided.
     """
-    if os.path.exists(text_or_file):
-        with open_file(text_or_file) as description_file:
-            markdown_text = description_file.read()
+    # Cmd line args override any config settings
+    if cmd_line_text_or_file:
+        warning = cmd_line_text_or_file
+    elif config.get("warning"):
+        warning = config.get("warning")
+    else:
+        return
+
+    if os.path.exists(warning):
+        with open_file(warning) as f:
+            markdown_text = f.read()
         data_json['meta']['warning'] = markdown_text
     else:
-        data_json['meta']['warning'] = text_or_file
+        data_json['meta']['warning'] = warning
 
 def create_branch_mutations(branch_attrs, node_data):
     for node_name, node_info in node_data['nodes'].items():
@@ -1221,10 +1236,8 @@ def run(args):
     set_build_url(data_json, config, args.build_url)
     set_build_avatar(data_json, config)
     set_annotations(data_json, node_data)
-    if args.description:
-        set_description(data_json, args.description)
-    if args.warning:
-        set_warning(data_json, args.warning)
+    set_description(data_json, config, args.description)
+    set_warning(data_json, config, args.warning)
 
     try:
         set_colorings(

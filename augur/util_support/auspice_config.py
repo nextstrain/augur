@@ -214,6 +214,8 @@ def merge_configs(configs: list[dict[str, Any]], validation_mode: ValidationMode
     for overlay in configs[1:]:
         # We could leverage the config schemas here in the future if desired
         merged = _merge_scalar(merged, overlay, 'title')
+        merged = _merge_scalar(merged, overlay, 'description')
+        merged = _merge_scalar(merged, overlay, 'warning')
         merged = _merge_lists(merged, overlay, 'colorings', lambda x,y: x.get('key')==y.get('key'))
         merged = _merge_lists(merged, overlay, 'geo_resolutions', lambda x,y: _geo_resolution_id(x)==_geo_resolution_id(y))
         merged = _merge_lists(merged, overlay, 'maintainers', lambda x,y: x.get('name')==y.get('name'))

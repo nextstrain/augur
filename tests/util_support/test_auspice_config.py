@@ -23,6 +23,40 @@ class TestScalarMergeTitle:
         assert merged['title'] == 'SECOND'
 
 
+class TestScalarMergeDescription:
+
+    def test_overwrite(self):
+        configs = [
+            {'description': 'FIRST',},
+            {'description': 'SECOND',},
+        ]
+        merged = merge_configs(configs, SKIP)
+        assert merged['description'] == 'SECOND'
+
+    def test_a_or_b(self):
+        merged = merge_configs([{'description': 'FIRST',}, {}], SKIP)
+        assert merged['description'] == 'FIRST'
+        merged = merge_configs([{}, {'description': 'SECOND',}], SKIP)
+        assert merged['description'] == 'SECOND'
+
+
+class TestScalarMergeWarning:
+
+    def test_overwrite(self):
+        configs = [
+            {'warning': 'FIRST',},
+            {'warning': 'SECOND',},
+        ]
+        merged = merge_configs(configs, SKIP)
+        assert merged['warning'] == 'SECOND'
+
+    def test_a_or_b(self):
+        merged = merge_configs([{'warning': 'FIRST',}, {}], SKIP)
+        assert merged['warning'] == 'FIRST'
+        merged = merge_configs([{}, {'warning': 'SECOND',}], SKIP)
+        assert merged['warning'] == 'SECOND'
+
+
 
 class TestListMergeColorings:
 
