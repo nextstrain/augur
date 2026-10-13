@@ -4,7 +4,9 @@
 
 ### Bug fixes
 
-* merge: Fix TSV output format with SQLite 3.54.0. [#2064] @victorlin
+* merge: Fix TSV output format with SQLite 3.54.0. [#2064][] @victorlin
+
+[#2064]: https://github.com/nextstrain/augur/issues/2064
 
 ## 34.2.0 (6 October 2026)
 
