@@ -9,6 +9,7 @@ from ..validate import auspice_config_v2 as validate_auspice_config_v2, Validate
 from collections import defaultdict
 from typing import Union, Any
 from collections.abc import Callable
+from ruamel.yaml import YAML, YAMLError
 
 
 # Deprecated attr keys that are automatically updated during `augur export`
@@ -36,6 +37,26 @@ def read_json(fname):
         print("\tError message: '{}'".format(err.msg))
         print("\tLine number: '{}'".format(err.lineno))
         print("\tColumn number: '{}'".format(err.colno))
+        print("\tYou must correct this file in order to proceed.")
+        sys.exit(2)
+
+    return config
+
+def read_yaml(fname):
+    if not (fname and os.path.isfile(fname)):
+        print("ERROR: config file %s not found." % fname)
+        return defaultdict(dict)
+
+    try:
+        with open_file(fname, 'r', encoding='utf-8') as ifile:
+            yaml = YAML(typ="safe")
+            config = yaml.load(ifile)
+            if config is None:
+                config = {}
+    except YAMLError as err:
+        print("FATAL ERROR:")
+        print(f"\tCouldn't parse the YAML file {fname}")
+        print(f"\tError message: '{err}'")
         print("\tYou must correct this file in order to proceed.")
         sys.exit(2)
 
@@ -193,13 +214,13 @@ DEPRECATIONS = [
 ]
 
 
-def read_single_auspice_config(fname: str, validation_mode: ValidationMode) -> dict[str, Any]:
-    config = read_json(fname)
+def read_single_auspice_config(fname: str, validation_mode: ValidationMode, is_yaml: bool = False) -> dict[str, Any]:
+    config = read_yaml(fname) if is_yaml else read_json(fname)
 
     if validation_mode is not ValidationMode.SKIP:
         try:
             print(f"Validating config file {fname!r} against the JSON schema")
-            validate_auspice_config_v2(fname)
+            validate_auspice_config_v2(fname, is_yaml=is_yaml)
         except ValidateError:
             print(f"Validation of {fname!r} failed. Please check the formatting of this file & refer to the augur documentation for further help. ")
             validation_failure(validation_mode)
@@ -257,11 +278,11 @@ def merge_configs(configs: list[dict[str, Any]], validation_mode: ValidationMode
     return merged
 
 
-def read_auspice_configs(*fnames: str, validation_mode: ValidationMode, output_fname: Union[str,None]) -> dict[str, Any]:
+def read_auspice_configs(*fnames: str, validation_mode: ValidationMode, output_fname: Union[str,None], is_yaml: bool = False) -> dict[str, Any]:
     """
-    Parses zero, one or multiple files as auspice config JSONs and returns a (merged) config dict.
+    Parses zero, one or multiple files as auspice configs and returns a (merged) config dict.
     """
-    configs = [read_single_auspice_config(fname, validation_mode) for fname in fnames]
+    configs = [read_single_auspice_config(fname, validation_mode, is_yaml=is_yaml) for fname in fnames]
 
     if len(configs)==0: # no config JSONs provided
         return {}

@@ -910,11 +910,12 @@ def register_parser(parent_subparsers):
     config = parser.add_argument_group(
         title="DISPLAY CONFIGURATION",
         description="These control the display settings for auspice. \
-            Config JSON(s) allow customisation of all available options whereas individual command line arguments are more limited but great to get started. \
+            Config file(s) allow customisation of all available options whereas individual command line arguments are more limited but great to get started. \
             Supplying both is fine too, command line args will overrule what is set in the config file. \
-            Multiple JSONs will be merged together, and lists present in multiple configs will be merged by extending the original list."
+            Multiple configs will be merged together, and lists present in multiple configs will be merged by extending the original list."
     )
-    config.add_argument('--auspice-config', metavar="JSON", nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice configuration file(s)")
+    config.add_argument('--config', metavar="YAML", nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice configuration file(s) in YAML format")
+    config.add_argument('--auspice-config', metavar="JSON", nargs='+', action=ExtendOverwriteDefault, default=[], help="Auspice configuration file(s) in JSON format. Deprecated: use --config instead.")
     config.add_argument('--title', type=str, metavar="title", help="Title to be displayed by auspice")
     config.add_argument('--maintainers', metavar="name", action=ExtendOverwriteDefault, nargs='+', help="Analysis maintained by, in format 'Name <URL>' 'Name2 <URL>', ...")
     config.add_argument('--build-url', type=str, metavar="url", help="Build URL/repository to be displayed by Auspice")
@@ -991,7 +992,7 @@ def register_parser(parent_subparsers):
     )
     add_validation_arguments(optional_settings)
     optional_settings.add_argument('--output-auspice-config', metavar="JSON", type=str,
-        help="Write out the merged auspice configuration file for debugging purposes etc. File is only written if you provide multiple config files via --auspice-config.")
+        help="Write out the merged auspice configuration file for debugging purposes etc. File is only written if you provide multiple config files via --config or --auspice-config.")
 
     return parser
 
@@ -1173,6 +1174,17 @@ def get_additional_metadata_columns(config, command_line_metadata_columns, metad
 
 def run(args):
     configure_warnings()
+
+    if args.auspice_config:
+        if args.config:
+            raise AugurError("Cannot use both --config and --auspice-config. Please use --config as --auspice-config is deprecated.")
+        deprecated("The option --auspice-config is deprecated. Please use --config instead.")
+        config_files = args.auspice_config
+        config_is_yaml = False
+    else:
+        config_files = args.config
+        config_is_yaml = True
+
     data_json = {"version": "v2", "meta": {"updated": time.strftime('%Y-%m-%d')}}
 
     #load input files
@@ -1223,7 +1235,7 @@ def run(args):
     T = Phylo.read(args.tree, 'newick')
     node_data, node_attrs, node_data_names, metadata_names, branch_attrs = \
             parse_node_data_and_metadata(T, node_data_file, metadata_file)
-    config = read_auspice_configs(*args.auspice_config, validation_mode=args.validation_mode, output_fname=args.output_auspice_config)
+    config = read_auspice_configs(*config_files, validation_mode=args.validation_mode, output_fname=args.output_auspice_config, is_yaml=config_is_yaml)
     additional_metadata_columns = get_additional_metadata_columns(config, args.metadata_columns, metadata_names)
 
     # set metadata data structures
