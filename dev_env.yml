@@ -13,6 +13,7 @@ channels:
 # <https://github.com/bioconda/bioconda-recipes/blob/-/recipes/augur/meta.yaml>
 dependencies:
   - conda-forge::python >=3.10
+  - conda-forge::pip
 
   # Augur's non-Python dependencies
   - mafft
