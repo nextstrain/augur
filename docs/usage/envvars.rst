@@ -11,8 +11,6 @@ These can be especially useful in the context of an entire pipeline or workflow 
     If set, ``augur subsample`` will search these directories for relative filepaths specified in the config file.
     Multiple directories can be set by separating them with colons (e.g., ``/path/one:/path/two``).
 
-    The ``--search-paths`` command line argument takes precedence over this environment variable.
-
 .. envvar:: AUGUR_DEBUG
 
     Boolean.
