@@ -275,6 +275,9 @@ def create_schema(include_proximal: bool):
 
     # Define the schema structure.
     schema["properties"] = {
+        "$schema": {
+            "const": schema["$id"],
+        },
         "defaults": {"$ref": "#/$defs/defaultProperties"},
         "samples": {
             "type": "object",
