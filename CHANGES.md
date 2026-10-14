@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* curate transform-strain-name: Treat a null strain value as missing so backup fields can be used instead of raising a `TypeError`. A missing strain no longer raises a `KeyError` when `--strain-regex` matches an empty string. [#1906][] @Noxy-HNR
+
+[#1906]: https://github.com/nextstrain/augur/issues/1906
 
 ## 34.2.1 (13 October 2026)
 
