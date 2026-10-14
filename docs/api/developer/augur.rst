@@ -49,6 +49,7 @@ Submodules
    augur.read_file
    augur.reconstruct_sequences
    augur.refine
+   augur.schema
    augur.sequence_traits
    augur.subsample
    augur.titer_model
