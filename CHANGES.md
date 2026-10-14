@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* curate transform-strain-name: Treat a null strain value as missing so backup fields can be used instead of raising a `TypeError`. [#1906][]
+
+[#1906]: https://github.com/nextstrain/augur/issues/1906
 
 ## 34.2.1 (13 October 2026)
 
