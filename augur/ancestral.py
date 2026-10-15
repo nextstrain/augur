@@ -520,7 +520,7 @@ def _to_ancestral_json(anc: Ancestral_Reconstruction) -> Ancestral_JSON:
         j['mask'] = "".join(['1' if x else '0' for x in anc["mutations"]["mask"]])
     return j
 
-def _validate_translated_consistency(anc_seqs, aa_result, feat, gene, T) -> None:
+def _validate_translated_consistency(anc_seqs, aa_result, feat, gene, T, infer_ambiguous) -> None:
     """Compare the independently reconstructed AA sequences with translations
     of the reconstructed nucleotide sequences for a given gene. Reports any
     inconsistencies as warnings.
@@ -537,6 +537,8 @@ def _validate_translated_consistency(anc_seqs, aa_result, feat, gene, T) -> None
         Gene name, for reporting.
     T : Bio.Phylo.BaseTree.Tree
         The tree (used to iterate over all nodes).
+    infer_ambiguous : bool
+        Whether ambiguous tip states were inferred (reconstructed).
     """
     nodes_with_differences = {'tips': 0, 'internal': 0}
     difference_counts: list[int] = []
@@ -546,7 +548,7 @@ def _validate_translated_consistency(anc_seqs, aa_result, feat, gene, T) -> None
         assert nuc_seq is not None
         nuc_translated = safe_translate(str(feat.extract(Seq(nuc_seq))))
         # re-reconstruct the inferred protein sequence since we don't store them on anc_seqs
-        aa_seq = aa_result['tt'].sequence(node, as_string=True, reconstructed=True)
+        aa_seq = aa_result['tt'].sequence(node, as_string=True, reconstructed=infer_ambiguous)
         assert len(aa_seq)==len(nuc_translated)
     
         if nuc_translated != aa_seq:
@@ -668,10 +670,10 @@ def reconstruct_translations(
                 if "aa_sequences" not in node:
                     node["aa_sequences"] = {}
 
-                node["aa_sequences"][gene] = aa_result['tt'].sequence(T.root, as_string=True, reconstructed=True)
+                node["aa_sequences"][gene] = aa_result['tt'].sequence(T.root, as_string=True, reconstructed=infer_ambiguous)
         
         if report_inconsistent_translation:
-            _validate_translated_consistency(anc_seqs, aa_result, feat, gene, T)
+            _validate_translated_consistency(anc_seqs, aa_result, feat, gene, T, infer_ambiguous)
 
         anc_seqs['reference'][gene] = aa_result['root_seq']
         anc_seqs['annotations'].update(genome_features_to_auspice_annotation({gene: feat}, annotation_fname))
@@ -680,7 +682,7 @@ def reconstruct_translations(
         if output_fname_pattern:
             with open_file(output_fname_pattern.replace(GENE_PATTERN, gene), "w") as oh:
                 for node in aa_result["tt"].tree.find_clades():
-                    oh.write(f">{node.name}\n{aa_result['tt'].sequence(node, as_string=True, reconstructed=True)}\n")
+                    oh.write(f">{node.name}\n{aa_result['tt'].sequence(node, as_string=True, reconstructed=infer_ambiguous)}\n")
 
     return anc_seqs
 
