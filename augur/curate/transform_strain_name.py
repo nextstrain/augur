@@ -18,7 +18,10 @@ def transform_name(
     backup_fields: List[str],
 ) -> dict:
     # Verify strain name matches the strain regex pattern
-    if strain_name_pattern.match(record.get("strain", "")) is None:
+    if record.get("strain") is None:
+        record["strain"] = ""
+
+    if strain_name_pattern.match(record["strain"]) is None:
         # Default to empty string if not matching pattern
         record["strain"] = ""
 
