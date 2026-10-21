@@ -5,7 +5,7 @@ Infer ancestral traits based on a tree.
 import numpy as np
 from collections import defaultdict, OrderedDict, Counter
 import sys
-from .argparse_ import ExtendOverwriteDefault
+from .argparse_ import ExtendOverwriteDefault, InputFile
 from .errors import AugurError
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, InvalidDelimiter, read_metadata
@@ -171,13 +171,14 @@ class BranchLabeller():
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("traits", help=__doc__)
-    parser.add_argument('--tree', '-t', required=True, help="tree to perform trait reconstruction on")
-    parser.add_argument('--metadata', required=True, metavar="FILE", help="table with metadata")
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
+    parser.add_argument('--tree', '-t', type=InputFile, required=True, help="tree to perform trait reconstruction on")
+    parser.add_argument('--metadata', type=InputFile, required=True, metavar="FILE", help="table with metadata")
     parser.add_argument('--metadata-delimiters', default=DEFAULT_DELIMITERS, nargs="+", action=ExtendOverwriteDefault,
                         help="delimiters to accept when reading a metadata file. Only one delimiter will be inferred.")
     parser.add_argument('--metadata-id-columns', default=DEFAULT_ID_COLUMNS, nargs="+", action=ExtendOverwriteDefault,
                         help="names of possible metadata columns containing identifier information, ordered by priority. Only one ID column will be inferred.")
-    parser.add_argument('--weights', required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
+    parser.add_argument('--weights', type=InputFile, required=False, help="tsv/csv table with equilibrium probabilities of discrete states")
     parser.add_argument('--columns', required=True, nargs='+', action=ExtendOverwriteDefault,
                         help='metadata fields to perform discrete reconstruction on')
     parser.add_argument('--confidence',action="store_true",
