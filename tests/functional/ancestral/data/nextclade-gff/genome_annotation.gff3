@@ -1,0 +1,11 @@
+##gff-version 3
+##sequence-region synthetic 1 99
+synthetic	RefSeq	region	1	99	.	+	.	ID=synthetic:1..99
+synthetic	RefSeq	gene	2	29	.	+	.	ID=gene-A;Name=A;gene=A
+synthetic	RefSeq	mRNA	2	29	.	+	.	ID=rna-A;Parent=gene-A;gene=A
+synthetic	RefSeq	CDS	4	27	.	+	0	ID=cds-A;Parent=rna-A;Name=A;gene=A
+synthetic	RefSeq	gene	30	65	.	+	.	ID=gene-B;Name=B-gene;gene=B-gene
+synthetic	RefSeq	CDS	31	44	.	+	0	ID=cds-B;Parent=gene-B;Name=B;gene=B-gene
+synthetic	RefSeq	CDS	51	63	.	+	1	ID=cds-B;Parent=gene-B;Name=B;gene=B-gene
+synthetic	RefSeq	gene	66	95	.	-	.	ID=gene-C;Name=C;gene=C
+synthetic	RefSeq	CDS	67	93	.	-	0	ID=cds-C;Parent=gene-C;Name=C;gene=C
