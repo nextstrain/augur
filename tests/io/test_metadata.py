@@ -1,3 +1,4 @@
+import csv
 import pytest
 import shutil
 from io import BytesIO
@@ -26,6 +27,12 @@ def metadata_with_duplicate(tmpdir):
         fh.write('SEQ_B\t2020-10-03\tUSA\n')
         fh.write('SEQ_B\t2020-10-03\tUSA\n')
     return path
+
+@pytest.fixture
+def small_csv_field_size_limit():
+    original_limit = csv.field_size_limit(10)
+    yield 10
+    csv.field_size_limit(original_limit)
 
 class TestReadMetadataToDict:
     def test_read_table_to_dict_with_csv(self, tmpdir, expected_record):
@@ -64,6 +71,96 @@ class TestReadMetadataToDict:
 
         with pytest.raises(InvalidDelimiter):
             next(read_table_to_dict(path, (',', '\t')))
+
+    @pytest.mark.parametrize(('records', 'location'), [
+        (
+            'SEQ_A\txxxxxxxxxxx\n',
+            "a field on line 2 exceeds the default field size limit of 10 characters.",
+        ),
+        (
+            'SEQ_A\t"abc\ndefghijk"\n',
+            "a field in the record starting on line 2 exceeds the default field size limit of 10 characters. "
+            "The limit was reached on line 3.",
+        ),
+        (
+            'SEQ_A\tok\n\n\nSEQ_B\txxxxxxxxxxx\n',
+            "a field on line 5 exceeds the default field size limit of 10 characters.",
+        ),
+    ])
+    @pytest.mark.usefixtures('small_csv_field_size_limit')
+    def test_read_table_to_dict_with_oversized_csv_field(self, tmpdir, monkeypatch, records, location):
+        path = str(tmpdir / 'metadata.tsv')
+        with open(path, 'w') as fh:
+            fh.write('strain\tvalue\n')
+            fh.write(records)
+
+        monkeypatch.delenv('AUGUR_FIELD_SIZE_LIMIT', raising=False)
+
+        with pytest.raises(AugurError) as e_info:
+            list(read_table_to_dict(path, ('\t')))
+
+        assert str(e_info.value) == (
+            f"Unable to read metadata file {path!r}: {location}\n\n"
+            "This is often caused by a missing closing quote. "
+            "If the data is correct, rerun with AUGUR_FIELD_SIZE_LIMIT set to a value larger than 10."
+        )
+
+    def test_read_table_to_dict_with_csv_field_size_override(self, tmpdir, monkeypatch, small_csv_field_size_limit):
+        path = str(tmpdir / 'metadata.tsv')
+        value = 'x' * 11
+        with open(path, 'w') as fh:
+            fh.write('strain\tvalue\n')
+            fh.write(f'SEQ_A\t{value}\n')
+
+        monkeypatch.setenv('AUGUR_FIELD_SIZE_LIMIT', '11')
+
+        assert list(read_table_to_dict(path, ('\t'))) == [
+            {'strain': 'SEQ_A', 'value': value}
+        ]
+        assert csv.field_size_limit() == small_csv_field_size_limit
+
+    def test_read_table_to_dict_with_csv_field_size_override_too_small(self, tmpdir, monkeypatch, small_csv_field_size_limit):
+        path = str(tmpdir / 'metadata.tsv')
+        with open(path, 'w') as fh:
+            fh.write('strain\tvalue\n')
+            fh.write(f'SEQ_A\t{"x" * 12}\n')
+
+        monkeypatch.setenv('AUGUR_FIELD_SIZE_LIMIT', '11')
+
+        with pytest.raises(AugurError) as e_info:
+            list(read_table_to_dict(path, ('\t')))
+
+        assert str(e_info.value) == (
+            f"Unable to read metadata file {path!r}: a field on line 2 exceeds the field size limit "
+            "of 11 characters set by AUGUR_FIELD_SIZE_LIMIT.\n\n"
+            "This is often caused by a missing closing quote. "
+            "If the data is correct, rerun with AUGUR_FIELD_SIZE_LIMIT increased above 11."
+        )
+
+        assert csv.field_size_limit() == small_csv_field_size_limit
+
+    def test_read_table_to_dict_with_unsupported_csv_field_size_override(self, tmpdir, monkeypatch):
+        path = str(tmpdir / 'metadata.tsv')
+        with open(path, 'w') as fh:
+            fh.write('strain\tvalue\n')
+
+        monkeypatch.setenv('AUGUR_FIELD_SIZE_LIMIT', str(2**70))
+
+        with pytest.raises(AugurError, match="must be a positive integer supported by Python's CSV parser"):
+            list(read_table_to_dict(path, ('\t')))
+
+    @pytest.mark.parametrize('configured_limit', ['invalid', '0', '-1'])
+    def test_read_table_to_dict_with_invalid_csv_field_size_override(
+        self, tmpdir, monkeypatch, configured_limit
+    ):
+        path = str(tmpdir / 'metadata.tsv')
+        with open(path, 'w') as fh:
+            fh.write('strain\tvalue\n')
+
+        monkeypatch.setenv('AUGUR_FIELD_SIZE_LIMIT', configured_limit)
+
+        with pytest.raises(AugurError, match='AUGUR_FIELD_SIZE_LIMIT must be a positive integer'):
+            list(read_table_to_dict(path, ('\t')))
 
     @pytest.mark.parametrize('id_column', ['strain', None])
     def test_read_table_to_dict_with_duplicates(self, metadata_with_duplicate, id_column):
