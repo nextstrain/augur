@@ -2,6 +2,12 @@
 
 ## __NEXT__
 
+### Bug fixes
+
+* curate: Report the file and line when a metadata field is too large, and explain how to increase the limit with `AUGUR_FIELD_SIZE_LIMIT`. [#2013][]
+
+[#2013]: https://github.com/nextstrain/augur/issues/2013
+
 
 ## 34.3.0 (26 October 2026)
 
