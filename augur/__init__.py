@@ -35,6 +35,7 @@ command_strings = [
     "translate",
     "reconstruct_sequences",
     "clades",
+    "clades2",
     "traits",
     "sequence_traits",
     "lbi",
