@@ -4,7 +4,7 @@
 
 ### Features
 
-* refine: `--keep-ids` now accepts multiple files, consistent with `augur filter --include`. Ids from all files are kept regardless of clock filtering. [#2073][] @corneliusroemer
+* refine: `--keep-ids` now accepts multiple files, consistent with `augur filter --include`. [#2073][] @corneliusroemer
 
 [#2073]: https://github.com/nextstrain/augur/pull/2073
 
