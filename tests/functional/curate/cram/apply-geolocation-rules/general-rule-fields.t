@@ -12,7 +12,7 @@ Field 1
 
   $ echo '{"region": "a", "country": "b", "division": "c", "location": "d"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "a", "country": "2", "division": "3", "location": "4"}
 
 Field 2
@@ -23,7 +23,7 @@ Field 2
 
   $ echo '{"region": "a", "country": "b", "division": "c", "location": "d"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "1", "country": "b", "division": "3", "location": "4"}
 
 Field 3
@@ -34,7 +34,7 @@ Field 3
 
   $ echo '{"region": "a", "country": "b", "division": "c", "location": "d"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "1", "country": "2", "division": "c", "location": "4"}
 
 Field 4
@@ -45,7 +45,7 @@ Field 4
 
   $ echo '{"region": "a", "country": "b", "division": "c", "location": "d"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "1", "country": "2", "division": "3", "location": "d"}
 
 Fields 2,3
@@ -56,7 +56,7 @@ Fields 2,3
 
   $ echo '{"region": "a", "country": "b", "division": "c", "location": "d"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "1", "country": "b", "division": "c", "location": "4"}
 
 Fields 1,2,3
@@ -67,5 +67,5 @@ Fields 1,2,3
 
   $ echo '{"region": "a", "country": "b", "division": "c", "location": "d"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "a", "country": "b", "division": "c", "location": "4"}
