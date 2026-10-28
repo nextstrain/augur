@@ -8,19 +8,23 @@ import json
 import jsonschema
 import jsonschema.exceptions
 import re
-from ruamel.yaml import YAML, YAMLError
 from itertools import groupby
-from pathlib import Path
-from referencing import Registry
 from textwrap import indent
 from typing import Iterable, Union
 from augur.argparse_ import add_subparser
-from augur.data import as_file
 from augur.io.file import open_file
 from augur.io.print import print_err
 from augur.io.json import shorten_as_json
 from .validate_export import verifyMainJSONIsInternallyConsistent, verifyMetaAndOrTreeJSONsAreInternallyConsistent
 from .types import ValidationMode
+
+from augur.schema import (
+    load_augur_json_schema,
+
+    # TODO: remove this re-export after downstream workflows have been updated
+    # to import from augur.schema.
+    load_json_schema_locally,  # noqa: F401
+)
 
 def fatal(message):
     print_err("FATAL ERROR: {}".format(message))
@@ -39,70 +43,6 @@ def validation_failure(mode: ValidationMode):
         return
     else:
         raise ValueError(f"unknown validation mode: {mode!r}")
-
-
-def load_json_schema_locally(path):
-    # Schemas can reference other schemas via URL. Use local schema files for
-    # references to our own Augur schemas. This has advantages over URL:
-    # 1. it uses the schema expected by the current Augur version (URL may serve
-    #    schema for a newer version)
-    # 2. it doesn't require an internet connection
-    local_refs = {
-        'https://nextstrain.org/schemas/augur/annotations': "schema-annotations.json",
-        'https://nextstrain.org/schemas/dataset/root-sequence': "schema-export-root-sequence.json",
-        'https://nextstrain.org/schemas/auspice/config/v2': "schema-auspice-config-v2.json",
-        'https://nextstrain.org/schemas/augur/subsample-config/v1': "schema-subsample-config.json",
-        'https://nextstrain.org/schemas/augur/subsample-config-unaligned/v1': "schema-subsample-config-unaligned.json",
-    }
-    return load_json_schema(path, refs=local_refs)
-
-
-def load_json_schema(path, refs=None):
-    '''
-    Load a JSON schema from the augur included set of schemas
-    (located in augur/data)
-    '''
-    is_yaml = Path(path).suffix in ('.yaml', '.yml')
-    try:
-        with as_file(path) as file, open_file(file, "r") as fh:
-            if is_yaml:
-                schema = YAML(typ="safe").load(fh)
-            else:
-                schema = json.load(fh)
-    except (json.JSONDecodeError, YAMLError) as err:
-        raise ValidateError(f"Schema {path} is not a valid {'YAML' if is_yaml else 'JSON'} file. Error: {err}")
-    # check loaded schema is itself valid -- see http://python-jsonschema.readthedocs.io/en/latest/errors/
-    Validator = jsonschema.validators.validator_for(schema)
-    try:
-        Validator.check_schema(schema)
-    except jsonschema.exceptions.SchemaError as err:
-        raise ValidateError(f"Schema {path} is not a valid JSON Schema ({Validator.META_SCHEMA['$schema']}). Error: {err}")
-
-    if refs:
-        # Make the validator aware of additional schemas
-        schema_store = dict()
-        for k, v in refs.items():
-            with as_file(v) as file, open_file(file, "r") as fh:
-                schema_store[k] = json.load(fh)
-
-        # Create a dummy retrieval function to handle URIs not present in
-        # schema_store. This often indicates a typo (the $ref doesn't match the
-        # key of the schema_store) or we forgot to add a local mapping for a new
-        # $ref.
-        def retrieve(uri):
-            # Take advantage of the fact that BaseException is not handled by
-            # Registry.get_or_retrieve. This means the custom error message is
-            # printed instead of the less helpful default:
-            #    jsonschema.exceptions._WrappedReferencingError: Unresolvable: https://…
-            raise BaseException(f"The schema used for validation could not resolve a local file for {uri!r}. " +
-                            "Please check the schema used and update the appropriate schema_store as needed." )
-
-        registry = Registry(retrieve=retrieve).with_contents(schema_store.items())
-        schema_validator = Validator(schema, registry=registry)
-    else:
-        schema_validator = Validator(schema)
-
-    return schema_validator
 
 
 def load_json(path):
@@ -257,7 +197,7 @@ validate = validate_json  # TODO update uses and drop this alias
 
 
 def auspice_config_v2(config_json: Union[str,dict], **kwargs):
-    schema = load_json_schema("schema-auspice-config-v2.json")
+    schema = load_augur_json_schema("schema-auspice-config-v2.json")
     if isinstance(config_json, dict):
         config = config_json
         filename = "merged config"
@@ -268,7 +208,7 @@ def auspice_config_v2(config_json: Union[str,dict], **kwargs):
     validate(config, schema, filename)
 
 def export_v2(main_json, **kwargs):
-    main_schema = load_json_schema_locally("schema-export-v2.json")
+    main_schema = load_augur_json_schema("schema-export-v2.json")
 
     if main_json.endswith("frequencies.json") or main_json.endswith("entropy.json") or main_json.endswith("sequences.json"):
         raise ValidateError("This validation subfunction is for the main `augur export v2` JSON only.")
@@ -283,8 +223,8 @@ def export_v2(main_json, **kwargs):
 
 
 def export_v1(meta_json, tree_json, **kwargs):
-    meta_schema = load_json_schema("schema-export-v1-meta.json")
-    tree_schema = load_json_schema("schema-export-v1-tree.json")
+    meta_schema = load_augur_json_schema("schema-export-v1-meta.json")
+    tree_schema = load_augur_json_schema("schema-export-v1-tree.json")
 
     if not meta_json.endswith("_meta.json"):
         raise ValidateError("The metadata JSON pathname {} must end with '_meta.json'.".format(meta_json))
@@ -454,7 +394,7 @@ def validate_measurements_config(measurements):
 
 
 def measurements(measurements_json, **kwargs):
-    schema = load_json_schema("schema-measurements.json")
+    schema = load_augur_json_schema("schema-measurements.json")
     measurements = load_json(measurements_json)
     validate_json(measurements, schema, measurements_json)
     if not validate_measurements_config(measurements):
@@ -463,7 +403,7 @@ def measurements(measurements_json, **kwargs):
 
 
 def measurements_collection_config(collection_config_json, **kwargs):
-    schema = load_json_schema("schema-measurements-collection-config.json")
+    schema = load_augur_json_schema("schema-measurements-collection-config.json")
     collection_config = load_json(collection_config_json)
     validate_json(collection_config, schema, collection_config_json)
     if not validate_collection_display_defaults(collection_config):
