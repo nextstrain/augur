@@ -48,6 +48,28 @@ from dataclasses import dataclass
 
 VCF_Alignment = dict[str, dict[int, str]]
 
+
+def get_missing_genes_error(annotation, genes, features, available_features):
+    available_features = sorted(feature for feature in available_features if feature != 'nuc')
+    missing_genes = [gene for gene in genes if gene not in features]
+
+    if not missing_genes:
+        return None
+
+    if available_features:
+        available_features_message = f"Available CDS feature names are: {', '.join(available_features)}."
+    else:
+        available_features_message = "No CDS features with usable names were found."
+
+    return (
+        f"The annotation file {annotation!r} does not contain the requested "
+        f"{'gene' if len(missing_genes) == 1 else 'genes'}: {', '.join(missing_genes)}. "
+        f"{available_features_message} For GenBank annotations, Augur uses each CDS feature's "
+        "'locus_tag' qualifier as the feature name, falling back to the 'gene' qualifier when "
+        "'locus_tag' is absent."
+    )
+
+
 VCF_Metadata = dict[str, Any]
 
 class Mutations(TypedDict):
@@ -614,6 +636,12 @@ def reconstruct_translations(
         ## load features (only requested features)
         from .io.sequences import load_features
         features = load_features(annotation_fname, genes)
+        if any(gene not in features for gene in genes):
+            available_features = load_features(annotation_fname)
+        else:
+            available_features = features
+        if error := get_missing_genes_error(annotation_fname, genes, features, available_features):
+            raise AugurError(error)
 
     # anc_seqs was populated by the nucleotide reconstruction, which is optional. Create an ~empty structure if we
     # didn't run nucleotide reconstruction.

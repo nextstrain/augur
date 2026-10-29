@@ -1,4 +1,4 @@
-from augur.ancestral import run_ancestral, _make_seq_corrector
+from augur.ancestral import get_missing_genes_error, run_ancestral, _make_seq_corrector
 from io import StringIO
 from Bio import Phylo
 import pytest
@@ -22,6 +22,29 @@ def corrected_alignment(alphabet:str, data: list[tuple[str,str]]):
         [SeqRecord(Seq(correctors[alphabet](d[1])), d[0]) for d in data]
     )
     
+
+
+class TestMissingGenesError:
+    def test_reports_missing_genes_and_available_features(self):
+        message = get_missing_genes_error(
+            "reference.gb",
+            ["Gn", "Gc", "GPC"],
+            {"nuc": object(), "Gn": object(), "Gc": object()},
+            {"nuc": object(), "Gc": object(), "Gn": object(), "N": object(), "L": object()},
+        )
+
+        assert "does not contain the requested gene: GPC" in message
+        assert "Available CDS feature names are: Gc, Gn, L, N." in message
+        assert "locus_tag" in message
+        assert "gene" in message
+
+    def test_returns_none_when_all_genes_are_present(self):
+        assert get_missing_genes_error(
+            "reference.gb",
+            ["Gn", "Gc"],
+            {"nuc": object(), "Gn": object(), "Gc": object()},
+            {"nuc": object(), "Gn": object(), "Gc": object()},
+        ) is None
 
 def gather_mutations_at_pos(pos, nuc_result):
     """pos is 1-based"""
