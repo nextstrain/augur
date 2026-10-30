@@ -212,7 +212,7 @@ def register_parser(parent_subparsers):
                                 help='branch length mode of treetime to use')
     parser.add_argument('--clock-filter-iqd', type=float, help='clock-filter: remove tips that deviate more than n_iqd '
                                 'interquartile ranges from the root-to-tip vs time regression')
-    parser.add_argument('--keep-ids', metavar="FILE", help="file containing ids to keep in tree regardless of clock filtering (one per line)")
+    parser.add_argument('--keep-ids', metavar="FILE", nargs="+", action=ExtendOverwriteDefault, help="file(s) containing ids to keep in tree regardless of clock filtering (one per line)")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
     add_nextclade_dataset_argument(parser)
     parser.add_argument('--year-bounds', type=int, nargs='+', action=ExtendOverwriteDefault, help='specify min or max & min prediction bounds for samples with XX in year')
@@ -337,7 +337,7 @@ def run(args):
 
         keep_ids = set()
         if args.keep_ids:
-            keep_ids = read_strains(args.keep_ids)
+            keep_ids = read_strains(*args.keep_ids)
 
         tt = refine(tree=T, aln=aln, ref=ref, dates=dates, confidence=args.date_confidence,
                     reroot=treetime_reroot,

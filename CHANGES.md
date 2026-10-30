@@ -2,6 +2,11 @@
 
 ## __NEXT__
 
+### Features
+
+* refine: `--keep-ids` now accepts multiple files, consistent with `augur filter --include`. [#2073][] @corneliusroemer
+
+[#2073]: https://github.com/nextstrain/augur/pull/2073
 
 ## 34.3.0 (26 October 2026)
 
