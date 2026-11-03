@@ -211,7 +211,8 @@
         },
         "nextclade_dataset": {
             "description": "Nextclade dataset directory (containing a pathogen.json) from which to source the reference sequence and/or genome annotation instead of providing them individually. A genome annotation sourced from a dataset is read with --use-nextclade-gff-style.",
-            "type": "string"
+            "type": "string",
+            "format": "dirpath"
         },
         "year_bounds": {
             "description": "specify min or max & min prediction bounds for samples with XX in year",

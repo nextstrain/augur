@@ -19,6 +19,7 @@ from augur.argparse_ import (
     CONFIG_FILE_ARG,
     CustomArgumentParser,
     ExtendOverwriteDefault,
+    InputDir,
     InputFile,
     SKIP_AUTO_DEFAULT_IN_HELP,
     walk_commands,
@@ -130,6 +131,7 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
             int: {"type": "integer"},
             float: {"type": "number"},
             InputFile: {"type": "string", "format": "filepath"},
+            InputDir: {"type": "string", "format": "dirpath"},
         }
         if action.type not in type_info:
             raise UnsupportedOption(f"{action.option_strings[0]}: unsupported type {action.type!r}; add it to extract_property()")

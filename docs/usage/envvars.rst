@@ -8,7 +8,7 @@ These can be especially useful in the context of an entire pipeline or workflow 
 .. envvar:: AUGUR_SEARCH_PATHS
 
     Colon-separated directory paths.
-    If set, ``augur subsample`` will search these directories for relative filepaths specified in the config file.
+    If set, ``augur subsample`` will search these directories for relative paths specified in the config file.
     Multiple directories can be set by separating them with colons (e.g., ``/path/one:/path/two``).
 
 .. envvar:: AUGUR_DEBUG

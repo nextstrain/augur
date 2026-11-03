@@ -301,6 +301,8 @@ class SchemaOptionsTableDirective(SphinxDirective):
 
         if schema_type == 'string' and schema_format == 'filepath':
             return 'file'
+        if schema_type == 'string' and schema_format == 'dirpath':
+            return 'folder'
         if schema_format is None and schema_type in ('boolean', 'integer', 'number', 'string'):
             return schema_type
 

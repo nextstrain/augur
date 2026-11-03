@@ -34,7 +34,7 @@ Paths in the config file that can't be resolved show a clean error.
 
   $ ${AUGUR} refine --config config-missing-path.yaml
   Validating schema of 'config-missing-path.yaml'...
-  ERROR: File 'missing.nwk' not resolvable from any of the following paths:
+  ERROR: Path 'missing.nwk' not resolvable from any of the following paths:
   
     .
     .* (re)
