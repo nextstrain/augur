@@ -18,6 +18,7 @@ from augur import make_parser
 from augur.argparse_ import (
     CONFIG_FILE_ARG,
     CustomArgumentParser,
+    InputDir,
     InputFile,
     SKIP_AUTO_DEFAULT_IN_HELP,
     walk_commands,
@@ -26,6 +27,12 @@ from augur.schema import COMMAND_SCHEMAS
 
 
 OUTPUT_DIR = Path(__file__).parent.parent / "augur" / "data"
+
+# Map argparse path types to JSON Schema formats.
+PATH_FORMATS = {
+    InputFile: "filepath",
+    InputDir: "dirpath",
+}
 
 
 def main():
@@ -118,9 +125,9 @@ def extract_property(action: argparse.Action) -> dict[str, Any]:
     # Determine type and values
     if isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction)):
         prop["type"] = "boolean"
-    elif action.type is InputFile:
+    elif action.type in PATH_FORMATS:
         prop["type"] = "string"
-        prop["format"] = "filepath"
+        prop["format"] = PATH_FORMATS[action.type]
     else:
         schema_type = get_schema_type(action.type)
         if action.nargs in (argparse.ZERO_OR_MORE, argparse.ONE_OR_MORE):

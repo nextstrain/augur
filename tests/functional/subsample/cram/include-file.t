@@ -105,7 +105,7 @@ Error when file not found in any search path
   >   --config config/config.yaml \
   >   --output-metadata output_metadata.tsv
   Validating schema of 'config/config.yaml'...
-  ERROR: File 'nonexistent.txt' not resolvable from any of the following paths:
+  ERROR: Path 'nonexistent.txt' not resolvable from any of the following paths:
   
     config
     .*/include-file.t (re)

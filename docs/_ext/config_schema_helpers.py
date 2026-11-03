@@ -302,4 +302,6 @@ class SchemaOptionsTableDirective(SphinxDirective):
     def _get_display_type(self, prop_def):
         if prop_def.get('type') == 'string' and prop_def.get('format') == 'filepath':
             return 'file'
+        if prop_def.get('type') == 'string' and prop_def.get('format') == 'dirpath':
+            return 'folder'
         return prop_def.get('type')

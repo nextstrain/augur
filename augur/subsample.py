@@ -22,7 +22,7 @@ from augur.config import (
     best_matching_variant,
     get_search_paths,
     parse_config,
-    resolve_filepaths,
+    resolve_paths,
 )
 from augur.errors import AugurError
 from augur.io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS
@@ -200,10 +200,10 @@ def run(args: argparse.Namespace) -> None:
     if _includes_proximal_sample(config) and args.seq_type!='nuc':
         raise AugurError("Proximal sampling for AA sequences is not yet supported.")
 
-    # Resolve filepaths.
+    # Resolve paths.
     search_paths = get_search_paths(args.config)
-    config, filepaths = resolve_filepaths(config, search_paths, schema_validator.schema)
-    print_debug(f"\nResolved filepaths: {filepaths}")
+    config, paths = resolve_paths(config, search_paths, schema_validator.schema)
+    print_debug(f"\nResolved paths: {[str(path) for path in paths]}")
 
     # Construct sample objects for augur filter calls
     # These contain the lists of arguments, but the arguments may be incomplete

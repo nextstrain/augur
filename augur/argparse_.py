@@ -11,7 +11,7 @@ from pathlib import Path
 from ruamel.yaml import YAML
 from textwrap import dedent, indent as indent_text
 from typing import Iterable, Optional, Tuple, Union
-from .config import get_search_paths, resolve_filepath
+from .config import get_search_paths, resolve_path
 from .io.print import indented_list, _n
 from .rst import rst_to_text
 from .types import ValidationMode
@@ -129,7 +129,7 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         3. Augur (us), to validate the config file. We do this before calling
            ConfigArgParse's parse_known_args() to prevent synthesized CLI args
            from being shown in argparse errors.
-        4. Augur (us), to resolve relative filepaths specified in the config
+        4. Augur (us), to resolve relative paths specified in the config
            file.
         """
         # Exit early when --config is not used.
@@ -195,23 +195,23 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         # sometimes used positionally in argparse.
         parsed_args, unknown_args = super().parse_known_args(args=args, namespace=namespace, **kwargs)
 
-        # Default leaves relative filepaths as-is, meaning open_file() etc. will
+        # Default leaves relative paths as-is, meaning open_file() etc. will
         # resolve paths relative to the current working directory.
         # This makes sense for values set in the CLI, but values set in config
         # YAML should be resolved according to AUGUR_SEARCH_PATHS.
         search_paths = get_search_paths(config_file)
         for action in self._actions:
-            if action.type is not InputFile:
+            if action.type not in (InputFile, InputDir):
                 continue
             if any(k in config_keys for k in self.get_possible_config_keys(action)):
                 old_value = getattr(parsed_args, action.dest, None)
                 if isinstance(old_value, list):
                     new_value = [
-                        str(resolve_filepath(Path(item), search_paths))
+                        str(resolve_path(Path(item), search_paths))
                         for item in old_value
                     ]
                 elif isinstance(old_value, str):
-                    new_value = str(resolve_filepath(Path(old_value), search_paths))
+                    new_value = str(resolve_path(Path(old_value), search_paths))
 
                 setattr(parsed_args, action.dest, new_value)
 
@@ -447,6 +447,13 @@ def add_command_subparsers(subparsers, commands, command_attribute='__command__'
 def InputFile(path: str) -> str:
     """
     Custom type for argparse representing an input file path.
+    """
+    return path
+
+
+def InputDir(path: str) -> str:
+    """
+    Custom type for argparse representing an input directory path.
     """
     return path
 

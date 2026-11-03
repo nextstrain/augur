@@ -202,6 +202,25 @@ def test_get_referenced_files_subsample(tmp_path):
     assert get_referenced_files(config_file) == {str(include_file.resolve()), str(exclude_file.resolve())}
 
 
+def test_get_referenced_files_directory(tmp_path):
+    """
+    Test that directory paths are recursively expanded.
+    """
+    dataset_dir = tmp_path / "dataset"
+    (dataset_dir / "nested").mkdir(parents=True)
+    file1 = dataset_dir / "file.txt"
+    file1.touch()
+    file2 = dataset_dir / "nested" / "file.txt"
+    file2.touch()
+
+    config_file = write_config_file(tmp_path, {
+        "$schema": "https://nextstrain.org/schemas/augur/refine-config/v1",
+        "nextclade_dataset": "dataset",
+    })
+
+    assert get_referenced_files(config_file) == {str(file1.resolve()), str(file2.resolve())}
+
+
 def test_get_referenced_files_missing_schema(tmp_path):
     """
     Test that an error is raised when $schema is missing.

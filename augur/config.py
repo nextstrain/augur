@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from ruamel.yaml import YAML, YAMLError, constructor
 from textwrap import dedent
-from typing import Any, Optional
+from typing import Any, Iterator, Optional
 from augur.errors import AugurError
 from augur.io.print import indented_list
 from augur.schema import InvalidSchemaError, load_augur_json_schema
@@ -14,7 +14,8 @@ from augur.schema import InvalidSchemaError, load_augur_json_schema
 def get_referenced_files(config_file: str | Path, schema=None) -> set[str]:
     """Get the files referenced in an augur config file.
 
-    Extracts and resolves all filepath values referenced in the config.
+    Extracts and resolves all path values referenced in the config. Directory
+    paths are recursively expanded to all files within.
 
     Parameters
     ----------
@@ -41,11 +42,26 @@ def get_referenced_files(config_file: str | Path, schema=None) -> set[str]:
     except InvalidSchemaError as e:
         raise AugurError(str(e)) from e
 
-    # Resolve filepaths.
+    # Resolve paths.
     search_paths = get_search_paths(config_file)
-    config, filepaths = resolve_filepaths(config, search_paths, schema_validator.schema)
+    config, paths = resolve_paths(config, search_paths, schema_validator.schema)
 
-    return set(filepaths)
+    return {str(path) for path in _expand_directories(paths)}
+
+
+def _expand_directories(paths: list[Path]) -> Iterator[Path]:
+    """
+    Replace directory paths with the paths of all files within them.
+    """
+    for path in paths:
+        if path.is_dir():
+            # TODO: use Path.walk() once Python 3.12 is our minimum.
+            for file in path.rglob("*"):
+                if file.is_file():
+                    yield file
+        else:
+            # Most likely normal files, but could also be special files (e.g. /dev/null).
+            yield path
 
 
 def parse_config(filename: str | Path) -> dict[str, Any]:
@@ -70,7 +86,7 @@ def parse_config(filename: str | Path) -> dict[str, Any]:
 
 def get_search_paths(config_file: str | Path) -> list[Path]:
     """
-    Returns the paths to search for relative filepaths in config.
+    Returns the paths to search for relative paths in config.
     """
     default = [
         Path(config_file).parent,
@@ -88,22 +104,22 @@ def get_search_paths(config_file: str | Path) -> list[Path]:
     return default
 
 
-def resolve_filepaths(
+def resolve_paths(
     config: dict[str, Any],
     search_paths: list[Path],
     schema: dict[str, Any],
     root_schema: Optional[dict[str, Any]] = None,
-) -> tuple[dict[str, Any], list[str]]:
+) -> tuple[dict[str, Any], list[Path]]:
     """
-    Resolve filepaths in config.
+    Resolve paths in config.
 
     Recursively walks the config alongside the schema to determine which fields
-    contain filepaths, resolves them, and collects the resolved filepaths.
+    contain paths, resolves them, and collects the resolved paths.
     """
     if root_schema is None:
         root_schema = schema
 
-    filepaths = []
+    paths = []
 
     # Get properties schema for current section
     properties = schema.get("properties", {})
@@ -124,23 +140,25 @@ def resolve_filepaths(
         elif "oneOf" in prop_schema and isinstance(value, dict):
             _, prop_schema = best_matching_variant(prop_schema["oneOf"], value, root_schema)
 
-        # Resolve filepath
-        if _is_filepath(prop_schema):
+        # Resolve file or directory path.
+        if _is_path(prop_schema):
             if isinstance(value, list):
-                config[key] = [str(resolve_filepath(Path(v), search_paths)) for v in value]
-                filepaths.extend(config[key])
+                resolved = [resolve_path(Path(v), search_paths) for v in value]
+                config[key] = [str(path) for path in resolved]
+                paths.extend(resolved)
             elif isinstance(value, str):
-                config[key] = str(resolve_filepath(Path(value), search_paths))
-                filepaths.append(config[key])
+                resolved_path = resolve_path(Path(value), search_paths)
+                config[key] = str(resolved_path)
+                paths.append(resolved_path)
 
         # Recurse into config section
         elif isinstance(value, dict):
-            config[key], downstream_filepaths = resolve_filepaths(
+            config[key], downstream_paths = resolve_paths(
                 value, search_paths, prop_schema, root_schema
             )
-            filepaths.extend(downstream_filepaths)
+            paths.extend(downstream_paths)
 
-    return config, filepaths
+    return config, paths
 
 
 def best_matching_variant(
@@ -191,34 +209,37 @@ def _get_referenced_schema(
     return schema
 
 
-def _is_filepath(prop_schema: dict[str, Any]) -> bool:
+PATH_FORMATS = {"filepath", "dirpath"}
+
+
+def _is_path(prop_schema: dict[str, Any]) -> bool:
     """
-    Check if the property schema declares it is a filepath.
+    Check if the property schema declares it is a file or directory path.
     """
-    # Direct 'format: filepath'
-    if prop_schema.get("format") == "filepath":
+    # Direct 'format: filepath' or 'format: dirpath'
+    if prop_schema.get("format") in PATH_FORMATS:
         return True
 
-    # Check oneOf variants for 'format: filepath'
+    # Check oneOf variants for 'format: filepath' or 'format: dirpath'
     if "oneOf" in prop_schema:
         for variant in prop_schema["oneOf"]:
-            if variant.get("format") == "filepath":
+            if variant.get("format") in PATH_FORMATS:
                 return True
 
     return False
 
 
-def resolve_filepath(
+def resolve_path(
     path: Path,
     search_paths: list[Path],
 ) -> Path:
     """
-    Resolve a filepath by searching through multiple directories.
+    Resolve a file or directory path by searching through multiple directories.
 
     Parameters
     ----------
     path
-        The filepath to resolve. May be either an absolute path or a path
+        The path to resolve. May be either an absolute path or a path
         relative to one of the directories in ``search_paths``.
     search_paths
         Directories to search, in order, when ``path`` is relative. Ignored when
@@ -234,37 +255,43 @@ def resolve_filepath(
     >>> tmpdir2 = Path(tempfile.mkdtemp()).resolve()
     >>> absolute_path = tmpdir1 / "file.txt"
     >>> with open(absolute_path, "w") as f: _ = f.write("test")
-    >>> resolve_filepath(absolute_path, []) == absolute_path
+    >>> resolve_path(absolute_path, []) == absolute_path
     True
 
     Otherwise, try resolving it relative to each directory in search_paths, in order.
     Return the first path that exists.
 
     >>> with open(tmpdir2 / "file.txt", "w") as f: _ = f.write("test")
-    >>> result = resolve_filepath(Path("file.txt"), [tmpdir1, tmpdir2])
+    >>> result = resolve_path(Path("file.txt"), [tmpdir1, tmpdir2])
     >>> result == tmpdir1 / "file.txt"
+    True
+
+    Directories are resolved the same way.
+
+    >>> (tmpdir2 / "dir").mkdir()
+    >>> resolve_path(Path("dir"), [tmpdir1, tmpdir2]) == tmpdir2 / "dir"
     True
 
     If an absolute path doesn't exist, raise an error.
 
-    >>> resolve_filepath(Path("/nonexistent/file.txt"), [tmpdir1, tmpdir2])
+    >>> resolve_path(Path("/nonexistent/file.txt"), [tmpdir1, tmpdir2])
     Traceback (most recent call last):
       ...
-    augur.errors.AugurError: File '/nonexistent/file.txt' does not exist.
+    augur.errors.AugurError: Path '/nonexistent/file.txt' does not exist.
 
     If the relative path doesn't exist anywhere, raise an error.
 
-    >>> resolve_filepath(Path("nonexistent.txt"), [tmpdir1, tmpdir2]) # doctest: +ELLIPSIS
+    >>> resolve_path(Path("nonexistent.txt"), [tmpdir1, tmpdir2]) # doctest: +ELLIPSIS
     Traceback (most recent call last):
       ...
-    augur.errors.AugurError: File 'nonexistent.txt' not resolvable from any of the following paths:
+    augur.errors.AugurError: Path 'nonexistent.txt' not resolvable from any of the following paths:
     <BLANKLINE>
       ...
     """
     # Absolute path
     if path.is_absolute():
         if not path.exists():
-            raise AugurError(f"File {str(path)!r} does not exist.")
+            raise AugurError(f"Path {str(path)!r} does not exist.")
         return path
 
     # Relative path
@@ -273,8 +300,17 @@ def resolve_filepath(
         if resolved_path.exists():
             return resolved_path
 
-    # File not found
+    # Path not found
     raise AugurError(dedent(f"""\
-        File {str(path)!r} not resolvable from any of the following paths:
+        Path {str(path)!r} not resolvable from any of the following paths:
 
           {indented_list([str(p) for p in search_paths], '        ' + '  ')}"""))
+
+
+# TODO: remove this re-export after downstream workflows have been updated to
+# use resolve_path.
+def resolve_filepath(
+    path: Path,
+    search_paths: list[Path],
+) -> Path:
+    return resolve_path(path, search_paths)
