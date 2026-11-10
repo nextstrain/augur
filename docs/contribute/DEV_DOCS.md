@@ -159,6 +159,13 @@ There are also many [editor integrations for mypy][], and Pyright can be
 [editor integrations for mypy]: https://github.com/python/mypy#integrations
 [configured for VS Code]: https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance#settings-and-customization
 
+### Adding options
+
+Commands that add a `--config` option with `is_config_file_arg=True` allow configuration of most options via a YAML file.
+This is largely done behind the scenes, but special consideration is necessary for options where values can be a path reference.
+If the value can be a file path reference, set the type as `InputFile`.
+If the value can be a directory path reference, set the type as `InputDir`.
+
 ### Removing features
 
 Instead of removing a feature from one release to the next, consider first deprecating the feature

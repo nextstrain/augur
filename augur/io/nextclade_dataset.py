@@ -10,6 +10,7 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
+from augur.argparse_ import InputDir
 from augur.errors import AugurError
 
 
@@ -25,7 +26,7 @@ class NextcladeDataset:
 
 def add_nextclade_dataset_argument(parser):
     """Add the --nextclade-dataset argument to *parser* (a parser, argument group or mutually exclusive group)."""
-    return parser.add_argument('--nextclade-dataset', metavar="DIR", type=str,
+    return parser.add_argument('--nextclade-dataset', metavar="DIR", type=InputDir,
         help="Nextclade dataset directory (containing a pathogen.json) from which to source the reference sequence and/or genome "
              "annotation instead of providing them individually. A genome annotation sourced from a dataset is read "
              "with --use-nextclade-gff-style.")

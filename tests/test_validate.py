@@ -1,14 +1,11 @@
-import json
 import pytest
 import random
-from ruamel.yaml import YAML
 
 from augur.validate import (
     validate_collection_config_fields,
     validate_collection_display_defaults,
     validate_measurements_config,
-    load_json_schema,
-    load_json_schema_locally,
+    load_augur_json_schema,
     validate_json,
     ValidateError
 )
@@ -98,7 +95,7 @@ class TestValidateMeasurements():
 
 @pytest.fixture
 def genome_annotation_schema():
-    return load_json_schema("schema-annotations.json")
+    return load_augur_json_schema("schema-annotations.json")
 
 class TestValidateGenomeAnnotations():
     def test_negative_strand_nuc(self, capsys, genome_annotation_schema):
@@ -162,55 +159,3 @@ class TestValidateGenomeAnnotations():
         with pytest.raises(ValidateError):
             validate_json(d, genome_annotation_schema, "<test-json>")
         capsys.readouterr() # suppress validation error printing
-
-
-def test_load_json_schema_locally(tmp_path):
-    schema_file = tmp_path / "test-schema.json"
-    raw_schema = {
-        "type": "object",
-        "properties": {
-            "subsample": {
-                "type": "object",
-                "patternProperties": {
-                    "^.*$": {
-                        "$ref": "https://nextstrain.org/schemas/augur/subsample-config/v1"
-                    }
-                }
-            }
-        }
-    }
-    with open(schema_file, "w") as f:
-        json.dump(raw_schema, f)
-
-    validator = load_json_schema_locally(schema_file)
-    valid_data = {
-        "subsample": {
-            "global": {
-                "samples": {
-                    "focal": {
-                        "group_by": ["country"]
-                    }
-                }
-            }
-        }
-    }
-    validate_json(valid_data, validator, "")
-
-
-@pytest.mark.parametrize("ext", ["yaml", "yml"])
-def test_load_yaml_schema(tmp_path, ext):
-    schema_file = tmp_path / f"test-schema.{ext}"
-    raw_schema = {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string"
-            }
-        }
-    }
-    with open(schema_file, "w") as f:
-        YAML(typ="safe").dump(raw_schema, f)
-
-    validator = load_json_schema(schema_file)
-    valid_data = {"name": "test"}
-    validate_json(valid_data, validator, "")
