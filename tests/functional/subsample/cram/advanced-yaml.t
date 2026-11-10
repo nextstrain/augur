@@ -13,26 +13,20 @@ Keeping it around as a valid test for advanced YAML syntax.
   > ~~
 
   $ cat >config.yaml <<~~
-  > subsample_defaults: &subsample_defaults
-  >   include:
-  >     - include.txt
-  > 
-  > subsample:
-  >   samples:
-  >     south_america:
-  >       <<: *subsample_defaults
-  >       query: region == 'South America'
-  >       max_sequences: 1
-  >     oceania:
-  >       <<: *subsample_defaults
-  >       query: region == 'Oceania'
-  >       max_sequences: 1
+  > samples:
+  >   south_america: &subsample_defaults
+  >     include:
+  >       - include.txt
+  >     query: region == 'South America'
+  >     max_sequences: 1
+  >   oceania:
+  >     <<: *subsample_defaults
+  >     query: region == 'Oceania'
   > ~~
 
   $ ${AUGUR} subsample \
   >   --metadata "$TESTDIR"/../../filter/data/metadata.tsv \
   >   --config config.yaml \
-  >   --config-section subsample \
   >   --output-metadata subsampled.tsv \
   >   --seed 0
   Validating schema of 'config.yaml'...
