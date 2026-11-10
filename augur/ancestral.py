@@ -22,7 +22,7 @@ nucleotide sequences, please use `augur translate`.
 
     The mutation positions in the node-data JSON are one-based.
 """
-from augur.argparse_ import ExtendOverwriteDefault
+from augur.argparse_ import ExtendOverwriteDefault, InputFile
 import argparse
 import os
 from augur.errors import AugurError
@@ -336,28 +336,29 @@ def run_ancestral(
 
 def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("ancestral", help=__doc__)
+    parser.add_argument('--config', is_config_file_arg=True, help="config file path")
 
     # ----------------------------- INPUTS ----------------------------- 
     input_group = parser.add_argument_group(
         "inputs",
         "Tree and sequences to use for ancestral reconstruction"
     )
-    input_group.add_argument('--tree', '-t', required=True, help="prebuilt Newick")
+    input_group.add_argument('--tree', '-t', type=InputFile, required=True, help="prebuilt Newick")
     
     # ------------------- NUCLEOTIDE (TRANSLATION) OPTIONS ONLY ------------------------ 
     nucleotide_options_group = parser.add_argument_group(
         "nucleotide options",
         "Options to configure reconstruction of nucleotide sequences."
     )
-    nucleotide_options_group.add_argument('--alignment', '-a', help="alignment in FASTA or VCF format")
+    nucleotide_options_group.add_argument('--alignment', '-a', type=InputFile, help="alignment in FASTA or VCF format")
     nucleotide_options_exclusive_group = nucleotide_options_group.add_mutually_exclusive_group()
-    nucleotide_options_exclusive_group.add_argument('--vcf-reference', type=str, metavar='FASTA',
+    nucleotide_options_exclusive_group.add_argument('--vcf-reference', type=InputFile, metavar='FASTA',
                                  help='[VCF alignment only] file of the sequence the VCF was mapped to.'
                                       ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.')
-    nucleotide_options_exclusive_group.add_argument('--root-sequence', type=str,metavar='FASTA/GenBank',
-                                 help='[FASTA alignment only] file of the sequence that is used as root for mutation calling.'
-                                      ' Differences between this sequence and the inferred root will be reported as mutations on the root branch.'
-                                      ' If also reconstructing AA sequences, this (nuc) sequence will be translated to form the AA root sequences unless --aa-root-sequence is provided.')
+    nucleotide_options_exclusive_group.add_argument('--root-sequence', type=InputFile, metavar='FASTA/GenBank',
+                                 help="[FASTA alignment only] file of the sequence that is used as root for mutation calling."
+                                      " Differences between this sequence and the inferred root will be reported as mutations on the root branch."
+                                      " If also reconstructing AA sequences, this (nuc) sequence will be translated to form the AA root sequences unless '--aa-root-sequence'/'aa_root_sequence' is provided.")
 
     # ----------------------------- GLOBAL OPTIONS -----------------------------
     global_options_group = parser.add_argument_group(
@@ -383,7 +384,7 @@ def register_parser(parent_subparsers):
     amino_acid_options_group.add_argument('--genes', nargs='+', action=ExtendOverwriteDefault,
         help="gene(s) to translate (list or file containing list). If omitted, all CDSs in the --annotation are used, skipping"
              " those without a --translations file.")
-    amino_acid_options_group.add_argument('--annotation',
+    amino_acid_options_group.add_argument('--annotation', type=InputFile,
                         help='GenBank or GFF file containing the annotation. Optional if reconstructing a single gene without nuc data.')
     add_nextclade_dataset_argument(amino_acid_options_group)
     amino_acid_options_group.add_argument('--use-nextclade-gff-style', action="store_true",
