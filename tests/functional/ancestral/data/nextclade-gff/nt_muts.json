@@ -1,0 +1,207 @@
+{
+  "annotations": {
+    "A": {
+      "end": 27,
+      "seqid": "genome_annotation.gff3",
+      "start": 4,
+      "strand": "+",
+      "type": "CDS"
+    },
+    "B": {
+      "segments": [
+        {
+          "end": 44,
+          "start": 31
+        },
+        {
+          "end": 63,
+          "start": 51
+        }
+      ],
+      "seqid": "genome_annotation.gff3",
+      "strand": "+",
+      "type": "CDS"
+    },
+    "C": {
+      "end": 93,
+      "seqid": "genome_annotation.gff3",
+      "start": 67,
+      "strand": "-",
+      "type": "CDS"
+    },
+    "nuc": {
+      "end": 99,
+      "start": 1,
+      "strand": "+",
+      "type": "source"
+    }
+  },
+  "generated_by": {
+    "program": "augur",
+    "version": "34.1.4"
+  },
+  "mask": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  "nodes": {
+    "node_1": {
+      "aa_muts": {
+        "A": [
+          "E3Q"
+        ],
+        "B": [],
+        "C": []
+      },
+      "muts": [
+        "G10C",
+        "A99G"
+      ],
+      "sequence": "AAGATGTTTCAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATACGACAACCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTG"
+    },
+    "node_2": {
+      "aa_muts": {
+        "A": [],
+        "B": [
+          "I5M"
+        ],
+        "C": []
+      },
+      "muts": [
+        "G47C",
+        "A51G"
+      ],
+      "sequence": "AAGATGTTTGAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATACCACAGCCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTA"
+    },
+    "node_3": {
+      "aa_muts": {
+        "A": [],
+        "B": [],
+        "C": [
+          "T5S"
+        ]
+      },
+      "muts": [
+        "G80C"
+      ],
+      "sequence": "AAGATGTTTGAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATACCACAGCCTCGTCCGTAATTGTTAGTCTTGTTTGCTCTGGTAACACATAACCTA"
+    },
+    "node_4": {
+      "aa_muts": {
+        "A": [
+          "Q6R"
+        ],
+        "B": [],
+        "C": []
+      },
+      "muts": [
+        "A2G",
+        "A20G"
+      ],
+      "sequence": "AGGATGTTTGAAGGAGTCCGGCCGTAAGAAATGCAGGGCACAATACGACAACCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTA"
+    },
+    "root": {
+      "aa_muts": {
+        "A": [],
+        "B": [],
+        "C": []
+      },
+      "aa_sequences": {
+        "A": "MFEGVQP*",
+        "B": "MQGTIPRP*",
+        "C": "MCYQTKQD*"
+      },
+      "muts": [],
+      "sequence": "AAGATGTTTGAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATACGACAACCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTA"
+    },
+    "tip_1": {
+      "aa_muts": {
+        "A": [],
+        "B": [
+          "Q2R"
+        ],
+        "C": []
+      },
+      "muts": [
+        "A35G"
+      ],
+      "sequence": "AAGATGTTTCAAGGAGTCCAGCCGTAAGAAATGCGGGGCACAATACGACAACCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTG"
+    },
+    "tip_2": {
+      "aa_muts": {
+        "A": [],
+        "B": [],
+        "C": []
+      },
+      "muts": [],
+      "sequence": "AAGATGTTTCAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATACGACAACCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTG"
+    },
+    "tip_3": {
+      "aa_muts": {
+        "A": [],
+        "B": [],
+        "C": []
+      },
+      "muts": [
+        "C46-",
+        "C47-",
+        "A48-"
+      ],
+      "sequence": "AAGATGTTTGAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATA---CAGCCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTA"
+    },
+    "tip_4": {
+      "aa_muts": {
+        "A": [],
+        "B": [],
+        "C": []
+      },
+      "muts": [],
+      "sequence": "AAGATGTTTGAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATACCACAGCCTCGTCCGTAATTGTTAGTCTTGTTTGCTCTGGTAACACATAACCTA"
+    },
+    "tip_5": {
+      "aa_muts": {
+        "A": [],
+        "B": [],
+        "C": [
+          "D8E"
+        ]
+      },
+      "muts": [
+        "G70C"
+      ],
+      "sequence": "AAGATGTTTGAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATACCACAGCCTCGTCCGTAATTGTTACTCTTGTTTGCTCTGGTAACACATAACCTA"
+    },
+    "tip_6": {
+      "aa_muts": {
+        "A": [],
+        "B": [],
+        "C": []
+      },
+      "muts": [
+        "T57C"
+      ],
+      "sequence": "AGGATGTTTGAAGGAGTCCGGCCGTAAGAAATGCAGGGCACAATACGACAACCTCGCCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTA"
+    },
+    "tip_7": {
+      "aa_muts": {
+        "A": [],
+        "B": [],
+        "C": []
+      },
+      "muts": [],
+      "sequence": "AGGATGTTTGAAGGAGTCCGGCCGTAAGAAATGCAGGGCACAATACGACAACCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTA"
+    },
+    "tip_8": {
+      "aa_muts": {
+        "A": [],
+        "B": [],
+        "C": []
+      },
+      "muts": [],
+      "sequence": "AAGATGTTTGAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATACGACAACCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTA"
+    }
+  },
+  "reference": {
+    "A": "MFEGVQP*",
+    "B": "MQGTIPRP*",
+    "C": "MCYQTKQD*",
+    "nuc": "AAGATGTTTGAAGGAGTCCAGCCGTAAGAAATGCAGGGCACAATACGACAACCTCGTCCGTAATTGTTAGTCTTGTTTGGTCTGGTAACACATAACCTA"
+  }
+}

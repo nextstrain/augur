@@ -10,6 +10,8 @@ from .dates import get_numerical_dates
 from .dates.errors import InvalidYearBounds
 from .io.file import open_file
 from .io.metadata import DEFAULT_DELIMITERS, DEFAULT_ID_COLUMNS, METADATA_DATE_COLUMN, InvalidDelimiter, Metadata, read_metadata
+from .io.nextclade_dataset import add_nextclade_dataset_argument, apply_nextclade_dataset
+from .io.sequences import is_vcf as is_filename_vcf
 from .io.strains import read_strains
 from .utils import read_tree, write_augur_json, InvalidTreeError
 from .errors import AugurError
@@ -212,6 +214,7 @@ def register_parser(parent_subparsers):
                                 'interquartile ranges from the root-to-tip vs time regression')
     parser.add_argument('--keep-ids', metavar="FILE", help="file containing ids to keep in tree regardless of clock filtering (one per line)")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the VCF was mapped to')
+    add_nextclade_dataset_argument(parser)
     parser.add_argument('--year-bounds', type=int, nargs='+', action=ExtendOverwriteDefault, help='specify min or max & min prediction bounds for samples with XX in year')
     parser.add_argument('--divergence-units', type=str, choices=['mutations', 'mutations-per-site'],
                         default='mutations-per-site', help='Units in which sequence divergences is exported.')
@@ -222,6 +225,7 @@ def register_parser(parent_subparsers):
 
 
 def run(args):
+    apply_nextclade_dataset(args, reference="vcf_reference" if is_filename_vcf(args.alignment) else None)
 
     # check alignment type, set flags, read in if VCF
     is_vcf = False

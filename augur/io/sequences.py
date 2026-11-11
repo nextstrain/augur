@@ -191,10 +191,10 @@ def subset_fasta(input_filename: str, output_filename: str, ids_file: str, nthre
             raise AugurError(f"Sequence output failed, see error(s) above. The command may have already written data to stdout. You may want to clean up any partial outputs.")
 
 
-def load_features(reference, feature_names=None):
+def load_features(reference, feature_names=None, nextclade_gff=False):
     """
-    Parse a GFF/GenBank reference file. See the docstrings for _read_gff and
-    _read_genbank for details.
+    Parse a GFF/GenBank reference file. See the docstrings for _read_gff,
+    _read_gff_nextclade and _read_genbank for details.
 
     Parameters
     ----------
@@ -202,6 +202,9 @@ def load_features(reference, feature_names=None):
         File path to GFF or GenBank (.gb) reference
     feature_names : None or set or list (optional)
         Restrict the genes we read to those in the set/list
+    nextclade_gff : bool (optional)
+        Parse GFF files the way Nextclade does (see _read_gff_nextclade).
+        Ignored for GenBank files.
 
     Returns
     -------
@@ -219,7 +222,10 @@ def load_features(reference, feature_names=None):
         raise AugurError(f"reference sequence file {reference!r} not found")
 
     if '.gff' in reference.lower():
-        features = _read_gff(reference, feature_names)
+        if nextclade_gff:
+            features = _read_gff_nextclade(reference, feature_names)
+        else:
+            features = _read_gff(reference, feature_names)
     else:
         features = _read_genbank(reference, feature_names)
 
@@ -409,6 +415,122 @@ def _read_gff(reference, feature_names):
 
         if features_skipped:
             print(f"WARNING: {features_skipped} GFF rows of type=gene skipped as they didn't have a gene, gene_name or locus_tag attribute.")
+
+    return features
+
+
+# Attributes used to name genes and CDSs, in order of priority, matching Nextclade. See
+# <https://github.com/nextstrain/nextclade/blob/master/packages/nextclade/src/io/gff3_reader.rs>
+NEXTCLADE_NAME_ATTRS_GENE = ["Gene", "gene", "gene_name", "locus_tag", "Name", "name", "Alias", "alias",
+    "standard_name", "old-name", "product", "gene_synonym", "gb-synonym", "acronym", "gb-acronym", "protein_id", "ID"]
+NEXTCLADE_NAME_ATTRS_CDS = ["Name", "name", "Alias", "alias", "standard_name", "old-name", "Gene", "gene",
+    "gene_name", "locus_tag", "product", "gene_synonym", "gb-synonym", "acronym", "gb-acronym", "protein_id", "ID"]
+
+
+def _read_gff_nextclade(reference, feature_names):
+    """
+    Read a GFF file the way Nextclade does:
+    - All 'CDS' rows are used, irrespective of their position in the feature hierarchy.
+      CDS rows sharing the same ID are joined (in file order) into a single feature with
+      a :py:class:`Bio.SeqFeature.CompoundLocation`.
+    - A 'gene' without any CDS descendants is used as a single-segment CDS.
+    - Feature names are taken from the first attribute present in
+      NEXTCLADE_NAME_ATTRS_CDS (for CDSs) or NEXTCLADE_NAME_ATTRS_GENE (for genes).
+    - The 'nuc' annotation is parsed as for _read_gff.
+
+    Parameters
+    ----------
+    reference : string
+        File path to GFF reference
+    feature_names : None or set or list
+        Restrict the features we read to those in the set/list
+
+    Returns
+    -------
+    features : dict
+        keys: feature names, values: :py:class:`Bio.SeqFeature.SeqFeature`
+
+    Raises
+    ------
+    AugurError
+        If the reference file contains no data rows or multiple different seqids
+        If no CDS or gene features are found
+        If a feature can't be named, is named 'nuc', or shares its name with another feature
+        If the rows of a CDS are on different strands
+    """
+    from BCBio import GFF
+    from Bio.SeqFeature import SeqFeature, CompoundLocation
+
+    with open_file(reference) as in_handle:
+        # TODO: Remove warning suppression after it's addressed upstream:
+        # <https://github.com/chapmanb/bcbb/issues/143>
+        import warnings
+        from Bio import BiopythonDeprecationWarning
+        warnings.simplefilter("ignore", BiopythonDeprecationWarning)
+        gff_entries = list(GFF.parse(in_handle))
+        warnings.simplefilter("default", BiopythonDeprecationWarning)
+
+    if len(gff_entries) == 0:
+        raise AugurError(f"Reference {reference!r} contains no valid data rows.")
+    elif len(gff_entries) > 1:
+        raise AugurError(f"Reference {reference!r} contains multiple seqids (first column). Augur can only handle GFF files with a single seqid.")
+    rec = gff_entries[0]
+
+    features = {'nuc': _read_nuc_annotation_from_gff(rec, reference)}
+
+    # Each group is a list of GFF rows making up one feature, keyed by ID for
+    # CDSs (rows without an ID each form their own group). Insertion order
+    # follows the file.
+    groups = {}
+
+    def collect(feat):
+        """Collect CDS rows and CDS-less genes within *feat*. Returns whether *feat* contains a CDS."""
+        has_cds = feat.type == "CDS"
+        if has_cds:
+            # Use the ID attribute rather than `feat.id` as BCBio suffixes repeated top-level IDs
+            gff_id = feat.qualifiers.get("ID", [None])[0]
+            key = ("CDS", gff_id) if gff_id else ("CDS-without-ID", len(groups))
+            groups.setdefault(key, []).append(feat)
+        for sub_feat in getattr(feat, "sub_features", []):
+            has_cds = collect(sub_feat) or has_cds
+        if feat.type == "gene" and not has_cds:
+            groups[("gene", len(groups))] = [feat]
+        return has_cds
+
+    for feat in rec.features:
+        collect(feat)
+
+    if not groups:
+        raise AugurError(f"Reference {reference!r} contains no CDS or gene features.")
+
+    for (kind, _), rows in groups.items():
+        name_attrs = NEXTCLADE_NAME_ATTRS_GENE if kind == "gene" else NEXTCLADE_NAME_ATTRS_CDS
+        fname = next((rows[0].qualifiers[attr][0] for attr in name_attrs if rows[0].qualifiers.get(attr)), None)
+        if fname is None:
+            raise AugurError(f"Reference {reference!r} contains a {rows[0].type} at {rows[0].location} without any of the attributes used for naming: {', '.join(name_attrs)}.")
+        if fname == 'nuc':
+            raise AugurError(f"Reference {reference!r} contains a {rows[0].type} with the name 'nuc'. This is not allowed.")
+        if fname in features:
+            raise AugurError(f"Reference {reference!r} contains multiple genes/CDSs with the name {fname!r}. Names must be unique.")
+
+        if len(rows) == 1:
+            feat = rows[0]
+        else:
+            if len({row.location.strand for row in rows}) > 1:
+                raise AugurError(f"Reference {reference!r} contains CDS {fname!r} with rows on different strands.")
+            feat = SeqFeature(
+                CompoundLocation([row.location for row in rows]),
+                type=rows[0].type,
+                id=rows[0].qualifiers["ID"][0],
+                qualifiers=rows[0].qualifiers,
+            )
+        features[fname] = feat
+
+    if feature_names is not None:
+        for fe in feature_names:
+            if fe not in features:
+                print(f"Couldn't find gene/CDS {fe} in GFF file")
+        features = {fname: feat for fname, feat in features.items() if fname == 'nuc' or fname in feature_names}
 
     return features
 

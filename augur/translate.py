@@ -16,6 +16,7 @@ mutations are output to a node-data JSON file.
 import numpy as np
 from Bio import SeqIO, Seq, SeqRecord, Phylo
 from .io.file import open_file
+from .io.nextclade_dataset import add_nextclade_dataset_argument, apply_nextclade_dataset
 from .io.sequences import load_features, write_VCF_translation, is_vcf as is_filename_vcf
 from .io.print import print_err
 from .utils import parse_genes_argument, read_node_data, \
@@ -349,8 +350,13 @@ def register_parser(parent_subparsers):
     parser = parent_subparsers.add_parser("translate", help=__doc__)
     parser.add_argument('--tree', required=True, help="prebuilt Newick -- no tree will be built if provided")
     parser.add_argument('--ancestral-sequences', required=True, type=str, help='JSON (fasta input) or VCF (VCF input) containing ancestral and tip sequences')
-    parser.add_argument('--reference-sequence', required=True,
+    reference_group = parser.add_mutually_exclusive_group(required=True)
+    reference_group.add_argument('--reference-sequence',
                         help='GenBank or GFF file containing the annotation')
+    add_nextclade_dataset_argument(reference_group)
+    parser.add_argument('--use-nextclade-gff-style', action="store_true",
+                        help="Read the GFF --reference-sequence the way Nextclade does: use CDS features (joining multi-row CDSs), fall back to"
+                             " genes without CDSs, and name features via Nextclade's attribute priority (e.g. 'Name' for CDSs).")
     parser.add_argument('--genes', nargs='+', action=ExtendOverwriteDefault, help="genes to translate (list or file containing list)")
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save aa-mutations to')
     parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
@@ -399,12 +405,13 @@ def run(args):
     ## read tree and data, if reading data fails, return with error code
     tree = Phylo.read(args.tree, 'newick')
     is_vcf = is_filename_vcf(args.ancestral_sequences)
+    apply_nextclade_dataset(args, reference="vcf_reference" if is_vcf else None, annotation="reference_sequence")
     check_arg_combinations(args, is_vcf)
 
     genes = parse_genes_argument(args.genes)
 
     ## load features; only requested features if genes given
-    features = load_features(args.reference_sequence, genes)
+    features = load_features(args.reference_sequence, genes, nextclade_gff=args.use_nextclade_gff_style)
     print_err("Read in {} features from reference sequence file".format(len(features)))
 
     ## Read in sequences & for each sequence translate each feature _except for_ the 'nuc' feature name
@@ -420,6 +427,8 @@ def run(args):
         for fname, feat in features.items():
             if fname=='nuc':
                 continue
+            if args.use_nextclade_gff_style and len(feat.location.parts)>1:
+                raise AugurError(f"{fname!r} consists of multiple segments, which is not supported for VCF input.")
             try:
                 translations[fname] = translate_vcf_feature(sequences, ref, feat)
                 reference_translations[fname] = translations[fname]['reference']

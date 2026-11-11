@@ -7,7 +7,8 @@ import numpy as np
 from treetime.vcf_utils import read_vcf
 from collections import defaultdict
 from .io.file import PANDAS_READ_CSV_OPTIONS, open_file
-from .io.sequences import read_sequences
+from .io.nextclade_dataset import add_nextclade_dataset_argument, apply_nextclade_dataset
+from .io.sequences import read_sequences, is_vcf as is_filename_vcf
 from .utils import write_augur_json, get_json_name
 
 def read_in_translate_vcf(vcf_file, ref_file):
@@ -298,6 +299,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--ancestral-sequences', type=str, help="nucleotide alignment (VCF) to search for sequence traits in (can be generated from 'ancestral' using '--output-vcf')")
     parser.add_argument('--translations', type=str, help="AA alignment to search for sequence traits in (can include ancestral sequences)")
     parser.add_argument('--vcf-reference', type=str, help='fasta file of the sequence the nucleotide VCF was mapped to')
+    add_nextclade_dataset_argument(parser)
     parser.add_argument('--vcf-translate-reference', type=str, help='fasta file of the sequence the translated VCF was mapped to')
     parser.add_argument('--features', type=str,
         help='file that specifies sites defining the features in a tab-delimited format: "GENE SITE ALT DISPLAY_NAME FEATURE". For nucleotide sites, GENE can be "nuc" (or column excluded entirely for all-nuc sites). "DISPLAY_NAME" can be blank or excluded entirely.')
@@ -313,6 +315,7 @@ def run(args):
     '''
     print("This method may change in future! Please use 'augur sequence-traits -h' to check the latest options.")
     print("Unfortunately this method currently only works with VCF input.")
+    apply_nextclade_dataset(args, reference="vcf_reference" if is_filename_vcf(args.ancestral_sequences) else None)
     ## check file format and read in sequences
     is_vcf = False
     if ( (args.ancestral_sequences and any([args.ancestral_sequences.lower().endswith(x) for x in ['.vcf', '.vcf.gz']])) or
