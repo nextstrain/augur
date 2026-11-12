@@ -52,7 +52,7 @@ def _read_csv_records(
 ) -> Iterator[Sequence[str] | None | dict[str, str]]:
     """Yield CSV records with descriptive errors for fields exceeding the size limit.
 
-    The first item yielded is the header (column names), followed by each record.
+    Yield column names first, then each record as a dict.
     """
     configured_limit = _csv_field_size_limit_from_env()
     original_limit = csv.field_size_limit()
