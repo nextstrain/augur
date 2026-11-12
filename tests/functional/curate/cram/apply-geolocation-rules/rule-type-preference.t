@@ -11,5 +11,5 @@ Test that matching rules are used over general rules.
 
   $ echo '{"region": "a", "country": "b", "division": "c", "location": "d"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   {"region": "1", "country": "2", "division": "3", "location": "4"}
