@@ -2,13 +2,16 @@
 
 ## __NEXT__
 
+### Features
+
+* curate: Report the file and line when a metadata field is too large, and explain how to increase the limit with `AUGUR_FIELD_SIZE_LIMIT`. [#2070][] @bencoopertx
+
 ### Bug fixes
 
 * curate transform-strain-name: Treat a null strain value as missing so backup fields can be used instead of raising a `TypeError`. A missing strain no longer raises a `KeyError` when `--strain-regex` matches an empty string. [#1906][] @Noxy-HNR
-* curate: Report the file and line when a metadata field is too large, and explain how to increase the limit with `AUGUR_FIELD_SIZE_LIMIT`. [#2013][] @bencoopertx
 
 [#1906]: https://github.com/nextstrain/augur/issues/1906
-[#2013]: https://github.com/nextstrain/augur/issues/2013
+[#2070]: https://github.com/nextstrain/augur/pull/2070
 
 ## 34.3.0 (26 October 2026)
 

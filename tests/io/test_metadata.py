@@ -72,23 +72,16 @@ class TestReadMetadataToDict:
         with pytest.raises(InvalidDelimiter):
             next(read_table_to_dict(path, (',', '\t')))
 
-    @pytest.mark.parametrize(('records', 'location'), [
-        (
-            'SEQ_A\txxxxxxxxxxx\n',
-            "a field on line 2 exceeds the default field size limit of 10 characters.",
-        ),
-        (
-            'SEQ_A\t"abc\ndefghijk"\n',
-            "a field in the record starting on line 2 exceeds the default field size limit of 10 characters. "
-            "The limit was reached on line 3.",
-        ),
-        (
-            'SEQ_A\tok\n\n\nSEQ_B\txxxxxxxxxxx\n',
-            "a field on line 5 exceeds the default field size limit of 10 characters.",
-        ),
+    @pytest.mark.parametrize(('records', 'limit_line', 'record_start_line'), [
+        # Oversized field on a single line
+        ('SEQ_A\txxxxxxxxxxx\n', 2, 2),
+        # Quoted field spanning multiple lines
+        ('SEQ_A\t"abc\ndefghijk"\n', 3, 2),
+        # Blank lines before the oversized record
+        ('SEQ_A\tok\n\n\nSEQ_B\txxxxxxxxxxx\n', 5, 5),
     ])
     @pytest.mark.usefixtures('small_csv_field_size_limit')
-    def test_read_table_to_dict_with_oversized_csv_field(self, tmpdir, monkeypatch, records, location):
+    def test_read_table_to_dict_with_oversized_csv_field(self, tmpdir, monkeypatch, records, limit_line, record_start_line):
         path = str(tmpdir / 'metadata.tsv')
         with open(path, 'w') as fh:
             fh.write('strain\tvalue\n')
@@ -100,9 +93,10 @@ class TestReadMetadataToDict:
             list(read_table_to_dict(path, ('\t')))
 
         assert str(e_info.value) == (
-            f"Unable to read metadata file {path!r}: {location}\n\n"
-            "This is often caused by a missing closing quote. "
-            "If the data is correct, rerun with AUGUR_FIELD_SIZE_LIMIT set to a value larger than 10."
+            f"Unable to read metadata file {path!r}: a field on line {limit_line}\n"
+            f"in the record starting on line {record_start_line} is larger than the field limit.\n\n"
+            "This is often caused by a missing closing quote.\n"
+            "If the data is correct, rerun with AUGUR_FIELD_SIZE_LIMIT set to a value larger than 10.\n"
         )
 
     def test_read_table_to_dict_with_csv_field_size_override(self, tmpdir, monkeypatch, small_csv_field_size_limit):
@@ -131,10 +125,10 @@ class TestReadMetadataToDict:
             list(read_table_to_dict(path, ('\t')))
 
         assert str(e_info.value) == (
-            f"Unable to read metadata file {path!r}: a field on line 2 exceeds the field size limit "
-            "of 11 characters set by AUGUR_FIELD_SIZE_LIMIT.\n\n"
-            "This is often caused by a missing closing quote. "
-            "If the data is correct, rerun with AUGUR_FIELD_SIZE_LIMIT increased above 11."
+            f"Unable to read metadata file {path!r}: a field on line 2\n"
+            "in the record starting on line 2 is larger than the field limit.\n\n"
+            "This is often caused by a missing closing quote.\n"
+            "If the data is correct, rerun with AUGUR_FIELD_SIZE_LIMIT set to a value larger than 11.\n"
         )
 
         assert csv.field_size_limit() == small_csv_field_size_limit
@@ -146,7 +140,7 @@ class TestReadMetadataToDict:
 
         monkeypatch.setenv('AUGUR_FIELD_SIZE_LIMIT', str(2**70))
 
-        with pytest.raises(AugurError, match="must be a positive integer supported by Python's CSV parser"):
+        with pytest.raises(AugurError, match="AUGUR_FIELD_SIZE_LIMIT is too large for Python's CSV parser"):
             list(read_table_to_dict(path, ('\t')))
 
     @pytest.mark.parametrize('configured_limit', ['invalid', '0', '-1'])

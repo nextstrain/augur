@@ -16,9 +16,12 @@ Test field larger than the limit
 
   $ AUGUR_FIELD_SIZE_LIMIT=10 ${AUGUR} curate passthru \
   > --metadata metadata.tsv
-  ERROR: Unable to read metadata file 'metadata.tsv': a field on line 2 exceeds the field size limit of 10 characters set by AUGUR_FIELD_SIZE_LIMIT.
+  ERROR: Unable to read metadata file 'metadata.tsv': a field on line 2
+  in the record starting on line 2 is larger than the field limit.
   
-  This is often caused by a missing closing quote. If the data is correct, rerun with AUGUR_FIELD_SIZE_LIMIT increased above 10.
+  This is often caused by a missing closing quote.
+  If the data is correct, rerun with AUGUR_FIELD_SIZE_LIMIT set to a value larger than 10.
+  
   [2]
 
 Test increased limit
