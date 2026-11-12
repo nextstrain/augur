@@ -733,7 +733,7 @@ def attr_confidence(
 
     if isinstance(conf, dict):
         entropy = attrs.get(f"{key}_entropy", None)
-        if not entropy or not is_numeric(entropy):
+        if (entropy is None) or not is_numeric(entropy):
             warn(f"[confidence] node {node_name!r} includes a mapping of confidence values but not an associated numeric entropy value. Skipping confidence export.")
             return {}
         if not all([is_numeric(v) for v in conf.values()]):
