@@ -83,8 +83,7 @@ jobs:
     # Install the local version of Augur and Python dependencies.
     - run: pip install .[dev] ${{ matrix.pip-args }}
     - run: pip list
-    - run: conda info
-    - run: conda list
+    - run: micromamba list
 
     # Run with coverage on the earliest supported Python version
     # Ideally, coverage is run on all jobs and combined later.¹ It was reduced

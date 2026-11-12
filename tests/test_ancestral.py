@@ -231,3 +231,20 @@ class TestAmbiguousAAReconstruction:
         pos3_muts = gather_mutations_at_pos(3, result)
         assert len(pos3_muts)==1
         assert pos3_muts[0] in ['I3E', 'I3Q']
+
+
+class TestTranslationsHelpers:
+    def test_gene_fname(self):
+        from augur.ancestral import _gene_fname, _has_gene_pattern
+        assert _gene_fname("aa_%GENE.fasta", "S") == "aa_S.fasta"
+        assert _gene_fname("translations/{cds}.translation.fasta", "ORF1a") == "translations/ORF1a.translation.fasta"
+        assert _has_gene_pattern("{cds}.fasta") and _has_gene_pattern("%GENE.fasta")
+        assert not _has_gene_pattern("aa.fasta")
+
+    def test_add_missing_tips(self, capsys):
+        from augur.ancestral import _add_missing_tips
+        tree = Phylo.read(StringIO("((A:1,B:1):1,(C:1,D:1):1);"), "newick")
+        aln = MultipleSeqAlignment([SeqRecord(Seq("MKV"), id="A"), SeqRecord(Seq("MKI"), id="C"), SeqRecord(Seq("MKL"), id="E")])
+        result = _add_missing_tips(aln, tree, "gene1", "gene1.fasta")
+        assert {record.id: str(record.seq) for record in result} == {"A": "MKV", "C": "MKI", "E": "MKL", "B": "XXX", "D": "XXX"}
+        assert "2 of 4 tips have no sequence in 'gene1.fasta' and are treated as fully ambiguous for 'gene1': B, D" in capsys.readouterr().err
