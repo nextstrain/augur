@@ -27,6 +27,33 @@ Providing a backup field produces the expected output
   >   | ${AUGUR} curate transform-strain-name --backup-fields potential-strain
   {"potential-strain": "OC43", "strain": "OC43"}
 
+An explicit null strain name behaves like a missing strain name and uses a backup field
+
+  $ echo '{"strain":null,"potential-strain":"OC43"}' \
+  >   | ${AUGUR} curate transform-strain-name --backup-fields potential-strain
+  {"strain": "OC43", "potential-strain": "OC43"}
+
+An explicit null strain name without a backup field produces an empty field and a warning
+
+  $ echo '{"strain":null}' \
+  >   | ${AUGUR} curate transform-strain-name
+  WARNING: Record number 0 has an empty string as the strain name.
+  {"strain": ""}
+
+An explicit null strain name produces an empty field and a warning when the strain regex matches an empty string
+
+  $ echo '{"strain":null}' \
+  >   | ${AUGUR} curate transform-strain-name --strain-regex '^.*$'
+  WARNING: Record number 0 has an empty string as the strain name.
+  {"strain": ""}
+
+A missing strain name produces an empty field and a warning when the strain regex matches an empty string
+
+  $ echo '{"accession":"A1"}' \
+  >   | ${AUGUR} curate transform-strain-name --strain-regex '^.*$'
+  WARNING: Record number 0 has an empty string as the strain name.
+  {"accession": "A1", "strain": ""}
+
 
 Multiple backup fields produce the expected output
 
