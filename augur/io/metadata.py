@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import Any, Iterable, Iterator, Sequence, overload
+from typing import IO, Any, Iterable, Iterator, Sequence, cast, overload
 import pandas as pd
 import pyfastx
 import python_calamine as calamine
@@ -26,7 +26,7 @@ class InvalidDelimiter(Exception):
     pass
 
 
-def _csv_field_size_limit_from_env():
+def _csv_field_size_limit_from_env() -> int | None:
     """Return a CSV field-size limit configured with AUGUR_FIELD_SIZE_LIMIT."""
     configured_limit = os.environ.get("AUGUR_FIELD_SIZE_LIMIT")
     if configured_limit is None:
@@ -45,16 +45,23 @@ def _csv_field_size_limit_from_env():
     return limit
 
 
-def _read_csv_records(handle, table, delimiter):
-    """Yield CSV records with descriptive errors for fields exceeding the size limit."""
+def _read_csv_records(
+    handle: Iterable[str],
+    table: str | IO[bytes],
+    delimiter: str,
+) -> Iterator[Sequence[str] | None | dict[str, str]]:
+    """Yield CSV records with descriptive errors for fields exceeding the size limit.
+
+    The first item yielded is the header (column names), followed by each record.
+    """
     configured_limit = _csv_field_size_limit_from_env()
     original_limit = csv.field_size_limit()
     field_size_limit = original_limit
-    record_start_line = None
+    record_start_line: int | None = None
 
     # DictReader doesn't report where a record starts, which can be well before
     # the line where parsing failed if a quoted value spans multiple lines.
-    def tracked_lines():
+    def tracked_lines() -> Iterator[str]:
         nonlocal record_start_line
         for line_number, line in enumerate(handle, start=1):
             if record_start_line is None and line not in ('\n', '\r\n', '\r'):
@@ -447,8 +454,9 @@ def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ER
 
             # Only use the dialect delimiter and keep all other default format params
             csv_records = _read_csv_records(handle, table, dialect.delimiter)
-            columns = next(csv_records)
-            records = csv_records
+            # The first item is the header and the rest are records.
+            columns = cast(Sequence[str] | None, next(csv_records))
+            records = cast(Iterator[dict[str, str]], csv_records)
 
         if duplicate_reporting is DataErrorMethod.SILENT:
             # Directly yield from metadata reader since we do not need to check for duplicate ids
