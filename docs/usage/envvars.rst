@@ -42,3 +42,11 @@ These can be especially useful in the context of an entire pipeline or workflow 
 
     Generally there is no need to set this environment variable.
     You may need to if you find yourself encountering :class:`RecursionError` while processing a very unbalanced tree.
+
+.. envvar:: AUGUR_FIELD_SIZE_LIMIT
+
+    Positive integer.
+    If set, this value is the maximum number of characters allowed in a single field when ``augur curate`` reads CSV or TSV metadata.
+    By default, Augur uses Python's standard CSV/TSV field-size limit.
+
+    Before increasing this limit, check the file for formatting errors. For example, a missing closing quote will cause multiple lines to be read as one large field.

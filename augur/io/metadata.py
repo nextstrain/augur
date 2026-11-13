@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import Any, Iterable, Iterator, Sequence, overload
+from typing import IO, Any, Iterable, Iterator, Sequence, cast, overload
 import pandas as pd
 import pyfastx
 import python_calamine as calamine
@@ -24,6 +24,87 @@ METADATA_DATE_COLUMN = 'date'
 
 class InvalidDelimiter(Exception):
     pass
+
+
+def _csv_field_size_limit_from_env() -> int | None:
+    """Return a CSV field-size limit configured with AUGUR_FIELD_SIZE_LIMIT."""
+    configured_limit = os.environ.get("AUGUR_FIELD_SIZE_LIMIT")
+    if configured_limit is None:
+        return None
+
+    try:
+        limit = int(configured_limit)
+        if limit <= 0:
+            raise ValueError
+    except ValueError as error:
+        raise AugurError(
+            "AUGUR_FIELD_SIZE_LIMIT must be a positive integer. "
+            f"Received {configured_limit!r}."
+        ) from error
+
+    return limit
+
+
+def _read_csv_records(
+    handle: Iterable[str],
+    table: str | IO[bytes],
+    delimiter: str,
+) -> Iterator[Sequence[str] | None | dict[str, str]]:
+    """Yield CSV records with descriptive errors for fields exceeding the size limit.
+
+    Yield column names first, then each record as a dict.
+    """
+    configured_limit = _csv_field_size_limit_from_env()
+    original_limit = csv.field_size_limit()
+    field_size_limit = original_limit
+    record_start_line: int | None = None
+
+    # DictReader doesn't report where a record starts, which can be well before
+    # the line where parsing failed if a quoted value spans multiple lines.
+    def tracked_lines() -> Iterator[str]:
+        nonlocal record_start_line
+        for line_number, line in enumerate(handle, start=1):
+            if record_start_line is None and line not in ('\n', '\r\n', '\r'):
+                record_start_line = line_number
+            yield line
+
+    reader = csv.DictReader(tracked_lines(), delimiter=delimiter)
+
+    if configured_limit is not None:
+        try:
+            csv.field_size_limit(configured_limit)
+        except OverflowError as error:
+            raise AugurError(
+                "AUGUR_FIELD_SIZE_LIMIT is too large for Python's CSV parser. Use a smaller value. "
+                f"Received {configured_limit!r}."
+            ) from error
+        field_size_limit = configured_limit
+
+    try:
+        fieldnames = reader.fieldnames
+        record_start_line = None
+        yield fieldnames
+        for record in reader:
+            record_start_line = None
+            yield record
+    except csv.Error as error:
+        if "field larger than field limit" not in str(error):
+            raise
+
+        # Use the underlying reader's line_num since DictReader.line_num can
+        # still refer to the previous record on failure.
+        limit_line = reader.reader.line_num
+
+        raise AugurError(dedent(f"""\
+            Unable to read metadata file {table!r}: a field on line {limit_line}
+            in the record starting on line {record_start_line} is larger than the field limit.
+
+            This is often caused by a missing closing quote.
+            If the data is correct, rerun with AUGUR_FIELD_SIZE_LIMIT set to a value larger than {field_size_limit}.
+            """)) from error
+    finally:
+        if configured_limit is not None:
+            csv.field_size_limit(original_limit)
 
 
 # Overloads for different return types based on chunk_size
@@ -358,9 +439,10 @@ def read_table_to_dict(table, delimiters, duplicate_reporting=DataErrorMethod.ER
                 raise InvalidDelimiter from error
 
             # Only use the dialect delimiter and keep all other default format params
-            metadata_reader = csv.DictReader(handle, delimiter=dialect.delimiter)
-
-            columns, records = metadata_reader.fieldnames, iter(metadata_reader)
+            csv_records = _read_csv_records(handle, table, dialect.delimiter)
+            # The first item is the header and the rest are records.
+            columns = cast(Sequence[str] | None, next(csv_records))
+            records = cast(Iterator[dict[str, str]], csv_records)
 
         if duplicate_reporting is DataErrorMethod.SILENT:
             # Directly yield from metadata reader since we do not need to check for duplicate ids
