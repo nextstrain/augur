@@ -2,7 +2,10 @@ import pytest
 import json
 from ruamel.yaml import YAML
 
+from augur import make_parser
+from augur.argparse_ import walk_commands
 from augur.schema import (
+    CONFIG_COMMANDS,
     load_augur_json_schema,
     load_json_schema_locally,
     _load_json_schema,
@@ -74,3 +77,13 @@ def test_load_json_schema(tmp_path, ext):
     validator = _load_json_schema(schema_file)
     valid_data = {"name": "test"}
     validate_json(valid_data, validator, "")
+
+
+def test_config_commands_match_parser():
+    """CONFIG_COMMANDS must list exactly the commands that have a --config file argument."""
+    commands_with_config = {
+        " ".join(command[1:])
+        for command, parser in walk_commands(make_parser())
+        if getattr(parser, "config_file_action", None) is not None
+    }
+    assert commands_with_config == CONFIG_COMMANDS

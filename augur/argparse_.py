@@ -155,6 +155,11 @@ class CustomArgumentParser(configargparse.ArgumentParser):
 
         # Default allows command line arguments to override config file values
         # that share the same dest, but we want them to be mutually exclusive.
+        # TODO: This only catches options that share a dest. Conflicts within a
+        # mutually exclusive group (e.g. vcf_reference in config YAML and
+        # --root-sequence on the CLI) are reported by argparse using the
+        # synthesized CLI option (--vcf-reference), which the user never typed.
+        # Detect those here and report them with config file syntax.
         conflicts = []
         for key in config_keys:
             # Find the dest associated with this config key.

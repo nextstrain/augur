@@ -381,6 +381,7 @@ def register_parser(parent_subparsers):
         "amino acid options",
         "Options to configure reconstruction of ancestral amino acid sequences."
     )
+    # TODO: Add --genes-file with type=InputFile so that --genes can be list-only.
     amino_acid_options_group.add_argument('--genes', nargs='+', action=ExtendOverwriteDefault,
         help="gene(s) to translate (list or file containing list). If omitted, all CDSs in the --annotation are used, skipping"
              " those without a --translations file.")

@@ -78,8 +78,7 @@ def _get_local_refs() -> dict[str, str]:
     }
 
     for command in CONFIG_COMMANDS:
-        command_name = command.replace(' ', '-')
-        local_refs[f"https://nextstrain.org/schemas/augur/{command_name}-config"] = f"schema-{command_name}-config.json"
+        local_refs[f"https://nextstrain.org/schemas/augur/{command}-config"] = f"schema-{command}-config.json"
 
     return local_refs
 

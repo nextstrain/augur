@@ -358,6 +358,7 @@ def register_parser(parent_subparsers):
     parser.add_argument('--use-nextclade-gff-style', action="store_true",
                         help="Read the GFF --reference-sequence the way Nextclade does: use CDS features (joining multi-row CDSs), fall back to"
                              " genes without CDSs, and name features via Nextclade's attribute priority (e.g. 'Name' for CDSs).")
+    # TODO: Add --genes-file with type=InputFile so that --genes can be list-only.
     parser.add_argument('--genes', nargs='+', action=ExtendOverwriteDefault, help="genes to translate (list or file containing list)")
     parser.add_argument('--output-node-data', type=str, help='name of JSON file to save aa-mutations to')
     parser.add_argument('--alignment-output', type=str, help="write out translated gene alignments. "
