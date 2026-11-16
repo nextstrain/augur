@@ -14,7 +14,7 @@ Valid rule matches are still applied.
 
   $ echo '{"region": "r_old", "country": "c_old", "division": "d_old", "location": "l_old"}' \
   >   |  ${AUGUR} curate apply-geolocation-rules \
-  >       --geolocation-rules rules.tsv
+  >       --no-default-rules --geolocation-rules rules.tsv
   WARNING: Could not decode geolocation rule 'r_old/c_old/d_old/l_old\n'. Please make sure rules are formatted as 'region/country/division/location<tab>region/country/division/location'.
   WARNING: Could not decode the annotated geolocation 'r_new/c_new/d_new'. Please make sure it is formatted as 'region/country/division/location'.
   WARNING: Could not decode the raw geolocation 'r_old/c_old/d_old'. Please make sure it is formatted as 'region/country/division/location'.
