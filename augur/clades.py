@@ -136,7 +136,7 @@ def read_in_clade_definitions(clade_file):
     if not len(clades.keys()):
         raise AugurError(f"No clades were defined in {clade_file}")
 
-    return clades
+    return (clades, G)
 
 
 def is_node_in_clade(clade_alleles, node, root_sequence):
@@ -194,7 +194,7 @@ def ensure_no_multiple_mutations(all_muts):
     if multiples:
         raise AugurError(f"Multiple mutations at the same position on a single branch were found: {', '.join(multiples)}")
 
-def assign_clades(clade_designations, all_muts, tree, ref=None):
+def assign_clades(clade_designations, clade_graph, all_muts, tree, ref=None):
     '''
     Ensures all nodes have an entry (or auspice doesn't display nicely), tests each node
     to see if it's the first member of a clade (this is the label), and sets the membership of each
@@ -272,9 +272,21 @@ def assign_clades(clade_designations, all_muts, tree, ref=None):
     # third pass to propagate clade_membership to descendant nodes
     # (until we encounter a node with its own clade_membership)
     for node in tree.find_clades(order = 'preorder'):
+        parent_clade = clade_membership[node.name]
         for child in node:
             if child.name not in clade_labels:
-                clade_membership[child.name] = clade_membership[node.name]
+                clade_membership[child.name] = parent_clade
+                continue
+
+            current_clade = clade_labels[child.name]
+            defined_parent_clade = next(iter(clade_graph.predecessors(current_clade)))
+            # No parent clade defined so we cannot check hierarchy
+            if not defined_parent_clade:
+                continue
+
+            # Correct clade membership if the parent clade does not match
+            if defined_parent_clade != parent_clade:
+                clade_membership[child.name] = parent_clade
 
     return (clade_membership, clade_labels)
 
@@ -367,8 +379,8 @@ def run(args):
         # if this doesn't exist, it will complain but not error.
         ref = get_reference_sequence_from_root_node(all_muts, tree.root.name)
 
-    clade_designations = read_in_clade_definitions(args.clades)
-    membership, labels = assign_clades(clade_designations, all_muts, tree, ref)
+    clade_designations, clade_graph = read_in_clade_definitions(args.clades)
+    membership, labels = assign_clades(clade_designations, clade_graph, all_muts, tree, ref)
     warn_if_clades_not_found(membership, clade_designations)
 
     membership_key= args.membership_name if args.membership_name.upper() != "NONE" else None
