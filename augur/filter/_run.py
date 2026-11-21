@@ -99,7 +99,11 @@ def run(args):
 
         # Warn the user if the expected strains from the sequence index are
         # not a superset of the observed strains.
-        if args.sequence_index and sequence_strains > sequence_index_ids:
+        if (
+            args.sequence_index
+            and sequence_index_ids is not None
+            and not (sequence_strains <= sequence_index_ids)
+        ):
             print_err(
                 "WARNING: The sequence index is out of sync with the provided sequences. ",
                 "Sequence-based filters may drop sequences that are present in --sequences that would have otherwise passed the filters."
