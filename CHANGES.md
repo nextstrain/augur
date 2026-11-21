@@ -9,7 +9,9 @@
 ### Bug fixes
 
 * curate transform-strain-name: Treat a null strain value as missing so backup fields can be used instead of raising a `TypeError`. A missing strain no longer raises a `KeyError` when `--strain-regex` matches an empty string. [#1906][] @Noxy-HNR
+* filter: Emit the sequence-index mismatch warning whenever `--sequences` contains strains not present in `--sequence-index`, including when both files have distinct additional entries. [#1825][] @goktugozkanmd
 
+[#1825]: https://github.com/nextstrain/augur/issues/1825
 [#1906]: https://github.com/nextstrain/augur/issues/1906
 [#2070]: https://github.com/nextstrain/augur/pull/2070
 
