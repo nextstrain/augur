@@ -16,7 +16,13 @@ class InvalidWeightsFile(AugurError):
 
 
 def read_weights_file(weights_file):
-    weights = pd.read_csv(weights_file, delimiter='\t', comment='#', dtype="string")
+    weights = pd.read_csv(
+        weights_file,
+        delimiter='\t',
+        comment='#',
+        dtype="string",
+        na_filter=False,
+    )
 
     if non_numeric_weight_lines := [index + 2 for index in weights[~weights[WEIGHTS_COLUMN].str.lstrip("-").str.isnumeric()].index.tolist()]:
         raise InvalidWeightsFile(weights_file, dedent(f"""\
