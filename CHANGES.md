@@ -8,8 +8,10 @@
 
 ### Bug fixes
 
+* curate rename: Filter missing and colliding `--field-map` entries without mutating the list by stale index so subsequent valid renames are not dropped or stopped by `IndexError`. [#1757][] @chenyangsu
 * curate transform-strain-name: Treat a null strain value as missing so backup fields can be used instead of raising a `TypeError`. A missing strain no longer raises a `KeyError` when `--strain-regex` matches an empty string. [#1906][] @Noxy-HNR
 
+[#1757]: https://github.com/nextstrain/augur/issues/1757
 [#1906]: https://github.com/nextstrain/augur/issues/1906
 [#2070]: https://github.com/nextstrain/augur/pull/2070
 
