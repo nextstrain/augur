@@ -51,6 +51,26 @@ to be idempotent.
 
   $ diff records.ndjson out3.ndjson
 
+Asking to rename multiple non-existent columns alongside existing columns still renames all existing columns.
+
+  $ $AUGUR curate rename --field-map "missing1=foo" "missing2=bar" "accession=id" "missing3=baz" "country=region" < <(cat records.ndjson)
+  WARNING: Asked to rename field 'missing1' (to 'foo') but it doesn't exist in the input data.
+  WARNING: Asked to rename field 'missing2' (to 'bar') but it doesn't exist in the input data.
+  WARNING: Asked to rename field 'missing3' (to 'baz') but it doesn't exist in the input data.
+  {"id": "record_1", "region": "country_1"}
+  {"id": "record_2", "region": "country_2"}
+
+Skipping multiple colliding renames without --force still applies remaining valid renames and does not overwrite existing columns.
+
+  $ cat >records.three.ndjson <<~~
+  > {"a": "1", "b": "2", "c": "3"}
+  > ~~
+
+  $ $AUGUR curate rename --field-map "a=b" "b=c" "c=d" < <(cat records.three.ndjson)
+  WARNING: skipping rename of a because record already has a field named b.
+  WARNING: skipping rename of b because record already has a field named c.
+  {"a": "1", "b": "2", "d": "3"}
+
 
 Rename will re-order fields to match the first observed record (with any necessary changes applied)
 This produces NDJSON output which more closely matches TSV output.

@@ -57,23 +57,27 @@ def transform_columns(existing_fields: List[str], field_map: List[Tuple[str,str]
     Calculate the mapping of old column names to new column names
     """
     # check that all columns to be renamed exist
-    for idx,names in enumerate(field_map[:]):
-        old_name, new_name = names
+    valid_field_map = []
+    for old_name, new_name in field_map:
         if old_name not in existing_fields:
             print_err(f"WARNING: Asked to rename field {old_name!r} (to {new_name!r}) but it doesn't exist in the input data.")
-            field_map.pop(idx)
+        else:
+            valid_field_map.append((old_name, new_name))
+    field_map = valid_field_map
 
     # iterate through field_map and remove rename requests if they would drop an existing column
     # doing this ahead-of-time allows us to preserve the order of fields using a simpler implementation
     if not force:
-        for idx, fields in enumerate(field_map[:]):
-            old_field, new_field = fields
+        filtered_field_map = []
+        for old_field, new_field in field_map:
             if new_field in existing_fields and new_field!=old_field:
                 print_err(
                     f"WARNING: skipping rename of {old_field} because record",
                     f"already has a field named {new_field}."
                 )
-                field_map.pop(idx)
+            else:
+                filtered_field_map.append((old_field, new_field))
+        field_map = filtered_field_map
 
     names_to_change, new_names = set([f[0] for f in field_map]), set([f[1] for f in field_map])
 
